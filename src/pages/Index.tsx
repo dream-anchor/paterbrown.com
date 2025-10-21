@@ -101,8 +101,8 @@ const Index = () => {
                 <p className="text-muted-foreground mt-4 text-base leading-relaxed">
                   Als Pater Brown mit feinem Humor und unerschütterlicher Moral.
                 </p>
-                <p className="text-muted-foreground/70 mt-2 text-sm leading-relaxed">
-                  Bekannt aus "Ein Fall für zwei" · Mit Wanja Mues
+                <p className="text-muted-foreground/70 mt-4 text-sm tracking-[0.15em] uppercase">
+                  Bekannt aus EIN FALL FÜR ZWEI
                 </p>
               </div>
             </div>
@@ -127,8 +127,8 @@ const Index = () => {
                 <p className="text-muted-foreground mt-4 text-base leading-relaxed">
                   Als Erzähler, dessen Stimme Spannung atmet.
                 </p>
-                <p className="text-muted-foreground/70 mt-2 text-sm leading-relaxed">
-                  Mit Antoine Monot
+                <p className="text-muted-foreground/70 mt-4 text-sm tracking-[0.15em] uppercase">
+                  Bekannt aus EIN FALL FÜR ZWEI
                 </p>
               </div>
             </div>
