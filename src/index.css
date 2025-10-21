@@ -8,51 +8,52 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 3%;
+    --background: 0 0% 2%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 8%;
+    --card: 0 0% 6%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 6%;
+    --popover: 0 0% 4%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 16 100% 55%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 39 100% 60%;
+    --primary-foreground: 0 0% 5%;
 
-    --secondary: 39 100% 55%;
-    --secondary-foreground: 0 0% 3%;
+    --secondary: 16 90% 55%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 0 0% 25%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 16 100% 55%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 39 100% 60%;
+    --accent-foreground: 0 0% 5%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 15%;
-    --input: 0 0% 10%;
-    --ring: 16 100% 55%;
+    --border: 0 0% 12%;
+    --input: 0 0% 8%;
+    --ring: 39 100% 60%;
 
-    --radius: 0.75rem;
+    --radius: 0rem;
     
-    /* Bold neon colors */
-    --neon-red: 16 100% 55%;
-    --neon-orange: 25 100% 60%;
-    --neon-gold: 39 100% 60%;
+    /* Premium colors */
+    --gold: 39 100% 60%;
+    --gold-dark: 39 80% 45%;
+    --copper: 16 90% 55%;
+    --dark: 0 0% 2%;
+    --darker: 0 0% 1%;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(16 100% 55%), hsl(25 100% 60%));
-    --gradient-dark: linear-gradient(180deg, hsl(0 0% 3%), hsl(0 0% 8%));
-    --gradient-glow: radial-gradient(circle at center, hsl(16 100% 55% / 0.15), transparent 70%);
+    /* Luxury gradients */
+    --gradient-gold: linear-gradient(135deg, hsl(39 100% 60%), hsl(39 80% 45%));
+    --gradient-premium: linear-gradient(180deg, hsl(0 0% 2%), hsl(0 0% 6%));
+    --gradient-shine: linear-gradient(90deg, transparent, hsl(39 100% 60% / 0.1), transparent);
 
-    /* Modern shadows */
-    --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.3);
-    --shadow-md: 0 4px 16px hsl(0 0% 0% / 0.4);
-    --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.5);
-    --shadow-glow: 0 0 40px hsl(16 100% 55% / 0.3);
+    /* Premium shadows */
+    --shadow-premium: 0 20px 60px hsl(0 0% 0% / 0.5);
+    --shadow-gold: 0 10px 40px hsl(39 100% 60% / 0.15);
+    --shadow-intense: 0 30px 80px hsl(0 0% 0% / 0.7);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -82,134 +83,171 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
-  /* Bold neon text effects */
-  .neon-text {
-    color: hsl(var(--neon-red));
-    text-shadow: 
-      0 0 30px hsl(var(--neon-red) / 1),
-      0 0 60px hsl(var(--neon-red) / 0.8),
-      0 0 90px hsl(var(--neon-red) / 0.6),
-      0 0 120px hsl(var(--neon-orange) / 0.4);
-    font-family: 'Pacifico', cursive;
-    letter-spacing: 0.02em;
+  /* Premium gold text */
+  .text-gold {
+    color: hsl(var(--gold));
+    text-shadow: 0 2px 20px hsl(var(--gold) / 0.3);
   }
 
-  .neon-button {
-    color: hsl(var(--neon-gold));
-    text-shadow: 
-      0 0 15px hsl(var(--neon-gold) / 1),
-      0 0 30px hsl(var(--neon-gold) / 0.8),
-      0 0 45px hsl(var(--neon-gold) / 0.6);
-    font-weight: 700;
-    letter-spacing: 0.15em;
+  .text-copper {
+    color: hsl(var(--copper));
   }
 
-  /* Strong glow effects */
-  .glow-strong {
-    box-shadow: 0 0 60px hsl(var(--neon-red) / 0.4);
-    filter: drop-shadow(0 0 40px hsl(var(--neon-red) / 0.3));
-  }
-
-  /* Hero overlay - darker for more contrast */
+  /* Luxury hero overlay */
   .hero-overlay {
     background: linear-gradient(180deg, 
-      hsl(0 0% 0% / 0.85) 0%, 
-      hsl(0 0% 0% / 0.7) 50%,
-      hsl(0 0% 0% / 0.9) 100%);
+      hsl(0 0% 0% / 0.95) 0%, 
+      hsl(0 0% 0% / 0.75) 40%,
+      hsl(0 0% 0% / 0.85) 70%,
+      hsl(0 0% 0% / 1) 100%);
   }
 
-  /* Cast image hover effect */
-  .cast-image {
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: var(--radius);
-    overflow: hidden;
+  /* Premium card with subtle border animation */
+  .premium-card {
+    position: relative;
+    background: hsl(0 0% 4%);
+    border: 1px solid hsl(0 0% 10%);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .cast-image:hover {
-    transform: scale(1.05);
-    filter: brightness(1.1);
-    box-shadow: var(--shadow-glow);
+  .premium-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, hsl(39 100% 60% / 0), hsl(39 100% 60% / 0.3), hsl(39 100% 60% / 0));
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
   }
 
-  /* Modern glass card effect */
-  .glass-card {
-    background: hsl(0 0% 8% / 0.6);
-    backdrop-filter: blur(12px);
-    border: 1px solid hsl(0 0% 20% / 0.3);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-md);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .glass-card:hover {
-    background: hsl(0 0% 10% / 0.7);
-    border-color: hsl(var(--primary) / 0.5);
-    box-shadow: var(--shadow-lg), var(--shadow-glow);
+  .premium-card:hover {
+    border-color: hsl(39 100% 60% / 0.3);
+    box-shadow: var(--shadow-gold);
     transform: translateY(-4px);
   }
 
-  /* Feature card with gradient border */
-  .feature-card {
-    position: relative;
-    padding: 2rem;
-    background: hsl(0 0% 6%);
-    border-radius: var(--radius);
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-
-  .feature-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    padding: 2px;
-    background: linear-gradient(135deg, hsl(16 100% 55%), hsl(39 100% 60%));
-    border-radius: var(--radius);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .feature-card:hover::before {
+  .premium-card:hover::before {
     opacity: 1;
   }
 
-  .feature-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
+  /* Cinematic cast card */
+  .cast-spotlight {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, hsl(0 0% 6%), hsl(0 0% 3%));
   }
 
-  /* Tour date card */
-  .tour-card {
-    background: hsl(0 0% 6%);
-    border: 1px solid hsl(0 0% 15%);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    transition: all 0.3s ease;
+  .cast-spotlight::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, hsl(39 100% 60% / 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.6s ease;
   }
 
-  .tour-card:hover {
-    background: hsl(0 0% 8%);
-    border-color: hsl(var(--primary) / 0.5);
-    box-shadow: var(--shadow-md), 0 0 20px hsl(var(--primary) / 0.2);
-    transform: translateX(8px);
+  .cast-spotlight:hover::after {
+    opacity: 1;
   }
 
-  /* Smooth fade-in animation */
-  .fade-in-up {
-    animation: fadeInUp 0.6s ease-out;
+  .cast-image {
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: grayscale(0.3) contrast(1.1);
   }
 
-  @keyframes fadeInUp {
+  .cast-image:hover {
+    transform: scale(1.08);
+    filter: grayscale(0) contrast(1.15) brightness(1.1);
+  }
+
+  /* Premium button */
+  .btn-premium {
+    position: relative;
+    padding: 1.25rem 3rem;
+    background: linear-gradient(135deg, hsl(39 100% 60%), hsl(39 80% 50%));
+    color: hsl(0 0% 5%);
+    font-weight: 700;
+    font-size: 1.125rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: none;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 30px hsl(39 100% 60% / 0.3);
+  }
+
+  .btn-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.3), transparent);
+    transition: left 0.6s ease;
+  }
+
+  .btn-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px hsl(39 100% 60% / 0.5);
+  }
+
+  .btn-premium:hover::before {
+    left: 100%;
+  }
+
+  /* Tour date premium */
+  .tour-date-premium {
+    position: relative;
+    padding: 2rem;
+    background: linear-gradient(90deg, hsl(0 0% 4%), hsl(0 0% 6%));
+    border-left: 3px solid transparent;
+    transition: all 0.4s ease;
+  }
+
+  .tour-date-premium:hover {
+    border-left-color: hsl(39 100% 60%);
+    background: linear-gradient(90deg, hsl(0 0% 6%), hsl(0 0% 7%));
+    box-shadow: var(--shadow-gold);
+  }
+
+  /* Elegant divider */
+  .divider-gold {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(39 100% 60% / 0.5), transparent);
+  }
+
+  /* Cinematic entrance animation */
+  @keyframes cinematic-enter {
     from {
       opacity: 0;
-      transform: translateY(30px);
+      transform: translateY(60px) scale(0.95);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
     }
+  }
+
+  .cinematic-enter {
+    animation: cinematic-enter 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* Spotlight effect */
+  @keyframes spotlight {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  .spotlight-effect {
+    animation: spotlight 4s ease-in-out infinite;
   }
 }
