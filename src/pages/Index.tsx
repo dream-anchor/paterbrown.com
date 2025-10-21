@@ -9,13 +9,10 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col overflow-hidden">
+      <section className="relative min-h-screen flex flex-col">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ 
-            backgroundImage: `url(${heroBackground})`,
-            backgroundAttachment: 'fixed'
-          }}
+          style={{ backgroundImage: `url(${heroBackground})` }}
         />
         <div className="absolute inset-0 hero-overlay" />
 
@@ -28,7 +25,7 @@ const Index = () => {
             <img 
               src={jetztBuchenNeon} 
               alt="Jetzt Buchen" 
-              className="h-16 lg:h-20 w-auto mix-blend-screen"
+              className="h-16 lg:h-20 w-auto"
             />
           </button>
         </nav>
