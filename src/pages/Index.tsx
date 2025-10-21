@@ -46,8 +46,12 @@ const Index = () => {
             />
           </div>
 
-          <p className="text-foreground/90 text-3xl md:text-4xl lg:text-5xl text-center font-sans tracking-[0.3em] uppercase mt-8">
-            Ein Hörspiel, das du erlebst
+          <p className="text-foreground/90 text-2xl md:text-3xl lg:text-4xl text-center font-sans tracking-[0.2em] uppercase mt-8 mb-4">
+            Erlebe den Krimi-Sound live: Pater Brown live in Augsburg
+          </p>
+          
+          <p className="text-primary text-xl md:text-2xl text-center font-medium mt-6">
+            Mit Antoine Monot & Wanja Mues + Beatboxer Marvelin – jetzt Tickets sichern!
           </p>
         </div>
       </section>
@@ -95,7 +99,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* About Section - Minimal & Bold */}
+      {/* About Section - CTA */}
       <section className="py-32 px-6 bg-card/20">
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-5xl md:text-7xl font-heading tracking-wider mb-16 text-foreground uppercase">
@@ -113,47 +117,183 @@ const Index = () => {
               Wenn Stimme, Klang und Beat auf Spannung treffen – erlebst du Pater Brown live.
             </p>
 
-            <button className="hover:scale-110 transition-transform">
-              <img 
-                src={ticketsSichernNeon} 
-                alt="Tickets Sichern" 
-                className="h-60 lg:h-72 w-auto mix-blend-screen"
-              />
-            </button>
+            <div className="mt-16">
+              <button className="hover:scale-110 transition-transform">
+                <img 
+                  src={ticketsSichernNeon} 
+                  alt="Tickets Sichern" 
+                  className="h-60 lg:h-72 w-auto mix-blend-screen mx-auto"
+                />
+              </button>
+              <p className="text-primary text-lg mt-8 font-medium">
+                Tickets sind limitiert – sichere Dir Deinen Platz jetzt.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Highlights - Grid Layout */}
+      {/* FAQ */}
+      <section className="py-32 px-6 bg-background">
+        <div className="container mx-auto max-w-4xl">
+          <h2 className="text-5xl md:text-7xl font-heading tracking-wider mb-16 text-center text-foreground uppercase">
+            Häufige Fragen
+          </h2>
+          
+          <div className="space-y-8">
+            <div className="border-b border-border/20 pb-6">
+              <h3 className="text-2xl font-heading text-foreground mb-3">
+                Dauer der Show?
+              </h3>
+              <p className="text-lg text-muted-foreground">
+                Die Show dauert ca. 90-120 Minuten inklusive Pause.
+              </p>
+            </div>
+
+            <div className="border-b border-border/20 pb-6">
+              <h3 className="text-2xl font-heading text-foreground mb-3">
+                Einlass?
+              </h3>
+              <p className="text-lg text-muted-foreground">
+                Der Einlass beginnt 30 Minuten vor Vorstellungsbeginn.
+              </p>
+            </div>
+
+            <div className="border-b border-border/20 pb-6">
+              <h3 className="text-2xl font-heading text-foreground mb-3">
+                Gibt es Pausen?
+              </h3>
+              <p className="text-lg text-muted-foreground">
+                Ja, es gibt eine Pause von ca. 15-20 Minuten.
+              </p>
+            </div>
+
+            <div className="border-b border-border/20 pb-6">
+              <h3 className="text-2xl font-heading text-foreground mb-3">
+                Gilt das Ticket für alle Termine oder nur für eine Stadt?
+              </h3>
+              <p className="text-lg text-muted-foreground">
+                Das Ticket gilt nur für den ausgewählten Termin und Ort.
+              </p>
+            </div>
+
+            <div className="border-b border-border/20 pb-6">
+              <h3 className="text-2xl font-heading text-foreground mb-3">
+                Gibt es Ermäßigungen?
+              </h3>
+              <p className="text-lg text-muted-foreground">
+                Ermäßigungen für Schüler, Studenten und Senioren sind an der Abendkasse erhältlich.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Was dich erwartet - Vorteile */}
       <section className="py-32 px-6 bg-background">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-3 gap-16">
+          <h2 className="text-5xl md:text-7xl font-heading tracking-wider mb-24 text-center text-foreground uppercase">
+            Was dich erwartet
+          </h2>
+          
+          <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
             <div className="space-y-4">
               <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase">
-                Theater
+                Ein neues Hörspielerlebnis
               </h3>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Talentierte Sprecher erwecken die Geschichte in Echtzeit zum Leben.
+                Kein Podcast, kein klassisches Theater – Du hörst, siehst und spürst die Ermittlungen aus nächster Nähe.
               </p>
             </div>
 
             <div className="space-y-4">
               <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase">
-                Klang & Beat
+                Live-Performance mit Stars
               </h3>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Sound, Musik und Rhythmus schaffen eine einzigartige Atmosphäre.
+                Bekannt aus Ein Fall für zwei: Antoine Monot und Wanja Mues treten live auf der Bühne auf.
               </p>
             </div>
 
             <div className="space-y-4">
               <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase">
-                Crime-Event
+                Soundshow + Bühneninszenierung
               </h3>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Spannung und Mystik verschmelzen zu einem unvergesslichen Erlebnis.
+                Beatboxer Marvelin liefert den Rhythmus, die Stimmen liefern die Spannung.
               </p>
             </div>
+
+            <div className="space-y-4">
+              <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase">
+                Exklusiv in deiner Stadt
+              </h3>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Termine in Augsburg, Hamburg, Bremen, Neu-Isenburg, München und Zürich.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tourdaten */}
+      <section className="py-32 px-6 bg-card/20">
+        <div className="container mx-auto max-w-5xl">
+          <h2 className="text-5xl md:text-7xl font-heading tracking-wider mb-24 text-center text-foreground uppercase">
+            Tourdaten
+          </h2>
+          
+          <div className="space-y-6">
+            {[
+              { date: "12.11.2025", city: "Augsburg", note: "Premiere" },
+              { date: "08.01.2026", city: "Hamburg", note: "" },
+              { date: "09.01.2026", city: "Bremen", note: "" },
+              { date: "11.02.2026", city: "Neu-Isenburg", note: "" },
+              { date: "17.02.2026", city: "München", note: "" },
+              { date: "18.02.2026", city: "Zürich", note: "" },
+            ].map((show, index) => (
+              <div 
+                key={index}
+                className="flex flex-col md:flex-row justify-between items-center gap-4 p-6 border border-border/20 hover:border-primary/50 transition-colors"
+              >
+                <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-center">
+                  <span className="text-2xl md:text-3xl font-heading text-foreground min-w-[140px]">
+                    {show.date}
+                  </span>
+                  <span className="text-xl md:text-2xl text-muted-foreground">
+                    {show.city}
+                  </span>
+                  {show.note && (
+                    <span className="text-primary text-sm uppercase tracking-wider font-medium">
+                      {show.note}
+                    </span>
+                  )}
+                </div>
+                <button className="px-8 py-3 border border-primary text-primary hover:bg-primary hover:text-background transition-colors font-medium">
+                  TICKETS
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Warum hingehen */}
+      <section className="py-32 px-6 bg-background">
+        <div className="container mx-auto max-w-4xl text-center">
+          <h2 className="text-5xl md:text-7xl font-heading tracking-wider mb-16 text-foreground uppercase">
+            Warum hingehen?
+          </h2>
+          
+          <div className="space-y-8 text-xl md:text-2xl leading-relaxed">
+            <p className="text-muted-foreground">
+              Spüre die Spannung, wenn Pater Brown den Fall löst. Lausche der Stimme von Antoine Monot. 
+              Erlebe die dramaturgische Kraft einer Sound-Bühne. Ein Abend, der bleibt.
+            </p>
+            
+            <p className="text-foreground font-medium text-2xl md:text-3xl mt-12">
+              Für Krimifans, Hörspiel-Liebhaber, Theaterfreunde – ein Erlebnis der Sonderklasse.
+            </p>
           </div>
         </div>
       </section>
@@ -161,7 +301,7 @@ const Index = () => {
       {/* Footer - Minimal */}
       <footer className="py-20 px-6 border-t border-border/20 bg-background">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-3 gap-12 text-center md:text-left mb-16">
+          <div className="grid md:grid-cols-4 gap-12 text-center md:text-left mb-16">
             <div>
               <h3 className="font-heading text-sm mb-4 tracking-[0.3em] text-muted-foreground uppercase">
                 Kontakt
@@ -192,6 +332,23 @@ const Index = () => {
                 </a>
                 <a href="#" className="text-foreground hover:text-primary transition-colors">
                   Instagram
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-heading text-sm mb-4 tracking-[0.3em] text-muted-foreground uppercase">
+                Rechtliches
+              </h3>
+              <div className="flex flex-col gap-2">
+                <a href="#" className="text-foreground hover:text-primary transition-colors">
+                  Impressum
+                </a>
+                <a href="#" className="text-foreground hover:text-primary transition-colors">
+                  Datenschutz
+                </a>
+                <a href="#" className="text-foreground hover:text-primary transition-colors">
+                  AGB
                 </a>
               </div>
             </div>
