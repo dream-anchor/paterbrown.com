@@ -46,14 +46,24 @@ const Index = () => {
             />
           </div>
 
-          <div className="animate-fade-in">
-            <p className="text-foreground/90 text-2xl md:text-3xl lg:text-4xl text-center font-sans tracking-[0.2em] uppercase mt-8 mb-4">
-              Erlebe den Krimi-Sound live: Pater Brown live in Augsburg
+          <div className="animate-fade-in max-w-4xl">
+            <p className="text-foreground/90 text-2xl md:text-3xl lg:text-4xl text-center font-sans tracking-[0.2em] uppercase mb-8">
+              Erlebe den Krimi-Sound live
             </p>
             
-            <p className="text-primary text-xl md:text-2xl text-center font-medium mt-6 animate-pulse">
+            <p className="text-foreground text-xl md:text-2xl text-center font-light mb-12 leading-relaxed">
               Mit Antoine Monot & Wanja Mues + Beatboxer Marvelin – jetzt Tickets sichern!
             </p>
+
+            <div className="flex justify-center mt-12">
+              <button className="hover:scale-110 transition-transform">
+                <img 
+                  src={ticketsSichernNeon} 
+                  alt="Tickets Sichern" 
+                  className="h-32 lg:h-40 w-auto mix-blend-screen"
+                />
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -77,7 +87,7 @@ const Index = () => {
               <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground mb-2">
                 ANTOINE MONOT
               </h3>
-              <p className="text-lg text-primary tracking-wider font-medium">
+              <p className="text-lg text-secondary tracking-wider font-medium">
                 als Pater Brown
               </p>
             </div>
@@ -93,8 +103,8 @@ const Index = () => {
               <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground mb-2">
                 WANJA MUES
               </h3>
-              <p className="text-lg text-primary tracking-wider font-medium">
-                als Flambeau
+              <p className="text-lg text-secondary tracking-wider font-medium">
+                als Erzähler
               </p>
             </div>
           </div>
@@ -127,7 +137,7 @@ const Index = () => {
                   className="h-60 lg:h-72 w-auto mix-blend-screen mx-auto"
                 />
               </button>
-              <p className="text-primary text-lg mt-4 font-medium animate-pulse">
+              <p className="text-foreground text-lg mt-4 font-medium">
                 Tickets sind limitiert – sichere Dir Deinen Platz jetzt.
               </p>
             </div>
@@ -269,12 +279,12 @@ const Index = () => {
                     {show.city}
                   </span>
                   {show.note && (
-                    <span className="px-4 py-1 bg-primary/20 text-primary text-sm uppercase tracking-wider font-medium rounded-full border border-primary/30">
+                    <span className="px-4 py-1 bg-secondary/20 text-secondary text-sm uppercase tracking-wider font-medium rounded-full border border-secondary/30">
                       {show.note}
                     </span>
                   )}
                 </div>
-                <button className="px-8 py-3 bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:shadow-glow transition-all duration-300 font-medium uppercase tracking-wider rounded-lg hover:scale-105">
+                <button className="text-foreground hover:text-secondary transition-all duration-300 font-medium uppercase tracking-wider text-lg hover:scale-110 underline decoration-2 underline-offset-4">
                   TICKETS
                 </button>
               </div>
