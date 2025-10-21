@@ -47,9 +47,15 @@ const Index = () => {
               Antoine Monot · Wanja Mues · Beatboxer Marvelin
             </p>
 
-            <button className="btn-premium mt-12 cinematic-enter" style={{ animationDelay: "0.6s" }}>
-              Tickets sichern
-            </button>
+            <a 
+              href="https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <button className="btn-premium mt-12 cinematic-enter" style={{ animationDelay: "0.6s" }}>
+                Tickets sichern
+              </button>
+            </a>
           </div>
         </div>
 
@@ -93,7 +99,7 @@ const Index = () => {
                   Pater Brown
                 </p>
                 <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
-                  Bekannt aus "Ein Fall für zwei"
+                  Bekannt aus "Ein Fall für zwei" · Mit Wanja Mues
                 </p>
               </div>
             </div>
@@ -116,7 +122,7 @@ const Index = () => {
                   Erzähler
                 </p>
                 <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
-                  Stimme der Spannung
+                  Stimme der Spannung · Mit Antoine Monot
                 </p>
               </div>
             </div>
@@ -164,8 +170,8 @@ const Index = () => {
 
           <div className="premium-card p-12 text-center space-y-8">
             <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-              Spüre die Spannung, wenn Pater Brown den Fall löst. Lausche der Stimme von Antoine Monot. 
-              Erlebe die dramaturgische Kraft einer Sound-Bühne.
+              Mit Antoine Monot und Wanja Mues erleben Sie eine einzigartige Verschmelzung von Theater, 
+              Klang und Spannung. Beatboxer Marvelin liefert den rhythmischen Heartbeat dieser Crime-Show.
             </p>
             
             <div className="divider-gold w-48 mx-auto" />
@@ -189,21 +195,68 @@ const Index = () => {
           
           <div className="space-y-2 max-w-4xl mx-auto">
             {[
-              { date: "12.11.2025", city: "Augsburg", venue: "Stadttheater", note: "Premiere" },
-              { date: "08.01.2026", city: "Hamburg", venue: "Thalia Theater", note: "" },
-              { date: "09.01.2026", city: "Bremen", venue: "Theater am Goetheplatz", note: "" },
-              { date: "11.02.2026", city: "Neu-Isenburg", venue: "Hugenottenhalle", note: "" },
-              { date: "17.02.2026", city: "München", venue: "Residenztheater", note: "" },
-              { date: "18.02.2026", city: "Zürich", venue: "Schauspielhaus", note: "" },
+              { 
+                date: "12.11.2025", 
+                day: "Mi. 20:00",
+                city: "Augsburg", 
+                venue: "Spectrum Club", 
+                note: "Premiere",
+                link: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-spectrum-club-20806635/?affiliate=KZB"
+              },
+              { 
+                date: "08.01.2026", 
+                day: "Do. 20:00",
+                city: "Hamburg", 
+                venue: "Friedrich-Ebert-Halle", 
+                note: "",
+                link: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-friedrich-ebert-halle-20783148/?affiliate=KZB"
+              },
+              { 
+                date: "09.01.2026", 
+                day: "Fr. 20:00",
+                city: "Bremen", 
+                venue: "Die Glocke - Kleiner Saal", 
+                note: "",
+                link: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-die-glocke-20822367/?affiliate=KZB"
+              },
+              { 
+                date: "11.02.2026", 
+                day: "Mi. 20:00",
+                city: "Neu-Isenburg", 
+                venue: "Hugenottenhalle", 
+                note: "",
+                link: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-hugenottenhalle-20792307/?affiliate=KZB"
+              },
+              { 
+                date: "17.02.2026", 
+                day: "Di. 20:00",
+                city: "München", 
+                venue: "Alte Kongresshalle", 
+                note: "",
+                link: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-alte-kongresshalle-muenchen-20792306/?affiliate=KZB"
+              },
+              { 
+                date: "18.02.2026", 
+                day: "Mi. 20:00",
+                city: "Zürich", 
+                venue: "Volkshaus - Weisser Saal", 
+                note: "",
+                link: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-volkshaus-20823961/?affiliate=KZB"
+              },
             ].map((show, index) => (
               <div 
                 key={index}
                 className="tour-date-premium flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 group"
               >
                 <div className="flex flex-col md:flex-row gap-6 md:gap-12 flex-1">
-                  <span className="text-3xl md:text-4xl font-heading text-gold min-w-[160px] group-hover:scale-105 transition-transform">
-                    {show.date}
-                  </span>
+                  <div className="flex flex-col min-w-[160px]">
+                    <span className="text-3xl md:text-4xl font-heading text-gold group-hover:scale-105 transition-transform">
+                      {show.date}
+                    </span>
+                    <span className="text-sm text-muted-foreground mt-1">
+                      {show.day}
+                    </span>
+                  </div>
                   <div className="flex flex-col">
                     <span className="text-2xl md:text-3xl text-foreground font-light">
                       {show.city}
@@ -218,17 +271,28 @@ const Index = () => {
                     </span>
                   )}
                 </div>
-                <button className="text-foreground hover:text-gold transition-all duration-300 font-medium uppercase tracking-[0.15em] text-base border-b-2 border-transparent hover:border-gold pb-1">
+                <a 
+                  href={show.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground hover:text-gold transition-all duration-300 font-medium uppercase tracking-[0.15em] text-base border-b-2 border-transparent hover:border-gold pb-1"
+                >
                   Tickets →
-                </button>
+                </a>
               </div>
             ))}
           </div>
           
           <div className="text-center mt-20">
-            <button className="btn-premium">
-              Alle Termine ansehen
-            </button>
+            <a 
+              href="https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <button className="btn-premium">
+                Alle Termine ansehen
+              </button>
+            </a>
           </div>
         </div>
       </section>
