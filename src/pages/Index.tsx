@@ -23,14 +23,14 @@ const Index = () => {
             <img 
               src={menuNeon} 
               alt="Menü" 
-              className="h-12 lg:h-16 w-auto mix-blend-screen"
+              className="h-16 lg:h-20 w-auto mix-blend-screen"
             />
           </button>
-          <button className="hover:scale-105 transition-transform">
+          <button className="hover:scale-110 transition-transform">
             <img 
               src={jetztBuchenNeon} 
               alt="Jetzt Buchen" 
-              className="h-16 lg:h-20 w-auto"
+              className="h-16 lg:h-20 w-auto mix-blend-screen"
             />
           </button>
         </nav>
