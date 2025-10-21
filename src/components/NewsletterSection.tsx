@@ -51,9 +51,9 @@ const NewsletterSection = () => {
               />
               <button
                 type="submit"
-                className="btn-premium text-sm sm:text-base md:text-lg px-4 sm:px-6 md:px-8 py-3 sm:py-4"
+                className="btn-premium whitespace-nowrap"
               >
-                Jetzt anmelden
+                Benachrichtige mich
               </button>
             </div>
           </form>
