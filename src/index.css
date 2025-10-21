@@ -8,40 +8,40 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 5%;
+    --background: 0 0% 3%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 10%;
+    --card: 0 0% 8%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 8%;
+    --popover: 0 0% 6%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 16 100% 50%;
+    --primary: 16 100% 55%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 39 100% 50%;
-    --secondary-foreground: 0 0% 5%;
+    --secondary: 39 100% 55%;
+    --secondary-foreground: 0 0% 3%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 16 100% 50%;
+    --accent: 16 100% 55%;
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 12%;
-    --ring: 16 100% 50%;
+    --border: 0 0% 15%;
+    --input: 0 0% 10%;
+    --ring: 16 100% 55%;
 
-    --radius: 0.5rem;
+    --radius: 0rem;
     
-    /* Elegant neon colors */
-    --neon-red: 16 100% 50%;
-    --neon-orange: 25 100% 50%;
-    --neon-gold: 39 100% 50%;
+    /* Bold neon colors */
+    --neon-red: 16 100% 55%;
+    --neon-orange: 25 100% 60%;
+    --neon-gold: 39 100% 60%;
 
     --sidebar-background: 0 0% 98%;
 
@@ -61,7 +61,7 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 0 0% 5%;
+    --background: 0 0% 3%;
     --foreground: 0 0% 98%;
   }
 }
@@ -78,35 +78,48 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
-  /* Elegant neon text effects */
+  /* Bold neon text effects */
   .neon-text {
     color: hsl(var(--neon-red));
     text-shadow: 
-      0 0 20px hsl(var(--neon-red) / 0.8),
-      0 0 40px hsl(var(--neon-red) / 0.6),
-      0 0 60px hsl(var(--neon-red) / 0.4),
-      0 0 80px hsl(var(--neon-orange) / 0.3);
+      0 0 30px hsl(var(--neon-red) / 1),
+      0 0 60px hsl(var(--neon-red) / 0.8),
+      0 0 90px hsl(var(--neon-red) / 0.6),
+      0 0 120px hsl(var(--neon-orange) / 0.4);
     font-family: 'Pacifico', cursive;
+    letter-spacing: 0.02em;
   }
 
   .neon-button {
     color: hsl(var(--neon-gold));
     text-shadow: 
-      0 0 10px hsl(var(--neon-gold) / 0.8),
-      0 0 20px hsl(var(--neon-gold) / 0.6),
-      0 0 30px hsl(var(--neon-gold) / 0.4);
+      0 0 15px hsl(var(--neon-gold) / 1),
+      0 0 30px hsl(var(--neon-gold) / 0.8),
+      0 0 45px hsl(var(--neon-gold) / 0.6);
+    font-weight: 700;
+    letter-spacing: 0.15em;
   }
 
-  /* Subtle glow effects */
-  .glow-subtle {
-    box-shadow: 0 0 30px hsl(var(--neon-red) / 0.2);
+  /* Strong glow effects */
+  .glow-strong {
+    box-shadow: 0 0 60px hsl(var(--neon-red) / 0.4);
   }
 
-  /* Hero overlay */
+  /* Hero overlay - darker for more contrast */
   .hero-overlay {
     background: linear-gradient(180deg, 
-      hsl(0 0% 0% / 0.7) 0%, 
-      hsl(0 0% 0% / 0.5) 50%,
-      hsl(0 0% 0% / 0.8) 100%);
+      hsl(0 0% 0% / 0.85) 0%, 
+      hsl(0 0% 0% / 0.7) 50%,
+      hsl(0 0% 0% / 0.9) 100%);
+  }
+
+  /* Cast image hover effect */
+  .cast-image {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .cast-image:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
   }
 }
