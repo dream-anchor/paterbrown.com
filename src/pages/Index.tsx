@@ -3,6 +3,9 @@ import heroBackground from "@/assets/hero-background.jpg";
 import castAntoine from "@/assets/cast-antoine.jpg";
 import castWanja from "@/assets/cast-wanja.jpg";
 import menuNeon from "@/assets/menu-neon.png";
+import StickyTicketButton from "@/components/StickyTicketButton";
+import NewsletterSection from "@/components/NewsletterSection";
+import { Instagram, Facebook } from "lucide-react";
 
 const Index = () => {
   return (
@@ -37,14 +40,20 @@ const Index = () => {
           </div>
 
           <div className="max-w-4xl text-center space-y-8 cinematic-enter" style={{ animationDelay: "0.3s" }}>
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-light tracking-[0.15em] uppercase text-foreground/95">
-              Erlebe den Krimi-Sound live
+            <h1 className="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.1em] text-foreground/95 leading-tight">
+              Wenn Spannung sichtbar wird: Pater Brown LIVE – Krimi, Klang & Gänsehaut auf der Bühne.
             </h1>
             
             <div className="divider-gold w-32 mx-auto my-8" />
             
-            <p className="text-xl md:text-2xl lg:text-3xl text-gold font-light leading-relaxed">
-              Antoine Monot · Wanja Mues · Beatboxer Marvelin
+            <p className="text-lg md:text-xl lg:text-2xl text-gold/90 font-light leading-relaxed">
+              Ein Live-Hörspiel mit Antoine Monot & Wanja Mues – wo Stimme, Klang und Beat zum Krimi werden.
+            </p>
+
+            <div className="divider-gold w-16 mx-auto my-6 opacity-50" />
+
+            <p className="text-base md:text-lg text-muted-foreground font-light">
+              Mit Beatboxer Marvelin
             </p>
 
             <a 
@@ -53,7 +62,7 @@ const Index = () => {
               rel="noopener noreferrer"
             >
               <button className="btn-premium mt-12 cinematic-enter" style={{ animationDelay: "0.6s" }}>
-                Tickets sichern
+                🎟 Tickets sichern
               </button>
             </a>
           </div>
@@ -98,7 +107,10 @@ const Index = () => {
                 <p className="text-xl text-gold tracking-[0.2em] uppercase font-medium">
                   Pater Brown
                 </p>
-                <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
+                <p className="text-muted-foreground mt-4 text-base leading-relaxed">
+                  Als Pater Brown mit feinem Humor und unerschütterlicher Moral.
+                </p>
+                <p className="text-muted-foreground/70 mt-2 text-sm leading-relaxed">
                   Bekannt aus "Ein Fall für zwei" · Mit Wanja Mues
                 </p>
               </div>
@@ -121,8 +133,11 @@ const Index = () => {
                 <p className="text-xl text-gold tracking-[0.2em] uppercase font-medium">
                   Erzähler
                 </p>
-                <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
-                  Stimme der Spannung · Mit Antoine Monot
+                <p className="text-muted-foreground mt-4 text-base leading-relaxed">
+                  Als Erzähler, dessen Stimme Spannung atmet.
+                </p>
+                <p className="text-muted-foreground/70 mt-2 text-sm leading-relaxed">
+                  Mit Antoine Monot
                 </p>
               </div>
             </div>
@@ -137,9 +152,15 @@ const Index = () => {
         <div className="container mx-auto max-w-5xl relative z-10">
           <div className="text-center mb-20">
             <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Das Konzept</p>
-            <h2 className="text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase mb-16">
+            <h2 className="text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase mb-12">
               Das Erlebnis
             </h2>
+            <p className="text-xl md:text-2xl text-foreground/90 font-light leading-relaxed max-w-3xl mx-auto">
+              Ein Abend voller Spannung, Humor und Gänsehaut.
+            </p>
+            <p className="text-lg md:text-xl text-gold/80 font-light leading-relaxed max-w-3xl mx-auto mt-4">
+              Wenn Klang zum Ermittler wird – und jede Stimme ein Verdächtiger ist.
+            </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-12 mb-20">
@@ -188,9 +209,12 @@ const Index = () => {
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-24">
             <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Live Tour 2025/26</p>
-            <h2 className="text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase">
+            <h2 className="text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase mb-8">
               Termine
             </h2>
+            <p className="text-xl md:text-2xl text-foreground/80 font-light leading-relaxed max-w-2xl mx-auto mt-6">
+              Erlebe Pater Brown live in deiner Stadt – sichere jetzt deine Tickets:
+            </p>
           </div>
           
           <div className="space-y-2 max-w-4xl mx-auto">
@@ -297,6 +321,9 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Newsletter Section */}
+      <NewsletterSection />
+
       {/* Footer - Elegant */}
       <footer className="py-20 px-6 border-t border-gold/10 bg-background">
         <div className="container mx-auto max-w-6xl">
@@ -325,12 +352,22 @@ const Index = () => {
               <h3 className="text-gold text-xs mb-4 tracking-[0.3em] uppercase font-bold">
                 Social
               </h3>
-              <div className="flex gap-6 justify-center md:justify-start text-sm">
-                <a href="#" className="text-foreground/80 hover:text-gold transition-colors">
-                  Facebook
+              <div className="flex gap-6 justify-center md:justify-start">
+                <a 
+                  href="https://www.instagram.com/paterbrown.live" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground/80 hover:text-gold transition-colors flex items-center gap-2"
+                >
+                  <Instagram className="w-5 h-5" />
+                  <span className="text-sm">Instagram</span>
                 </a>
-                <a href="#" className="text-foreground/80 hover:text-gold transition-colors">
-                  Instagram
+                <a 
+                  href="#" 
+                  className="text-foreground/80 hover:text-gold transition-colors flex items-center gap-2"
+                >
+                  <Facebook className="w-5 h-5" />
+                  <span className="text-sm">Facebook</span>
                 </a>
               </div>
             </div>
@@ -355,13 +392,29 @@ const Index = () => {
 
           <div className="divider-gold mb-8" />
 
-          <div className="text-center">
+          <div className="text-center space-y-4">
+            <p className="text-foreground/60 text-sm">
+              Eine Produktion der Dream & Anchor.
+            </p>
             <p className="text-muted-foreground text-xs tracking-wider">
               © 2025 Pater Brown Live-Hörspiel
             </p>
+            <div className="mt-6">
+              <a 
+                href="https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gold hover:text-gold/80 transition-colors text-sm font-medium tracking-wide"
+              >
+                Noch keine Tickets? Jetzt sichern →
+              </a>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* Sticky Ticket Button */}
+      <StickyTicketButton />
     </div>
   );
 };
