@@ -3,6 +3,7 @@ import logoImage from "@/assets/pater-brown-logo.png";
 import heroBackground from "@/assets/hero-background.jpg";
 import castAntoine from "@/assets/cast-antoine.jpg";
 import castWanja from "@/assets/cast-wanja.jpg";
+import jetztBuchenNeon from "@/assets/jetzt-buchen-neon.png";
 
 const Index = () => {
   return (
@@ -20,13 +21,13 @@ const Index = () => {
           <button className="neon-button font-heading text-xl lg:text-2xl tracking-widest hover:scale-110 transition-transform">
             MENÜ
           </button>
-          <Button 
-            variant="neon"
-            size="lg"
-            className="font-heading text-xl lg:text-2xl px-10 py-6"
-          >
-            JETZT BUCHEN
-          </Button>
+          <button className="hover:scale-105 transition-transform">
+            <img 
+              src={jetztBuchenNeon} 
+              alt="Jetzt Buchen" 
+              className="h-16 lg:h-20 w-auto"
+            />
+          </button>
         </nav>
 
         {/* Hero Content */}
