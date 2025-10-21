@@ -5,6 +5,7 @@ import castAntoine from "@/assets/cast-antoine.jpg";
 import castWanja from "@/assets/cast-wanja.jpg";
 import jetztBuchenNeon from "@/assets/jetzt-buchen-neon.png";
 import menuNeon from "@/assets/menu-neon.png";
+import ticketsSichernNeon from "@/assets/tickets-sichern-neon.png";
 
 const Index = () => {
   return (
@@ -112,13 +113,13 @@ const Index = () => {
               Live. Atmosphärisch. Unvergesslich.
             </p>
 
-            <Button 
-              variant="neon"
-              size="lg"
-              className="mt-16 text-2xl md:text-3xl font-heading px-20 py-10"
-            >
-              Tickets Sichern
-            </Button>
+            <button className="hover:scale-110 transition-transform">
+              <img 
+                src={ticketsSichernNeon} 
+                alt="Tickets Sichern" 
+                className="h-20 lg:h-24 w-auto mix-blend-screen"
+              />
+            </button>
           </div>
         </div>
       </section>
