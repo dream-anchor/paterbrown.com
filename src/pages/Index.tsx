@@ -28,7 +28,7 @@ const Index = () => {
             <img 
               src={jetztBuchenNeon} 
               alt="Jetzt Buchen" 
-              className="h-16 lg:h-20 w-auto"
+              className="h-16 lg:h-20 w-auto mix-blend-screen"
             />
           </button>
         </nav>
