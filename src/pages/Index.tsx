@@ -47,7 +47,7 @@ const Index = () => {
           </div>
 
           <p className="text-foreground/90 text-3xl md:text-4xl lg:text-5xl text-center font-sans tracking-[0.3em] uppercase mt-8">
-            Das Live-Hörspiel
+            Ein Hörspiel, das du erlebst
           </p>
         </div>
       </section>
@@ -110,14 +110,14 @@ const Index = () => {
             </p>
             
             <p className="text-foreground font-medium text-2xl md:text-3xl mt-12">
-              Live. Atmosphärisch. Unvergesslich.
+              Wenn Stimme, Klang und Beat auf Spannung treffen – erlebst du Pater Brown live.
             </p>
 
             <button className="hover:scale-110 transition-transform">
               <img 
                 src={ticketsSichernNeon} 
                 alt="Tickets Sichern" 
-                className="h-20 lg:h-24 w-auto mix-blend-screen"
+                className="h-60 lg:h-72 w-auto mix-blend-screen"
               />
             </button>
           </div>
@@ -130,28 +130,28 @@ const Index = () => {
           <div className="grid md:grid-cols-3 gap-16">
             <div className="space-y-4">
               <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase">
-                Live
+                Theater
               </h3>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Erleben Sie die Geschichte in Echtzeit mit talentierten Sprechern.
+                Talentierte Sprecher erwecken die Geschichte in Echtzeit zum Leben.
               </p>
             </div>
 
             <div className="space-y-4">
               <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase">
-                Sound
+                Klang & Beat
               </h3>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Hochwertige Soundeffekte und Musik schaffen pure Atmosphäre.
+                Sound, Musik und Rhythmus schaffen eine einzigartige Atmosphäre.
               </p>
             </div>
 
             <div className="space-y-4">
               <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase">
-                Immersiv
+                Crime-Event
               </h3>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Theater und Hörspiel verschmelzen zu einem einzigartigen Erlebnis.
+                Spannung und Mystik verschmelzen zu einem unvergesslichen Erlebnis.
               </p>
             </div>
           </div>
