@@ -101,9 +101,6 @@ const Index = () => {
                 <p className="text-muted-foreground mt-4 text-base leading-relaxed">
                   Als Pater Brown mit feinem Humor und unerschütterlicher Moral.
                 </p>
-                <p className="text-muted-foreground/70 mt-4 text-sm tracking-[0.15em] uppercase">
-                  Bekannt aus EIN FALL FÜR ZWEI
-                </p>
               </div>
             </div>
 
@@ -127,11 +124,15 @@ const Index = () => {
                 <p className="text-muted-foreground mt-4 text-base leading-relaxed">
                   Als Erzähler, dessen Stimme Spannung atmet.
                 </p>
-                <p className="text-muted-foreground/70 mt-4 text-sm tracking-[0.15em] uppercase">
-                  Bekannt aus EIN FALL FÜR ZWEI
-                </p>
               </div>
             </div>
+          </div>
+          
+          {/* Bekannt aus */}
+          <div className="text-center mt-24">
+            <p className="text-3xl md:text-4xl lg:text-5xl font-heading tracking-[0.2em] text-foreground/90 uppercase">
+              Bekannt aus EIN FALL FÜR ZWEI
+            </p>
           </div>
         </div>
       </section>
