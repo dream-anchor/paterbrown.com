@@ -38,7 +38,7 @@ const Index = () => {
 
         {/* Hero Content */}
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-32">
-          <div className="max-w-5xl w-full mb-12">
+          <div className="max-w-5xl w-full mb-12 animate-float">
             <img 
               src={logoImage} 
               alt="Pater Brown - Das Live-Hörspiel" 
@@ -46,26 +46,28 @@ const Index = () => {
             />
           </div>
 
-          <p className="text-foreground/90 text-2xl md:text-3xl lg:text-4xl text-center font-sans tracking-[0.2em] uppercase mt-8 mb-4">
-            Erlebe den Krimi-Sound live: Pater Brown live in Augsburg
-          </p>
-          
-          <p className="text-primary text-xl md:text-2xl text-center font-medium mt-6">
-            Mit Antoine Monot & Wanja Mues + Beatboxer Marvelin – jetzt Tickets sichern!
-          </p>
+          <div className="animate-fade-in">
+            <p className="text-foreground/90 text-2xl md:text-3xl lg:text-4xl text-center font-sans tracking-[0.2em] uppercase mt-8 mb-4">
+              Erlebe den Krimi-Sound live: Pater Brown live in Augsburg
+            </p>
+            
+            <p className="text-primary text-xl md:text-2xl text-center font-medium mt-6 animate-pulse">
+              Mit Antoine Monot & Wanja Mues + Beatboxer Marvelin – jetzt Tickets sichern!
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* Cast Section - Bold & Modern */}
+      {/* Cast Section - Modern Cards */}
       <section className="py-32 px-6 bg-background">
         <div className="container mx-auto max-w-7xl">
-          <h2 className="text-5xl md:text-7xl lg:text-8xl font-heading tracking-wider mb-24 text-center text-foreground uppercase">
+          <h2 className="text-5xl md:text-7xl lg:text-8xl font-heading tracking-wider mb-24 text-center text-foreground uppercase animate-fade-in">
             Die Darsteller
           </h2>
           
           <div className="grid md:grid-cols-2 gap-12 lg:gap-20 max-w-5xl mx-auto">
-            <div className="group">
-              <div className="overflow-hidden mb-6">
+            <div className="group glass-card p-8">
+              <div className="overflow-hidden mb-6 rounded-lg">
                 <img 
                   src={castAntoine} 
                   alt="Antoine Monot"
@@ -75,13 +77,13 @@ const Index = () => {
               <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground mb-2">
                 ANTOINE MONOT
               </h3>
-              <p className="text-lg text-muted-foreground tracking-wider">
+              <p className="text-lg text-primary tracking-wider font-medium">
                 als Pater Brown
               </p>
             </div>
 
-            <div className="group">
-              <div className="overflow-hidden mb-6">
+            <div className="group glass-card p-8">
+              <div className="overflow-hidden mb-6 rounded-lg">
                 <img 
                   src={castWanja} 
                   alt="Wanja Mues"
@@ -91,7 +93,7 @@ const Index = () => {
               <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground mb-2">
                 WANJA MUES
               </h3>
-              <p className="text-lg text-muted-foreground tracking-wider">
+              <p className="text-lg text-primary tracking-wider font-medium">
                 als Flambeau
               </p>
             </div>
@@ -117,15 +119,15 @@ const Index = () => {
               Wenn Stimme, Klang und Beat auf Spannung treffen – erlebst du Pater Brown live.
             </p>
 
-            <div className="mt-16">
-              <button className="hover:scale-110 transition-transform">
+            <div className="mt-16 flex flex-col items-center gap-6">
+              <button className="hover:scale-110 transition-transform animate-glow">
                 <img 
                   src={ticketsSichernNeon} 
                   alt="Tickets Sichern" 
                   className="h-60 lg:h-72 w-auto mix-blend-screen mx-auto"
                 />
               </button>
-              <p className="text-primary text-lg mt-8 font-medium">
+              <p className="text-primary text-lg mt-4 font-medium animate-pulse">
                 Tickets sind limitiert – sichere Dir Deinen Platz jetzt.
               </p>
             </div>
@@ -133,15 +135,15 @@ const Index = () => {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* FAQ - Accordion Style */}
       <section className="py-32 px-6 bg-background">
         <div className="container mx-auto max-w-4xl">
-          <h2 className="text-5xl md:text-7xl font-heading tracking-wider mb-16 text-center text-foreground uppercase">
+          <h2 className="text-5xl md:text-7xl font-heading tracking-wider mb-16 text-center text-foreground uppercase animate-fade-in">
             Häufige Fragen
           </h2>
           
-          <div className="space-y-8">
-            <div className="border-b border-border/20 pb-6">
+          <div className="space-y-6">
+            <div className="glass-card p-6">
               <h3 className="text-2xl font-heading text-foreground mb-3">
                 Dauer der Show?
               </h3>
@@ -150,7 +152,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="border-b border-border/20 pb-6">
+            <div className="glass-card p-6">
               <h3 className="text-2xl font-heading text-foreground mb-3">
                 Einlass?
               </h3>
@@ -159,7 +161,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="border-b border-border/20 pb-6">
+            <div className="glass-card p-6">
               <h3 className="text-2xl font-heading text-foreground mb-3">
                 Gibt es Pausen?
               </h3>
@@ -168,7 +170,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="border-b border-border/20 pb-6">
+            <div className="glass-card p-6">
               <h3 className="text-2xl font-heading text-foreground mb-3">
                 Gilt das Ticket für alle Termine oder nur für eine Stadt?
               </h3>
@@ -177,7 +179,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="border-b border-border/20 pb-6">
+            <div className="glass-card p-6">
               <h3 className="text-2xl font-heading text-foreground mb-3">
                 Gibt es Ermäßigungen?
               </h3>
@@ -190,15 +192,18 @@ const Index = () => {
       </section>
 
       {/* Was dich erwartet - Vorteile */}
-      <section className="py-32 px-6 bg-background">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-5xl md:text-7xl font-heading tracking-wider mb-24 text-center text-foreground uppercase">
+      <section className="py-32 px-6 bg-background relative overflow-hidden">
+        {/* Background glow effect */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+        
+        <div className="container mx-auto max-w-6xl relative z-10">
+          <h2 className="text-5xl md:text-7xl font-heading tracking-wider mb-24 text-center text-foreground uppercase animate-fade-in">
             Was dich erwartet
           </h2>
           
-          <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
-            <div className="space-y-4">
-              <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase">
+          <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+            <div className="feature-card">
+              <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase mb-4">
                 Ein neues Hörspielerlebnis
               </h3>
               <p className="text-lg text-muted-foreground leading-relaxed">
@@ -206,8 +211,8 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase">
+            <div className="feature-card" style={{ animationDelay: "0.1s" }}>
+              <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase mb-4">
                 Live-Performance mit Stars
               </h3>
               <p className="text-lg text-muted-foreground leading-relaxed">
@@ -215,8 +220,8 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase">
+            <div className="feature-card" style={{ animationDelay: "0.2s" }}>
+              <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase mb-4">
                 Soundshow + Bühneninszenierung
               </h3>
               <p className="text-lg text-muted-foreground leading-relaxed">
@@ -224,8 +229,8 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase">
+            <div className="feature-card" style={{ animationDelay: "0.3s" }}>
+              <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground uppercase mb-4">
                 Exklusiv in deiner Stadt
               </h3>
               <p className="text-lg text-muted-foreground leading-relaxed">
@@ -237,13 +242,13 @@ const Index = () => {
       </section>
 
       {/* Tourdaten */}
-      <section className="py-32 px-6 bg-card/20">
+      <section className="py-32 px-6 bg-gradient-to-b from-background to-card/20">
         <div className="container mx-auto max-w-5xl">
-          <h2 className="text-5xl md:text-7xl font-heading tracking-wider mb-24 text-center text-foreground uppercase">
+          <h2 className="text-5xl md:text-7xl font-heading tracking-wider mb-24 text-center text-foreground uppercase animate-fade-in">
             Tourdaten
           </h2>
           
-          <div className="space-y-6">
+          <div className="space-y-4">
             {[
               { date: "12.11.2025", city: "Augsburg", note: "Premiere" },
               { date: "08.01.2026", city: "Hamburg", note: "" },
@@ -254,9 +259,9 @@ const Index = () => {
             ].map((show, index) => (
               <div 
                 key={index}
-                className="flex flex-col md:flex-row justify-between items-center gap-4 p-6 border border-border/20 hover:border-primary/50 transition-colors"
+                className="tour-card flex flex-col md:flex-row justify-between items-center gap-4"
               >
-                <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-center">
+                <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-center flex-1">
                   <span className="text-2xl md:text-3xl font-heading text-foreground min-w-[140px]">
                     {show.date}
                   </span>
@@ -264,12 +269,12 @@ const Index = () => {
                     {show.city}
                   </span>
                   {show.note && (
-                    <span className="text-primary text-sm uppercase tracking-wider font-medium">
+                    <span className="px-4 py-1 bg-primary/20 text-primary text-sm uppercase tracking-wider font-medium rounded-full border border-primary/30">
                       {show.note}
                     </span>
                   )}
                 </div>
-                <button className="px-8 py-3 border border-primary text-primary hover:bg-primary hover:text-background transition-colors font-medium">
+                <button className="px-8 py-3 bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:shadow-glow transition-all duration-300 font-medium uppercase tracking-wider rounded-lg hover:scale-105">
                   TICKETS
                 </button>
               </div>
@@ -279,19 +284,24 @@ const Index = () => {
       </section>
 
       {/* Warum hingehen */}
-      <section className="py-32 px-6 bg-background">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-5xl md:text-7xl font-heading tracking-wider mb-16 text-foreground uppercase">
+      <section className="py-32 px-6 bg-gradient-to-b from-card/20 to-background relative overflow-hidden">
+        {/* Glow effect */}
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-secondary/10 rounded-full blur-[120px] pointer-events-none" />
+        
+        <div className="container mx-auto max-w-4xl text-center relative z-10">
+          <h2 className="text-5xl md:text-7xl font-heading tracking-wider mb-16 text-foreground uppercase animate-fade-in">
             Warum hingehen?
           </h2>
           
-          <div className="space-y-8 text-xl md:text-2xl leading-relaxed">
+          <div className="glass-card p-12 space-y-8 text-xl md:text-2xl leading-relaxed">
             <p className="text-muted-foreground">
               Spüre die Spannung, wenn Pater Brown den Fall löst. Lausche der Stimme von Antoine Monot. 
               Erlebe die dramaturgische Kraft einer Sound-Bühne. Ein Abend, der bleibt.
             </p>
             
-            <p className="text-foreground font-medium text-2xl md:text-3xl mt-12">
+            <div className="h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
+            
+            <p className="text-foreground font-medium text-2xl md:text-3xl">
               Für Krimifans, Hörspiel-Liebhaber, Theaterfreunde – ein Erlebnis der Sonderklasse.
             </p>
           </div>

@@ -36,27 +36,31 @@ All colors MUST be HSL.
     --input: 0 0% 10%;
     --ring: 16 100% 55%;
 
-    --radius: 0rem;
+    --radius: 0.75rem;
     
     /* Bold neon colors */
     --neon-red: 16 100% 55%;
     --neon-orange: 25 100% 60%;
     --neon-gold: 39 100% 60%;
 
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(16 100% 55%), hsl(25 100% 60%));
+    --gradient-dark: linear-gradient(180deg, hsl(0 0% 3%), hsl(0 0% 8%));
+    --gradient-glow: radial-gradient(circle at center, hsl(16 100% 55% / 0.15), transparent 70%);
+
+    /* Modern shadows */
+    --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 4px 16px hsl(0 0% 0% / 0.4);
+    --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 40px hsl(16 100% 55% / 0.3);
+
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -103,6 +107,7 @@ All colors MUST be HSL.
   /* Strong glow effects */
   .glow-strong {
     box-shadow: 0 0 60px hsl(var(--neon-red) / 0.4);
+    filter: drop-shadow(0 0 40px hsl(var(--neon-red) / 0.3));
   }
 
   /* Hero overlay - darker for more contrast */
@@ -116,10 +121,95 @@ All colors MUST be HSL.
   /* Cast image hover effect */
   .cast-image {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: var(--radius);
+    overflow: hidden;
   }
 
   .cast-image:hover {
     transform: scale(1.05);
     filter: brightness(1.1);
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Modern glass card effect */
+  .glass-card {
+    background: hsl(0 0% 8% / 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(0 0% 20% / 0.3);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    background: hsl(0 0% 10% / 0.7);
+    border-color: hsl(var(--primary) / 0.5);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+    transform: translateY(-4px);
+  }
+
+  /* Feature card with gradient border */
+  .feature-card {
+    position: relative;
+    padding: 2rem;
+    background: hsl(0 0% 6%);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    background: linear-gradient(135deg, hsl(16 100% 55%), hsl(39 100% 60%));
+    border-radius: var(--radius);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .feature-card:hover::before {
+    opacity: 1;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Tour date card */
+  .tour-card {
+    background: hsl(0 0% 6%);
+    border: 1px solid hsl(0 0% 15%);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .tour-card:hover {
+    background: hsl(0 0% 8%);
+    border-color: hsl(var(--primary) / 0.5);
+    box-shadow: var(--shadow-md), 0 0 20px hsl(var(--primary) / 0.2);
+    transform: translateX(8px);
+  }
+
+  /* Smooth fade-in animation */
+  .fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
