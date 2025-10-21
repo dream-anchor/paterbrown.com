@@ -4,6 +4,7 @@ import heroBackground from "@/assets/hero-background.jpg";
 import castAntoine from "@/assets/cast-antoine.jpg";
 import castWanja from "@/assets/cast-wanja.jpg";
 import jetztBuchenNeon from "@/assets/jetzt-buchen-neon.png";
+import menuNeon from "@/assets/menu-neon.png";
 
 const Index = () => {
   return (
@@ -18,8 +19,12 @@ const Index = () => {
 
         {/* Minimal Navigation */}
         <nav className="relative z-10 px-8 lg:px-16 py-10 flex justify-between items-center">
-          <button className="neon-button font-heading text-xl lg:text-2xl tracking-widest hover:scale-110 transition-transform">
-            MENÜ
+          <button className="hover:scale-110 transition-transform">
+            <img 
+              src={menuNeon} 
+              alt="Menü" 
+              className="h-12 lg:h-16 w-auto mix-blend-screen"
+            />
           </button>
           <button className="hover:scale-105 transition-transform">
             <img 
