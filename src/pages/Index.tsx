@@ -20,9 +20,13 @@ const Index = () => {
           <button className="neon-button font-heading text-xl lg:text-2xl tracking-widest hover:scale-110 transition-transform">
             MENÜ
           </button>
-          <button className="neon-button font-heading text-xl lg:text-2xl tracking-widest hover:scale-110 transition-transform">
+          <Button 
+            variant="neon"
+            size="lg"
+            className="font-heading text-xl lg:text-2xl px-10 py-6"
+          >
             JETZT BUCHEN
-          </button>
+          </Button>
         </nav>
 
         {/* Hero Content */}
@@ -35,11 +39,7 @@ const Index = () => {
             />
           </div>
 
-          <h1 className="neon-text text-7xl md:text-9xl lg:text-[12rem] text-center mb-12 leading-none">
-            Pater Brown
-          </h1>
-
-          <p className="text-foreground/90 text-2xl md:text-3xl text-center font-sans tracking-[0.3em] uppercase">
+          <p className="text-foreground/90 text-3xl md:text-4xl lg:text-5xl text-center font-sans tracking-[0.3em] uppercase mt-8">
             Das Live-Hörspiel
           </p>
         </div>
@@ -107,8 +107,9 @@ const Index = () => {
             </p>
 
             <Button 
+              variant="neon"
               size="lg"
-              className="mt-16 bg-primary hover:bg-primary/90 text-primary-foreground text-xl md:text-2xl font-heading tracking-[0.2em] px-16 py-8 uppercase transition-all hover:scale-105"
+              className="mt-16 text-2xl md:text-3xl font-heading px-20 py-10"
             >
               Tickets Sichern
             </Button>
