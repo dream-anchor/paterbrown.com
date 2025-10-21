@@ -2,14 +2,16 @@ import logoImage from "@/assets/pater-brown-logo.png";
 import heroBackground from "@/assets/hero-background.jpg";
 import castAntoine from "@/assets/cast-antoine.jpg";
 import castWanja from "@/assets/cast-wanja.jpg";
-import menuNeon from "@/assets/menu-neon.png";
-import StickyTicketButton from "@/components/StickyTicketButton";
+import StickyHeader from "@/components/StickyHeader";
 import NewsletterSection from "@/components/NewsletterSection";
 import { Instagram, Facebook } from "lucide-react";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
+      {/* Sticky Header */}
+      <StickyHeader />
+
       {/* Hero Section - Cinematic Premium */}
       <section className="relative min-h-screen flex flex-col overflow-hidden">
         <div 
@@ -18,19 +20,8 @@ const Index = () => {
         />
         <div className="absolute inset-0 hero-overlay" />
 
-        {/* Minimal Navigation */}
-        <nav className="relative z-10 px-8 lg:px-16 py-10">
-          <button className="hover:scale-110 transition-transform">
-            <img 
-              src={menuNeon} 
-              alt="Menü" 
-              className="h-16 lg:h-20 w-auto mix-blend-screen"
-            />
-          </button>
-        </nav>
-
         {/* Hero Content - Dramatic & Focused */}
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-20">
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-20 pt-20">
           <div className="max-w-6xl w-full mb-16 cinematic-enter">
             <img 
               src={logoImage} 
@@ -412,9 +403,6 @@ const Index = () => {
           </div>
         </div>
       </footer>
-
-      {/* Sticky Ticket Button */}
-      <StickyTicketButton />
     </div>
   );
 };
