@@ -63,6 +63,11 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        'display': ['Pacifico', 'cursive'],
+        'heading': ['Bebas Neue', 'sans-serif'],
+        'sans': ['Inter', 'sans-serif'],
+      },
       keyframes: {
         "accordion-down": {
           from: {
@@ -80,10 +85,28 @@ export default {
             height: "0",
           },
         },
+        "flicker": {
+          "0%, 19%, 21%, 23%, 25%, 54%, 56%, 100%": {
+            opacity: "1",
+          },
+          "20%, 24%, 55%": {
+            opacity: "0.6",
+          },
+        },
+        "float": {
+          "0%, 100%": {
+            transform: "translateY(0px)",
+          },
+          "50%": {
+            transform: "translateY(-10px)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "flicker": "flicker 3s infinite alternate",
+        "float": "float 3s ease-in-out infinite",
       },
     },
   },
