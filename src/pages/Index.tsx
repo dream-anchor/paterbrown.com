@@ -157,24 +157,21 @@ const Index = () => {
           
           <div className="grid md:grid-cols-3 gap-12 mb-20">
             <div className="text-center space-y-4">
-              <div className="text-6xl font-heading text-gold">01</div>
-              <h3 className="text-2xl font-heading uppercase tracking-wide">Theater</h3>
+              <h3 className="text-3xl font-heading uppercase tracking-wide text-gold">Theater</h3>
               <p className="text-muted-foreground leading-relaxed">
                 Live-Performance mit talentierten Sprechern
               </p>
             </div>
             
             <div className="text-center space-y-4">
-              <div className="text-6xl font-heading text-gold">02</div>
-              <h3 className="text-2xl font-heading uppercase tracking-wide">Klang & Beat</h3>
+              <h3 className="text-3xl font-heading uppercase tracking-wide text-gold">Klang & Beat</h3>
               <p className="text-muted-foreground leading-relaxed">
                 Sounddesign und Beatbox schaffen Atmosphäre
               </p>
             </div>
             
             <div className="text-center space-y-4">
-              <div className="text-6xl font-heading text-gold">03</div>
-              <h3 className="text-2xl font-heading uppercase tracking-wide">Crime-Event</h3>
+              <h3 className="text-3xl font-heading uppercase tracking-wide text-gold">Crime-Event</h3>
               <p className="text-muted-foreground leading-relaxed">
                 Spannung und Mystik verschmelzen
               </p>
