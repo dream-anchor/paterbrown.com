@@ -95,7 +95,7 @@ const Index = () => {
       </section>
 
       {/* Cast Section - Hollywood Treatment */}
-      <section className="py-40 px-6 bg-gradient-to-b from-background to-card/30 relative overflow-hidden">
+      <section className="py-24 px-6 bg-gradient-to-b from-background to-card/30 relative overflow-hidden">
         {/* Background accent */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-gold to-transparent opacity-50" />
         
@@ -169,7 +169,7 @@ const Index = () => {
       </section>
 
       {/* Die beiden Fälle */}
-      <section className="py-40 px-6 bg-gradient-to-b from-card/20 to-background">
+      <section className="py-24 px-6 bg-gradient-to-b from-card/20 to-background">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-24">
             <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">
@@ -226,7 +226,7 @@ const Index = () => {
       </section>
 
       {/* Das Erlebnis - Premium Storytelling */}
-      <section className="py-40 px-6 bg-card/20 relative overflow-hidden">
+      <section className="py-24 px-6 bg-card/20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-transparent to-transparent pointer-events-none" />
         
         <div className="container mx-auto max-w-5xl relative z-10">
@@ -311,7 +311,7 @@ const Index = () => {
       </section>
 
       {/* Tour Dates - Premium List */}
-      <section className="py-40 px-6 bg-gradient-to-b from-background to-card/20">
+      <section className="py-24 px-6 bg-gradient-to-b from-background to-card/20">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-24">
             <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Live Tour 2025/26</p>
@@ -428,7 +428,7 @@ const Index = () => {
       </section>
 
       {/* Über das Projekt */}
-      <section className="py-32 px-6 bg-card/10">
+      <section className="py-24 px-6 bg-card/10">
         <div className="container mx-auto max-w-4xl text-center space-y-8">
           <p className="text-gold text-sm uppercase tracking-[0.3em] font-medium">
             Die Geschichte dahinter
