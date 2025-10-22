@@ -6,6 +6,7 @@ import castWanja from "@/assets/cast-wanja.jpg";
 import antoineHeaderBg from "@/assets/antoine-header-bg.png";
 import wanjaHeaderBg from "@/assets/wanja-header-bg.png";
 import marvelinImage from "@/assets/marvelin.png";
+import stefanieSickImage from "@/assets/stefanie-sick.png";
 import StickyHeader from "@/components/StickyHeader";
 import NewsletterSection from "@/components/NewsletterSection";
 import { Instagram, Facebook } from "lucide-react";
@@ -521,12 +522,63 @@ const Index = () => {
             Die modernen Adaptionen der G. K. Chesterton-Vorlagen bewahren deren 
             literarischen Reiz und verleihen ihnen zugleich eine frische, zeitgemäße Form.
           </p>
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            Produktion: Stefanie Sick (Creative Producerin)
-          </p>
           <p className="text-sm text-gold/70 uppercase tracking-[0.2em]">
             53 Originalfälle – Eine Tournee mit Zukunft
           </p>
+        </div>
+      </section>
+
+      {/* Team Section */}
+      <section className="py-24 px-6 bg-gradient-to-b from-card/20 to-background">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-20">
+            <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Das Team</p>
+            <h2 className="text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase">
+              Team
+            </h2>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <div className="premium-card p-0 overflow-hidden">
+              <div className="grid md:grid-cols-2 gap-0">
+                {/* Stefanie Sick Image */}
+                <div className="relative overflow-hidden bg-gradient-to-br from-card to-background flex items-center justify-center">
+                  <img 
+                    src={stefanieSickImage}
+                    alt="Stefanie Sick"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                
+                {/* Stefanie Sick Info */}
+                <div className="p-8 md:p-12 flex flex-col justify-center space-y-6">
+                  <div>
+                    <h3 className="text-4xl md:text-5xl font-heading tracking-wider text-foreground mb-2">
+                      STEFANIE SICK
+                    </h3>
+                    <p className="text-xl text-gold tracking-[0.2em] uppercase font-medium">
+                      Produktion & Öffentlichkeitsarbeit
+                    </p>
+                  </div>
+                  
+                  <div className="divider-gold w-24" />
+                  
+                  <div className="space-y-4">
+                    <p className="text-muted-foreground text-base leading-relaxed">
+                      Als Creative Producerin zeichnet Stefanie Sick für die künstlerische 
+                      Leitung und Gesamtkonzeption von Pater Brown – Das Live-Hörspiel verantwortlich.
+                    </p>
+                    <p className="text-muted-foreground text-base leading-relaxed">
+                      Mit ihrer Expertise in Produktion und Öffentlichkeitsarbeit bringt sie 
+                      innovative Theater-Konzepte auf die Bühne und sorgt dafür, dass die 
+                      einzigartige Verbindung aus klassischem Krimi und moderner Performance 
+                      ihr Publikum findet.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
