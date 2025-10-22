@@ -353,25 +353,12 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="text-center space-y-4 premium-card p-6 border-gold/30">
-              <div className="text-5xl mb-4">👤</div>
-              <h3 className="text-2xl font-heading uppercase tracking-wide text-gold">
-                Du bist dabei
-              </h3>
-              <p className="text-muted-foreground leading-relaxed text-sm">
-                Ein Zuschauer wird Teil der Inszenierung
-              </p>
-            </div>
+          </div>
 
-            <div className="text-center space-y-4 premium-card p-6 lg:col-span-2">
-              <div className="text-5xl mb-4">📺</div>
-              <h3 className="text-2xl font-heading uppercase tracking-wide text-gold">
-                TV-Stars live erleben
-              </h3>
-              <p className="text-muted-foreground leading-relaxed text-sm">
-                Bekannt aus ZDF "Ein Fall für Zwei"
-              </p>
-            </div>
+          <div className="max-w-3xl mx-auto mt-12">
+            <p className="text-foreground/90 leading-relaxed">
+              Ein Zuschauer wird Teil der Inszenierung. Mit Wanja Mues und Antoine Monot, bekannt aus ZDF "Ein Fall für Zwei", erleben Sie TV-Stars live auf der Bühne.
+            </p>
           </div>
 
           <div className="premium-card p-12 text-center space-y-8">
