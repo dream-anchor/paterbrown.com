@@ -80,7 +80,7 @@ const Index = () => {
           </div>
 
           <div className="max-w-4xl text-center space-y-8 cinematic-enter" style={{ animationDelay: "0.3s" }}>
-            <h1 className="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.1em] text-foreground/95 leading-tight">
+            <h1 className="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.1em] text-foreground/95 leading-tight mt-16">
               Wenn Spannung sichtbar wird: Pater Brown LIVE – Krimi, Klang & Gänsehaut auf der Bühne.
             </h1>
             
