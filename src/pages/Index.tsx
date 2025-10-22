@@ -47,7 +47,7 @@ const Index = () => {
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-20 pt-20">
           <div className={`max-w-6xl w-full mb-16 cinematic-enter transition-all duration-700 ${
             logoAnimating 
-              ? `fixed top-3 left-6 !max-w-[120px] z-[100] ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`
+              ? `fixed top-3 left-6 !max-w-[210px] z-[100] ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`
               : 'relative'
           }`}>
             <img 
@@ -126,7 +126,9 @@ const Index = () => {
                   Erzähler
                 </p>
                 <p className="text-muted-foreground mt-4 text-base leading-relaxed">
-                  Als Erzähler mit einer Stimme, die Spannung lebendig werden lässt.
+                  Bekannt aus ZDF "Ein Fall für Zwei" als Detektiv Leo Oswald. 
+                  Seine Stimme verleiht Hörbüchern von James Baldwin, Haruki Murakami 
+                  und Agatha Christie Kult-Status.
                 </p>
               </div>
             </div>
@@ -149,7 +151,8 @@ const Index = () => {
                   Pater Brown
                 </p>
                 <p className="text-muted-foreground mt-4 text-base leading-relaxed">
-                  Als Pater Brown mit feinem Humor und unerschütterlicher Moral.
+                  Seit 2014 in ZDF "Ein Fall für Zwei" als Rechtsanwalt Benjamin Hornberg. 
+                  Auch bekannt aus RTL "Behringer und die Toten" als unkonventioneller Kommissar.
                 </p>
               </div>
             </div>
@@ -161,6 +164,72 @@ const Index = () => {
             <h3 className="text-3xl md:text-4xl lg:text-5xl font-heading tracking-[0.2em] text-foreground uppercase">
               EIN FALL FÜR ZWEI
             </h3>
+          </div>
+        </div>
+      </section>
+
+      {/* Die beiden Fälle */}
+      <section className="py-40 px-6 bg-gradient-to-b from-card/20 to-background">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-24">
+            <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">
+              Zwei Kriminalfälle an einem Abend
+            </p>
+            <h2 className="text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase">
+              Das Programm
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+            {/* DAS BLAUE KREUZ */}
+            <div className="premium-card p-8 space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-4xl font-heading tracking-wider text-gold uppercase">
+                  Das blaue Kreuz
+                </h3>
+                <p className="text-muted-foreground text-sm uppercase tracking-[0.2em]">
+                  60 Minuten
+                </p>
+              </div>
+              <div className="divider-gold w-24" />
+              <p className="text-foreground/90 leading-relaxed">
+                Ein spannender Fall: Pater Brown versucht, ein wertvolles Kreuz vor dem 
+                berüchtigten Meisterdieb Flambeau zu schützen – doch auch der brillante 
+                Detektiv Valentin ist ihnen dicht auf den Fersen.
+              </p>
+              <p className="text-gold/80 text-sm leading-relaxed">
+                Ein cleveres Katz-und-Maus-Spiel mit überraschendem Ausgang.
+              </p>
+            </div>
+
+            {/* DIE FLIEGENDEN STERNE */}
+            <div className="premium-card p-8 space-y-6 border-gold/30">
+              <div className="space-y-2">
+                <h3 className="text-4xl font-heading tracking-wider text-gold uppercase">
+                  Die fliegenden Sterne
+                </h3>
+                <p className="text-muted-foreground text-sm uppercase tracking-[0.2em]">
+                  45 Minuten
+                </p>
+              </div>
+              <div className="divider-gold w-24" />
+              <p className="text-foreground/90 leading-relaxed">
+                Ein Krimi mit festlichem Flair: Während einer improvisierten Weihnachtsaufführung 
+                werden drei Diamanten gestohlen.
+              </p>
+              <p className="text-gold font-medium leading-relaxed">
+                Ein Zuschauer wird Teil der Geschichte, wenn Pater Brown den Täter entlarvt – 
+                mit direkter Publikumsinteraktion.
+              </p>
+            </div>
+          </div>
+
+          {/* Gesamtdauer */}
+          <div className="text-center mt-16 space-y-4">
+            <div className="divider-gold w-48 mx-auto opacity-50" />
+            <p className="text-xl md:text-2xl text-foreground/80 font-light">
+              Gesamtdauer: ca. 2 Stunden inkl. 15-minütiger Pause
+            </p>
           </div>
         </div>
       </section>
@@ -183,25 +252,54 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-12 mb-20">
-            <div className="text-center space-y-4">
-              <h3 className="text-3xl font-heading uppercase tracking-wide text-gold">Theater</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Live-Performance mit talentierten Sprechern
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+            <div className="text-center space-y-4 premium-card p-6">
+              <div className="text-5xl mb-4">🎭</div>
+              <h3 className="text-2xl font-heading uppercase tracking-wide text-gold">
+                Theater trifft Hörspiel
+              </h3>
+              <p className="text-muted-foreground leading-relaxed text-sm">
+                Live-Performance mit zwei bekannten Schauspielern
               </p>
             </div>
             
-            <div className="text-center space-y-4">
-              <h3 className="text-3xl font-heading uppercase tracking-wide text-gold">Klang & Beat</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Sounddesign und Beatbox schaffen Atmosphäre
+            <div className="text-center space-y-4 premium-card p-6">
+              <div className="text-5xl mb-4">🎤</div>
+              <h3 className="text-2xl font-heading uppercase tracking-wide text-gold">
+                Beatbox statt Geräusche
+              </h3>
+              <p className="text-muted-foreground leading-relaxed text-sm">
+                Marvelin erschafft mit Loop-Station moderne Klangwelten
               </p>
             </div>
             
-            <div className="text-center space-y-4">
-              <h3 className="text-3xl font-heading uppercase tracking-wide text-gold">Crime-Event</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Spannung und Mystik verschmelzen
+            <div className="text-center space-y-4 premium-card p-6">
+              <div className="text-5xl mb-4">🔍</div>
+              <h3 className="text-2xl font-heading uppercase tracking-wide text-gold">
+                Crime-Event
+              </h3>
+              <p className="text-muted-foreground leading-relaxed text-sm">
+                Spannung und Mystik nach G.K. Chesterton
+              </p>
+            </div>
+
+            <div className="text-center space-y-4 premium-card p-6 border-gold/30">
+              <div className="text-5xl mb-4">👤</div>
+              <h3 className="text-2xl font-heading uppercase tracking-wide text-gold">
+                Du bist dabei
+              </h3>
+              <p className="text-muted-foreground leading-relaxed text-sm">
+                Ein Zuschauer wird Teil der Inszenierung
+              </p>
+            </div>
+
+            <div className="text-center space-y-4 premium-card p-6 lg:col-span-2">
+              <div className="text-5xl mb-4">📺</div>
+              <h3 className="text-2xl font-heading uppercase tracking-wide text-gold">
+                TV-Stars live erleben
+              </h3>
+              <p className="text-muted-foreground leading-relaxed text-sm">
+                Bekannt aus ZDF "Ein Fall für Zwei"
               </p>
             </div>
           </div>
@@ -335,6 +433,29 @@ const Index = () => {
               </button>
             </a>
           </div>
+        </div>
+      </section>
+
+      {/* Über das Projekt */}
+      <section className="py-32 px-6 bg-card/10">
+        <div className="container mx-auto max-w-4xl text-center space-y-8">
+          <p className="text-gold text-sm uppercase tracking-[0.3em] font-medium">
+            Die Geschichte dahinter
+          </p>
+          <h2 className="text-5xl md:text-7xl font-heading tracking-wider text-foreground uppercase">
+            Kult trifft Innovation
+          </h2>
+          <div className="divider-gold w-32 mx-auto" />
+          <p className="text-xl text-foreground/90 leading-relaxed">
+            Die modernen Adaptionen der G. K. Chesterton-Vorlagen bewahren deren 
+            literarischen Reiz und verleihen ihnen zugleich eine frische, zeitgemäße Form.
+          </p>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            Textbearbeitung: Stefanie Sick (Creative Producerin) und Antoine Monot
+          </p>
+          <p className="text-sm text-gold/70 uppercase tracking-[0.2em]">
+            53 Originalfälle – Eine Tournee mit Zukunft
+          </p>
         </div>
       </section>
 
