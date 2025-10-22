@@ -539,11 +539,11 @@ const Index = () => {
             <div className="premium-card p-0 overflow-hidden">
               <div className="grid md:grid-cols-2 gap-0">
                 {/* Stefanie Sick Image */}
-                <div className="relative overflow-hidden bg-gradient-to-br from-card to-background flex items-center justify-center">
+                <div className="relative overflow-hidden bg-gradient-to-br from-card to-background flex items-center justify-center p-8">
                   <img 
                     src={stefanieSickImage}
                     alt="Stefanie Sick"
-                    className="w-full h-full object-cover scale-[0.8]"
+                    className="w-[80%] h-auto object-contain"
                   />
                 </div>
                 
