@@ -50,13 +50,13 @@ const Index = () => {
           <img 
             src={antoineHeaderBg}
             alt=""
-            className="absolute left-0 top-[200px] md:top-[280px] h-[32%] md:h-[36%] w-auto opacity-30 object-contain"
+            className="absolute left-0 top-[280px] md:top-[360px] h-[40%] md:h-[45%] w-auto opacity-30 object-contain object-top"
             style={{ transform: 'translateX(-5%)' }}
           />
           <img 
             src={wanjaHeaderBg}
             alt=""
-            className="absolute right-0 top-[200px] md:top-[280px] h-[32%] md:h-[36%] w-auto opacity-30 object-contain"
+            className="absolute right-0 top-[280px] md:top-[360px] h-[40%] md:h-[45%] w-auto opacity-30 object-contain object-top"
             style={{ transform: 'translateX(5%)' }}
           />
         </div>
