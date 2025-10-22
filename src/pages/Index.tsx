@@ -71,7 +71,7 @@ const Index = () => {
         </div>
 
         {/* Hero Content - Dramatic & Focused */}
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-20 pt-20 mt-40">
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pb-20 pt-32">
           <div className={`max-w-6xl w-full mb-8 cinematic-enter transition-all duration-700 ${
             logoAnimating 
               ? `fixed top-3 left-6 !max-w-[210px] z-[100] ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`
