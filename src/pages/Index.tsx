@@ -13,14 +13,19 @@ const Index = () => {
   const [logoAnimating, setLogoAnimating] = useState(false);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
   const [imageOpacity, setImageOpacity] = useState(0.3);
+  const [imageBrightness, setImageBrightness] = useState(1);
 
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
       
-      // Calculate opacity based on scroll (fade out between 0-200px)
-      const newOpacity = Math.max(0, 0.3 - (scrollY / 200) * 0.3);
+      // Calculate opacity and brightness based on scroll (fade out between 0-200px)
+      const progress = Math.min(scrollY / 200, 1);
+      const newOpacity = Math.max(0, 0.3 - (progress * 0.3));
+      const newBrightness = Math.max(0, 1 - (progress * 1));
+      
       setImageOpacity(newOpacity);
+      setImageBrightness(newBrightness);
       
       // Start animation at 200px
       if (scrollY > 200 && !logoAnimating) {
@@ -52,7 +57,7 @@ const Index = () => {
         
         {/* Dezente Hauptdarsteller-Porträts im Hintergrund */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute left-0 top-[380px] md:top-[440px] h-[28%] md:h-[32%] w-auto transition-opacity duration-300" style={{ transform: 'translateX(28%)', opacity: imageOpacity }}>
+          <div className="absolute left-0 top-[380px] md:top-[440px] h-[28%] md:h-[32%] w-auto transition-all duration-300" style={{ transform: 'translateX(28%)', opacity: imageOpacity, filter: `brightness(${imageBrightness})` }}>
             <img 
               src={antoineHeaderBg}
               alt=""
@@ -60,7 +65,7 @@ const Index = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
           </div>
-          <div className="absolute right-0 top-[400px] md:top-[456px] h-[28%] md:h-[32%] w-auto transition-opacity duration-300" style={{ transform: 'translateX(-28%)', opacity: imageOpacity }}>
+          <div className="absolute right-0 top-[400px] md:top-[456px] h-[28%] md:h-[32%] w-auto transition-all duration-300" style={{ transform: 'translateX(-28%)', opacity: imageOpacity, filter: `brightness(${imageBrightness})` }}>
             <img 
               src={wanjaHeaderBg}
               alt=""
