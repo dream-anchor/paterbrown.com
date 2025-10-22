@@ -358,6 +358,19 @@ const Index = () => {
             </p>
           </div>
 
+          {/* Call to Action */}
+          <div className="text-center mt-16 mb-8">
+            <a 
+              href="https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <button className="btn-premium">
+                🎟 Jetzt Tickets sichern
+              </button>
+            </a>
+          </div>
+
           <div className="premium-card p-12 text-center space-y-8">
             <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
               Erleben Sie eine einzigartige Verschmelzung von Theater, 
