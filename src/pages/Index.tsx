@@ -212,10 +212,6 @@ const Index = () => {
                 in der Morgendämmerung aufeinander. Als in der Dorfschmiede ein Mord geschieht, 
                 beginnt ein düsteres Spiel zwischen Schuld und Vergebung.
               </p>
-              <p className="text-gold font-medium leading-relaxed">
-                Ein Zuschauer wird Teil der Geschichte, wenn Pater Brown den Täter entlarvt – 
-                mit direkter Publikumsinteraktion.
-              </p>
             </div>
           </div>
 
