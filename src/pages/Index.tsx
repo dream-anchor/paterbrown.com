@@ -15,15 +15,13 @@ const Index = () => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
       
-      // Start animation at 200px
+      // Start animation at 200px - only once!
       if (scrollY > 200 && !logoAnimating) {
         setLogoAnimating(true);
         // Show sticky header after animation completes
         setTimeout(() => setShowStickyHeader(true), 600);
-      } else if (scrollY <= 200 && logoAnimating) {
-        setLogoAnimating(false);
-        setShowStickyHeader(false);
       }
+      // Logo bleibt permanent fixiert!
     };
 
     window.addEventListener("scroll", handleScroll);
