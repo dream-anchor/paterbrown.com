@@ -52,7 +52,7 @@ const Index = () => {
         
         {/* Dezente Hauptdarsteller-Porträts im Hintergrund */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute left-0 top-[480px] md:top-[560px] h-[28%] md:h-[32%] w-auto transition-opacity duration-300" style={{ transform: 'translateX(28%)', opacity: imageOpacity }}>
+          <div className="absolute left-0 top-[340px] md:top-[400px] h-[28%] md:h-[32%] w-auto transition-opacity duration-300" style={{ transform: 'translateX(28%)', opacity: imageOpacity }}>
             <img 
               src={antoineHeaderBg}
               alt=""
@@ -60,7 +60,7 @@ const Index = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
           </div>
-          <div className="absolute right-0 top-[480px] md:top-[560px] h-[28%] md:h-[32%] w-auto transition-opacity duration-300" style={{ transform: 'translateX(-28%)', opacity: imageOpacity }}>
+          <div className="absolute right-0 top-[340px] md:top-[400px] h-[28%] md:h-[32%] w-auto transition-opacity duration-300" style={{ transform: 'translateX(-28%)', opacity: imageOpacity }}>
             <img 
               src={wanjaHeaderBg}
               alt=""
@@ -71,7 +71,7 @@ const Index = () => {
         </div>
 
         {/* Hero Content - Dramatic & Focused */}
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pb-20 pt-32">
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pb-20 pt-16">
           <div className={`max-w-6xl w-full mb-8 cinematic-enter transition-all duration-700 ${
             logoAnimating 
               ? `fixed top-3 left-6 !max-w-[210px] z-[100] ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`
@@ -84,7 +84,7 @@ const Index = () => {
             />
           </div>
 
-          <div className="max-w-4xl text-center space-y-8 cinematic-enter" style={{ animationDelay: "0.3s" }}>
+          <div className="max-w-4xl text-center space-y-8 cinematic-enter mt-48" style={{ animationDelay: "0.3s" }}>
             <h1 className="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.1em] text-foreground/95 leading-tight mt-16">
               Wenn Spannung sichtbar wird: Pater Brown LIVE – Krimi, Klang & Gänsehaut auf der Bühne.
             </h1>
