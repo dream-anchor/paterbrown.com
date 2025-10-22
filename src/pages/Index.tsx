@@ -47,18 +47,22 @@ const Index = () => {
         
         {/* Dezente Hauptdarsteller-Porträts im Hintergrund */}
         <div className="absolute inset-0 pointer-events-none">
-          <img 
-            src={antoineHeaderBg}
-            alt=""
-            className="absolute left-0 top-[340px] md:top-[420px] h-[28%] md:h-[32%] w-auto opacity-30 object-contain object-top"
-            style={{ transform: 'translateX(-5%)' }}
-          />
-          <img 
-            src={wanjaHeaderBg}
-            alt=""
-            className="absolute right-0 top-[340px] md:top-[420px] h-[28%] md:h-[32%] w-auto opacity-30 object-contain object-top"
-            style={{ transform: 'translateX(5%)' }}
-          />
+          <div className="absolute left-0 top-[340px] md:top-[420px] h-[28%] md:h-[32%] w-auto" style={{ transform: 'translateX(2%)' }}>
+            <img 
+              src={antoineHeaderBg}
+              alt=""
+              className="h-full w-auto opacity-30 object-contain object-top"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+          </div>
+          <div className="absolute right-0 top-[340px] md:top-[420px] h-[28%] md:h-[32%] w-auto" style={{ transform: 'translateX(-2%)' }}>
+            <img 
+              src={wanjaHeaderBg}
+              alt=""
+              className="h-full w-auto opacity-30 object-contain object-top"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+          </div>
         </div>
 
         {/* Hero Content - Dramatic & Focused */}
