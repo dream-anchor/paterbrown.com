@@ -352,16 +352,16 @@ const Index = () => {
 
           </div>
 
-          <div className="max-w-3xl mx-auto mt-12">
-            <p className="text-foreground/90 leading-relaxed">
+          <div className="max-w-3xl mx-auto mt-12 premium-card p-8">
+            <p className="text-foreground/90 leading-relaxed text-center">
               Mit Wanja Mues und Antoine Monot, bekannt aus der ZDF-Serie „Ein Fall für Zwei", erleben Sie TV-Stars live auf der Bühne.
             </p>
           </div>
 
           <div className="premium-card p-12 text-center space-y-8">
             <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-              Mit Wanja Mues und Antoine Monot erleben Sie eine einzigartige Verschmelzung von Theater, 
-              Klang und Spannung. Beatboxer Marvelin liefert den rhythmischen Heartbeat dieser Crime-Show.
+              Erleben Sie eine einzigartige Verschmelzung von Theater, 
+              Sound und Spannung. Beatboxer Marvelin liefert den rhythmischen Heartbeat dieser Crime-Show.
             </p>
             
             <div className="divider-gold w-48 mx-auto" />
@@ -486,6 +486,10 @@ const Index = () => {
                 Alle Termine ansehen
               </button>
             </a>
+            
+            <p className="text-muted-foreground text-sm mt-8">
+              Tickets über Eventim (DE) und Ticketcorner (CH).
+            </p>
           </div>
         </div>
       </section>
