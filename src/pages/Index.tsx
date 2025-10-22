@@ -5,6 +5,7 @@ import castAntoine from "@/assets/cast-antoine.jpg";
 import castWanja from "@/assets/cast-wanja.jpg";
 import antoineHeaderBg from "@/assets/antoine-header-bg.png";
 import wanjaHeaderBg from "@/assets/wanja-header-bg.png";
+import marvelinImage from "@/assets/marvelin.png";
 import StickyHeader from "@/components/StickyHeader";
 import NewsletterSection from "@/components/NewsletterSection";
 import { Instagram, Facebook } from "lucide-react";
@@ -199,6 +200,50 @@ const Index = () => {
             <h3 className="text-3xl md:text-4xl lg:text-5xl font-heading tracking-[0.2em] text-foreground uppercase">
               EIN FALL FÜR ZWEI
             </h3>
+          </div>
+
+          {/* Marvelin Section */}
+          <div className="mt-32 max-w-4xl mx-auto">
+            <div className="premium-card p-0 overflow-hidden">
+              <div className="grid md:grid-cols-2 gap-0">
+                {/* Marvelin Image */}
+                <div className="relative overflow-hidden bg-gradient-to-br from-card to-background flex items-end justify-center p-8">
+                  <img 
+                    src={marvelinImage}
+                    alt="Marvelin - Beatboxer"
+                    className="w-full h-auto object-contain"
+                    style={{ maxHeight: '400px' }}
+                  />
+                </div>
+                
+                {/* Marvelin Info */}
+                <div className="p-8 md:p-12 flex flex-col justify-center space-y-6">
+                  <div>
+                    <h3 className="text-4xl md:text-5xl font-heading tracking-wider text-foreground mb-2">
+                      MARVELIN
+                    </h3>
+                    <p className="text-xl text-gold tracking-[0.2em] uppercase font-medium">
+                      Beatboxer & Loop Artist
+                    </p>
+                  </div>
+                  
+                  <div className="divider-gold w-24" />
+                  
+                  <div className="space-y-4">
+                    <p className="text-muted-foreground text-base leading-relaxed">
+                      Gründer von Beatbox Germany und gefragter Live-Performer. Mit seiner Loop Station 
+                      erschafft Marvelin komplexe Klangwelten in Echtzeit – von tiefen Beats bis zu 
+                      atmosphärischen Soundscapes.
+                    </p>
+                    <p className="text-muted-foreground text-base leading-relaxed">
+                      Als Organisator des Looparama Beatbox Festivals und Teil der deutschen 
+                      Beatbox-Szene bringt er innovative Performance-Kunst auf die Bühne. Seine 
+                      Karriere begann in Byron Bay, Australien.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
