@@ -543,7 +543,7 @@ const Index = () => {
                   <img 
                     src={stefanieSickImage}
                     alt="Stefanie Sick"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover scale-[0.8]"
                   />
                 </div>
                 
