@@ -44,12 +44,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Black header bar that appears when logo starts animating */}
-      {logoAnimating && (
-        <div className="fixed top-0 left-0 right-0 h-[100px] bg-background z-40 border-b border-gold/20 animate-fade-in" 
-             style={{ boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)" }} />
-      )}
-      
       {/* Sticky Header */}
       {showStickyHeader && <StickyHeader />}
 
@@ -83,17 +77,20 @@ const Index = () => {
 
         {/* Hero Content - Dramatic & Focused */}
         <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pb-20 pt-8">
-          <div className={`max-w-6xl w-full mb-8 cinematic-enter transition-all duration-700 ${
+          <div className={`w-full mb-8 cinematic-enter transition-all duration-700 ${
             logoAnimating 
-              ? `fixed top-3 left-6 !max-w-[210px] z-[200] ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`
-              : 'relative'
-          }`}>
+              ? 'fixed top-3 left-6 max-w-[210px] z-[200]'
+              : 'max-w-6xl relative'
+          } ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`}>
             <img 
               src={logoImage} 
               alt="Pater Brown - Das Live-Hörspiel" 
               className="w-full h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)]"
             />
           </div>
+          
+          {/* Spacer to prevent content jump when logo becomes fixed */}
+          {logoAnimating && <div className="w-full max-w-6xl mb-8" style={{ height: 'auto', aspectRatio: '1920/400' }} />}
 
           <div className="max-w-4xl text-center space-y-8 cinematic-enter mt-48" style={{ animationDelay: "0.3s" }}>
             <h1 className="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.1em] text-foreground/95 leading-tight mt-16">
