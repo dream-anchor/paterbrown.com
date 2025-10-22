@@ -105,7 +105,7 @@ const Index = () => {
 
             <div className="divider-gold w-16 mx-auto my-6 opacity-50" />
 
-            <p className="text-base md:text-lg text-muted-foreground font-light">
+            <p className="text-xl md:text-2xl text-muted-foreground font-light">
               Mit Beatboxer Marvelin
             </p>
 
