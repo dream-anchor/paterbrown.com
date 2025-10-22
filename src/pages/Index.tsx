@@ -207,12 +207,11 @@ const Index = () => {
             <div className="premium-card p-0 overflow-hidden">
               <div className="grid md:grid-cols-2 gap-0">
                 {/* Marvelin Image */}
-                <div className="relative overflow-hidden bg-gradient-to-br from-card to-background flex items-end justify-center p-8">
+                <div className="relative overflow-hidden bg-gradient-to-br from-card to-background flex items-center justify-center">
                   <img 
                     src={marvelinImage}
                     alt="Marvelin - Beatboxer"
-                    className="w-full h-auto object-contain"
-                    style={{ maxHeight: '400px' }}
+                    className="w-full h-full object-cover"
                   />
                 </div>
                 
