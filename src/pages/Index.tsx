@@ -271,10 +271,7 @@ const Index = () => {
               <p className="text-foreground/90 leading-relaxed">
                 Ein spannender Fall: Pater Brown versucht, ein wertvolles Kreuz vor dem 
                 berüchtigten Meisterdieb Flambeau zu schützen – doch auch der brillante 
-                Detektiv Valentin ist ihnen dicht auf den Fersen.
-              </p>
-              <p className="text-gold/80 text-sm leading-relaxed -mt-2">
-                Ein cleveres Katz-und-Maus-Spiel mit überraschendem Ausgang.
+                Detektiv Valentin ist ihnen dicht auf den Fersen. Ein cleveres Katz-und-Maus-Spiel mit überraschendem Ausgang.
               </p>
             </div>
 
@@ -357,7 +354,7 @@ const Index = () => {
 
           <div className="max-w-3xl mx-auto mt-12">
             <p className="text-foreground/90 leading-relaxed">
-              Ein Zuschauer wird Teil der Inszenierung. Mit Wanja Mues und Antoine Monot, bekannt aus ZDF "Ein Fall für Zwei", erleben Sie TV-Stars live auf der Bühne.
+              Mit Wanja Mues und Antoine Monot, bekannt aus ZDF "Ein Fall für Zwei", erleben Sie TV-Stars live auf der Bühne.
             </p>
           </div>
 
