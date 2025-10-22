@@ -17,16 +17,16 @@ All colors MUST be HSL.
     --popover: 0 0% 4%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 39 100% 60%;
+    --primary: 16 100% 55%;
     --primary-foreground: 0 0% 5%;
 
-    --secondary: 16 90% 55%;
+    --secondary: 16 90% 50%;
     --secondary-foreground: 0 0% 98%;
 
     --muted: 0 0% 25%;
     --muted-foreground: 0 0% 65%;
 
-    --accent: 39 100% 60%;
+    --accent: 16 100% 55%;
     --accent-foreground: 0 0% 5%;
 
     --destructive: 0 84.2% 60.2%;
@@ -34,25 +34,25 @@ All colors MUST be HSL.
 
     --border: 0 0% 12%;
     --input: 0 0% 8%;
-    --ring: 39 100% 60%;
+    --ring: 16 100% 55%;
 
     --radius: 0rem;
     
     /* Premium colors */
-    --gold: 39 100% 60%;
-    --gold-dark: 39 80% 45%;
-    --copper: 16 90% 55%;
+    --gold: 16 100% 55%;
+    --gold-dark: 16 85% 45%;
+    --copper: 16 90% 50%;
     --dark: 0 0% 2%;
     --darker: 0 0% 1%;
 
     /* Luxury gradients */
-    --gradient-gold: linear-gradient(135deg, hsl(39 100% 60%), hsl(39 80% 45%));
+    --gradient-gold: linear-gradient(135deg, hsl(16 100% 55%), hsl(16 85% 45%));
     --gradient-premium: linear-gradient(180deg, hsl(0 0% 2%), hsl(0 0% 6%));
-    --gradient-shine: linear-gradient(90deg, transparent, hsl(39 100% 60% / 0.1), transparent);
+    --gradient-shine: linear-gradient(90deg, transparent, hsl(16 100% 55% / 0.1), transparent);
 
     /* Premium shadows */
     --shadow-premium: 0 20px 60px hsl(0 0% 0% / 0.5);
-    --shadow-gold: 0 10px 40px hsl(39 100% 60% / 0.15);
+    --shadow-gold: 0 10px 40px hsl(16 100% 55% / 0.15);
     --shadow-intense: 0 30px 80px hsl(0 0% 0% / 0.7);
 
     --sidebar-background: 0 0% 98%;
@@ -114,7 +114,7 @@ All colors MUST be HSL.
     content: '';
     position: absolute;
     inset: -1px;
-    background: linear-gradient(135deg, hsl(39 100% 60% / 0), hsl(39 100% 60% / 0.3), hsl(39 100% 60% / 0));
+    background: linear-gradient(135deg, hsl(16 100% 55% / 0), hsl(16 100% 55% / 0.3), hsl(16 100% 55% / 0));
     border-radius: inherit;
     opacity: 0;
     transition: opacity 0.5s ease;
@@ -122,7 +122,7 @@ All colors MUST be HSL.
   }
 
   .premium-card:hover {
-    border-color: hsl(39 100% 60% / 0.3);
+    border-color: hsl(16 100% 55% / 0.3);
     box-shadow: var(--shadow-gold);
     transform: translateY(-4px);
   }
@@ -145,7 +145,7 @@ All colors MUST be HSL.
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, hsl(39 100% 60% / 0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, hsl(16 100% 55% / 0.1) 0%, transparent 70%);
     opacity: 0;
     transition: opacity 0.6s ease;
   }
@@ -168,7 +168,7 @@ All colors MUST be HSL.
   .btn-premium {
     position: relative;
     padding: 1.25rem 3rem;
-    background: linear-gradient(135deg, hsl(39 100% 60%), hsl(39 80% 50%));
+    background: linear-gradient(135deg, hsl(16 100% 55%), hsl(16 85% 48%));
     color: hsl(0 0% 5%);
     font-weight: 700;
     font-size: 1.125rem;
@@ -177,7 +177,7 @@ All colors MUST be HSL.
     border: none;
     overflow: hidden;
     transition: all 0.4s ease;
-    box-shadow: 0 10px 30px hsl(39 100% 60% / 0.3);
+    box-shadow: 0 10px 30px hsl(16 100% 55% / 0.3);
   }
 
   .btn-premium::before {
@@ -193,7 +193,7 @@ All colors MUST be HSL.
 
   .btn-premium:hover {
     transform: translateY(-2px);
-    box-shadow: 0 15px 40px hsl(39 100% 60% / 0.5);
+    box-shadow: 0 15px 40px hsl(16 100% 55% / 0.5);
   }
 
   .btn-premium:hover::before {
@@ -210,7 +210,7 @@ All colors MUST be HSL.
   }
 
   .tour-date-premium:hover {
-    border-left-color: hsl(39 100% 60%);
+    border-left-color: hsl(16 100% 55%);
     background: linear-gradient(90deg, hsl(0 0% 6%), hsl(0 0% 7%));
     box-shadow: var(--shadow-gold);
   }
@@ -218,7 +218,7 @@ All colors MUST be HSL.
   /* Elegant divider */
   .divider-gold {
     height: 1px;
-    background: linear-gradient(90deg, transparent, hsl(39 100% 60% / 0.5), transparent);
+    background: linear-gradient(90deg, transparent, hsl(16 100% 55% / 0.5), transparent);
   }
 
   /* Cinematic entrance animation */
