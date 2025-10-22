@@ -51,7 +51,7 @@ const NewsletterSection = () => {
               />
               <button
                 type="submit"
-                className="btn-premium whitespace-nowrap"
+                className="btn-premium"
               >
                 Benachrichtige mich
               </button>

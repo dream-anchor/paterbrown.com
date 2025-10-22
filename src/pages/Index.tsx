@@ -46,7 +46,7 @@ const Index = () => {
         {/* Hero Content - Dramatic & Focused */}
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-20 pt-20">
           <div className={`max-w-6xl w-full mb-16 cinematic-enter transition-all duration-700 ${
-            logoAnimating ? 'fixed top-3 left-6 !max-w-[120px] z-[100] opacity-0' : 'relative'
+            logoAnimating ? 'hidden' : 'relative'
           }`}>
             <img 
               src={logoImage} 
@@ -124,7 +124,7 @@ const Index = () => {
                   Erzähler
                 </p>
                 <p className="text-muted-foreground mt-4 text-base leading-relaxed">
-                  Als Erzähler, dessen Stimme Spannung atmet.
+                  Als Erzähler mit einer Stimme, die Spannung lebendig werden lässt.
                 </p>
               </div>
             </div>
@@ -155,9 +155,10 @@ const Index = () => {
           
           {/* Bekannt aus */}
           <div className="text-center mt-24">
-            <p className="text-3xl md:text-4xl lg:text-5xl font-heading tracking-[0.2em] text-foreground/90 uppercase">
-              Bekannt aus EIN FALL FÜR ZWEI
-            </p>
+            <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Bekannt aus</p>
+            <h3 className="text-3xl md:text-4xl lg:text-5xl font-heading tracking-[0.2em] text-foreground uppercase">
+              EIN FALL FÜR ZWEI
+            </h3>
           </div>
         </div>
       </section>
@@ -176,7 +177,7 @@ const Index = () => {
               Ein Abend voller Spannung, Humor und Gänsehaut.
             </p>
             <p className="text-lg md:text-xl text-gold/80 font-light leading-relaxed max-w-3xl mx-auto mt-4">
-              Wenn Klang zum Ermittler wird – und jede Stimme ein Verdächtiger ist.
+              Live-Performance mit zwei Schauspielern – und jede Stimme ein Verdächtiger ist.
             </p>
           </div>
           
@@ -341,7 +342,7 @@ const Index = () => {
       {/* Footer - Elegant */}
       <footer className="py-20 px-6 border-t border-gold/10 bg-background">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-4 gap-12 text-center md:text-left mb-16">
+          <div className="grid md:grid-cols-3 gap-12 text-center md:text-left mb-16">
             <div>
               <h3 className="text-gold text-xs mb-4 tracking-[0.3em] uppercase font-bold">
                 Kontakt
@@ -349,16 +350,6 @@ const Index = () => {
               <p className="text-foreground/80 text-sm leading-relaxed">
                 info@paterbrown-live.de<br />
                 +49 123 456 789
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-gold text-xs mb-4 tracking-[0.3em] uppercase font-bold">
-                Spielzeiten
-              </h3>
-              <p className="text-foreground/80 text-sm leading-relaxed">
-                Fr & Sa: 20:00 Uhr<br />
-                So: 18:00 Uhr
               </p>
             </div>
 
