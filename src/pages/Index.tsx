@@ -52,7 +52,7 @@ const Index = () => {
         
         {/* Dezente Hauptdarsteller-Porträts im Hintergrund */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute left-0 top-[340px] md:top-[400px] h-[28%] md:h-[32%] w-auto transition-opacity duration-300" style={{ transform: 'translateX(28%)', opacity: imageOpacity }}>
+          <div className="absolute left-0 top-[380px] md:top-[440px] h-[28%] md:h-[32%] w-auto transition-opacity duration-300" style={{ transform: 'translateX(28%)', opacity: imageOpacity }}>
             <img 
               src={antoineHeaderBg}
               alt=""
@@ -60,7 +60,7 @@ const Index = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
           </div>
-          <div className="absolute right-0 top-[340px] md:top-[400px] h-[28%] md:h-[32%] w-auto transition-opacity duration-300" style={{ transform: 'translateX(-28%)', opacity: imageOpacity }}>
+          <div className="absolute right-0 top-[420px] md:top-[480px] h-[28%] md:h-[32%] w-auto transition-opacity duration-300" style={{ transform: 'translateX(-28%)', opacity: imageOpacity }}>
             <img 
               src={wanjaHeaderBg}
               alt=""
