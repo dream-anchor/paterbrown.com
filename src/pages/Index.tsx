@@ -3,6 +3,8 @@ import logoImage from "@/assets/pater-brown-logo.png";
 import heroBackground from "@/assets/hero-background.jpg";
 import castAntoine from "@/assets/cast-antoine.jpg";
 import castWanja from "@/assets/cast-wanja.jpg";
+import antoineHeaderBg from "@/assets/antoine-header-bg.png";
+import wanjaHeaderBg from "@/assets/wanja-header-bg.png";
 import StickyHeader from "@/components/StickyHeader";
 import NewsletterSection from "@/components/NewsletterSection";
 import { Instagram, Facebook } from "lucide-react";
@@ -42,6 +44,22 @@ const Index = () => {
           style={{ backgroundImage: `url(${heroBackground})` }}
         />
         <div className="absolute inset-0 hero-overlay" />
+        
+        {/* Dezente Hauptdarsteller-Porträts im Hintergrund */}
+        <div className="absolute inset-0 pointer-events-none">
+          <img 
+            src={antoineHeaderBg}
+            alt=""
+            className="absolute left-0 bottom-0 h-[60%] md:h-[70%] w-auto opacity-[0.12] object-contain"
+            style={{ transform: 'translateX(-10%)' }}
+          />
+          <img 
+            src={wanjaHeaderBg}
+            alt=""
+            className="absolute right-0 bottom-0 h-[60%] md:h-[70%] w-auto opacity-[0.12] object-contain"
+            style={{ transform: 'translateX(10%)' }}
+          />
+        </div>
 
         {/* Hero Content - Dramatic & Focused */}
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-20 pt-20">
