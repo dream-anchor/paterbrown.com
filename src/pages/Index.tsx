@@ -81,29 +81,6 @@ const Index = () => {
           </div>
           
           <div className="grid md:grid-cols-2 gap-16 lg:gap-24 max-w-6xl mx-auto">
-            {/* Antoine Monot */}
-            <div className="cast-spotlight premium-card p-0 overflow-hidden">
-              <div className="relative overflow-hidden aspect-[3/4]">
-                <img 
-                  src={castAntoine} 
-                  alt="Antoine Monot"
-                  className="w-full h-full object-cover cast-image"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-              </div>
-              <div className="p-8 relative z-10 -mt-20">
-                <h3 className="text-4xl md:text-5xl font-heading tracking-wider text-foreground mb-2">
-                  ANTOINE MONOT
-                </h3>
-                <p className="text-xl text-gold tracking-[0.2em] uppercase font-medium">
-                  Pater Brown
-                </p>
-                <p className="text-muted-foreground mt-4 text-base leading-relaxed">
-                  Als Pater Brown mit feinem Humor und unerschütterlicher Moral.
-                </p>
-              </div>
-            </div>
-
             {/* Wanja Mues */}
             <div className="cast-spotlight premium-card p-0 overflow-hidden">
               <div className="relative overflow-hidden aspect-[3/4]">
@@ -123,6 +100,29 @@ const Index = () => {
                 </p>
                 <p className="text-muted-foreground mt-4 text-base leading-relaxed">
                   Als Erzähler, dessen Stimme Spannung atmet.
+                </p>
+              </div>
+            </div>
+
+            {/* Antoine Monot */}
+            <div className="cast-spotlight premium-card p-0 overflow-hidden">
+              <div className="relative overflow-hidden aspect-[3/4]">
+                <img 
+                  src={castAntoine} 
+                  alt="Antoine Monot"
+                  className="w-full h-full object-cover cast-image"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+              </div>
+              <div className="p-8 relative z-10 -mt-20">
+                <h3 className="text-4xl md:text-5xl font-heading tracking-wider text-foreground mb-2">
+                  ANTOINE MONOT
+                </h3>
+                <p className="text-xl text-gold tracking-[0.2em] uppercase font-medium">
+                  Pater Brown
+                </p>
+                <p className="text-muted-foreground mt-4 text-base leading-relaxed">
+                  Als Pater Brown mit feinem Humor und unerschütterlicher Moral.
                 </p>
               </div>
             </div>
