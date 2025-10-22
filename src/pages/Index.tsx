@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import logoImage from "@/assets/pater-brown-logo.png";
 import heroBackground from "@/assets/hero-background.jpg";
 import castAntoine from "@/assets/cast-antoine.jpg";
@@ -7,10 +8,32 @@ import NewsletterSection from "@/components/NewsletterSection";
 import { Instagram, Facebook } from "lucide-react";
 
 const Index = () => {
+  const [logoAnimating, setLogoAnimating] = useState(false);
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      
+      // Start animation at 200px
+      if (scrollY > 200 && !logoAnimating) {
+        setLogoAnimating(true);
+        // Show sticky header after animation completes
+        setTimeout(() => setShowStickyHeader(true), 600);
+      } else if (scrollY <= 200 && logoAnimating) {
+        setLogoAnimating(false);
+        setShowStickyHeader(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [logoAnimating]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Sticky Header */}
-      <StickyHeader />
+      {showStickyHeader && <StickyHeader />}
 
       {/* Hero Section - Cinematic Premium */}
       <section className="relative min-h-screen flex flex-col overflow-hidden">
@@ -22,7 +45,9 @@ const Index = () => {
 
         {/* Hero Content - Dramatic & Focused */}
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-20 pt-20">
-          <div className="max-w-6xl w-full mb-16 cinematic-enter">
+          <div className={`max-w-6xl w-full mb-16 cinematic-enter transition-all duration-700 ${
+            logoAnimating ? 'fixed top-3 left-6 !max-w-[120px] z-[100] opacity-0' : 'relative'
+          }`}>
             <img 
               src={logoImage} 
               alt="Pater Brown - Das Live-Hörspiel" 
@@ -38,7 +63,7 @@ const Index = () => {
             <div className="divider-gold w-32 mx-auto my-8" />
             
             <p className="text-lg md:text-xl lg:text-2xl text-gold/90 font-light leading-relaxed">
-              Ein Live-Hörspiel mit Antoine Monot & Wanja Mues – wo Stimme, Klang und Beat zum Krimi werden.
+              Ein Live-Hörspiel mit Wanja Mues & Antoine Monot – wo Stimme, Klang und Beat zum Krimi werden.
             </p>
 
             <div className="divider-gold w-16 mx-auto my-6 opacity-50" />
@@ -180,7 +205,7 @@ const Index = () => {
 
           <div className="premium-card p-12 text-center space-y-8">
             <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-              Mit Antoine Monot und Wanja Mues erleben Sie eine einzigartige Verschmelzung von Theater, 
+              Mit Wanja Mues und Antoine Monot erleben Sie eine einzigartige Verschmelzung von Theater, 
               Klang und Spannung. Beatboxer Marvelin liefert den rhythmischen Heartbeat dieser Crime-Show.
             </p>
             
@@ -213,7 +238,7 @@ const Index = () => {
                 day: "Mi. 20:00",
                 city: "Augsburg", 
                 venue: "Spectrum Club", 
-                note: "Premiere",
+                note: "Preview",
                 link: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-spectrum-club-20806635/?affiliate=KZB"
               },
               { 
@@ -221,7 +246,7 @@ const Index = () => {
                 day: "Do. 20:00",
                 city: "Hamburg", 
                 venue: "Friedrich-Ebert-Halle", 
-                note: "",
+                note: "Premiere",
                 link: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-friedrich-ebert-halle-20783148/?affiliate=KZB"
               },
               { 
