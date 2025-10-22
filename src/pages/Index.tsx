@@ -3,6 +3,9 @@ import logoImage from "@/assets/pater-brown-logo.png";
 import heroBackground from "@/assets/hero-background.jpg";
 import castAntoine from "@/assets/cast-antoine.jpg";
 import castWanja from "@/assets/cast-wanja.jpg";
+import castAntoineCircle from "@/assets/cast-antoine-circle.png";
+import castWanjaCircle from "@/assets/cast-wanja-circle.png";
+import stefanieSickCircle from "@/assets/stefanie-sick-circle.png";
 import StickyHeader from "@/components/StickyHeader";
 import NewsletterSection from "@/components/NewsletterSection";
 import { Instagram, Facebook } from "lucide-react";
@@ -55,6 +58,24 @@ const Index = () => {
               alt="Pater Brown - Das Live-Hörspiel" 
               className="w-full h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)]"
             />
+          </div>
+
+          {/* Cast Circles - Eyecatcher */}
+          <div className="flex gap-6 mb-12 cinematic-enter" style={{ animationDelay: "0.2s" }}>
+            <div className="relative group">
+              <img 
+                src={castWanjaCircle} 
+                alt="Wanja Mues" 
+                className="w-24 h-24 md:w-32 md:h-32 rounded-full border-2 border-gold/30 shadow-lg hover:border-gold/60 transition-all duration-300 hover:scale-105"
+              />
+            </div>
+            <div className="relative group">
+              <img 
+                src={castAntoineCircle} 
+                alt="Antoine Monot" 
+                className="w-24 h-24 md:w-32 md:h-32 rounded-full border-2 border-gold/30 shadow-lg hover:border-gold/60 transition-all duration-300 hover:scale-105"
+              />
+            </div>
           </div>
 
           <div className="max-w-4xl text-center space-y-8 cinematic-enter" style={{ animationDelay: "0.3s" }}>
@@ -441,12 +462,43 @@ const Index = () => {
             Die modernen Adaptionen der G. K. Chesterton-Vorlagen bewahren deren 
             literarischen Reiz und verleihen ihnen zugleich eine frische, zeitgemäße Form.
           </p>
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            Produktion: Stefanie Sick (Creative Producerin)
-          </p>
           <p className="text-sm text-gold/70 uppercase tracking-[0.2em]">
             53 Originalfälle – Eine Tournee mit Zukunft
           </p>
+        </div>
+      </section>
+
+      {/* Team Section */}
+      <section className="py-24 px-6 bg-gradient-to-b from-card/10 to-background">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-16">
+            <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">
+              Das Team
+            </p>
+            <h2 className="text-5xl md:text-7xl font-heading tracking-wider text-foreground uppercase">
+              Produktion
+            </h2>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="text-center space-y-6 max-w-sm">
+              <div className="relative inline-block">
+                <img 
+                  src={stefanieSickCircle} 
+                  alt="Stefanie Sick" 
+                  className="w-48 h-48 rounded-full border-4 border-gold/20 shadow-xl mx-auto"
+                />
+              </div>
+              <div>
+                <h3 className="text-3xl md:text-4xl font-heading tracking-wider text-foreground mb-2">
+                  STEFANIE SICK
+                </h3>
+                <p className="text-xl text-gold tracking-[0.2em] uppercase font-medium">
+                  Creative Producerin
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
