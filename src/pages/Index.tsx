@@ -195,7 +195,7 @@ const Index = () => {
           </div>
           
           {/* Bekannt aus */}
-          <div className="text-center mt-24">
+          <div className="text-center mt-16">
             <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Bekannt aus</p>
             <h3 className="text-3xl md:text-4xl lg:text-5xl font-heading tracking-[0.2em] text-foreground uppercase">
               EIN FALL FÜR ZWEI
@@ -203,7 +203,7 @@ const Index = () => {
           </div>
 
           {/* Marvelin Section */}
-          <div className="mt-32 max-w-4xl mx-auto">
+          <div className="mt-40 max-w-4xl mx-auto">
             <div className="premium-card p-0 overflow-hidden">
               <div className="grid md:grid-cols-2 gap-0">
                 {/* Marvelin Image */}
