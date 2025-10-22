@@ -187,9 +187,6 @@ const Index = () => {
                 <h3 className="text-4xl font-heading tracking-wider text-gold uppercase">
                   Das blaue Kreuz
                 </h3>
-                <p className="text-muted-foreground text-sm uppercase tracking-[0.2em]">
-                  60 Minuten
-                </p>
               </div>
               <div className="divider-gold w-24" />
               <p className="text-foreground/90 leading-relaxed">
@@ -208,9 +205,6 @@ const Index = () => {
                 <h3 className="text-4xl font-heading tracking-wider text-gold uppercase">
                   Die fliegenden Sterne
                 </h3>
-                <p className="text-muted-foreground text-sm uppercase tracking-[0.2em]">
-                  45 Minuten
-                </p>
               </div>
               <div className="divider-gold w-24" />
               <p className="text-foreground/90 leading-relaxed">
