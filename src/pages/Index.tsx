@@ -44,6 +44,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Black header bar that appears when logo starts animating */}
+      {logoAnimating && (
+        <div className="fixed top-0 left-0 right-0 h-[100px] bg-background z-40 border-b border-gold/20 animate-fade-in" 
+             style={{ boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)" }} />
+      )}
+      
       {/* Sticky Header */}
       {showStickyHeader && <StickyHeader />}
 
