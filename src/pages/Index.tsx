@@ -195,7 +195,7 @@ const Index = () => {
           </div>
           
           {/* Bekannt aus */}
-          <div className="text-center mt-16">
+          <div className="text-center mt-8">
             <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Bekannt aus</p>
             <h3 className="text-3xl md:text-4xl lg:text-5xl font-heading tracking-[0.2em] text-foreground uppercase">
               EIN FALL FÜR ZWEI
