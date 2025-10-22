@@ -47,7 +47,7 @@ const Index = () => {
         
         {/* Dezente Hauptdarsteller-Porträts im Hintergrund */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute left-0 top-[380px] md:top-[460px] h-[28%] md:h-[32%] w-auto" style={{ transform: 'translateX(8%)' }}>
+          <div className="absolute left-0 top-[380px] md:top-[460px] h-[28%] md:h-[32%] w-auto" style={{ transform: 'translateX(18%)' }}>
             <img 
               src={antoineHeaderBg}
               alt=""
@@ -55,7 +55,7 @@ const Index = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
           </div>
-          <div className="absolute right-0 top-[380px] md:top-[460px] h-[28%] md:h-[32%] w-auto" style={{ transform: 'translateX(-8%)' }}>
+          <div className="absolute right-0 top-[380px] md:top-[460px] h-[28%] md:h-[32%] w-auto" style={{ transform: 'translateX(-18%)' }}>
             <img 
               src={wanjaHeaderBg}
               alt=""
@@ -66,7 +66,7 @@ const Index = () => {
         </div>
 
         {/* Hero Content - Dramatic & Focused */}
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-20 pt-20">
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-20 pt-20 mt-20">
           <div className={`max-w-6xl w-full mb-16 cinematic-enter transition-all duration-700 ${
             logoAnimating 
               ? `fixed top-3 left-6 !max-w-[210px] z-[100] ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`
