@@ -359,7 +359,7 @@ const Index = () => {
           </div>
 
           {/* Call to Action */}
-          <div className="text-center mt-16 mb-8">
+          <div className="text-center mt-16 mb-16">
             <a 
               href="https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp"
               target="_blank"
