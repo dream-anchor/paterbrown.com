@@ -353,7 +353,7 @@ const Index = () => {
           </div>
 
           <div className="max-w-3xl mx-auto mt-12 premium-card p-8">
-            <p className="text-foreground/90 leading-relaxed text-center">
+            <p className="text-foreground/90 leading-relaxed text-center text-lg md:text-xl">
               Mit Wanja Mues und Antoine Monot, bekannt aus der ZDF-Serie „Ein Fall für Zwei", erleben Sie TV-Stars live auf der Bühne.
             </p>
           </div>
@@ -488,7 +488,7 @@ const Index = () => {
             </a>
             
             <p className="text-muted-foreground text-sm mt-8">
-              Tickets über Eventim (DE) und Ticketcorner (CH).
+              Tickets über Eventim (DE) und Ticketcorner (CH)
             </p>
           </div>
         </div>
