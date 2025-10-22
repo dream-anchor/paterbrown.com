@@ -445,7 +445,7 @@ const Index = () => {
             literarischen Reiz und verleihen ihnen zugleich eine frische, zeitgemäße Form.
           </p>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Textbearbeitung: Stefanie Sick (Creative Producerin) und Antoine Monot
+            Produktion: Stefanie Sick (Creative Producerin) und Antoine Monot
           </p>
           <p className="text-sm text-gold/70 uppercase tracking-[0.2em]">
             53 Originalfälle – Eine Tournee mit Zukunft
