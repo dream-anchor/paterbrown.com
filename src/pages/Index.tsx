@@ -522,9 +522,6 @@ const Index = () => {
             Die modernen Adaptionen der G. K. Chesterton-Vorlagen bewahren deren 
             literarischen Reiz und verleihen ihnen zugleich eine frische, zeitgemäße Form.
           </p>
-          <p className="text-sm text-gold/70 uppercase tracking-[0.2em]">
-            53 Originalfälle – Eine Tournee mit Zukunft
-          </p>
         </div>
       </section>
 
