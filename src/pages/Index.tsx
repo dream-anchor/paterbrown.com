@@ -273,7 +273,7 @@ const Index = () => {
                 berüchtigten Meisterdieb Flambeau zu schützen – doch auch der brillante 
                 Detektiv Valentin ist ihnen dicht auf den Fersen.
               </p>
-              <p className="text-gold/80 text-sm leading-relaxed">
+              <p className="text-gold/80 text-sm leading-relaxed -mt-2">
                 Ein cleveres Katz-und-Maus-Spiel mit überraschendem Ausgang.
               </p>
             </div>
