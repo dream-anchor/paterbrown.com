@@ -12,10 +12,15 @@ import { Instagram, Facebook } from "lucide-react";
 const Index = () => {
   const [logoAnimating, setLogoAnimating] = useState(false);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
+  const [imageOpacity, setImageOpacity] = useState(0.3);
 
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
+      
+      // Calculate opacity based on scroll (fade out between 0-200px)
+      const newOpacity = Math.max(0, 0.3 - (scrollY / 200) * 0.3);
+      setImageOpacity(newOpacity);
       
       // Start animation at 200px
       if (scrollY > 200 && !logoAnimating) {
@@ -47,19 +52,19 @@ const Index = () => {
         
         {/* Dezente Hauptdarsteller-Porträts im Hintergrund */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute left-0 top-[480px] md:top-[560px] h-[28%] md:h-[32%] w-auto" style={{ transform: 'translateX(28%)' }}>
+          <div className="absolute left-0 top-[480px] md:top-[560px] h-[28%] md:h-[32%] w-auto transition-opacity duration-300" style={{ transform: 'translateX(28%)', opacity: imageOpacity }}>
             <img 
               src={antoineHeaderBg}
               alt=""
-              className="h-full w-auto opacity-30 object-contain object-top"
+              className="h-full w-auto object-contain object-top"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
           </div>
-          <div className="absolute right-0 top-[480px] md:top-[560px] h-[28%] md:h-[32%] w-auto" style={{ transform: 'translateX(-28%)' }}>
+          <div className="absolute right-0 top-[480px] md:top-[560px] h-[28%] md:h-[32%] w-auto transition-opacity duration-300" style={{ transform: 'translateX(-28%)', opacity: imageOpacity }}>
             <img 
               src={wanjaHeaderBg}
               alt=""
-              className="h-full w-auto opacity-30 object-contain object-top"
+              className="h-full w-auto object-contain object-top"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
           </div>
@@ -67,7 +72,7 @@ const Index = () => {
 
         {/* Hero Content - Dramatic & Focused */}
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-20 pt-20 mt-40">
-          <div className={`max-w-6xl w-full mb-16 cinematic-enter transition-all duration-700 ${
+          <div className={`max-w-6xl w-full mb-8 cinematic-enter transition-all duration-700 ${
             logoAnimating 
               ? `fixed top-3 left-6 !max-w-[210px] z-[100] ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`
               : 'relative'
