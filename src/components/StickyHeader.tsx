@@ -22,16 +22,7 @@ const StickyHeader = () => {
       className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-gold/20 animate-fade-in"
       style={{ boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)" }}
     >
-      <div className="container mx-auto px-6 py-3 flex items-center justify-between">
-        {/* Logo */}
-        <div className="flex items-center">
-          <img 
-            src={logoImage} 
-            alt="Pater Brown Logo" 
-            className="h-12 w-auto"
-          />
-        </div>
-
+      <div className="container mx-auto px-6 py-3 flex items-center justify-end">
         {/* Ticket Button */}
         <a 
           href="https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp"
