@@ -354,7 +354,7 @@ const Index = () => {
 
           <div className="max-w-3xl mx-auto mt-12">
             <p className="text-foreground/90 leading-relaxed">
-              Mit Wanja Mues und Antoine Monot, bekannt aus ZDF "Ein Fall für Zwei", erleben Sie TV-Stars live auf der Bühne.
+              Mit Wanja Mues und Antoine Monot, bekannt aus der ZDF-Serie „Ein Fall für Zwei", erleben Sie TV-Stars live auf der Bühne.
             </p>
           </div>
 
