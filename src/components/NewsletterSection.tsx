@@ -53,7 +53,7 @@ const NewsletterSection = () => {
                 type="submit"
                 className="btn-premium"
               >
-                Benachrichtige mich
+                Senden
               </button>
             </div>
           </form>

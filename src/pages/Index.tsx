@@ -46,7 +46,7 @@ const Index = () => {
         {/* Hero Content - Dramatic & Focused */}
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-20 pt-20">
           <div className={`max-w-6xl w-full mb-16 cinematic-enter transition-all duration-700 ${
-            logoAnimating ? 'hidden' : 'relative'
+            logoAnimating ? 'fixed top-3 left-6 !max-w-[120px] z-[100] opacity-100' : 'relative'
           }`}>
             <img 
               src={logoImage} 
@@ -366,13 +366,6 @@ const Index = () => {
                 >
                   <Instagram className="w-5 h-5" />
                   <span className="text-sm">Instagram</span>
-                </a>
-                <a 
-                  href="#" 
-                  className="text-foreground/80 hover:text-gold transition-colors flex items-center gap-2"
-                >
-                  <Facebook className="w-5 h-5" />
-                  <span className="text-sm">Facebook</span>
                 </a>
               </div>
             </div>
