@@ -199,17 +199,18 @@ const Index = () => {
               </p>
             </div>
 
-            {/* DIE FLIEGENDEN STERNE */}
+            {/* DIE FALLENDEN BRÜDER */}
             <div className="premium-card p-8 space-y-6 border-gold/30">
               <div className="space-y-2">
                 <h3 className="text-4xl font-heading tracking-wider text-gold uppercase">
-                  Die fliegenden Sterne
+                  Die Fallenden Brüder
                 </h3>
               </div>
               <div className="divider-gold w-24" />
               <p className="text-foreground/90 leading-relaxed">
-                Ein Krimi mit festlichem Flair: Während einer improvisierten Weihnachtsaufführung 
-                werden drei Diamanten gestohlen.
+                Zwei Brüder, zwei Welten: Ein zynischer Oberst und ein frommer Pfarrer treffen 
+                in der Morgendämmerung aufeinander. Als in der Dorfschmiede ein Mord geschieht, 
+                beginnt ein düsteres Spiel zwischen Schuld und Vergebung.
               </p>
               <p className="text-gold font-medium leading-relaxed">
                 Ein Zuschauer wird Teil der Geschichte, wenn Pater Brown den Täter entlarvt – 
@@ -445,7 +446,7 @@ const Index = () => {
             literarischen Reiz und verleihen ihnen zugleich eine frische, zeitgemäße Form.
           </p>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Produktion: Stefanie Sick (Creative Producerin) und Antoine Monot
+            Produktion: Stefanie Sick (Creative Producerin)
           </p>
           <p className="text-sm text-gold/70 uppercase tracking-[0.2em]">
             53 Originalfälle – Eine Tournee mit Zukunft
