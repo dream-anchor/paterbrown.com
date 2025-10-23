@@ -110,8 +110,7 @@ const HeroSection = () => {
             className="max-w-4xl text-center space-y-8 cinematic-enter"
             style={{ 
               animationDelay: "0.3s",
-              marginTop: logoAnimating ? '120px' : '192px',
-              transition: 'margin-top 0.7s ease-in-out'
+              marginTop: '192px'
             }}
           >
             <p className="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.1em] text-foreground/95 leading-tight mt-16">
