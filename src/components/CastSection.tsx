@@ -84,9 +84,11 @@ const CastSection = () => {
                   <div className="divider-gold w-24" aria-hidden="true" />
                   
                   <div className="space-y-4">
-                    <p className="text-muted-foreground text-base leading-relaxed">
-                      {marvelin.description}
-                    </p>
+                    {marvelin.description.split('\n\n').map((paragraph, index) => (
+                      <p key={index} className="text-muted-foreground text-base leading-relaxed">
+                        {paragraph}
+                      </p>
+                    ))}
                   </div>
                 </div>
               </div>

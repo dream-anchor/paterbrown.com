@@ -28,9 +28,13 @@ const TeamMemberCard = ({ member, reverse = false }: TeamMemberCardProps) => {
             <p className="text-gold text-sm uppercase tracking-[0.2em]">{member.role}</p>
           </div>
           
-          <p className="text-muted-foreground leading-relaxed text-lg">
-            {member.description}
-          </p>
+          <div className="space-y-4">
+            {member.description.split('\n\n').map((paragraph, index) => (
+              <p key={index} className="text-muted-foreground leading-relaxed text-lg">
+                {paragraph}
+              </p>
+            ))}
+          </div>
         </div>
       </div>
     </div>
