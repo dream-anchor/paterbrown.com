@@ -51,17 +51,10 @@ export const showCases: ShowCase[] = [
 
 export const teamMembers: TeamMember[] = [
   {
-    id: "marvelin",
-    name: "Marvelin",
-    role: "Beatboxer & Loop Artist",
-    image: marvelinImage,
-    description: "Gründer von Beatbox Germany und gefragter Live-Performer. Mit seiner Loop Station erschafft Marvelin komplexe Klangwelten in Echtzeit – von tiefen Beats bis zu atmosphärischen Soundscapes.\n\nMit seiner Band The Razzzones gewann er 2022 den Deutschen Meistertitel und sicherte sich mit seinem Team die Bronzemedaille bei der Weltmeisterschaft 2023.\n\nMarvelin steht für die Verbindung von Kunst, Community und unbändiger Bühnenenergie."
-  },
-  {
     id: "stefanie",
     name: "Stefanie Sick",
     role: "Produktion & Öffentlichkeitsarbeit",
     image: stefanieSickImage,
-    description: "Als Creative Producerin zeichnet Stefanie Sick für die künstlerische Leitung und Gesamtkonzeption von Pater Brown – Das Live-Hörspiel verantwortlich. Mit ihrer Expertise in Produktion und Öffentlichkeitsarbeit bringt sie innovative Theater-Konzepte auf die Bühne und sorgt dafür, dass die einzigartige Verbindung aus klassischem Krimi und moderner Performance ihr Publikum findet."
+    description: "Als Creative Producerin zeichnet Stefanie Sick für die künstlerische Leitung und Gesamtkonzeption von Pater Brown – Das Live-Hörspiel verantwortlich.\n\nMit ihrer Expertise in den Bereichen Produktion und Öffentlichkeitsarbeit bringt sie innovative Theater-Konzepte auf die Bühne und sorgt dafür, dass die einzigartige Verbindung aus klassischem Krimi und moderner Performance ihr Publikum findet."
   }
 ];

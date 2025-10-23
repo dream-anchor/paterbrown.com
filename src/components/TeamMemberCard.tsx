@@ -10,11 +10,11 @@ const TeamMemberCard = ({ member, reverse = false }: TeamMemberCardProps) => {
     <div className="premium-card p-0 overflow-hidden">
       <div className={`grid md:grid-cols-2 gap-0 ${reverse ? 'md:grid-flow-dense' : ''}`}>
         {/* Image */}
-        <div className={`relative overflow-hidden bg-gradient-to-br from-card to-background flex items-center justify-center ${reverse ? 'md:col-start-2' : ''}`}>
+        <div className={`relative overflow-hidden bg-gradient-to-br from-card to-background flex items-center justify-center aspect-[3/4] ${reverse ? 'md:col-start-2' : ''}`}>
           <img 
             src={member.image}
             alt={`${member.name} - ${member.role}`}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-top"
             loading="lazy"
           />
         </div>
