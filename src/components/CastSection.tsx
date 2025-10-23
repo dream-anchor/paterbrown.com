@@ -60,8 +60,8 @@ const CastSection = () => {
         {marvelin && (
           <article className="mt-40 max-w-4xl mx-auto">
             <div className="premium-card p-0 overflow-hidden">
-              <div className="grid md:grid-cols-2 gap-0">
-                <div className="relative overflow-hidden bg-gradient-to-br from-card to-background flex items-stretch justify-center">
+              <div className="grid md:grid-cols-2 gap-0 md:h-[500px]">
+                <div className="relative overflow-hidden bg-gradient-to-br from-card to-background">
                   <img 
                     src={marvelin.image}
                     alt={`${marvelin.name} - ${marvelin.role}`}
