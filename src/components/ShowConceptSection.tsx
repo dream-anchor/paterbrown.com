@@ -2,23 +2,23 @@ import { showCases } from "@/data/castData";
 
 const ShowConceptSection = () => {
   return (
-    <section className="py-20 px-6 bg-card/10">
+    <section className="py-20 px-6 bg-card/10" role="region" aria-labelledby="cases-heading">
       <div className="container mx-auto max-w-6xl">
-        <h2 className="text-4xl md:text-5xl font-heading text-center mb-4 tracking-wider text-foreground">
+        <h2 id="cases-heading" className="text-4xl md:text-5xl font-heading text-center mb-4 tracking-wider text-foreground">
           Die Fälle
         </h2>
-        <div className="divider-gold mb-16" />
+        <div className="divider-gold mb-16" role="presentation" aria-hidden="true" />
         
         <div className="grid md:grid-cols-2 gap-8 mb-16">
           {showCases.map((showCase) => (
-            <div key={showCase.id} className="premium-card p-8 space-y-4">
+            <article key={showCase.id} className="premium-card p-8 space-y-4">
               <h3 className="text-2xl font-heading tracking-wide text-gold text-center">
                 {showCase.title}
               </h3>
               <p className="text-muted-foreground leading-relaxed text-center">
                 {showCase.description}
               </p>
-            </div>
+            </article>
           ))}
         </div>
 

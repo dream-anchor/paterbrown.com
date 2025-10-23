@@ -1,57 +1,49 @@
-import { Calendar } from "lucide-react";
 import { tourDates } from "@/data/tourDates";
+import { Calendar } from "lucide-react";
 
 const TourDatesSection = () => {
   return (
-    <section className="py-20 px-6 bg-gradient-to-b from-card/20 to-background">
+    <section className="py-20 px-6 bg-background" role="region" aria-labelledby="tour-dates-heading">
       <div className="container mx-auto max-w-4xl">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-heading mb-4 tracking-wider text-foreground">
-            Tourdaten 2025
-          </h2>
-          <div className="divider-gold mb-8" />
-          <p className="text-lg text-muted-foreground">
-            Sichern Sie sich jetzt Ihre Tickets für das Live-Hörspiel
-          </p>
-        </div>
+        <h2 id="tour-dates-heading" className="text-4xl md:text-5xl font-heading text-center mb-4 tracking-wider text-foreground">
+          Tourdaten 2025
+        </h2>
+        <div className="divider-gold mb-8" role="presentation" aria-hidden="true" />
+        
+        <p className="text-center text-muted-foreground mb-12 text-lg">
+          Sichern Sie sich jetzt Ihre Tickets für das außergewöhnliche Live-Hörspiel-Erlebnis
+        </p>
 
         <div className="space-y-6">
           {tourDates.map((date) => (
-            <a
-              key={date.id}
-              href={date.ticketUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="tour-date-premium group block"
-              aria-label={`Tickets für ${date.city} am ${date.date} kaufen`}
+            <article 
+              key={date.id} 
+              className="tour-date-premium flex flex-col md:flex-row md:items-center justify-between gap-6"
             >
-              <div className="flex items-center gap-6">
-                <div className="flex-shrink-0">
-                  <Calendar className="w-8 h-8 text-gold" aria-hidden="true" />
-                </div>
-                
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-center">
-                  <div className="text-2xl md:text-3xl font-heading tracking-wide text-gold">
+              <div className="flex items-center gap-6 flex-1">
+                <Calendar className="text-gold flex-shrink-0 w-8 h-8" aria-hidden="true" />
+                <div className="space-y-1">
+                  <time 
+                    dateTime={date.date.split('.').reverse().join('-')}
+                    className="text-2xl md:text-3xl font-heading text-foreground tracking-wide block"
+                  >
                     {date.date}
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <div className="text-xl md:text-2xl font-heading tracking-wider text-foreground">
-                      {date.city}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {date.venue}
-                    </div>
-                  </div>
-                  
-                  <div className="text-right">
-                    <span className="inline-block px-6 py-3 bg-gold/10 border border-gold/30 text-gold font-heading tracking-wider transition-all group-hover:bg-gold group-hover:text-background">
-                      TICKETS
-                    </span>
-                  </div>
+                  </time>
+                  <p className="text-gold text-sm uppercase tracking-[0.2em]">{date.city}</p>
+                  <p className="text-muted-foreground">{date.venue}</p>
                 </div>
               </div>
-            </a>
+              
+              <a
+                href={date.ticketUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-premium text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                aria-label={`Tickets kaufen für ${date.city} am ${date.date}`}
+              >
+                Tickets
+              </a>
+            </article>
           ))}
         </div>
       </div>
