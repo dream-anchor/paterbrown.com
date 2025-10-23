@@ -61,11 +61,11 @@ const CastSection = () => {
           <article className="mt-40 max-w-4xl mx-auto">
             <div className="premium-card p-0 overflow-hidden">
               <div className="grid md:grid-cols-2 gap-0">
-                <div className="relative overflow-hidden bg-gradient-to-br from-card to-background flex items-center justify-center">
+                <div className="relative overflow-hidden bg-gradient-to-br from-card to-background flex items-start justify-center">
                   <img 
                     src={marvelin.image}
                     alt={`${marvelin.name} - ${marvelin.role}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                     loading="lazy"
                     decoding="async"
                   />
