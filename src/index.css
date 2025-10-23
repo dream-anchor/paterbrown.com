@@ -17,14 +17,14 @@ All colors MUST be HSL.
     --popover: 0 0% 4%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 28 100% 58%;
+    --primary: 28 100% 55%;
     --primary-foreground: 0 0% 5%;
 
     --secondary: 28 95% 50%;
     --secondary-foreground: 0 0% 5%;
 
     --muted: 0 0% 25%;
-    --muted-foreground: 0 0% 67%;
+    --muted-foreground: 0 0% 65%;
 
     --accent: 28 100% 55%;
     --accent-foreground: 0 0% 5%;
@@ -39,7 +39,7 @@ All colors MUST be HSL.
     --radius: 0rem;
     
     /* Premium colors */
-    --gold: 28 100% 58%;
+    --gold: 28 100% 55%;
     --gold-dark: 28 90% 45%;
     --copper: 28 95% 50%;
     --dark: 0 0% 2%;
@@ -251,23 +251,5 @@ All colors MUST be HSL.
 
   .spotlight-effect {
     animation: spotlight 4s ease-in-out infinite;
-  }
-
-  /* Accessibility: Reduced Motion */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
-
-  /* Focus Styles */
-  *:focus-visible {
-    outline: 2px solid hsl(var(--gold));
-    outline-offset: 2px;
   }
 }

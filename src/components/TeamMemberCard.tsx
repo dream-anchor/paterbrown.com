@@ -7,7 +7,7 @@ interface TeamMemberCardProps {
 
 const TeamMemberCard = ({ member, reverse = false }: TeamMemberCardProps) => {
   return (
-    <article className="premium-card p-0 overflow-hidden">
+    <div className="premium-card p-0 overflow-hidden">
       <div className={`grid md:grid-cols-2 gap-0 ${reverse ? 'md:grid-flow-dense' : ''}`}>
         {/* Image */}
         <div className={`relative overflow-hidden bg-gradient-to-br from-card to-background flex items-center justify-center ${reverse ? 'md:col-start-2' : ''}`}>
@@ -16,7 +16,6 @@ const TeamMemberCard = ({ member, reverse = false }: TeamMemberCardProps) => {
             alt={`${member.name} - ${member.role}`}
             className="w-full h-full object-cover"
             loading="lazy"
-            decoding="async"
           />
         </div>
         
@@ -34,7 +33,7 @@ const TeamMemberCard = ({ member, reverse = false }: TeamMemberCardProps) => {
           </p>
         </div>
       </div>
-    </article>
+    </div>
   );
 };
 

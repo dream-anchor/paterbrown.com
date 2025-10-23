@@ -1,6 +1,6 @@
 import { CastMember, ShowCase, TeamMember } from "@/types";
-import castWanjaImage from "@/assets/cast-wanja.jpg";
-import castAntoineImage from "@/assets/cast-antoine.jpg";
+import wanjaImage from "@/assets/cast-wanja.jpg";
+import antoineImage from "@/assets/cast-antoine.jpg";
 import marvelinImage from "@/assets/marvelin.png";
 import stefanieSickImage from "@/assets/stefanie-sick.png";
 import wanjaHeaderBg from "@/assets/wanja-header-bg.png";
@@ -10,43 +10,35 @@ export const castMembers: CastMember[] = [
   {
     id: "wanja",
     name: "Wanja Mues",
-    role: "Erzähler & Schauspieler",
-    character: "Pater Brown",
-    image: castWanjaImage,
+    role: "Erzähler",
+    character: "Flambeau",
+    image: wanjaImage,
     headerBg: wanjaHeaderBg,
-    description: "Wanja Mues ist einer der vielseitigsten deutschen Schauspieler seiner Generation. Bekannt aus zahlreichen Film- und TV-Produktionen verleiht er Pater Brown eine unverwechselbare Stimme voller Tiefe und Authentizität.",
-    highlights: [
-      "Synchronstimme von Andrew Lincoln (The Walking Dead)",
-      "Grimme-Preis-Nominierung",
-      "Über 20 Jahre Bühnenerfahrung"
-    ]
+    description: "Wanja Mues ist ein vielseitiger Schauspieler, bekannt aus Film, Fernsehen und Theater. Er verleiht Flambeau eine charismatische und nuancierte Präsenz.",
+    highlights: ["Film & Fernsehen", "Theaterstar", "Synchronsprecher"]
   },
   {
     id: "antoine",
     name: "Antoine Monot Jr.",
-    role: "Erzähler & Schauspieler",
-    character: "Flambeau",
-    image: castAntoineImage,
+    role: "Erzähler",
+    character: "Pater Brown",
+    image: antoineImage,
     headerBg: antoineHeaderBg,
-    description: "Antoine Monot Jr. ist ein Multitalent zwischen Film, Theater und Musik. Mit seiner dynamischen Präsenz und seinem einzigartigen Charisma erweckt er den geheimnisvollen Meisterdieb Flambeau zum Leben.",
-    highlights: [
-      "Deutscher Filmpreis & Jupiter Award",
-      "Synchronstimme von Charlie Day (It's Always Sunny)",
-      "Musiker und Theaterregisseur"
-    ]
+    description: "Antoine Monot Jr. bringt als Erzähler von Pater Brown seine einzigartige Stimme und sein schauspielerisches Talent ein, um die Geschichten lebendig werden zu lassen.",
+    highlights: ["Schauspieler", "Synchronsprecher", "Regisseur"]
   }
 ];
 
 export const showCases: ShowCase[] = [
   {
     id: "case1",
-    title: "Das Paradies der Diebe",
-    description: "Pater Brown trifft auf den genialen Meisterdieb Flambeau. Ein Wettstreit der Intelligenz beginnt, bei dem der bescheidene Priester zeigt, dass wahre Größe nicht im Ruhm, sondern in der Demut liegt."
+    title: "Das blaue Kreuz",
+    description: "Der berühmte Meisterdieb Flambeau plant den größten Coup seines Lebens. Ein wertvolles Kreuz soll sein nächstes Opfer werden. Doch er hat nicht mit Pater Brown gerechnet..."
   },
   {
     id: "case2",
-    title: "Der fliegende Stern",
-    description: "Ein mysteriöser Diebstahl versetzt die High Society in Aufruhr. Pater Brown und Flambeau müssen zusammenarbeiten, um das Rätsel um den legendären Saphir zu lösen."
+    title: "Der Fluch der goldenen Kreuze",
+    description: "Eine mysteriöse Serie von Diebstählen erschüttert die Stadt. Goldene Kreuze verschwinden spurlos. Pater Brown und sein alter Widersacher Flambeau müssen zusammenarbeiten..."
   }
 ];
 
@@ -54,15 +46,15 @@ export const teamMembers: TeamMember[] = [
   {
     id: "marvelin",
     name: "Marvelin",
-    role: "Beatbox & Live-Sounds",
+    role: "Live-Foley & Sound Design",
     image: marvelinImage,
-    description: "Marvelin ist einer der innovativsten Beatboxer Deutschlands. Mit seinen atemberaubenden Live-Sounds erschafft er die perfekte Klangkulisse für die Geschichten von Pater Brown - von atmosphärischen Soundscapes bis hin zu präzisen Sound-Effekten."
+    description: "Marvelin sorgt für die atmosphärischen Klänge und Geräusche, die das Live-Hörspiel zum Leben erwecken. Mit innovativen Live-Foley-Techniken schafft er eine einzigartige Soundkulisse."
   },
   {
     id: "stefanie",
     name: "Stefanie Sick",
     role: "Produktion & Regie",
     image: stefanieSickImage,
-    description: "Stefanie Sick ist die kreative Kraft hinter dem Projekt. Mit jahrelanger Erfahrung in Theater und Audio-Produktion hat sie ein einzigartiges Format geschaffen, das klassische Literatur neu erlebbar macht."
+    description: "Stefanie Sick ist die kreative Kraft hinter der Produktion. Mit ihrer Erfahrung in Theater und Hörspiel bringt sie die Geschichten von G.K. Chesterton auf die Bühne."
   }
 ];

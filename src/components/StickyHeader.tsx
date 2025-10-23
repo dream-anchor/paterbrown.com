@@ -27,10 +27,8 @@ const StickyHeader = () => {
         <div className="flex items-center">
           <img 
             src={logoImage} 
-            alt="" 
+            alt="Pater Brown Logo" 
             className="h-[84px] w-auto"
-            role="presentation"
-            aria-hidden="true"
           />
         </div>
 
@@ -39,15 +37,12 @@ const StickyHeader = () => {
           href="https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp"
           target="_blank"
           rel="noopener noreferrer"
-          className="hover:scale-105 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          aria-label="Tickets für Pater Brown Live-Hörspiel sichern"
+          className="hover:scale-105 transition-transform"
         >
           <img 
             src={ticketButton} 
-            alt="" 
+            alt="Tickets sichern" 
             className="h-[70px] md:h-[84px] w-auto mix-blend-screen"
-            role="presentation"
-            aria-hidden="true"
           />
         </a>
       </div>
