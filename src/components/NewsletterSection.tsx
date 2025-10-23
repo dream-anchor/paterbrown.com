@@ -1,45 +1,15 @@
 import { useState } from "react";
 import { Bell } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 const NewsletterSection = () => {
   const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!email || !email.trim()) {
-      toast.error("Bitte gib eine E-Mail-Adresse ein.");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const { data, error } = await supabase.functions.invoke("subscribe-newsletter", {
-        body: { email: email.trim() }
-      });
-
-      if (error) {
-        console.error("Newsletter subscription error:", error);
-        toast.error(error.message || "Ein Fehler ist aufgetreten. Bitte versuche es erneut.");
-        return;
-      }
-
-      if (data?.error) {
-        toast.error(data.error);
-        return;
-      }
-
+    if (email) {
       toast.success("Vielen Dank! Wir informieren dich über neue Termine.");
       setEmail("");
-    } catch (error: any) {
-      console.error("Newsletter subscription error:", error);
-      toast.error("Ein Fehler ist aufgetreten. Bitte versuche es erneut.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -81,11 +51,9 @@ const NewsletterSection = () => {
               />
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="btn-premium disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Newsletter abonnieren"
+                className="btn-premium"
               >
-                {isSubmitting ? "Wird gesendet..." : "Senden"}
+                Senden
               </button>
             </div>
           </form>

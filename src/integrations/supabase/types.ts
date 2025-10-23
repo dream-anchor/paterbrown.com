@@ -14,30 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      newsletter_subscribers: {
-        Row: {
-          created_at: string | null
-          email: string
-          id: string
-          is_active: boolean | null
-          subscribed_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          id?: string
-          is_active?: boolean | null
-          subscribed_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          id?: string
-          is_active?: boolean | null
-          subscribed_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
