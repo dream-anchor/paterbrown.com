@@ -89,6 +89,15 @@ const HeroSection = () => {
 
         <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pb-20 pt-8">
           <div 
+            className="w-full max-w-6xl mb-8" 
+            style={{ 
+              height: logoAnimating ? `${logoHeight}px` : '0',
+              transition: 'height 0s',
+              overflow: 'hidden'
+            }} 
+          />
+          
+          <div 
             ref={logoRef}
             className={`w-full mb-8 cinematic-enter transition-all duration-700 ${
             logoAnimating 
@@ -103,8 +112,6 @@ const HeroSection = () => {
               decoding="async"
             />
           </div>
-          
-          {logoAnimating && <div className="w-full max-w-6xl mb-8" style={{ height: `${logoHeight}px` }} />}
 
           <div className="max-w-4xl text-center space-y-8 cinematic-enter mt-48" style={{ animationDelay: "0.3s" }}>
             <p className="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.1em] text-foreground/95 leading-tight mt-16">
