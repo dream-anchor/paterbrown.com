@@ -88,16 +88,7 @@ const HeroSection = () => {
         </div>
 
         <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pb-20 pt-8">
-          <div 
-            className="w-full max-w-6xl mb-8" 
-            style={{ 
-              height: logoAnimating ? `${logoHeight}px` : '0',
-              transition: 'height 0.7s ease-in-out',
-              overflow: 'hidden'
-            }} 
-          />
-          
-          <div 
+          <div
             ref={logoRef}
             className={`w-full mb-8 cinematic-enter ${
             logoAnimating 
@@ -116,11 +107,10 @@ const HeroSection = () => {
           </div>
 
           <div 
-            className={`max-w-4xl text-center space-y-8 cinematic-enter ${
-              logoAnimating ? 'mt-0' : 'mt-48'
-            }`}
+            className="max-w-4xl text-center space-y-8 cinematic-enter"
             style={{ 
               animationDelay: "0.3s",
+              marginTop: logoAnimating ? '120px' : '192px',
               transition: 'margin-top 0.7s ease-in-out'
             }}
           >
