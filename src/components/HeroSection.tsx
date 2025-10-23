@@ -92,7 +92,7 @@ const HeroSection = () => {
             className="w-full max-w-6xl mb-8" 
             style={{ 
               height: logoAnimating ? `${logoHeight}px` : '0',
-              transition: 'height 0s',
+              transition: 'height 0.7s ease-in-out',
               overflow: 'hidden'
             }} 
           />
