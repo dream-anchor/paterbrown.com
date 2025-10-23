@@ -106,11 +106,21 @@ const HeroSection = () => {
             />
           </div>
 
+          {logoAnimating && (
+            <div 
+              style={{ 
+                height: `${logoHeight}px`,
+                transition: 'height 0.7s ease-in-out'
+              }} 
+            />
+          )}
+
           <div 
             className="max-w-4xl text-center space-y-8 cinematic-enter"
             style={{ 
               animationDelay: "0.3s",
-              marginTop: '192px'
+              marginTop: logoAnimating ? '64px' : '192px',
+              transition: 'margin-top 0.7s ease-in-out'
             }}
           >
             <p className="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.1em] text-foreground/95 leading-tight mt-16">
