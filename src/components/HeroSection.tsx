@@ -115,7 +115,15 @@ const HeroSection = () => {
             />
           </div>
 
-          <div className="max-w-4xl text-center space-y-8 cinematic-enter mt-48" style={{ animationDelay: "0.3s" }}>
+          <div 
+            className={`max-w-4xl text-center space-y-8 cinematic-enter ${
+              logoAnimating ? 'mt-0' : 'mt-48'
+            }`}
+            style={{ 
+              animationDelay: "0.3s",
+              transition: 'margin-top 0.7s ease-in-out'
+            }}
+          >
             <p className="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.1em] text-foreground/95 leading-tight mt-16">
               Wenn Spannung sichtbar wird: Pater Brown LIVE – Krimi, Klang & Gänsehaut auf der Bühne.
             </p>
