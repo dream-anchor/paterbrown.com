@@ -14,18 +14,25 @@ export const castMembers: CastMember[] = [
     character: "Flambeau",
     image: wanjaImage,
     headerBg: wanjaHeaderBg,
-    description: "Wanja Mues ist ein vielseitiger Schauspieler, bekannt aus Film, Fernsehen und Theater. Er verleiht Flambeau eine charismatische und nuancierte Präsenz.",
-    highlights: ["Film & Fernsehen", "Theaterstar", "Synchronsprecher"]
+    description: "Bekannt aus ZDF \"Ein Fall für Zwei\" als Detektiv Leo Oswald. Seine Stimme verleiht Hörbüchern von James Baldwin, Haruki Murakami und Agatha Christie Kult-Status.",
+    highlights: ["ZDF \"Ein Fall für Zwei\"", "Hörbuch-Sprecher", "Theater-Star"]
   },
   {
     id: "antoine",
-    name: "Antoine Monot Jr.",
-    role: "Erzähler",
-    character: "Pater Brown",
+    name: "Antoine Monot",
+    role: "Pater Brown",
     image: antoineImage,
     headerBg: antoineHeaderBg,
-    description: "Antoine Monot Jr. bringt als Erzähler von Pater Brown seine einzigartige Stimme und sein schauspielerisches Talent ein, um die Geschichten lebendig werden zu lassen.",
-    highlights: ["Schauspieler", "Synchronsprecher", "Regisseur"]
+    description: "Seit 2014 in ZDF \"Ein Fall für Zwei\" als Rechtsanwalt Benjamin Hornberg. Auch bekannt aus RTL \"Behringer und die Toten\" als unkonventioneller Kommissar.",
+    highlights: ["ZDF \"Ein Fall für Zwei\"", "Schauspieler", "Synchronsprecher"]
+  },
+  {
+    id: "marvelin",
+    name: "Marvelin",
+    role: "Beatboxer & Loop Artist",
+    image: marvelinImage,
+    description: "Gründer von Beatbox Germany und gefragter Live-Performer. Mit seiner Loop Station erschafft Marvelin komplexe Klangwelten in Echtzeit – von tiefen Beats bis zu atmosphärischen Soundscapes.",
+    highlights: ["Beatbox Germany", "Loop Artist", "Live-Performer"]
   }
 ];
 
@@ -33,12 +40,12 @@ export const showCases: ShowCase[] = [
   {
     id: "case1",
     title: "Das blaue Kreuz",
-    description: "Der berühmte Meisterdieb Flambeau plant den größten Coup seines Lebens. Ein wertvolles Kreuz soll sein nächstes Opfer werden. Doch er hat nicht mit Pater Brown gerechnet..."
+    description: "Ein spannender Fall: Pater Brown versucht, ein wertvolles Kreuz vor dem berüchtigten Meisterdieb Flambeau zu schützen – doch auch der brillante Detektiv Valentin ist ihnen dicht auf den Fersen. Ein cleveres Katz-und-Maus-Spiel mit überraschendem Ausgang."
   },
   {
     id: "case2",
-    title: "Der Fluch der goldenen Kreuze",
-    description: "Eine mysteriöse Serie von Diebstählen erschüttert die Stadt. Goldene Kreuze verschwinden spurlos. Pater Brown und sein alter Widersacher Flambeau müssen zusammenarbeiten..."
+    title: "Die Fallenden Brüder",
+    description: "Zwei Brüder, zwei Welten: Ein zynischer Oberst und ein frommer Pfarrer treffen in der Morgendämmerung aufeinander. Als in der Dorfschmiede ein Mord geschieht, beginnt ein düsteres Spiel zwischen Schuld und Vergebung."
   }
 ];
 
@@ -46,15 +53,15 @@ export const teamMembers: TeamMember[] = [
   {
     id: "marvelin",
     name: "Marvelin",
-    role: "Live-Foley & Sound Design",
+    role: "Beatboxer & Loop Artist",
     image: marvelinImage,
-    description: "Marvelin sorgt für die atmosphärischen Klänge und Geräusche, die das Live-Hörspiel zum Leben erwecken. Mit innovativen Live-Foley-Techniken schafft er eine einzigartige Soundkulisse."
+    description: "Gründer von Beatbox Germany und gefragter Live-Performer. Mit seiner Loop Station erschafft Marvelin komplexe Klangwelten in Echtzeit – von tiefen Beats bis zu atmosphärischen Soundscapes. Als Organisator des Looparama Beatbox Festivals und Teil der deutschen Beatbox-Szene bringt er innovative Performance-Kunst auf die Bühne. Seine Karriere begann in Byron Bay, Australien."
   },
   {
     id: "stefanie",
     name: "Stefanie Sick",
-    role: "Produktion & Regie",
+    role: "Produktion & Öffentlichkeitsarbeit",
     image: stefanieSickImage,
-    description: "Stefanie Sick ist die kreative Kraft hinter der Produktion. Mit ihrer Erfahrung in Theater und Hörspiel bringt sie die Geschichten von G.K. Chesterton auf die Bühne."
+    description: "Als Creative Producerin zeichnet Stefanie Sick für die künstlerische Leitung und Gesamtkonzeption von Pater Brown – Das Live-Hörspiel verantwortlich. Mit ihrer Expertise in Produktion und Öffentlichkeitsarbeit bringt sie innovative Theater-Konzepte auf die Bühne und sorgt dafür, dass die einzigartige Verbindung aus klassischem Krimi und moderner Performance ihr Publikum findet."
   }
 ];

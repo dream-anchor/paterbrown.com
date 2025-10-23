@@ -1,15 +1,12 @@
-import { useState, useEffect } from "react";
-import logoImage from "@/assets/pater-brown-logo.png";
-import heroBackground from "@/assets/hero-background.jpg";
-import castAntoine from "@/assets/cast-antoine.jpg";
-import castWanja from "@/assets/cast-wanja.jpg";
-import antoineHeaderBg from "@/assets/antoine-header-bg.png";
-import wanjaHeaderBg from "@/assets/wanja-header-bg.png";
-import marvelinImage from "@/assets/marvelin.png";
-import stefanieSickImage from "@/assets/stefanie-sick.png";
 import StickyHeader from "@/components/StickyHeader";
+import HeroSection from "@/components/HeroSection";
+import CastSection from "@/components/CastSection";
+import ShowConceptSection from "@/components/ShowConceptSection";
+import ProjectConceptSection from "@/components/ProjectConceptSection";
+import TourDatesSection from "@/components/TourDatesSection";
+import TeamSection from "@/components/TeamSection";
 import NewsletterSection from "@/components/NewsletterSection";
-import { Instagram, Facebook } from "lucide-react";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   const [logoAnimating, setLogoAnimating] = useState(false);
