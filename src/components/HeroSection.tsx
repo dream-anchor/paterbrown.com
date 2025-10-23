@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import logoImage from "@/assets/pater-brown-logo.png";
 import heroBackground from "@/assets/hero-background.jpg";
 import antoineHeaderBg from "@/assets/antoine-header-bg.png";
@@ -11,6 +11,8 @@ const HeroSection = () => {
   const [showStickyHeader, setShowStickyHeader] = useState(false);
   const [imageOpacity, setImageOpacity] = useState(0.3);
   const [imageBrightness, setImageBrightness] = useState(1);
+  const logoRef = useRef<HTMLDivElement>(null);
+  const [logoHeight, setLogoHeight] = useState(0);
 
   useEffect(() => {
     let rafId: number;
@@ -42,6 +44,12 @@ const HeroSection = () => {
       if (rafId) cancelAnimationFrame(rafId);
     };
   }, [logoAnimating]);
+
+  useLayoutEffect(() => {
+    if (logoRef.current) {
+      setLogoHeight(logoRef.current.offsetHeight);
+    }
+  }, []);
 
   return (
     <>
@@ -80,7 +88,9 @@ const HeroSection = () => {
         </div>
 
         <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pb-20 pt-8">
-          <div className={`w-full mb-8 cinematic-enter transition-all duration-700 ${
+          <div 
+            ref={logoRef}
+            className={`w-full mb-8 cinematic-enter transition-all duration-700 ${
             logoAnimating 
               ? 'fixed top-3 left-6 max-w-[210px] z-[200]'
               : 'max-w-6xl relative'
@@ -94,7 +104,7 @@ const HeroSection = () => {
             />
           </div>
           
-          {logoAnimating && <div className="w-full max-w-6xl mb-8" style={{ height: 'auto', aspectRatio: '1920/400' }} />}
+          {logoAnimating && <div className="w-full max-w-6xl mb-8" style={{ height: `${logoHeight}px` }} />}
 
           <div className="max-w-4xl text-center space-y-8 cinematic-enter mt-48" style={{ animationDelay: "0.3s" }}>
             <p className="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.1em] text-foreground/95 leading-tight mt-16">
