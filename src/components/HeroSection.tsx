@@ -99,11 +99,13 @@ const HeroSection = () => {
           
           <div 
             ref={logoRef}
-            className={`w-full mb-8 cinematic-enter transition-all duration-700 ${
+            className={`w-full mb-8 cinematic-enter ${
             logoAnimating 
               ? 'fixed top-3 left-6 max-w-[210px] z-[200]'
               : 'max-w-6xl relative'
-          } ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`}>
+          } ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`}
+            style={{ transition: 'opacity 0.7s ease-in-out' }}
+          >
             <img 
               src={logoImage} 
               alt="Pater Brown - Das Live-Hörspiel" 
