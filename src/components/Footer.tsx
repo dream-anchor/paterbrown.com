@@ -1,74 +1,84 @@
-import { Mail, Instagram, Facebook } from "lucide-react";
-import { INSTAGRAM_URL, FACEBOOK_URL } from "@/lib/constants";
+import { Instagram } from "lucide-react";
+import { EVENTIM_AFFILIATE_URL, INSTAGRAM_URL } from "@/lib/constants";
 
 const Footer = () => {
   return (
-    <footer className="bg-card/30 border-t border-gold/20 py-16 px-6">
+    <footer className="py-20 px-6 border-t border-gold/10 bg-background" role="contentinfo">
       <div className="container mx-auto max-w-6xl">
-        <div className="grid md:grid-cols-3 gap-12 mb-12">
-          {/* Contact */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-heading tracking-wider text-foreground">Kontakt</h3>
-            <div className="space-y-2">
-              <a 
-                href="mailto:info@paterbrownlive.de" 
-                className="flex items-center gap-2 text-muted-foreground hover:text-gold transition-colors"
-                aria-label="E-Mail an info@paterbrownlive.de senden"
-              >
-                <Mail className="w-4 h-4" aria-hidden="true" />
-                info@paterbrownlive.de
+        <div className="grid md:grid-cols-3 gap-12 text-center md:text-left mb-16">
+          <div>
+            <h3 className="text-gold text-xs mb-4 tracking-[0.3em] uppercase font-bold">
+              Kontakt
+            </h3>
+            <address className="text-foreground/80 text-sm leading-relaxed not-italic">
+              <a href="mailto:info@paterbrown-live.de" className="hover:text-gold transition-colors">
+                info@paterbrown-live.de
               </a>
-            </div>
+              <br />
+              +49 123 456 789
+            </address>
           </div>
 
-          {/* Social Media */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-heading tracking-wider text-foreground">Social Media</h3>
-            <div className="flex gap-4">
-              <a 
-                href={INSTAGRAM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-gold transition-colors"
-                aria-label="Besuchen Sie uns auf Instagram"
-              >
-                <Instagram className="w-6 h-6" aria-hidden="true" />
-              </a>
-              <a 
-                href={FACEBOOK_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-gold transition-colors"
-                aria-label="Besuchen Sie uns auf Facebook"
-              >
-                <Facebook className="w-6 h-6" aria-hidden="true" />
-              </a>
-            </div>
+          <div>
+            <h3 className="text-gold text-xs mb-4 tracking-[0.3em] uppercase font-bold">
+              Social
+            </h3>
+            <nav aria-label="Social Media Links">
+              <div className="flex gap-6 justify-center md:justify-start">
+                <a 
+                  href={INSTAGRAM_URL} 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground/80 hover:text-gold transition-colors flex items-center gap-2"
+                  aria-label="Besuche uns auf Instagram"
+                >
+                  <Instagram className="w-5 h-5" aria-hidden="true" />
+                  <span className="text-sm">Instagram</span>
+                </a>
+              </div>
+            </nav>
           </div>
 
-          {/* Legal */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-heading tracking-wider text-foreground">Rechtliches</h3>
-            <div className="space-y-2">
-              <a 
-                href="/impressum" 
-                className="block text-muted-foreground hover:text-gold transition-colors"
-              >
-                Impressum
-              </a>
-              <a 
-                href="/datenschutz" 
-                className="block text-muted-foreground hover:text-gold transition-colors"
-              >
-                Datenschutz
-              </a>
-            </div>
+          <div>
+            <h3 className="text-gold text-xs mb-4 tracking-[0.3em] uppercase font-bold">
+              Rechtliches
+            </h3>
+            <nav aria-label="Rechtliche Links">
+              <div className="flex flex-col gap-2 text-sm">
+                <a href="/impressum" className="text-foreground/80 hover:text-gold transition-colors">
+                  Impressum
+                </a>
+                <a href="/datenschutz" className="text-foreground/80 hover:text-gold transition-colors">
+                  Datenschutz
+                </a>
+                <a href="/agb" className="text-foreground/80 hover:text-gold transition-colors">
+                  AGB
+                </a>
+              </div>
+            </nav>
           </div>
         </div>
 
-        <div className="border-t border-gold/20 pt-8 text-center text-muted-foreground text-sm">
-          <p>&copy; {new Date().getFullYear()} Pater Brown - Das Live-Hörspiel. Alle Rechte vorbehalten.</p>
-          <p className="mt-2">Basierend auf den Geschichten von G.K. Chesterton</p>
+        <div className="divider-gold mb-8" aria-hidden="true" />
+
+        <div className="text-center space-y-4">
+          <p className="text-foreground/60 text-sm">
+            Eine Produktion der Dream & Anchor.
+          </p>
+          <p className="text-muted-foreground text-xs tracking-wider">
+            © 2025 Pater Brown Live-Hörspiel
+          </p>
+          <div className="mt-6">
+            <a 
+              href={EVENTIM_AFFILIATE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gold hover:text-gold/80 transition-colors text-sm font-medium tracking-wide"
+              aria-label="Noch keine Tickets? Jetzt bei Eventim sichern"
+            >
+              Noch keine Tickets? Jetzt sichern →
+            </a>
+          </div>
         </div>
       </div>
     </footer>

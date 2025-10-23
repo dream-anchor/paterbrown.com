@@ -1,58 +1,84 @@
-import { Calendar } from "lucide-react";
 import { tourDates } from "@/data/tourDates";
+import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 const TourDatesSection = () => {
   return (
-    <section className="py-20 px-6 bg-gradient-to-b from-card/20 to-background">
-      <div className="container mx-auto max-w-4xl">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-heading mb-4 tracking-wider text-foreground">
-            Tourdaten 2025
+    <section 
+      className="py-24 px-6 bg-gradient-to-b from-background to-card/20"
+      aria-labelledby="tour-dates-heading"
+    >
+      <div className="container mx-auto max-w-5xl">
+        <div className="text-center mb-24">
+          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Live Tour 2025/26</p>
+          <h2 id="tour-dates-heading" className="text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase mb-8">
+            Termine
           </h2>
-          <div className="divider-gold mb-8" />
-          <p className="text-lg text-muted-foreground">
-            Sichern Sie sich jetzt Ihre Tickets für das Live-Hörspiel
+          <p className="text-xl md:text-2xl text-foreground/80 font-light leading-relaxed max-w-2xl mx-auto mt-6">
+            Erlebe Pater Brown live in deiner Stadt – sichere jetzt deine Tickets:
           </p>
         </div>
-
-        <div className="space-y-6">
+        
+        <div className="space-y-2 max-w-4xl mx-auto" role="list">
           {tourDates.map((date) => (
-            <a
+            <article 
               key={date.id}
-              href={date.ticketUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="tour-date-premium group block"
-              aria-label={`Tickets für ${date.city} am ${date.date} kaufen`}
+              className="tour-date-premium flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 group"
+              role="listitem"
             >
-              <div className="flex items-center gap-6">
-                <div className="flex-shrink-0">
-                  <Calendar className="w-8 h-8 text-gold" aria-hidden="true" />
-                </div>
-                
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-center">
-                  <div className="text-2xl md:text-3xl font-heading tracking-wide text-gold">
+              <div className="flex flex-col md:flex-row gap-6 md:gap-12 flex-1">
+                <div className="flex flex-col min-w-[160px]">
+                  <time 
+                    className="text-3xl md:text-4xl font-heading text-gold group-hover:scale-105 transition-transform"
+                    dateTime={date.date}
+                  >
                     {date.date}
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <div className="text-xl md:text-2xl font-heading tracking-wider text-foreground">
-                      {date.city}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {date.venue}
-                    </div>
-                  </div>
-                  
-                  <div className="text-right">
-                    <span className="inline-block px-6 py-3 bg-gold/10 border border-gold/30 text-gold font-heading tracking-wider transition-all group-hover:bg-gold group-hover:text-background">
-                      TICKETS
-                    </span>
-                  </div>
+                  </time>
+                  <span className="text-sm text-muted-foreground mt-1">
+                    {date.day}
+                  </span>
                 </div>
+                <div className="flex flex-col">
+                  <span className="text-2xl md:text-3xl text-foreground font-light">
+                    {date.city}
+                  </span>
+                  <span className="text-sm text-muted-foreground mt-1">
+                    {date.venue}
+                  </span>
+                </div>
+                {date.note && (
+                  <span className="self-start px-4 py-1.5 bg-gold/10 text-gold text-xs uppercase tracking-[0.2em] font-bold border border-gold/30">
+                    {date.note}
+                  </span>
+                )}
               </div>
-            </a>
+              <a 
+                href={date.ticketUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground hover:text-gold transition-all duration-300 font-medium uppercase tracking-[0.15em] text-base border-b-2 border-transparent hover:border-gold pb-1"
+                aria-label={`Tickets kaufen für ${date.city} am ${date.date}`}
+              >
+                Tickets →
+              </a>
+            </article>
           ))}
+        </div>
+        
+        <div className="text-center mt-20">
+          <a 
+            href={EVENTIM_AFFILIATE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Alle Termine auf Eventim ansehen"
+          >
+            <button className="btn-premium">
+              Alle Termine ansehen
+            </button>
+          </a>
+          
+          <p className="text-muted-foreground text-sm mt-8">
+            Tickets über Eventim (DE) und Ticketcorner (CH)
+          </p>
         </div>
       </div>
     </section>
