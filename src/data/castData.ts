@@ -31,7 +31,7 @@ export const castMembers: CastMember[] = [
     name: "Marvelin",
     role: "Beatboxer & Loop Artist",
     image: marvelinImage,
-    description: "Gründer von Beatbox Germany und gefragter Live-Performer. Mit seiner Loop Station erschafft Marvelin komplexe Klangwelten in Echtzeit – von tiefen Beats bis zu atmosphärischen Soundscapes.",
+    description: "Gründer von Beatbox Germany und gefragter Live-Performer. Mit seiner Loop Station erschafft Marvelin komplexe Klangwelten in Echtzeit – von tiefen Beats bis zu atmosphärischen Soundscapes.\n\nMit seiner Band The Razzzones gewann er 2022 den Deutschen Meistertitel und sicherte sich mit seinem Team die Bronzemedaille bei der Weltmeisterschaft 2023.\n\nMarvelin steht für die Verbindung von Kunst, Community und unbändiger Bühnenenergie.",
     highlights: ["Beatbox Germany", "Loop Artist", "Live-Performer"]
   }
 ];
@@ -55,7 +55,7 @@ export const teamMembers: TeamMember[] = [
     name: "Marvelin",
     role: "Beatboxer & Loop Artist",
     image: marvelinImage,
-    description: "Gründer von Beatbox Germany und gefragter Live-Performer. Mit seiner Loop Station erschafft Marvelin komplexe Klangwelten in Echtzeit – von tiefen Beats bis zu atmosphärischen Soundscapes. Als Organisator des Looparama Beatbox Festivals und Teil der deutschen Beatbox-Szene bringt er innovative Performance-Kunst auf die Bühne. Seine Karriere begann in Byron Bay, Australien."
+    description: "Gründer von Beatbox Germany und gefragter Live-Performer. Mit seiner Loop Station erschafft Marvelin komplexe Klangwelten in Echtzeit – von tiefen Beats bis zu atmosphärischen Soundscapes.\n\nMit seiner Band The Razzzones gewann er 2022 den Deutschen Meistertitel und sicherte sich mit seinem Team die Bronzemedaille bei der Weltmeisterschaft 2023.\n\nMarvelin steht für die Verbindung von Kunst, Community und unbändiger Bühnenenergie."
   },
   {
     id: "stefanie",
