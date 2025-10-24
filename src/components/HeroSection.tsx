@@ -89,21 +89,21 @@ const HeroSection = () => {
               transition: 'opacity 0.3s, filter 0.3s'
             }}
           >
-            <div className="w-[180px] md:w-[240px] h-auto relative">
+            <div className="relative w-[180px] md:w-[240px]">
               <img 
                 src={antoineHeaderBg}
                 alt="Antoine Monot"
-                className="w-full h-auto object-contain"
+                className="w-full h-auto object-contain block"
                 loading="eager"
                 decoding="async"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-background/50 via-70% to-background pointer-events-none" />
             </div>
-            <div className="w-[180px] md:w-[240px] h-auto relative">
+            <div className="relative w-[180px] md:w-[240px]">
               <img 
                 src={wanjaHeaderBg}
                 alt="Wanja Mues"
-                className="w-full h-auto object-contain"
+                className="w-full h-auto object-contain block"
                 loading="eager"
                 decoding="async"
               />
