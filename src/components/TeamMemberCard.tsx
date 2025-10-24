@@ -14,7 +14,7 @@ const TeamMemberCard = ({ member, reverse = false }: TeamMemberCardProps) => {
           <img 
             src={member.image}
             alt={`${member.name} - ${member.role}`}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
             loading="lazy"
           />
         </div>
