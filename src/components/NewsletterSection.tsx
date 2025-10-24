@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { Bell } from "lucide-react";
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const NewsletterSection = () => {
   const [email, setEmail] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      toast.success("Vielen Dank! Wir informieren dich über neue Termine.");
-      setEmail("");
+      navigate("/danke-newsletter");
     }
   };
 
