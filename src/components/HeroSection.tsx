@@ -153,12 +153,6 @@ const HeroSection = () => {
             </a>
           </div>
         </div>
-
-        <div className="relative z-10 pb-8 flex justify-center" role="presentation">
-          <div className="w-6 h-10 border-2 border-foreground/20 rounded-full flex justify-center" aria-label="Nach unten scrollen">
-            <div className="w-1 h-3 bg-gold rounded-full mt-2 spotlight-effect" />
-          </div>
-        </div>
       </section>
     </>
   );
