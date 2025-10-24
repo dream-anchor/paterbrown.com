@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import logoImage from "@/assets/pater-brown-logo.png";
 import ticketButton from "@/assets/tickets-sichern-button.png";
+import NeonLogo from "@/components/NeonLogo";
 
 const StickyHeader = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -24,12 +24,8 @@ const StickyHeader = () => {
     >
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center">
-          <img 
-            src={logoImage} 
-            alt="Pater Brown Logo" 
-            className="h-[84px] w-auto"
-          />
+        <div className="flex items-center h-[84px]">
+          <NeonLogo className="h-full w-auto" alt="Pater Brown Logo" />
         </div>
 
         {/* Navigation Links */}
