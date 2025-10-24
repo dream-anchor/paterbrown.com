@@ -1,9 +1,6 @@
 import { Bell } from "lucide-react";
-
 const NewsletterSection = () => {
-
-  return (
-    <section className="py-40 px-6 bg-gradient-to-b from-card/20 to-background relative overflow-hidden">
+  return <section className="py-40 px-6 bg-gradient-to-b from-card/20 to-background relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-transparent to-transparent pointer-events-none" />
       
       <div className="container mx-auto max-w-3xl relative z-10">
@@ -52,52 +49,22 @@ const NewsletterSection = () => {
             </div>
           </div>
           
-          <form 
-            method="POST" 
-            action="https://cf890442.sibforms.com/serve/MUIFAKTFM5ftDcjl36_R-0XNz_CSkr1PkKZNd9YnbE94F0mFmNvrQIaf4EXUr3IIV6yqH-KhSn6ulGWuj4VHTdC2NSGKsFLB0taZdyiFDl--e0IocY12JACdrvSmELOqYGZ_ThPKerjpMa3yXXIpb7nKnLjbmfyh0oe4T8q7_YZwcThoMRwHHn-PGQoHWNJCjra5HoFkWlazNJKy"
-            target="_self"
-            className="max-w-md mx-auto mt-8 space-y-4"
-          >
+          <form method="POST" action="https://cf890442.sibforms.com/serve/MUIFAKTFM5ftDcjl36_R-0XNz_CSkr1PkKZNd9YnbE94F0mFmNvrQIaf4EXUr3IIV6yqH-KhSn6ulGWuj4VHTdC2NSGKsFLB0taZdyiFDl--e0IocY12JACdrvSmELOqYGZ_ThPKerjpMa3yXXIpb7nKnLjbmfyh0oe4T8q7_YZwcThoMRwHHn-PGQoHWNJCjra5HoFkWlazNJKy" target="_self" className="max-w-md mx-auto mt-8 space-y-4">
             {/* Name Field */}
             <div>
-              <input
-                className="w-full px-6 py-4 bg-card/40 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground/90 focus:outline-none focus:border-gold transition-colors"
-                maxLength={200}
-                type="text"
-                id="FULLNAME"
-                name="FULLNAME"
-                autoComplete="off"
-                placeholder="Dein Name"
-              />
+              <input className="w-full px-6 py-4 bg-card/40 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground/90 focus:outline-none focus:border-gold transition-colors" maxLength={200} type="text" id="FULLNAME" name="FULLNAME" autoComplete="off" placeholder="Dein Name" />
             </div>
 
             {/* Email Field */}
             <div>
-              <input
-                className="w-full px-6 py-4 bg-card/40 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground/90 focus:outline-none focus:border-gold transition-colors"
-                type="email"
-                id="EMAIL"
-                name="EMAIL"
-                autoComplete="off"
-                placeholder="Deine E-Mail Adresse"
-                required
-              />
+              <input className="w-full px-6 py-4 bg-card/40 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground/90 focus:outline-none focus:border-gold transition-colors" type="email" id="EMAIL" name="EMAIL" autoComplete="off" placeholder="Deine E-Mail Adresse" required />
             </div>
 
             {/* GDPR Consent Checkbox */}
             <div>
               <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="mt-1 h-4 w-4 shrink-0 rounded-sm border-2 border-gold/30 bg-transparent checked:bg-gold checked:border-gold focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 cursor-pointer"
-                  value="1"
-                  id="OPT_IN"
-                  name="OPT_IN"
-                  required
-                />
-                <span className="text-sm text-muted-foreground leading-relaxed">
-                  Ich möchte deinen Newsletter erhalten und akzeptiere die Datenschutzerklärung.
-                </span>
+                <input type="checkbox" className="mt-1 h-4 w-4 shrink-0 rounded-sm border-2 border-gold/30 bg-transparent checked:bg-gold checked:border-gold focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 cursor-pointer" value="1" id="OPT_IN" name="OPT_IN" required />
+                <span className="text-sm text-muted-foreground leading-relaxed">Ich möchte den Newsletter erhalten und akzeptiere die Datenschutzerklärung.</span>
               </label>
               <p className="text-xs text-muted-foreground/70 leading-relaxed mt-2 ml-7">
                 Du kannst den Newsletter jederzeit über den Link in unserem Newsletter abbestellen.
@@ -109,12 +76,7 @@ const NewsletterSection = () => {
             <div className="sib-form__declaration text-center py-4">
               <p className="text-xs text-muted-foreground/70 leading-relaxed">
                 Wir verwenden Brevo als unsere Marketing-Plattform. Indem du das Formular absendest, erklärst du dich einverstanden, dass die von dir angegebenen persönlichen Informationen an Brevo zur Bearbeitung übertragen werden gemäß den{" "}
-                <a
-                  target="_blank"
-                  href="https://www.brevo.com/de/legal/privacypolicy/"
-                  rel="noopener noreferrer"
-                  className="text-gold/70 hover:text-gold underline transition-colors"
-                >
+                <a target="_blank" href="https://www.brevo.com/de/legal/privacypolicy/" rel="noopener noreferrer" className="text-gold/70 hover:text-gold underline transition-colors">
                   Datenschutzrichtlinien von Brevo
                 </a>.
               </p>
@@ -122,10 +84,7 @@ const NewsletterSection = () => {
 
             {/* Submit Button */}
             <div className="pt-4">
-              <button
-                type="submit"
-                className="btn-premium w-full"
-              >
+              <button type="submit" className="btn-premium w-full">
                 Anmelden
               </button>
             </div>
@@ -136,8 +95,6 @@ const NewsletterSection = () => {
           </form>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default NewsletterSection;
