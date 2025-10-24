@@ -155,7 +155,7 @@ const HeroSection = () => {
             </a>
 
             <p className="text-gold/70 text-sm uppercase tracking-[0.25em] mt-8 cinematic-enter" style={{ animationDelay: "0.8s" }}>
-              📍 Live 2026 in Hamburg • München • Bremen • Zürich
+              📍 Live 2026 in Hamburg • Bremen • Neu-Isenburg / Frankfurt a.M. • München • Zürich (CH)
             </p>
           </div>
         </div>
