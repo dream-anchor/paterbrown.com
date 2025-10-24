@@ -9,7 +9,7 @@ const NewsletterSection = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      navigate("/danke-newsletter");
+      navigate("/newsletter-gesendet");
     }
   };
 
