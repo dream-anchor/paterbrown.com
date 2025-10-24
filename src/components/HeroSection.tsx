@@ -81,8 +81,8 @@ const HeroSection = () => {
           </div>
 
           <div 
-            className="flex justify-center gap-12 mb-16 mt-8 cinematic-enter relative"
-            style={{ 
+            className="flex justify-center gap-12 mb-16 mt-20 cinematic-enter relative"
+            style={{
               animationDelay: "0.2s",
               opacity: imageOpacity,
               filter: `brightness(${imageBrightness})`,
@@ -97,7 +97,7 @@ const HeroSection = () => {
                 loading="eager"
                 decoding="async"
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-background/50 via-70% to-background pointer-events-none" />
             </div>
             <div className="w-[180px] md:w-[240px] h-auto relative">
               <img 
@@ -107,7 +107,7 @@ const HeroSection = () => {
                 loading="eager"
                 decoding="async"
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-background/50 via-70% to-background pointer-events-none" />
             </div>
           </div>
 
