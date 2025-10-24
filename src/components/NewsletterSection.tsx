@@ -1,17 +1,14 @@
 import { useState } from "react";
 import { Bell } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 const NewsletterSection = () => {
-  const [email, setEmail] = useState("");
-  const navigate = useNavigate();
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      navigate("/newsletter-gesendet");
-    }
-  };
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    consent: false
+  });
 
   return (
     <section className="py-40 px-6 bg-gradient-to-b from-card/20 to-background relative overflow-hidden">
@@ -39,21 +36,105 @@ const NewsletterSection = () => {
             <span>Behind-the-Scenes</span>
           </div>
           
-          <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-8">
-            <div className="flex flex-col sm:flex-row gap-4">
+          <form 
+            method="POST" 
+            action="https://cf890442.sibforms.com/serve/MUIFAKTFM5ftDcjl36_R-0XNz_CSkr1PkKZNd9YnbE94F0mFmNvrQIaf4EXUr3IIV6yqH-KhSn6ulGWuj4VHTdC2NSGKsFLB0taZdyiFDl--e0IocY12JACdrvSmELOqYGZ_ThPKerjpMa3yXXIpb7nKnLjbmfyh0oe4T8q7_YZwcThoMRwHHn-PGQoHWNJCjra5HoFkWlazNJKy"
+            id="sib-form"
+            className="max-w-md mx-auto mt-8 space-y-4"
+          >
+            {/* Name Field */}
+            <div>
+              <input
+                type="text"
+                id="FULLNAME"
+                name="FULLNAME"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Dein Name (optional)"
+                className="w-full px-6 py-4 bg-background/50 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold transition-colors"
+                autoComplete="off"
+                maxLength={200}
+              />
+            </div>
+
+            {/* Email Field */}
+            <div>
               <input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="EMAIL"
+                name="EMAIL"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="Deine E-Mail-Adresse"
                 required
-                className="flex-1 px-6 py-4 bg-background/50 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold transition-colors"
+                className="w-full px-6 py-4 bg-background/50 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold transition-colors"
+                autoComplete="off"
               />
+            </div>
+
+            {/* GDPR Consent Checkbox */}
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="OPT_IN"
+                  name="OPT_IN"
+                  value="1"
+                  checked={formData.consent}
+                  onCheckedChange={(checked) => setFormData({ ...formData, consent: checked as boolean })}
+                  required
+                  className="mt-1 border-gold/30 data-[state=checked]:bg-gold data-[state=checked]:border-gold"
+                />
+                <Label 
+                  htmlFor="OPT_IN" 
+                  className="text-sm text-muted-foreground leading-relaxed cursor-pointer"
+                >
+                  Ich möchte Updates zu neuen Terminen erhalten und akzeptiere die{" "}
+                  <a 
+                    href="/datenschutz" 
+                    className="text-gold hover:text-gold/80 underline transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Datenschutzerklärung
+                  </a>.
+                </Label>
+              </div>
+              
+              <p className="text-xs text-muted-foreground/70 leading-relaxed">
+                Du kannst den Newsletter jederzeit abbestellen. Wir verwenden Brevo als Marketing-Plattform. 
+                Mit dem Absenden stimmst du zu, dass deine Daten gemäß den{" "}
+                <a 
+                  href="https://www.brevo.com/de/legal/privacypolicy/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gold/70 hover:text-gold underline transition-colors"
+                >
+                  Datenschutzrichtlinien von Brevo
+                </a>{" "}
+                verarbeitet werden.
+              </p>
+            </div>
+
+            {/* reCAPTCHA */}
+            <div className="flex justify-center py-2">
+              <div 
+                className="g-recaptcha" 
+                data-sitekey="6Lc5r_UrAAAAAMEpIzFr9-eojqEQ0wPvEkugYWA4"
+                data-theme="dark"
+              />
+            </div>
+
+            {/* Hidden Fields */}
+            <input type="text" name="email_address_check" value="" className="hidden" />
+            <input type="hidden" name="locale" value="de" />
+
+            {/* Submit Button */}
+            <div className="pt-4">
               <button
                 type="submit"
-                className="btn-premium"
+                className="btn-premium w-full"
               >
-                Senden
+                Anmelden
               </button>
             </div>
           </form>
