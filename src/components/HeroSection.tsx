@@ -58,31 +58,9 @@ const HeroSection = () => {
         />
         <div className="absolute inset-0 hero-overlay" />
         
-        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-          <div className="absolute left-0 top-[380px] md:top-[440px] h-[28%] md:h-[32%] w-auto transition-all duration-300" style={{ transform: 'translateX(28%)', opacity: imageOpacity, filter: `brightness(${imageBrightness})` }}>
-            <img 
-              src={antoineHeaderBg}
-              alt=""
-              className="h-full w-auto object-contain object-top"
-              loading="eager"
-              decoding="async"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
-          </div>
-          <div className="absolute right-0 top-[400px] md:top-[456px] h-[28%] md:h-[32%] w-auto transition-all duration-300" style={{ transform: 'translateX(-28%)', opacity: imageOpacity, filter: `brightness(${imageBrightness})` }}>
-            <img 
-              src={wanjaHeaderBg}
-              alt=""
-              className="h-full w-auto object-contain object-top"
-              loading="eager"
-              decoding="async"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
-          </div>
-        </div>
 
         <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pb-20 pt-8">
-          <div className="w-full max-w-[600px] mb-8 cinematic-enter relative h-[120px]">
+          <div className="w-full max-w-4xl mb-12 cinematic-enter relative h-[180px]">
             <div
               ref={logoRef}
               className={`absolute w-full ${
@@ -96,6 +74,35 @@ const HeroSection = () => {
                 src={logoImage} 
                 alt="Pater Brown - Das Live-Hörspiel" 
                 className="w-full h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)]"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+          </div>
+
+          <div 
+            className="flex justify-center gap-8 mb-16 cinematic-enter"
+            style={{ 
+              animationDelay: "0.2s",
+              opacity: imageOpacity,
+              filter: `brightness(${imageBrightness})`,
+              transition: 'opacity 0.3s, filter 0.3s'
+            }}
+          >
+            <div className="w-[200px] md:w-[280px] h-auto">
+              <img 
+                src={antoineHeaderBg}
+                alt="Antoine Monot"
+                className="w-full h-auto object-contain"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+            <div className="w-[200px] md:w-[280px] h-auto">
+              <img 
+                src={wanjaHeaderBg}
+                alt="Wanja Mues"
+                className="w-full h-auto object-contain"
                 loading="eager"
                 decoding="async"
               />
