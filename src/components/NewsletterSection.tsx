@@ -1,12 +1,21 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { Bell } from "lucide-react";
 
 const NewsletterSection = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    consent: false
-  });
+  // Add handleCaptchaResponse to window for reCAPTCHA callback
+  useEffect(() => {
+    (window as any).handleCaptchaResponse = function() {
+      const event = new Event('captchaChange');
+      const captchaElement = document.getElementById('sib-captcha');
+      if (captchaElement) {
+        captchaElement.dispatchEvent(event);
+      }
+    };
+    
+    return () => {
+      delete (window as any).handleCaptchaResponse;
+    };
+  }, []);
 
   return (
     <section className="py-40 px-6 bg-gradient-to-b from-card/20 to-background relative overflow-hidden">
@@ -76,8 +85,6 @@ const NewsletterSection = () => {
                   name="FULLNAME"
                   autoComplete="off"
                   placeholder="Dein Name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
                 <label className="entry__error entry__error--primary"></label>
               </div>
@@ -95,8 +102,6 @@ const NewsletterSection = () => {
                   placeholder="Deine E-Mail Adresse"
                   data-required="true"
                   required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
                 <label className="entry__error entry__error--primary"></label>
               </div>
@@ -107,16 +112,14 @@ const NewsletterSection = () => {
               <div className="form__entry entry_mcq">
                 <div className="form__label-row">
                   <div className="entry__choice">
-                    <label className="flex items-start gap-3">
+                    <label className="flex items-start gap-3 cursor-pointer">
                       <input
                         type="checkbox"
-                        className="input_replaced mt-1 h-4 w-4 shrink-0 rounded-sm border-2 border-gold/30 bg-transparent checked:bg-gold checked:border-gold focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
+                        className="input_replaced mt-1 h-4 w-4 shrink-0 rounded-sm border-2 border-gold/30 bg-transparent checked:bg-gold checked:border-gold focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 cursor-pointer"
                         value="1"
                         id="OPT_IN"
                         name="OPT_IN"
                         required
-                        checked={formData.consent}
-                        onChange={(e) => setFormData({ ...formData, consent: e.target.checked })}
                       />
                       <span className="checkbox checkbox_tick_positive" style={{ marginLeft: 0 }}></span>
                       <span className="text-sm text-muted-foreground leading-relaxed">
@@ -182,15 +185,6 @@ const NewsletterSection = () => {
             <input type="text" name="email_address_check" value="" className="input--hidden" />
             <input type="hidden" name="locale" value="de" />
           </form>
-          
-          <script dangerouslySetInnerHTML={{
-            __html: `
-              function handleCaptchaResponse() {
-                var event = new Event('captchaChange');
-                document.getElementById('sib-captcha').dispatchEvent(event);
-              }
-            `
-          }}></script>
         </div>
       </div>
     </section>
