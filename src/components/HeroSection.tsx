@@ -81,7 +81,7 @@ const HeroSection = () => {
           </div>
 
           <div 
-            className="flex justify-center gap-8 mb-16 mt-32 cinematic-enter"
+            className="flex justify-center gap-8 mb-16 mt-48 cinematic-enter"
             style={{ 
               animationDelay: "0.2s",
               opacity: imageOpacity,
