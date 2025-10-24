@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import logoImage from "@/assets/pater-brown-logo.png";
 import heroBackground from "@/assets/hero-background.jpg";
 import antoineHeaderBg from "@/assets/antoine-header-bg.png";
@@ -12,7 +12,6 @@ const HeroSection = () => {
   const [imageOpacity, setImageOpacity] = useState(0.3);
   const [imageBrightness, setImageBrightness] = useState(1);
   const logoRef = useRef<HTMLDivElement>(null);
-  const [logoHeight, setLogoHeight] = useState(0);
 
   useEffect(() => {
     let rafId: number;
@@ -45,11 +44,6 @@ const HeroSection = () => {
     };
   }, [logoAnimating]);
 
-  useLayoutEffect(() => {
-    if (logoRef.current) {
-      setLogoHeight(logoRef.current.offsetHeight);
-    }
-  }, []);
 
   return (
     <>
@@ -88,39 +82,30 @@ const HeroSection = () => {
         </div>
 
         <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pb-20 pt-8">
-          <div
-            ref={logoRef}
-            className={`w-full mb-8 cinematic-enter ${
-            logoAnimating 
-              ? 'fixed top-3 left-6 max-w-[210px] z-[200]'
-              : 'max-w-6xl relative'
-          } ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`}
-            style={{ transition: 'opacity 0.7s ease-in-out' }}
-          >
-            <img 
-              src={logoImage} 
-              alt="Pater Brown - Das Live-Hörspiel" 
-              className="w-full h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)]"
-              loading="eager"
-              decoding="async"
-            />
+          <div className="w-full max-w-6xl mb-8 cinematic-enter">
+            <div
+              ref={logoRef}
+              className={`w-full ${
+              logoAnimating 
+                ? 'fixed top-3 left-6 max-w-[210px] z-[200]'
+                : 'relative'
+            } ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`}
+              style={{ transition: 'opacity 0.7s ease-in-out' }}
+            >
+              <img 
+                src={logoImage} 
+                alt="Pater Brown - Das Live-Hörspiel" 
+                className="w-full h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)]"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
           </div>
-
-          {logoAnimating && (
-            <div 
-              style={{ 
-                height: `${logoHeight}px`,
-                transition: 'height 0.7s ease-in-out'
-              }} 
-            />
-          )}
 
           <div 
             className="max-w-4xl text-center space-y-8 cinematic-enter"
             style={{ 
-              animationDelay: "0.3s",
-              marginTop: logoAnimating ? '64px' : '192px',
-              transition: 'margin-top 0.7s ease-in-out'
+              animationDelay: "0.3s"
             }}
           >
             <p className="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.1em] text-foreground/95 leading-tight mt-16">
