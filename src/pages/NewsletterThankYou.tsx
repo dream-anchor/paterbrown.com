@@ -1,6 +1,7 @@
 import logoImage from "@/assets/pater-brown-logo.png";
 import Footer from "@/components/Footer";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
+import { Link } from "react-router-dom";
 
 const NewsletterThankYou = () => {
   return (
@@ -11,11 +12,13 @@ const NewsletterThankYou = () => {
         <div className="max-w-4xl w-full text-center">
           {/* Logo */}
           <div className="mb-16 cinematic-enter">
-            <img 
-              src={logoImage} 
-              alt="Pater Brown - Das Live-Hörspiel" 
-              className="w-full max-w-md mx-auto h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)]"
-            />
+            <Link to="/" aria-label="Zurück zur Startseite">
+              <img 
+                src={logoImage} 
+                alt="Pater Brown - Das Live-Hörspiel" 
+                className="w-full max-w-md mx-auto h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)] cursor-pointer hover:scale-105 transition-transform duration-300"
+              />
+            </Link>
           </div>
 
           {/* Dankestext */}
