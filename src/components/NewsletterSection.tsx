@@ -55,70 +55,53 @@ const NewsletterSection = () => {
           <form 
             method="POST" 
             action="https://cf890442.sibforms.com/serve/MUIFAKTFM5ftDcjl36_R-0XNz_CSkr1PkKZNd9YnbE94F0mFmNvrQIaf4EXUr3IIV6yqH-KhSn6ulGWuj4VHTdC2NSGKsFLB0taZdyiFDl--e0IocY12JACdrvSmELOqYGZ_ThPKerjpMa3yXXIpb7nKnLjbmfyh0oe4T8q7_YZwcThoMRwHHn-PGQoHWNJCjra5HoFkWlazNJKy"
-            id="sib-form"
-            data-type="subscription"
+            target="_self"
             className="max-w-md mx-auto mt-8 space-y-4"
           >
             {/* Name Field */}
-            <div className="sib-input sib-form-block">
-              <div className="form__entry entry_block">
-                <input
-                  className="input w-full px-6 py-4 bg-card/40 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground/90 focus:outline-none focus:border-gold transition-colors"
-                  maxLength={200}
-                  type="text"
-                  id="FULLNAME"
-                  name="FULLNAME"
-                  autoComplete="off"
-                  placeholder="Dein Name"
-                />
-                <label className="entry__error entry__error--primary"></label>
-              </div>
+            <div>
+              <input
+                className="w-full px-6 py-4 bg-card/40 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground/90 focus:outline-none focus:border-gold transition-colors"
+                maxLength={200}
+                type="text"
+                id="FULLNAME"
+                name="FULLNAME"
+                autoComplete="off"
+                placeholder="Dein Name"
+              />
             </div>
 
             {/* Email Field */}
-            <div className="sib-input sib-form-block">
-              <div className="form__entry entry_block">
-                <input
-                  className="input w-full px-6 py-4 bg-card/40 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground/90 focus:outline-none focus:border-gold transition-colors"
-                  type="text"
-                  id="EMAIL"
-                  name="EMAIL"
-                  autoComplete="off"
-                  placeholder="Deine E-Mail Adresse"
-                  data-required="true"
-                  required
-                />
-                <label className="entry__error entry__error--primary"></label>
-              </div>
+            <div>
+              <input
+                className="w-full px-6 py-4 bg-card/40 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground/90 focus:outline-none focus:border-gold transition-colors"
+                type="email"
+                id="EMAIL"
+                name="EMAIL"
+                autoComplete="off"
+                placeholder="Deine E-Mail Adresse"
+                required
+              />
             </div>
 
             {/* GDPR Consent Checkbox */}
-            <div className="sib-optin sib-form-block" data-required="true">
-              <div className="form__entry entry_mcq">
-                <div className="form__label-row">
-                  <div className="entry__choice">
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className="input_replaced mt-1 h-4 w-4 shrink-0 rounded-sm border-2 border-gold/30 bg-transparent checked:bg-gold checked:border-gold focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 cursor-pointer"
-                        value="1"
-                        id="OPT_IN"
-                        name="OPT_IN"
-                        required
-                      />
-                      <span className="checkbox checkbox_tick_positive" style={{ marginLeft: 0 }}></span>
-                      <span className="text-sm text-muted-foreground leading-relaxed">
-                        Ich möchte deinen Newsletter erhalten und akzeptiere die Datenschutzerklärung.
-                        <span data-required="*" style={{ display: "inline" }} className="entry__label entry__label_optin"></span>
-                      </span>
-                    </label>
-                  </div>
-                </div>
-                <label className="entry__error entry__error--primary"></label>
-                <label className="entry__specification text-xs text-muted-foreground/70 leading-relaxed block mt-2">
-                  Du kannst den Newsletter jederzeit über den Link in unserem Newsletter abbestellen.
-                </label>
-              </div>
+            <div>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-1 h-4 w-4 shrink-0 rounded-sm border-2 border-gold/30 bg-transparent checked:bg-gold checked:border-gold focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 cursor-pointer"
+                  value="1"
+                  id="OPT_IN"
+                  name="OPT_IN"
+                  required
+                />
+                <span className="text-sm text-muted-foreground leading-relaxed">
+                  Ich möchte deinen Newsletter erhalten und akzeptiere die Datenschutzerklärung.
+                </span>
+              </label>
+              <p className="text-xs text-muted-foreground/70 leading-relaxed mt-2 ml-7">
+                Du kannst den Newsletter jederzeit über den Link in unserem Newsletter abbestellen.
+              </p>
             </div>
 
 
@@ -141,12 +124,8 @@ const NewsletterSection = () => {
             <div className="pt-4">
               <button
                 type="submit"
-                form="sib-form"
-                className="btn-premium w-full sib-form-block__button sib-form-block__button-with-loader"
+                className="btn-premium w-full"
               >
-                <svg className="icon clickable__icon progress-indicator__icon sib-hide-loader-icon hidden" viewBox="0 0 512 512">
-                  <path d="M460.116 373.846l-20.823-12.022c-5.541-3.199-7.54-10.159-4.663-15.874 30.137-59.886 28.343-131.652-5.386-189.946-33.641-58.394-94.896-95.833-161.827-99.676C261.028 55.961 256 50.751 256 44.352V20.309c0-6.904 5.808-12.337 12.703-11.982 83.556 4.306 160.163 50.864 202.11 123.677 42.063 72.696 44.079 162.316 6.031 236.832-3.14 6.148-10.75 8.461-16.728 5.01z" />
-                </svg>
                 Anmelden
               </button>
             </div>
