@@ -32,6 +32,16 @@ const StickyHeader = () => {
           />
         </div>
 
+        {/* Navigation Links */}
+        <div className="hidden md:flex items-center gap-6">
+          <a 
+            href="#tour-dates"
+            className="text-gold/80 hover:text-gold transition-colors text-sm uppercase tracking-[0.2em] font-medium"
+          >
+            Termine ansehen
+          </a>
+        </div>
+
         {/* Ticket Button */}
         <a 
           href="https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp"

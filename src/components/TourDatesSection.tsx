@@ -4,6 +4,7 @@ import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 const TourDatesSection = () => {
   return (
     <section 
+      id="tour-dates"
       className="py-24 px-6 bg-gradient-to-b from-background to-card/20"
       aria-labelledby="tour-dates-heading"
     >
