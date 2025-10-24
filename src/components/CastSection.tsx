@@ -12,7 +12,7 @@ const CastSection = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-gold to-transparent opacity-50" aria-hidden="true" />
       
       <div className="container mx-auto max-w-7xl">
-        <div className="text-center mb-32">
+        <div className="text-center mb-24">
           <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Die Stars</p>
           <h2 id="cast-heading" className="text-6xl md:text-8xl lg:text-9xl font-heading tracking-wider text-foreground uppercase">
             Cast

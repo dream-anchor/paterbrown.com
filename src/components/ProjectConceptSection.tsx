@@ -9,7 +9,7 @@ const ProjectConceptSection = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-transparent to-transparent pointer-events-none" aria-hidden="true" />
       
       <div className="container mx-auto max-w-5xl relative z-10">
-        <div className="text-center mb-20">
+        <div className="text-center mb-24">
           <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Das Konzept</p>
           <h2 id="concept-heading" className="text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase mb-12">
             Das Erlebnis

@@ -1,6 +1,6 @@
 import { Bell } from "lucide-react";
 const NewsletterSection = () => {
-  return <section className="py-40 px-6 bg-gradient-to-b from-card/20 to-background relative overflow-hidden">
+  return <section className="py-24 px-6 bg-gradient-to-b from-card/20 to-background relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-transparent to-transparent pointer-events-none" />
       
       <div className="container mx-auto max-w-3xl relative z-10">
