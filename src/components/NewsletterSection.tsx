@@ -1,21 +1,6 @@
-import { useEffect } from "react";
 import { Bell } from "lucide-react";
 
 const NewsletterSection = () => {
-  // Add handleCaptchaResponse to window for reCAPTCHA callback
-  useEffect(() => {
-    (window as any).handleCaptchaResponse = function() {
-      const event = new Event('captchaChange');
-      const captchaElement = document.getElementById('sib-captcha');
-      if (captchaElement) {
-        captchaElement.dispatchEvent(event);
-      }
-    };
-    
-    return () => {
-      delete (window as any).handleCaptchaResponse;
-    };
-  }, []);
 
   return (
     <section className="py-40 px-6 bg-gradient-to-b from-card/20 to-background relative overflow-hidden">
@@ -136,21 +121,6 @@ const NewsletterSection = () => {
               </div>
             </div>
 
-            {/* reCAPTCHA */}
-            <div className="sib-captcha sib-form-block">
-              <div className="form__entry entry_block">
-                <div className="form__label-row flex justify-center py-2">
-                  <div
-                    className="g-recaptcha sib-visible-recaptcha"
-                    id="sib-captcha"
-                    data-sitekey="6Lc5r_UrAAAAAMEpIzFr9-eojqEQ0wPvEkugYWA4"
-                    data-callback="handleCaptchaResponse"
-                    style={{ direction: "ltr" }}
-                  />
-                </div>
-                <label className="entry__error entry__error--primary"></label>
-              </div>
-            </div>
 
             {/* Brevo Declaration */}
             <div className="sib-form__declaration text-center py-4">
