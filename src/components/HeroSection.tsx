@@ -81,7 +81,7 @@ const HeroSection = () => {
           </div>
 
           <div 
-            className="flex justify-center gap-2 mb-16 mt-32 cinematic-enter"
+            className="flex justify-center gap-8 mb-16 mt-32 cinematic-enter"
             style={{ 
               animationDelay: "0.2s",
               opacity: imageOpacity,
@@ -89,20 +89,30 @@ const HeroSection = () => {
               transition: 'opacity 0.3s, filter 0.3s'
             }}
           >
-            <div className="w-[200px] md:w-[280px] h-auto">
+            <div className="w-[200px] md:w-[280px] h-auto relative group">
+              <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-background/60 pointer-events-none rounded-lg" />
               <img 
                 src={antoineHeaderBg}
                 alt="Antoine Monot"
-                className="w-full h-auto object-contain"
+                className="w-full h-auto object-contain transition-all duration-500"
+                style={{
+                  filter: 'drop-shadow(0 0 40px rgba(234, 179, 8, 0.2))',
+                  mixBlendMode: 'lighten'
+                }}
                 loading="eager"
                 decoding="async"
               />
             </div>
-            <div className="w-[200px] md:w-[280px] h-auto">
+            <div className="w-[200px] md:w-[280px] h-auto relative group">
+              <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-background/60 pointer-events-none rounded-lg" />
               <img 
                 src={wanjaHeaderBg}
                 alt="Wanja Mues"
-                className="w-full h-auto object-contain"
+                className="w-full h-auto object-contain transition-all duration-500"
+                style={{
+                  filter: 'drop-shadow(0 0 40px rgba(234, 179, 8, 0.2))',
+                  mixBlendMode: 'lighten'
+                }}
                 loading="eager"
                 decoding="async"
               />

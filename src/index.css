@@ -261,4 +261,9 @@ All colors MUST be HSL.
   .spotlight-effect {
     animation: spotlight 4s ease-in-out infinite;
   }
+
+  /* Cinematic Vignette Effect */
+  .bg-gradient-radial {
+    background: radial-gradient(circle, transparent 40%, rgba(0, 0, 0, 0.6) 100%);
+  }
 }
