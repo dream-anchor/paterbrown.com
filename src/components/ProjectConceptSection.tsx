@@ -18,7 +18,7 @@ const ProjectConceptSection = () => {
             Ein Abend voller Spannung, Humor und Gänsehaut.
           </p>
           <p className="text-lg md:text-xl text-gold/80 font-light leading-relaxed max-w-3xl mx-auto mt-4">
-            Live-Performance mit zwei Schauspielern – und jede Stimme ein Verdächtiger ist.
+            Zwei Schauspieler. Alle Stimmen. Jeder verdächtig.
           </p>
         </div>
         
