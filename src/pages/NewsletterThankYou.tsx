@@ -12,13 +12,15 @@ const NewsletterThankYou = () => {
         <div className="max-w-4xl w-full text-center">
           {/* Logo */}
           <div className="mb-16 cinematic-enter">
-            <Link to="/" aria-label="Zurück zur Startseite">
-              <img 
-                src={logoImage} 
-                alt="Pater Brown - Das Live-Hörspiel" 
-                className="w-full max-w-md mx-auto h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)] cursor-pointer hover:scale-105 transition-transform duration-300"
-              />
-            </Link>
+            <div className="bg-foreground/5 rounded-lg p-8 inline-block">
+              <Link to="/" aria-label="Zurück zur Startseite">
+                <img 
+                  src={logoImage} 
+                  alt="Pater Brown - Das Live-Hörspiel" 
+                  className="w-full max-w-md mx-auto h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)] cursor-pointer hover:scale-105 transition-transform duration-300"
+                />
+              </Link>
+            </div>
           </div>
 
           {/* Dankestext */}
