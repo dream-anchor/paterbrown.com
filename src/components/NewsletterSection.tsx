@@ -51,7 +51,7 @@ const NewsletterSection = () => {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Dein Name (optional)"
-                className="w-full px-6 py-4 bg-background/50 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold transition-colors"
+                className="w-full px-6 py-4 bg-card/40 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground/90 focus:outline-none focus:border-gold transition-colors"
                 autoComplete="off"
                 maxLength={200}
               />
@@ -67,7 +67,7 @@ const NewsletterSection = () => {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="Deine E-Mail-Adresse"
                 required
-                className="w-full px-6 py-4 bg-background/50 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold transition-colors"
+                className="w-full px-6 py-4 bg-card/40 border-2 border-gold/30 rounded-none text-foreground placeholder:text-muted-foreground/90 focus:outline-none focus:border-gold transition-colors"
                 autoComplete="off"
               />
             </div>
