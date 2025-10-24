@@ -82,10 +82,10 @@ const HeroSection = () => {
         </div>
 
         <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pb-20 pt-8">
-          <div className="w-full max-w-6xl mb-8 cinematic-enter">
+          <div className="w-full max-w-[600px] mb-8 cinematic-enter relative h-[120px]">
             <div
               ref={logoRef}
-              className={`w-full ${
+              className={`absolute w-full ${
               logoAnimating 
                 ? 'fixed top-3 left-6 max-w-[210px] z-[200]'
                 : 'relative'
