@@ -50,7 +50,9 @@ const NewsletterThankYou = () => {
         </div>
       </main>
 
-      <Footer />
+      <div className="relative z-10">
+        <Footer />
+      </div>
     </div>
   );
 };
