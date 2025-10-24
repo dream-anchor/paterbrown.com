@@ -145,6 +145,7 @@ const NewsletterSection = () => {
                     id="sib-captcha"
                     data-sitekey="6Lc5r_UrAAAAAMEpIzFr9-eojqEQ0wPvEkugYWA4"
                     data-callback="handleCaptchaResponse"
+                    style={{ direction: "ltr" }}
                   />
                 </div>
                 <label className="entry__error entry__error--primary"></label>
