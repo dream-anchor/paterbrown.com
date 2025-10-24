@@ -81,35 +81,31 @@ const HeroSection = () => {
           </div>
 
           <div 
-            className="flex justify-center gap-12 mb-16 mt-20 cinematic-enter relative"
-            style={{
+            className="flex justify-center gap-8 mb-16 cinematic-enter"
+            style={{ 
               animationDelay: "0.2s",
               opacity: imageOpacity,
               filter: `brightness(${imageBrightness})`,
               transition: 'opacity 0.3s, filter 0.3s'
             }}
           >
-            <div className="relative w-[180px] md:w-[240px] overflow-hidden">
+            <div className="w-[200px] md:w-[280px] h-auto">
               <img 
                 src={antoineHeaderBg}
                 alt="Antoine Monot"
-                className="w-full h-auto object-contain block"
-                style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                className="w-full h-auto object-contain"
                 loading="eager"
                 decoding="async"
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-background/50 via-70% to-background pointer-events-none" />
             </div>
-            <div className="relative w-[180px] md:w-[240px] overflow-hidden">
+            <div className="w-[200px] md:w-[280px] h-auto">
               <img 
                 src={wanjaHeaderBg}
                 alt="Wanja Mues"
-                className="w-full h-auto object-contain block"
-                style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                className="w-full h-auto object-contain"
                 loading="eager"
                 decoding="async"
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-background/50 via-70% to-background pointer-events-none" />
             </div>
           </div>
 
