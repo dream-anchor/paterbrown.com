@@ -101,21 +101,6 @@ export default {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
-        "neonFlicker": {
-          "0%": { opacity: "1", filter: "brightness(1) drop-shadow(0 0 18px rgba(255,180,70,.8))" },
-          "10%": { opacity: ".65", filter: "brightness(.8) drop-shadow(0 0 12px rgba(255,180,70,.5))" },
-          "13%": { opacity: ".25", filter: "brightness(.4) drop-shadow(0 0 6px rgba(255,180,70,.3))" },
-          "18%": { opacity: ".9", filter: "brightness(1.1) drop-shadow(0 0 20px rgba(255,180,70,.85))" },
-          "24%": { opacity: ".55", filter: "brightness(.7) drop-shadow(0 0 10px rgba(255,180,70,.45))" },
-          "31%": { opacity: "1", filter: "brightness(1) drop-shadow(0 0 18px rgba(255,180,70,.8))" },
-          "38%": { opacity: ".35", filter: "brightness(.6) drop-shadow(0 0 8px rgba(255,180,70,.35))" },
-          "46%": { opacity: "1", filter: "brightness(1.15) drop-shadow(0 0 22px rgba(255,180,70,.9))" },
-          "100%": { opacity: "1", filter: "brightness(1) drop-shadow(0 0 18px rgba(255,180,70,.8))" }
-        },
-        "subtleGlow": {
-          "0%, 100%": { filter: "drop-shadow(0 0 18px rgba(255,180,70,.75))" },
-          "50%": { filter: "drop-shadow(0 0 19px rgba(255,180,70,.78))" }
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -126,8 +111,6 @@ export default {
         "slide-up": "slide-up 0.8s ease-out",
         "glow": "glow 2s ease-in-out infinite",
         "shimmer": "shimmer 3s linear infinite",
-        "neon-flicker": "neonFlicker 0.14s steps(20, end) both",
-        "subtle-glow": "subtleGlow 5s ease-in-out infinite",
       },
     },
   },

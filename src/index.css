@@ -246,10 +246,6 @@ All colors MUST be HSL.
     .spotlight-effect {
       animation: none;
     }
-    .neon-logo-base,
-    .neon-flicker {
-      animation: none !important;
-    }
   }
 
   /* Spotlight effect */
@@ -264,37 +260,6 @@ All colors MUST be HSL.
 
   .spotlight-effect {
     animation: spotlight 4s ease-in-out infinite;
-  }
-
-  /* Neon Logo Effects */
-  @keyframes neonFlicker {
-    0%   { opacity: 1; filter: brightness(1) drop-shadow(0 0 18px rgba(255,180,70,.8)); }
-    10%  { opacity: .65; filter: brightness(.8) drop-shadow(0 0 12px rgba(255,180,70,.5)); }
-    13%  { opacity: .25; filter: brightness(.4) drop-shadow(0 0 6px rgba(255,180,70,.3)); }
-    18%  { opacity: .9;  filter: brightness(1.1) drop-shadow(0 0 20px rgba(255,180,70,.85)); }
-    24%  { opacity: .55; filter: brightness(.7) drop-shadow(0 0 10px rgba(255,180,70,.45)); }
-    31%  { opacity: 1;   filter: brightness(1) drop-shadow(0 0 18px rgba(255,180,70,.8)); }
-    38%  { opacity: .35; filter: brightness(.6) drop-shadow(0 0 8px rgba(255,180,70,.35)); }
-    46%  { opacity: 1;   filter: brightness(1.15) drop-shadow(0 0 22px rgba(255,180,70,.9)); }
-    100% { opacity: 1;   filter: brightness(1) drop-shadow(0 0 18px rgba(255,180,70,.8)); }
-  }
-
-  @keyframes subtleGlow {
-    0%, 100% { filter: drop-shadow(0 0 18px rgba(255,180,70,.75)); }
-    50% { filter: drop-shadow(0 0 19px rgba(255,180,70,.78)); }
-  }
-
-  .neon-logo-base {
-    filter: drop-shadow(0 0 18px rgba(255,180,70,.75)) drop-shadow(0 0 11px rgba(255,140,40,.7));
-    animation: subtleGlow 5s ease-in-out infinite;
-  }
-
-  .neon-logo-layer {
-    filter: drop-shadow(0 0 18px rgba(255,180,70,.75)) drop-shadow(0 0 11px rgba(255,140,40,.7));
-  }
-
-  .neon-flicker {
-    animation: neonFlicker 0.14s steps(20, end) both;
   }
 
   /* Cinematic Vignette Effect */

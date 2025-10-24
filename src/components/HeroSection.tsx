@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import logoImage from "@/assets/pater-brown-logo.png";
 import heroBackground from "@/assets/hero-background.jpg";
 import antoineHeaderBg from "@/assets/antoine-header-bg.png";
 import wanjaHeaderBg from "@/assets/wanja-header-bg.png";
 import StickyHeader from "@/components/StickyHeader";
-import NeonLogo from "@/components/NeonLogo";
 import { EVENTIM_AFFILIATE_URL, SCROLL_THRESHOLD_STICKY_HEADER } from "@/lib/constants";
 const HeroSection = () => {
   const [logoAnimating, setLogoAnimating] = useState(false);
@@ -54,7 +54,7 @@ const HeroSection = () => {
             <div ref={logoRef} className={`absolute w-full ${logoAnimating ? 'fixed top-3 left-6 max-w-[210px] z-[200]' : 'relative'} ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`} style={{
             transition: 'opacity 0.7s ease-in-out'
           }}>
-              <NeonLogo className="w-full h-auto" />
+              <img src={logoImage} alt="Pater Brown - Das Live-Hörspiel" className="w-full h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)]" loading="eager" decoding="async" />
             </div>
           </div>
 
