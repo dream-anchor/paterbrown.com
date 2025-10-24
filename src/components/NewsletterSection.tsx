@@ -12,28 +12,6 @@ const NewsletterSection = () => {
       }
     };
     
-    // Wait for reCAPTCHA script to load and render the widget
-    const checkAndRenderRecaptcha = () => {
-      if ((window as any).grecaptcha && (window as any).grecaptcha.render) {
-        const captchaElement = document.getElementById('sib-captcha');
-        if (captchaElement && !captchaElement.hasChildNodes()) {
-          try {
-            (window as any).grecaptcha.render('sib-captcha', {
-              'sitekey': '6Lc5r_UrAAAAAMEpIzFr9-eojqEQ0wPvEkugYWA4',
-              'callback': 'handleCaptchaResponse'
-            });
-          } catch (e) {
-            console.log('reCAPTCHA already rendered');
-          }
-        }
-      } else {
-        // Retry after a short delay if grecaptcha is not ready yet
-        setTimeout(checkAndRenderRecaptcha, 100);
-      }
-    };
-    
-    checkAndRenderRecaptcha();
-    
     return () => {
       delete (window as any).handleCaptchaResponse;
     };
@@ -167,7 +145,6 @@ const NewsletterSection = () => {
                     id="sib-captcha"
                     data-sitekey="6Lc5r_UrAAAAAMEpIzFr9-eojqEQ0wPvEkugYWA4"
                     data-callback="handleCaptchaResponse"
-                    style={{ direction: "ltr" }}
                   />
                 </div>
                 <label className="entry__error entry__error--primary"></label>
