@@ -111,7 +111,11 @@ const HeroSection = () => {
 
             <p className="text-gold/70 text-sm uppercase tracking-[0.25em] mt-8 cinematic-enter" style={{
             animationDelay: "0.8s"
-          }}>📍 LIVE 2026 IN HAMBURG • BREMEN •<br />NEU-ISENBURG / FRANKFURT A.M. • MÜNCHEN • ZÜRICH (CH)</p>
+          }}>
+              📍 LIVE 2025 AUGSBURG (PREVIEW)<br />
+              <br />
+              📍 LIVE 2026 IN HAMBURG • BREMEN •<br />NEU-ISENBURG / FRANKFURT A.M. • MÜNCHEN • ZÜRICH (CH)
+            </p>
           </div>
         </div>
       </section>
