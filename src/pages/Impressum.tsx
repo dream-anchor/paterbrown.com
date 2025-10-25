@@ -14,7 +14,7 @@ const Impressum = () => {
           backgroundPositionY: '-200px'
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-white" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
         
         <div className="relative container mx-auto px-6 py-12">
           <Link to="/" className="inline-block mb-8 hover:opacity-80 transition-opacity">
@@ -31,7 +31,7 @@ const Impressum = () => {
         </div>
       </div>
 
-      <main className="flex-1 bg-white py-24">
+      <main className="flex-1 bg-background py-24">
         <div className="container mx-auto px-6 max-w-4xl">
           <div className="premium-card p-8 md:p-12 space-y-12">
             {/* Header */}
