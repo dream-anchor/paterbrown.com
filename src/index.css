@@ -98,12 +98,9 @@ All colors MUST be HSL.
     background: 
       linear-gradient(180deg, 
         transparent 0%,
-        hsl(0 0% 0% / 0.05) 15%,
-        hsl(0 0% 0% / 0.15) 35%,
-        hsl(0 0% 0% / 0.3) 55%,
-        hsl(0 0% 0% / 0.5) 75%,
-        hsl(0 0% 0% / 0.7) 90%,
-        hsl(0 0% 2% / 0.95) 100%);
+        transparent 70%,
+        hsl(0 0% 0% / 0.2) 85%,
+        hsl(0 0% 2% / 0.5) 100%);
   }
 
   /* Premium card with subtle border animation */
