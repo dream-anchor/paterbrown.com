@@ -152,10 +152,10 @@ const HeroSection = () => {
 
             <div className="divider-gold w-16 mx-auto opacity-40" aria-hidden="true" />
 
-            <div className="flex flex-col md:flex-row gap-6 pt-4 cinematic-enter justify-center items-stretch max-w-3xl mx-auto" style={{
+            <div className="flex flex-col gap-6 pt-4 cinematic-enter max-w-2xl mx-auto" style={{
             animationDelay: "0.8s"
           }}>
-              <div className="flex-1 bg-card/20 backdrop-blur-sm px-6 py-4 rounded-lg border border-gold/20 text-center">
+              <div className="w-full bg-card/20 backdrop-blur-sm px-6 py-4 rounded-lg border border-gold/20 text-center">
                 <p className="text-gold/70 text-xs uppercase tracking-widest mb-2">
                   🤫 Preview 2025
                 </p>
@@ -164,7 +164,7 @@ const HeroSection = () => {
                 </p>
               </div>
 
-              <div className="flex-1 bg-card/20 backdrop-blur-sm px-6 py-4 rounded-lg border border-gold/20 text-center">
+              <div className="w-full bg-card/20 backdrop-blur-sm px-6 py-4 rounded-lg border border-gold/20 text-center">
                 <p className="text-gold/70 text-xs uppercase tracking-widest mb-3">
                   📍 Große Tour 2026
                 </p>
