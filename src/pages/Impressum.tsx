@@ -18,7 +18,7 @@ const Impressum = () => {
             <img 
               src={paterbrown} 
               alt="Pater Brown Logo" 
-              className="h-16 w-auto"
+              className="h-20 md:h-24 w-auto"
             />
           </Link>
         </div>
@@ -36,7 +36,7 @@ const Impressum = () => {
               <p className="text-gold uppercase tracking-[0.3em] text-sm font-light">
                 Rechtliches
               </p>
-              <h1 className="text-6xl md:text-8xl font-display text-gold mb-12">
+              <h1 className="text-6xl md:text-8xl font-heading tracking-wider text-gold mb-12 uppercase">
                 Impressum
               </h1>
             </div>
