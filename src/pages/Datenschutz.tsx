@@ -23,7 +23,7 @@ const Datenschutz = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
         
         <div className="relative container mx-auto px-6 py-12">
-          <Link to="/" className="inline-block mb-8 hover:opacity-80 transition-opacity">
+          <Link to="/" className="inline-block hover:opacity-80 transition-opacity">
             <img 
               src={paterbrown} 
               alt="Pater Brown Logo" 
