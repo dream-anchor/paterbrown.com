@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import NewsletterThankYou from "./pages/NewsletterThankYou";
 import NewsletterSent from "./pages/NewsletterSent";
+import Impressum from "./pages/Impressum";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/newsletter-gesendet" element={<NewsletterSent />} />
           <Route path="/danke-newsletter" element={<NewsletterThankYou />} />
+          <Route path="/impressum" element={<Impressum />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
