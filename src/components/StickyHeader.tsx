@@ -23,17 +23,20 @@ const StickyHeader = () => {
       style={{ boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)" }}
     >
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-        {/* Ticket Button */}
+        {/* Logo */}
         <a 
-          href="https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:scale-105 transition-transform"
+          href="/"
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+          aria-label="Zurück zur Startseite"
         >
           <img 
-            src={ticketButton} 
-            alt="Tickets sichern" 
-            className="h-[70px] md:h-[84px] w-auto mix-blend-screen"
+            src={logoImage} 
+            alt="Pater Brown Logo" 
+            className="h-[84px] w-auto"
             loading="lazy"
             decoding="async"
           />
@@ -49,20 +52,17 @@ const StickyHeader = () => {
           </a>
         </div>
 
-        {/* Logo */}
+        {/* Ticket Button */}
         <a 
-          href="/"
-          onClick={(e) => {
-            e.preventDefault();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
-          aria-label="Zurück zur Startseite"
+          href="https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:scale-105 transition-transform"
         >
           <img 
-            src={logoImage} 
-            alt="Pater Brown Logo" 
-            className="h-[84px] w-auto"
+            src={ticketButton} 
+            alt="Tickets sichern" 
+            className="h-[70px] md:h-[84px] w-auto mix-blend-screen"
             loading="lazy"
             decoding="async"
           />
