@@ -16,6 +16,9 @@ const TeamMemberCard = ({ member, reverse = false }: TeamMemberCardProps) => {
             alt={`${member.name} - ${member.role}`}
             className="w-full h-full object-cover"
             loading="lazy"
+            decoding="async"
+            width="800"
+            height="1067"
           />
         </div>
         

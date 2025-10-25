@@ -54,7 +54,7 @@ const HeroSection = () => {
             <div ref={logoRef} className={`absolute w-full ${logoAnimating ? 'fixed top-3 left-6 max-w-[210px] z-[200]' : 'relative'} ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`} style={{
             transition: 'opacity 0.7s ease-in-out'
           }}>
-              <img src={logoImage} alt="Pater Brown - Das Live-Hörspiel" className="w-full h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)]" loading="eager" decoding="async" />
+              <img src={logoImage} alt="Pater Brown - Das Live-Hörspiel" className="w-full h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)]" loading="eager" decoding="async" fetchPriority="high" />
             </div>
           </div>
 
@@ -66,17 +66,17 @@ const HeroSection = () => {
         }}>
             <div className="w-[200px] md:w-[280px] h-auto relative group">
               <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-background/60 pointer-events-none rounded-lg" />
-              <img src={antoineHeaderBg} alt="Antoine Monot" className="w-full h-auto object-contain transition-all duration-500" style={{
+              <img src={antoineHeaderBg} alt="Antoine Monot als Pater Brown" className="w-full h-auto object-contain transition-all duration-500" style={{
               filter: 'drop-shadow(0 0 40px rgba(234, 179, 8, 0.2))',
               mixBlendMode: 'lighten'
-            }} loading="eager" decoding="async" />
+            }} loading="eager" decoding="async" fetchPriority="high" />
             </div>
             <div className="w-[200px] md:w-[280px] h-auto relative group">
               <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-background/60 pointer-events-none rounded-lg" />
-              <img src={wanjaHeaderBg} alt="Wanja Mues" className="w-full h-auto object-contain transition-all duration-500" style={{
+              <img src={wanjaHeaderBg} alt="Wanja Mues als Flambeau" className="w-full h-auto object-contain transition-all duration-500" style={{
               filter: 'drop-shadow(0 0 40px rgba(234, 179, 8, 0.2))',
               mixBlendMode: 'lighten'
-            }} loading="eager" decoding="async" />
+            }} loading="eager" decoding="async" fetchPriority="high" />
             </div>
           </div>
 
@@ -102,17 +102,17 @@ const HeroSection = () => {
             <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen">
               <button className="btn-premium mt-12 cinematic-enter" style={{
               animationDelay: "0.6s"
-            }}>
-                <span aria-hidden="true">🎟</span> Tickets sichern
+            }} type="button">
+                <span aria-hidden="true" role="img" aria-label="Ticket">🎟</span> Tickets sichern
               </button>
             </a>
 
             <p className="text-gold/70 text-sm uppercase tracking-[0.25em] mt-8 cinematic-enter" style={{
             animationDelay: "0.8s"
           }}>
-              🤫 LIVE 2025 AUGSBURG (PREVIEW)<br />
+              <span aria-hidden="true" role="img" aria-label="Geheim">🤫</span> LIVE 2025 AUGSBURG (PREVIEW)<br />
               <br />
-              📍 LIVE 2026 IN HAMBURG • BREMEN •<br />NEU-ISENBURG / FRANKFURT A.M. • MÜNCHEN • ZÜRICH (CH)
+              <span aria-hidden="true" role="img" aria-label="Standort">📍</span> LIVE 2026 IN HAMBURG • BREMEN •<br />NEU-ISENBURG / FRANKFURT A.M. • MÜNCHEN • ZÜRICH (CH)
             </p>
           </div>
         </div>

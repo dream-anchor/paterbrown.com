@@ -55,8 +55,8 @@ const ProjectConceptSection = () => {
 
         <div className="text-center mt-16 mb-16">
           <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Jetzt Tickets für Pater Brown Live-Hörspiel sichern">
-            <button className="btn-premium">
-              <span aria-hidden="true">🎟</span> Jetzt Tickets sichern
+            <button className="btn-premium" type="button">
+              <span aria-hidden="true" role="img" aria-label="Ticket">🎟</span> Jetzt Tickets sichern
             </button>
           </a>
         </div>

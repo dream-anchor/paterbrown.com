@@ -64,6 +64,8 @@ const CastSection = () => {
                   className="w-full h-full object-cover cast-image"
                   loading="lazy"
                   decoding="async"
+                  width="800"
+                  height="1067"
                   style={{
                     opacity: fadeStyle.opacity,
                     filter: `grayscale(0.3) contrast(1.1) brightness(${fadeStyle.brightness})`
@@ -104,6 +106,8 @@ const CastSection = () => {
                     className="w-full h-full object-cover object-top"
                     loading="lazy"
                     decoding="async"
+                    width="800"
+                    height="1200"
                   />
                 </div>
                 

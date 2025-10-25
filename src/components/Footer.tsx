@@ -75,7 +75,7 @@ const Footer = () => {
               className="text-gold hover:text-gold/80 transition-colors text-sm font-medium tracking-wide"
               aria-label="Noch keine Tickets? Jetzt bei Eventim sichern"
             >
-              Noch keine Tickets? Jetzt sichern →
+              Noch keine Tickets? Jetzt sichern <span aria-hidden="true">→</span>
             </a>
           </div>
         </div>

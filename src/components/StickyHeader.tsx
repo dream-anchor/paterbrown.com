@@ -29,6 +29,8 @@ const StickyHeader = () => {
             src={logoImage} 
             alt="Pater Brown Logo" 
             className="h-[84px] w-auto"
+            loading="lazy"
+            decoding="async"
           />
         </div>
 
@@ -53,6 +55,8 @@ const StickyHeader = () => {
             src={ticketButton} 
             alt="Tickets sichern" 
             className="h-[70px] md:h-[84px] w-auto mix-blend-screen"
+            loading="lazy"
+            decoding="async"
           />
         </a>
       </div>

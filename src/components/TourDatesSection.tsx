@@ -60,7 +60,7 @@ const TourDatesSection = () => {
                 className="text-foreground hover:text-gold transition-all duration-300 font-medium uppercase tracking-[0.15em] text-base border-b-2 border-transparent hover:border-gold pb-1"
                 aria-label={`Tickets kaufen für ${date.city} am ${date.date}`}
               >
-                Tickets →
+                Tickets <span aria-hidden="true">→</span>
               </a>
             </article>
           ))}
@@ -73,7 +73,7 @@ const TourDatesSection = () => {
             rel="noopener noreferrer"
             aria-label="Alle Termine auf Eventim ansehen"
           >
-            <button className="btn-premium">
+            <button className="btn-premium" type="button">
               Alle Termine ansehen
             </button>
           </a>
