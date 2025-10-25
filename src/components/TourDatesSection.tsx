@@ -15,7 +15,8 @@ const TourDatesSection = () => {
             Termine
           </h2>
           <p className="text-xl md:text-2xl text-foreground/80 font-light leading-relaxed max-w-2xl mx-auto mt-6">
-            Erlebe Pater Brown live in deiner Stadt – sichere jetzt deine Tickets:
+            Erlebe Pater Brown live in deiner Stadt – <br />
+            sichere dir jetzt deine Tickets:
           </p>
         </div>
         
