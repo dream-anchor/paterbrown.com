@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import logoImage from "@/assets/pater-brown-logo.png";
 import heroBackground from "@/assets/hero-background.jpg";
 import antoineHeaderBg from "@/assets/antoine-header-bg.png";
@@ -12,6 +14,31 @@ const HeroSection = () => {
   const [showStickyHeader, setShowStickyHeader] = useState(false);
   const [imageOpacity, setImageOpacity] = useState(0.3);
   const [imageBrightness, setImageBrightness] = useState(1);
+
+  const { data: tourEvents = [] } = useQuery({
+    queryKey: ['hero-tour-events', new Date().toISOString().split('T')[0]],
+    staleTime: 1000 * 60 * 60,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tour_events')
+        .select('*')
+        .eq('is_active', true);
+      
+      if (error) throw error;
+      
+      const today = new Date().toISOString().split('T')[0];
+      return (data || []).filter(event => event.event_date >= today);
+    }
+  });
+
+  const previewEvents = tourEvents.filter(e => 
+    e.note?.toLowerCase().includes('preview')
+  );
+
+  const tour2026Events = tourEvents.filter(e => 
+    e.note?.toLowerCase().includes('premiere') || 
+    (e.event_date >= '2026-01-01' && !e.note?.toLowerCase().includes('preview'))
+  );
 
   const handleScroll = useCallback(() => {
     const scrollY = window.scrollY;
@@ -155,25 +182,82 @@ const HeroSection = () => {
             <div className="flex flex-col gap-6 pt-4 cinematic-enter max-w-2xl mx-auto" style={{
             animationDelay: "0.8s"
           }}>
-              <div className="w-full bg-card/30 backdrop-blur-sm px-6 pt-10 pb-4 rounded-lg text-center">
-                <p className="text-gold/70 text-xs uppercase tracking-widest mb-2">
-                  🤫 Preview 2025
-                </p>
-                <p className="text-base text-foreground/90">
-                  Augsburg
-                </p>
-              </div>
-
-              <div className="w-full bg-card/30 backdrop-blur-sm px-6 py-4 rounded-lg text-center">
-                <p className="text-gold/70 text-xs uppercase tracking-widest mb-3">
-                  📍 Erste Tour 2026
-                </p>
-                <div className="text-base text-foreground/90 space-y-1.5">
-                  <p>Hamburg • Bremen</p>
-                  <p>Neu-Isenburg / Frankfurt a.M.</p>
-                  <p>München • Zürich (CH)</p>
+              {previewEvents.length > 0 && (
+                <div className="w-full bg-card/30 backdrop-blur-sm px-6 pt-10 pb-4 rounded-lg text-center">
+                  <p className="text-gold/70 text-xs uppercase tracking-widest mb-2">
+                    🤫 Preview 2025
+                  </p>
+                  <div className="text-base text-foreground/90">
+                    {previewEvents.map(event => (
+                      <a 
+                        key={event.id}
+                        href={event.ticket_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block hover:text-gold transition-colors"
+                        aria-label={`Tickets für ${event.city}`}
+                      >
+                        {event.city}
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {tour2026Events.length > 0 && (
+                <div className="w-full bg-card/30 backdrop-blur-sm px-6 py-4 rounded-lg text-center">
+                  <p className="text-gold/70 text-xs uppercase tracking-widest mb-3">
+                    📍 Erste Tour 2026
+                  </p>
+                  <div className="text-base text-foreground/90 space-y-1.5">
+                    {tour2026Events.map((event, index) => {
+                      const isEven = index % 2 === 0;
+                      const nextEvent = tour2026Events[index + 1];
+                      
+                      if (isEven && nextEvent) {
+                        return (
+                          <p key={event.id}>
+                            <a 
+                              href={event.ticket_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-gold transition-colors"
+                              aria-label={`Tickets für ${event.city}`}
+                            >
+                              {event.city}
+                            </a>
+                            {' • '}
+                            <a 
+                              href={nextEvent.ticket_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-gold transition-colors"
+                              aria-label={`Tickets für ${nextEvent.city}`}
+                            >
+                              {nextEvent.city}
+                            </a>
+                          </p>
+                        );
+                      } else if (isEven) {
+                        return (
+                          <p key={event.id}>
+                            <a 
+                              href={event.ticket_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-gold transition-colors"
+                              aria-label={`Tickets für ${event.city}`}
+                            >
+                              {event.city}
+                            </a>
+                          </p>
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
