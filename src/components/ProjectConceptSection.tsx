@@ -1,11 +1,6 @@
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
-
 const ProjectConceptSection = () => {
-  return (
-    <section 
-      className="py-24 px-6 bg-card/20 relative overflow-hidden"
-      aria-labelledby="concept-heading"
-    >
+  return <section className="py-24 px-6 bg-card/20 relative overflow-hidden" aria-labelledby="concept-heading">
       <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-transparent to-transparent pointer-events-none" aria-hidden="true" />
       
       <div className="container mx-auto max-w-5xl relative z-10">
@@ -55,18 +50,11 @@ const ProjectConceptSection = () => {
         </div>
 
         <div className="max-w-3xl mx-auto mt-12 premium-card p-8">
-          <p className="text-foreground/90 leading-relaxed text-center text-lg md:text-xl">
-            Mit Wanja Mues und Antoine Monot, bekannt aus der ZDF-Serie „Ein Fall für Zwei", erleben Sie TV-Stars live auf der Bühne.
-          </p>
+          <p className="text-foreground/90 leading-relaxed text-center text-lg md:text-xl">Mit Antoine Monot und Wanja Mues, bekannt aus der ZDF-Serie „Ein Fall für Zwei", erleben Sie TV-Stars live auf der Bühne.</p>
         </div>
 
         <div className="text-center mt-16 mb-16">
-          <a 
-            href={EVENTIM_AFFILIATE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Jetzt Tickets für Pater Brown Live-Hörspiel sichern"
-          >
+          <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Jetzt Tickets für Pater Brown Live-Hörspiel sichern">
             <button className="btn-premium">
               <span aria-hidden="true">🎟</span> Jetzt Tickets sichern
             </button>
@@ -86,8 +74,6 @@ const ProjectConceptSection = () => {
           </p>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default ProjectConceptSection;
