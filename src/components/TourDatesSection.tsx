@@ -114,7 +114,12 @@ const TourDatesSection = () => {
             
             return (
               <div key={index}>
-                <StructuredData data={generateEventSchema(date)} />
+                <script 
+                  type="application/ld+json"
+                  dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(generateEventSchema(date))
+                  }}
+                />
                 <a
                   href={date.ticketUrl}
                   target="_blank"
