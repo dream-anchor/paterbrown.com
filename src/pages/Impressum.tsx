@@ -46,7 +46,9 @@ const Impressum = () => {
             {/* Firmeninfo */}
             <div className="space-y-6">
               <p className="text-foreground/90 text-lg">
-                Dream &amp; Anchor Handelsgesellschaft mbH
+                Dream &amp; Anchor Handelsgesellschaft mbH<br/>
+                Nördliche Münchner Straße 27a<br/>
+                82031 Grünwald
               </p>
             </div>
 
