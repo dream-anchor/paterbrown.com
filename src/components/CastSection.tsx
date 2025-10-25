@@ -6,11 +6,10 @@ const CastSection = () => {
 
   return (
     <section 
-      className="relative py-24 px-6 bg-gradient-to-b from-transparent via-background to-card/30 -mt-48 overflow-hidden"
+      className="py-24 px-6 bg-gradient-to-b from-background to-card/30 relative overflow-hidden"
       aria-labelledby="cast-heading"
     >
-      <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-transparent via-background/30 to-background pointer-events-none" />
-      <div className="absolute top-48 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-gold to-transparent opacity-50" aria-hidden="true" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-gold to-transparent opacity-50" aria-hidden="true" />
       
       <div className="container mx-auto max-w-7xl">
         <div className="text-center mb-24">
