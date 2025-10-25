@@ -96,17 +96,14 @@ All colors MUST be HSL.
   /* Luxury hero overlay */
   .hero-overlay {
     background: 
-      radial-gradient(ellipse at 50% 20%, hsl(28 100% 55% / 0.15) 0%, transparent 50%),
       linear-gradient(180deg, 
-        hsl(0 0% 0% / 0.3) 0%,
-        hsl(0 0% 0% / 0.35) 15%,
-        hsl(0 0% 0% / 0.4) 25%,
-        hsl(0 0% 0% / 0.5) 40%,
-        hsl(0 0% 0% / 0.6) 55%,
-        hsl(0 0% 0% / 0.7) 70%,
-        hsl(0 0% 0% / 0.8) 82%,
-        hsl(0 0% 1% / 0.9) 92%,
-        hsl(0 0% 2% / 1) 100%);
+        transparent 0%,
+        hsl(0 0% 0% / 0.1) 20%,
+        hsl(0 0% 0% / 0.2) 35%,
+        hsl(0 0% 0% / 0.35) 50%,
+        hsl(0 0% 0% / 0.5) 65%,
+        hsl(0 0% 0% / 0.7) 80%,
+        hsl(0 0% 2% / 0.95) 100%);
   }
 
   /* Premium card with subtle border animation */
