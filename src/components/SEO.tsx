@@ -15,12 +15,12 @@ export const SEO = ({
   description, 
   robots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   canonical,
-  image = "https://paterbrownlive.com/og-image.png",
+  image = "https://paterbrown.com/og-image.png",
   keywords,
   type = 'website'
 }: SEOProps) => {
   const fullTitle = `${title} - Pater Brown Live-Hörspiel`;
-  const canonicalUrl = canonical || `https://paterbrownlive.com${window.location.pathname}`;
+  const canonicalUrl = canonical || `https://paterbrown.com${window.location.pathname}`;
   
   return (
     <Helmet>
