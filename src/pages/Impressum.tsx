@@ -8,7 +8,7 @@ const Impressum = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <div 
-        className="relative bg-cover bg-top bg-no-repeat min-h-[600px]"
+        className="relative bg-cover bg-top bg-no-repeat min-h-[300px]"
         style={{ 
           backgroundImage: `url(${heroBackground})`,
           backgroundPositionY: '-200px'
@@ -25,13 +25,9 @@ const Impressum = () => {
             />
           </Link>
         </div>
-        
-        <div className="relative container mx-auto px-6">
-          <Separator className="bg-gradient-to-r from-transparent via-gold to-transparent h-[2px]" />
-        </div>
       </div>
 
-      <main className="flex-1 bg-background py-24">
+      <main className="flex-1 bg-background py-12">
         <div className="container mx-auto px-6 max-w-4xl">
           <div className="premium-card p-8 md:p-12 space-y-12">
             {/* Header */}
