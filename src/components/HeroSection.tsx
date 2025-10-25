@@ -44,10 +44,10 @@ const HeroSection = () => {
       <section className="relative min-h-screen flex flex-col overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-top bg-no-repeat" style={{
         backgroundImage: `url(${heroBackground})`,
-        backgroundPositionY: '-50px'
+        backgroundPositionY: '0px'
       }} role="img" aria-label="Atmosphärischer Hintergrund für Pater Brown Live-Hörspiel" />
         <div className="absolute inset-0 hero-overlay" />
-        <div className="absolute bottom-0 left-0 right-0 h-80 bg-gradient-to-b from-transparent to-background/80 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-96 bg-gradient-to-b from-transparent to-background/70 pointer-events-none" />
         
 
         <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pb-20 pt-8">
