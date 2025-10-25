@@ -2,6 +2,8 @@ import { Instagram } from "lucide-react";
 import { EVENTIM_AFFILIATE_URL, INSTAGRAM_URL } from "@/lib/constants";
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
+  
   return (
     <footer className="py-20 px-6 border-t border-gold/10 bg-background" role="contentinfo">
       <div className="container mx-auto max-w-6xl">
@@ -11,11 +13,11 @@ const Footer = () => {
               Kontakt
             </h3>
             <address className="text-foreground/80 text-sm leading-relaxed not-italic">
-              <a href="mailto:info@paterbrown-live.de" className="hover:text-gold transition-colors">
-                info@paterbrown-live.de
+              <a href="mailto:hallo@paterbrown.com" className="hover:text-gold transition-colors">
+                hallo@paterbrown.com
               </a>
               <br />
-              +49 123 456 789
+              +49 89 909015 3943
             </address>
           </div>
 
@@ -66,7 +68,7 @@ const Footer = () => {
             Eine Produktion der Dream & Anchor.
           </p>
           <p className="text-muted-foreground text-xs tracking-wider">
-            © 2025 Pater Brown Live-Hörspiel
+            © {currentYear} Pater Brown Live-Hörspiel
           </p>
           <div className="mt-6">
             <a 
