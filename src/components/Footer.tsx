@@ -68,7 +68,7 @@ const Footer = () => {
             Unser Ticketpartner <strong className="text-gold">eventim.de</strong> hilft dir gern weiter –<br />
             telefonisch Montag bis Freitag von <strong>10–16 Uhr</strong> unter{" "}
             <a href="tel:+4942120315511" className="hover:text-gold transition-colors">
-              0421 / 20 31 55 11
+              +49 421 20 31 55 11
             </a>{" "}
             oder jederzeit im{" "}
             <a 
