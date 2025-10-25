@@ -29,13 +29,13 @@ const Footer = () => {
             </h3>
             <nav aria-label="Social Media Links">
               <div className="flex gap-6 justify-center">
-                <a 
-                  href={INSTAGRAM_URL} 
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-foreground/80 hover:text-gold transition-colors flex items-center gap-2"
-                  aria-label="Besuche uns auf Instagram"
-                >
+              <a 
+                href={INSTAGRAM_URL} 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground/80 hover:text-gold transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded"
+                aria-label="Besuche uns auf Instagram"
+              >
                   <Instagram className="w-5 h-5" aria-hidden="true" />
                   <span className="text-sm">Instagram</span>
                 </a>
@@ -49,10 +49,10 @@ const Footer = () => {
             </h3>
             <nav aria-label="Rechtliche Links">
               <div className="flex flex-col gap-2 text-sm">
-                <a href="/impressum" className="text-foreground/80 hover:text-gold transition-colors">
+                <a href="/impressum" className="text-foreground/80 hover:text-gold transition-colors focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded">
                   Impressum
                 </a>
-                <a href="/datenschutz" className="text-foreground/80 hover:text-gold transition-colors">
+                <a href="/datenschutz" className="text-foreground/80 hover:text-gold transition-colors focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded">
                   Datenschutz
                 </a>
               </div>
@@ -96,7 +96,7 @@ const Footer = () => {
               href={EVENTIM_AFFILIATE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gold hover:text-gold/80 transition-colors text-sm font-medium tracking-wide"
+              className="text-gold hover:text-gold/80 transition-colors text-sm font-medium tracking-wide focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded"
               aria-label="Noch keine Tickets? Jetzt bei Eventim sichern"
             >
               Noch keine Tickets? Jetzt sichern <span aria-hidden="true">→</span>

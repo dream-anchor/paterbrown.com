@@ -6,6 +6,10 @@ export interface TourDate {
   venue: string;
   note?: string;
   ticketUrl: string;
+  geo?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
 export interface CastMember {

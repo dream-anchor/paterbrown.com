@@ -141,19 +141,19 @@ const HeroSection = () => {
             </p>
 
             <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen">
-              <button className="btn-premium mt-12 cinematic-enter" style={{
+              <button className="btn-premium mt-12 cinematic-enter focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background" style={{
               animationDelay: "0.6s"
-            }} type="button">
-                <span aria-hidden="true" role="img" aria-label="Ticket">🎟</span> Tickets sichern
+            }} type="button" aria-label="Jetzt Tickets bei Eventim sichern">
+                🎟 Tickets sichern
               </button>
             </a>
 
             <p className="text-gold/70 text-sm uppercase tracking-[0.25em] mt-8 cinematic-enter" style={{
             animationDelay: "0.8s"
           }}>
-              <span aria-hidden="true" role="img" aria-label="Geheim">🤫</span> LIVE 2025 AUGSBURG (PREVIEW)<br />
+              🤫 LIVE 2025 AUGSBURG (PREVIEW)<br />
               <br />
-              <span aria-hidden="true" role="img" aria-label="Standort">📍</span> LIVE 2026 IN HAMBURG • BREMEN •<br />NEU-ISENBURG / FRANKFURT A.M. • MÜNCHEN • ZÜRICH (CH)
+              📍 LIVE 2026 IN HAMBURG • BREMEN •<br />NEU-ISENBURG / FRANKFURT A.M. • MÜNCHEN • ZÜRICH (CH)
             </p>
           </div>
         </div>

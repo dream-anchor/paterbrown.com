@@ -9,6 +9,8 @@
     <link rel="dns-prefetch" href="https://www.eventim.de">
     <link rel="dns-prefetch" href="https://sibforms.com">
     <link rel="dns-prefetch" href="https://cf890442.sibforms.com">
+    <link rel="dns-prefetch" href="https://www.instagram.com">
+    <link rel="dns-prefetch" href="https://www.facebook.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://www.eventim.de">
@@ -17,6 +19,10 @@
     <!-- Preload critical fonts -->
     <link rel="preload" href="https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtL-jTHhK4.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2" as="font" type="font/woff2" crossorigin>
+    
+    <!-- Preload critical images -->
+    <link rel="preload" as="image" href="/src/assets/hero-background.jpg" fetchpriority="high">
+    <link rel="preload" as="image" href="/src/assets/pater-brown-logo.png" fetchpriority="high">
     
     <title>Pater Brown - Das Live-Hörspiel | Tickets für 2025</title>
     <meta name="description" content="Erleben Sie das spannende Live-Hörspiel Pater Brown mit Wanja Mues und Antoine Monot Jr. - Ein unvergessliches Theater-Erlebnis. Jetzt Tickets für 2025 sichern!" />
@@ -113,6 +119,65 @@
           "item": "https://paterbrownlive.com/"
         }
       ]
+    }
+    </script>
+    
+    <!-- Structured Data (JSON-LD) - PerformingGroup -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "PerformingGroup",
+      "name": "Pater Brown - Das Live-Hörspiel",
+      "url": "https://paterbrownlive.com",
+      "logo": "https://paterbrownlive.com/og-image.png",
+      "description": "Das Live-Hörspiel mit Wanja Mues und Antoine Monot Jr.",
+      "genre": ["Krimi", "Theater", "Live-Hörspiel"],
+      "member": [
+        {
+          "@type": "Person",
+          "name": "Wanja Mues",
+          "jobTitle": "Flambeau"
+        },
+        {
+          "@type": "Person",
+          "name": "Antoine Monot Jr.",
+          "jobTitle": "Pater Brown"
+        },
+        {
+          "@type": "Person",
+          "name": "Marvelin",
+          "jobTitle": "Beatboxer & Sound Designer"
+        }
+      ],
+      "sameAs": [
+        "https://www.instagram.com/paterbrown.live",
+        "https://www.facebook.com/paterbrownlive"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+49-89-909015-3943",
+        "contactType": "customer service",
+        "email": "hallo@paterbrown.com",
+        "areaServed": ["DE", "CH"],
+        "availableLanguage": "German"
+      }
+    }
+    </script>
+    
+    <!-- Structured Data (JSON-LD) - WebSite with SearchAction -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Pater Brown - Das Live-Hörspiel",
+      "url": "https://paterbrownlive.com",
+      "description": "Offizielles Live-Hörspiel mit Wanja Mues und Antoine Monot Jr.",
+      "inLanguage": "de-DE",
+      "copyrightYear": 2025,
+      "publisher": {
+        "@type": "Organization",
+        "name": "Dream & Anchor"
+      }
     }
     </script>
   </head>

@@ -5,7 +5,9 @@ const DYNAMIC_CACHE = 'pater-brown-dynamic-v2';
 
 const urlsToCache = [
   '/',
-  '/index.html'
+  '/index.html',
+  '/manifest.json',
+  '/favicon.ico'
 ];
 
 // Install event - cache static assets
@@ -23,7 +25,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
+          if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE && cacheName !== CACHE_NAME) {
             return caches.delete(cacheName);
           }
         })
@@ -32,13 +34,18 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event - cache-first strategy for static assets
+// Fetch event - cache-first strategy for static assets, network-first for dynamic
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
   // Skip cross-origin requests
   if (url.origin !== location.origin) {
+    return;
+  }
+
+  // Skip non-GET requests
+  if (request.method !== 'GET') {
     return;
   }
 
@@ -51,8 +58,8 @@ self.addEventListener('fetch', (event) => {
         }
         
         return fetch(request).then((fetchResponse) => {
-          // Don't cache non-GET requests or error responses
-          if (request.method !== 'GET' || !fetchResponse || fetchResponse.status !== 200) {
+          // Don't cache error responses
+          if (!fetchResponse || fetchResponse.status !== 200) {
             return fetchResponse;
           }
 
@@ -60,7 +67,7 @@ self.addEventListener('fetch', (event) => {
           const responseToCache = fetchResponse.clone();
 
           // Cache static assets
-          if (url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|webp|woff|woff2)$/)) {
+          if (url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|webp|woff|woff2|ico)$/)) {
             caches.open(STATIC_CACHE).then((cache) => {
               cache.put(request, responseToCache);
             });
@@ -80,19 +87,5 @@ self.addEventListener('fetch', (event) => {
           return caches.match('/index.html');
         }
       })
-  );
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
   );
 });

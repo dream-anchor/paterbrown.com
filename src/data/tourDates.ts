@@ -8,7 +8,8 @@ export const tourDates: TourDate[] = [
     city: "Augsburg",
     venue: "Spectrum Club",
     note: "Preview",
-    ticketUrl: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-spectrum-club-20806635/?affiliate=KZB"
+    ticketUrl: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-spectrum-club-20806635/?affiliate=KZB",
+    geo: { latitude: 48.3705, longitude: 10.8978 }
   },
   {
     id: "2",
@@ -17,7 +18,8 @@ export const tourDates: TourDate[] = [
     city: "Hamburg",
     venue: "Friedrich-Ebert-Halle",
     note: "Premiere",
-    ticketUrl: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-friedrich-ebert-halle-20783148/?affiliate=KZB"
+    ticketUrl: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-friedrich-ebert-halle-20783148/?affiliate=KZB",
+    geo: { latitude: 53.5511, longitude: 9.9937 }
   },
   {
     id: "3",
@@ -25,7 +27,8 @@ export const tourDates: TourDate[] = [
     day: "Fr. 20:00",
     city: "Bremen",
     venue: "Die Glocke - Kleiner Saal",
-    ticketUrl: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-die-glocke-20822367/?affiliate=KZB"
+    ticketUrl: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-die-glocke-20822367/?affiliate=KZB",
+    geo: { latitude: 53.0793, longitude: 8.8017 }
   },
   {
     id: "4",
@@ -33,7 +36,8 @@ export const tourDates: TourDate[] = [
     day: "Mi. 20:00",
     city: "Neu-Isenburg / Frankfurt a.M.",
     venue: "Hugenottenhalle",
-    ticketUrl: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-hugenottenhalle-20792307/?affiliate=KZB"
+    ticketUrl: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-hugenottenhalle-20792307/?affiliate=KZB",
+    geo: { latitude: 50.0539, longitude: 8.6991 }
   },
   {
     id: "5",
@@ -41,7 +45,8 @@ export const tourDates: TourDate[] = [
     day: "Di. 20:00",
     city: "München",
     venue: "Alte Kongresshalle",
-    ticketUrl: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-alte-kongresshalle-muenchen-20792306/?affiliate=KZB"
+    ticketUrl: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-alte-kongresshalle-muenchen-20792306/?affiliate=KZB",
+    geo: { latitude: 48.1351, longitude: 11.5820 }
   },
   {
     id: "6",
@@ -49,6 +54,7 @@ export const tourDates: TourDate[] = [
     day: "Mi. 20:00",
     city: "Zürich",
     venue: "Volkshaus - Weisser Saal",
-    ticketUrl: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-volkshaus-20823961/?affiliate=KZB"
+    ticketUrl: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-volkshaus-20823961/?affiliate=KZB",
+    geo: { latitude: 47.3769, longitude: 8.5417 }
   }
 ];
