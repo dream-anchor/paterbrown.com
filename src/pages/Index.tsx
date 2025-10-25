@@ -1,15 +1,15 @@
 import { lazy, Suspense } from "react";
 import HeroSection from "@/components/HeroSection";
+import CastSection from "@/components/CastSection";
+import TourDatesSection from "@/components/TourDatesSection";
 import Footer from "@/components/Footer";
 import SkipLink from "@/components/SkipLink";
 import { FAQStructuredData } from "@/components/StructuredData";
 import { SEO } from "@/components/SEO";
 
 // Lazy load non-critical sections for better performance
-const CastSection = lazy(() => import("@/components/CastSection"));
 const ShowConceptSection = lazy(() => import("@/components/ShowConceptSection"));
 const ProjectConceptSection = lazy(() => import("@/components/ProjectConceptSection"));
-const TourDatesSection = lazy(() => import("@/components/TourDatesSection"));
 const TeamSection = lazy(() => import("@/components/TeamSection"));
 const NewsletterSection = lazy(() => import("@/components/NewsletterSection"));
 
@@ -34,10 +34,9 @@ const Index = () => {
       
       <HeroSection />
       
+      <CastSection />
+      
       <main id="main-content" tabIndex={-1}>
-        <Suspense fallback={<SectionLoader />}>
-          <CastSection />
-        </Suspense>
         
         <Suspense fallback={<SectionLoader />}>
           <ShowConceptSection />
@@ -47,9 +46,7 @@ const Index = () => {
           <ProjectConceptSection />
         </Suspense>
         
-        <Suspense fallback={<SectionLoader />}>
-          <TourDatesSection />
-        </Suspense>
+        <TourDatesSection />
         
         <section className="py-24 px-6 bg-card/10" aria-labelledby="project-heading">
           <div className="container mx-auto max-w-4xl text-center space-y-8">

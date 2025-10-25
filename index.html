@@ -45,6 +45,36 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     
+    <!-- Critical CSS - Above the fold styles -->
+    <style>
+      /* Critical CSS for initial page load - Hero Section */
+      .hero-gradient { background: linear-gradient(to bottom, rgba(5,5,5,0.3), rgba(5,5,5,0.95)); }
+      .btn-premium { 
+        background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05));
+        border: 2px solid hsl(var(--gold));
+        box-shadow: 0 0 30px rgba(245,158,11,0.5);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .btn-premium:hover {
+        background: hsl(var(--gold));
+        box-shadow: 0 0 50px rgba(245,158,11,0.8);
+      }
+      .animate-fade-in {
+        animation: fadeIn 1s ease-in forwards;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .cinematic-enter {
+        animation: cinematicEnter 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+      @keyframes cinematicEnter {
+        0% { opacity: 0; transform: scale(1.1); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+    </style>
+
     <!-- External CSS with font-display: swap for optimal loading -->
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap&family=Bebas+Neue&display=swap&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://sibforms.com/forms/end-form/build/sib-styles.css">
@@ -70,6 +100,18 @@
     <meta name="twitter:title" content="Pater Brown - Das Live-Hörspiel" />
     <meta name="twitter:description" content="Erleben Sie das spannende Live-Hörspiel mit Wanja Mues und Antoine Monot Jr." />
     <meta name="twitter:image" content="https://paterbrownlive.com/og-image.png" />
+    
+    <!-- Google Analytics 4 - Replace G-XXXXXXXXXX with your actual GA4 ID -->
+    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX', {
+        'anonymize_ip': true,
+        'cookie_flags': 'SameSite=None;Secure'
+      });
+    </script> -->
     
     <!-- Structured Data (JSON-LD) - Organization -->
     <script type="application/ld+json">
