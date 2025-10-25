@@ -20,7 +20,13 @@ const StickyHeader = () => {
   return (
     <header 
       className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-gold/20 animate-fade-in"
-      style={{ boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)" }}
+      style={{ 
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+        WebkitTransform: "translate3d(0,0,0)",
+        transform: "translate3d(0,0,0)",
+        willChange: "transform",
+        paddingTop: "env(safe-area-inset-top)",
+      }}
     >
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
