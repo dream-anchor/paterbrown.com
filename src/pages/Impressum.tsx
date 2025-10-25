@@ -22,12 +22,12 @@ const Impressum = () => {
       >
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
         
-        <div className="relative container mx-auto px-6 py-12">
+        <div className="relative container mx-auto px-6 py-4">
           <Link to="/" className="inline-block hover:opacity-80 transition-opacity">
             <img 
               src={paterbrown} 
               alt="Pater Brown Logo" 
-              className="h-20 md:h-24 w-auto"
+              className="h-[84px] w-auto"
             />
           </Link>
         </div>
