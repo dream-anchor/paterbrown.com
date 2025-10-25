@@ -8,10 +8,13 @@ const Impressum = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <div 
-        className="relative bg-cover bg-center"
-        style={{ backgroundImage: `url(${heroBackground})` }}
+        className="relative bg-cover bg-top bg-no-repeat min-h-[600px]"
+        style={{ 
+          backgroundImage: `url(${heroBackground})`,
+          backgroundPositionY: '-200px'
+        }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/98 to-white" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-white" />
         
         <div className="relative container mx-auto px-6 py-12">
           <Link to="/" className="inline-block mb-8 hover:opacity-80 transition-opacity">
