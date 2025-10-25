@@ -50,7 +50,7 @@ const ProjectConceptSection = () => {
         </div>
 
         <div className="max-w-3xl mx-auto mt-12 premium-card p-8">
-          <p className="text-foreground/90 leading-relaxed text-center text-lg md:text-xl">Mit Wanja Mues und Antoine Monot, bekannt aus der ZDF-Serie „Ein Fall für Zwei", erleben Sie TV-Stars live auf der Bühne.</p>
+          <p className="text-foreground/90 leading-relaxed text-center text-lg md:text-xl">Mit Wanja Mues und Antoine Monot, bekannt aus der ZDF-Serie „Ein Fall für Zwei", erleben Sie die TV-Stars live auf der Bühne.</p>
         </div>
 
         <div className="text-center mt-16 mb-16">
@@ -63,8 +63,8 @@ const ProjectConceptSection = () => {
 
         <div className="premium-card p-12 text-center space-y-8">
           <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-            Erleben Sie eine einzigartige Verschmelzung von Theater, 
-            Sound und Spannung. Beatboxer Marvelin liefert den rhythmischen Heartbeat dieser Crime-Show.
+            Eine einzigartige Verschmelzung von Theater, 
+            Sound und Spannung. Beatboxer und Loop Artist Marvelin liefert den rhythmischen Heartbeat dieser Crime-Show.
           </p>
           
           <div className="divider-gold w-48 mx-auto" aria-hidden="true" />

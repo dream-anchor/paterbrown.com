@@ -136,7 +136,7 @@ const HeroSection = () => {
                 bekannt aus der ZDF-Serie „Ein Fall für Zwei"
               </p>
               <p className="text-lg md:text-xl text-muted-foreground/80 font-light">
-                Mit Beatboxer <span className="font-medium text-gold/80">Marvelin</span>
+                Mit Beatboxer & Loop Artist <span className="font-medium text-gold/80">Marvelin</span>
               </p>
             </div>
 
@@ -156,7 +156,7 @@ const HeroSection = () => {
             animationDelay: "0.8s"
           }}>
               <div className="w-full bg-card/30 backdrop-blur-sm px-6 py-4 rounded-lg text-center">
-                <p className="text-gold/70 text-xs uppercase tracking-widest mb-2">
+                <p className="text-gold/70 text-xs uppercase tracking-widest mb-2 mt-2">
                   🤫 Preview 2025
                 </p>
                 <p className="text-base text-foreground/90">
