@@ -155,7 +155,7 @@ const HeroSection = () => {
             <div className="flex flex-col gap-6 pt-4 cinematic-enter max-w-2xl mx-auto" style={{
             animationDelay: "0.8s"
           }}>
-              <div className="w-full bg-card/20 backdrop-blur-sm px-6 py-4 rounded-lg border border-gold/20 text-center">
+              <div className="w-full bg-card/30 backdrop-blur-sm px-6 py-4 rounded-lg text-center">
                 <p className="text-gold/70 text-xs uppercase tracking-widest mb-2">
                   🤫 Preview 2025
                 </p>
@@ -164,7 +164,7 @@ const HeroSection = () => {
                 </p>
               </div>
 
-              <div className="w-full bg-card/20 backdrop-blur-sm px-6 py-4 rounded-lg border border-gold/20 text-center">
+              <div className="w-full bg-card/30 backdrop-blur-sm px-6 py-4 rounded-lg text-center">
                 <p className="text-gold/70 text-xs uppercase tracking-widest mb-3">
                   📍 Große Tour 2026
                 </p>
