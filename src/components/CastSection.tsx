@@ -1,8 +1,40 @@
 import { castMembers } from "@/data/castData";
+import { useEffect, useState } from "react";
 
 const CastSection = () => {
   const mainCast = castMembers.filter(m => m.id !== 'marvelin');
   const marvelin = castMembers.find(m => m.id === 'marvelin');
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY;
+      const scrollableHeight = documentHeight - windowHeight;
+      const progress = (scrollTop / scrollableHeight) * 100;
+      setScrollProgress(progress);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial call
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Calculate opacity and brightness based on scroll progress
+  // Fade starts at 75% and completes at 100%
+  const calculateFade = () => {
+    if (scrollProgress < 75) {
+      return { opacity: 1, brightness: 1 };
+    }
+    const fadeProgress = (scrollProgress - 75) / 25; // 0 to 1 over the last 25%
+    const opacity = Math.max(0, 1 - fadeProgress);
+    const brightness = Math.max(0, 1 - fadeProgress);
+    return { opacity, brightness };
+  };
+
+  const fadeStyle = calculateFade();
 
   return (
     <section 
@@ -32,6 +64,10 @@ const CastSection = () => {
                   className="w-full h-full object-cover cast-image"
                   loading="lazy"
                   decoding="async"
+                  style={{
+                    opacity: fadeStyle.opacity,
+                    filter: `grayscale(0.3) contrast(1.1) brightness(${fadeStyle.brightness})`
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
               </div>
