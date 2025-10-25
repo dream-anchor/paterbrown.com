@@ -38,6 +38,54 @@ export type Database = {
         }
         Relationships: []
       }
+      tour_events: {
+        Row: {
+          city: string
+          created_at: string
+          date: string
+          day: string
+          eventim_event_id: string | null
+          id: string
+          is_active: boolean
+          last_synced_at: string | null
+          latitude: number | null
+          longitude: number | null
+          note: string | null
+          ticket_url: string
+          venue: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          date: string
+          day: string
+          eventim_event_id?: string | null
+          id?: string
+          is_active?: boolean
+          last_synced_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          note?: string | null
+          ticket_url: string
+          venue: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          date?: string
+          day?: string
+          eventim_event_id?: string | null
+          id?: string
+          is_active?: boolean
+          last_synced_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          note?: string | null
+          ticket_url?: string
+          venue?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
