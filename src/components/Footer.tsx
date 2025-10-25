@@ -1,5 +1,5 @@
-import { Instagram, Facebook } from "lucide-react";
-import { EVENTIM_AFFILIATE_URL, INSTAGRAM_URL, FACEBOOK_URL } from "@/lib/constants";
+import { Instagram } from "lucide-react";
+import { EVENTIM_AFFILIATE_URL, INSTAGRAM_URL } from "@/lib/constants";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -38,16 +38,6 @@ const Footer = () => {
               >
                   <Instagram className="w-5 h-5" aria-hidden="true" />
                   <span className="text-sm">Instagram</span>
-                </a>
-                <a 
-                  href={FACEBOOK_URL} 
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-foreground/80 hover:text-gold transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded"
-                  aria-label="Besuche uns auf Facebook"
-                >
-                  <Facebook className="w-5 h-5" aria-hidden="true" />
-                  <span className="text-sm">Facebook</span>
                 </a>
               </div>
             </nav>
