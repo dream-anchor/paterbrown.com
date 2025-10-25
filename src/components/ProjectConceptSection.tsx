@@ -50,7 +50,7 @@ const ProjectConceptSection = () => {
         </div>
 
         <div className="max-w-3xl mx-auto mt-12 premium-card p-8">
-          <p className="text-foreground/90 leading-relaxed text-center text-lg md:text-xl">Mit Antoine Monot und Wanja Mues, bekannt aus der ZDF-Serie „Ein Fall für Zwei", erleben Sie TV-Stars live auf der Bühne.</p>
+          <p className="text-foreground/90 leading-relaxed text-center text-lg md:text-xl">Mit Wanja Mues und Antoine Monot, bekannt aus der ZDF-Serie „Ein Fall für Zwei", erleben Sie TV-Stars live auf der Bühne.</p>
         </div>
 
         <div className="text-center mt-16 mb-16">

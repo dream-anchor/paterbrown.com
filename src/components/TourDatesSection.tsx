@@ -15,7 +15,7 @@ const generateEventSchema = (date: TourDate) => {
     "@context": "https://schema.org",
     "@type": "TheaterEvent",
     "name": `Pater Brown - Das Live-Hörspiel - ${date.city}`,
-    "description": "Ein spannendes Live-Hörspiel mit Wanja Mues und Antoine Monot, bekannt aus der ZDF-Serie 'Ein Fall für Zwei', und Beatboxer Marvelin.",
+    "description": "Ein spannendes Live-Hörspiel mit Antoine Monot und Wanja Mues, bekannt aus der ZDF-Serie 'Ein Fall für Zwei', und Beatboxer Marvelin.",
     "startDate": isoDate,
     "endDate": isoDate,
     "doorTime": doorTime,
