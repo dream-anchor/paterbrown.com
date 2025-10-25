@@ -132,7 +132,7 @@ const HeroSection = () => {
             
             <div className="space-y-4">
               <p className="text-xl md:text-2xl text-gold/90 font-light leading-relaxed">
-                Mit <span className="font-medium">Wanja Mues</span> und <span className="font-medium">Antoine Monot</span>,<br />
+                Mit <span className="font-medium">Antoine Monot</span> und <span className="font-medium">Wanja Mues</span>,<br />
                 bekannt aus der ZDF-Serie „Ein Fall für Zwei"
               </p>
               <p className="text-lg md:text-xl text-muted-foreground/80 font-light">
