@@ -3,8 +3,12 @@ import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 import { TourDate } from "@/types";
 
 const generateEventSchema = (date: TourDate) => {
+  // Parse German date format DD.MM.YYYY to ISO format
+  const [day, month, year] = date.date.split('.');
+  const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T19:00:00`;
+  
   // Door time is typically 30 minutes before the event
-  const eventDateTime = new Date(date.date);
+  const eventDateTime = new Date(isoDate);
   const doorTime = new Date(eventDateTime.getTime() - 30 * 60000).toISOString();
   
   return {
@@ -12,8 +16,8 @@ const generateEventSchema = (date: TourDate) => {
     "@type": "TheaterEvent",
     "name": `Pater Brown - Das Live-Hörspiel - ${date.city}`,
     "description": "Ein spannendes Live-Hörspiel mit Wanja Mues und Antoine Monot, bekannt aus der ZDF-Serie 'Ein Fall für Zwei', und Beatboxer Marvelin.",
-    "startDate": date.date,
-    "endDate": date.date,
+    "startDate": isoDate,
+    "endDate": isoDate,
     "doorTime": doorTime,
     "duration": "PT2H",
     "eventStatus": "https://schema.org/EventScheduled",
