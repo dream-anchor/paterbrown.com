@@ -24,7 +24,15 @@ const StickyHeader = () => {
     >
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center">
+        <a 
+          href="/"
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+          aria-label="Zurück zur Startseite"
+        >
           <img 
             src={logoImage} 
             alt="Pater Brown Logo" 
@@ -32,7 +40,7 @@ const StickyHeader = () => {
             loading="lazy"
             decoding="async"
           />
-        </div>
+        </a>
 
         {/* Navigation Links */}
         <div className="hidden md:flex items-center gap-6">
