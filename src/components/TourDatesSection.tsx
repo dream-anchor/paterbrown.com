@@ -118,10 +118,20 @@ const TourDatesSection = () => {
         eventDate: event.event_date
       })) as (TourDate & { eventDate: string })[];
       
-      // Sort by event_date chronologically
-      return transformed.sort((a, b) => 
-        new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
-      );
+      // Get current date in German timezone (Europe/Berlin)
+      const today = new Date().toLocaleDateString('de-DE', { 
+        timeZone: 'Europe/Berlin',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).split('.').reverse().join('-'); // Convert DD.MM.YYYY → YYYY-MM-DD
+      
+      // Filter out past events and sort by event_date chronologically
+      return transformed
+        .filter(event => event.eventDate >= today)
+        .sort((a, b) => 
+          new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
+        );
     },
   });
 
