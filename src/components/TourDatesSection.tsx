@@ -79,7 +79,24 @@ const TourDatesSection = () => {
           </a>
           
           <p className="text-muted-foreground text-sm mt-8">
-            Tickets über Eventim (DE) und Ticketcorner (CH)
+            Tickets über{' '}
+            <a 
+              href={EVENTIM_AFFILIATE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
+            >
+              Eventim (DE)
+            </a>
+            {' '}und{' '}
+            <a 
+              href="https://www.ticketcorner.ch/artist/pater-brown-das-live-hoerspiel/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
+            >
+              Ticketcorner (CH)
+            </a>
           </p>
         </div>
       </div>
