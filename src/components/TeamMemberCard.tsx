@@ -20,7 +20,7 @@ const TeamMemberCard = ({ member, reverse = false }: TeamMemberCardProps) => {
         </div>
         
         {/* Content */}
-        <div className={`p-8 md:p-12 flex flex-col justify-center space-y-6 ${reverse ? 'md:col-start-1 md:row-start-1' : ''}`}>
+        <div className={`p-8 md:p-12 flex flex-col justify-start space-y-6 ${reverse ? 'md:col-start-1 md:row-start-1' : ''}`}>
           <div className="space-y-2">
             <h3 className="text-3xl md:text-4xl font-heading tracking-wide text-foreground">
               {member.name}
