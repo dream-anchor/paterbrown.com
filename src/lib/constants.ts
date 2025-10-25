@@ -16,5 +16,5 @@ export const IMAGE_BRIGHTNESS_MAX = 1;
 
 // External links
 export const EVENTIM_AFFILIATE_URL = "https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp";
-export const INSTAGRAM_URL = "https://www.instagram.com/paterbrownlive/";
+export const INSTAGRAM_URL = "https://www.instagram.com/paterbrown.live";
 export const FACEBOOK_URL = "https://www.facebook.com/paterbrownlive";
