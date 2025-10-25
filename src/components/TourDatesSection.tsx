@@ -92,8 +92,9 @@ const generateEventSchema = (date: TourDate) => {
 
 const TourDatesSection = () => {
   const { data: tourDates = [], isLoading, error } = useQuery({
-    queryKey: ['tour-events', 'v2'],
-    staleTime: 0,
+    queryKey: ['tour-events', 'v2', new Date().toISOString().split('T')[0]],
+    staleTime: 1000 * 60 * 60, // 1 hour
+    refetchInterval: 1000 * 60 * 60, // Refetch every 60 minutes
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tour_events')
