@@ -27,24 +27,22 @@ const Footer = () => {
             <h3 className="text-gold text-xs mb-4 tracking-[0.3em] uppercase font-bold">
               Ticketservice
             </h3>
-            <div className="text-foreground/80 text-sm leading-relaxed space-y-2">
+            <div className="text-foreground/80 text-sm leading-relaxed">
               <p>
-                Unser Ticketpartner <strong className="text-gold">eventim.de</strong>
-              </p>
-              <p>
-                Mo–Fr 10–16 Uhr<br />
-                <a href="tel:+494212031551" className="hover:text-gold transition-colors">
+                Unser Ticketpartner <strong className="text-gold">eventim.de</strong> hilft dir gern weiter – telefonisch Montag bis Freitag von <strong>10–16 Uhr</strong> unter{" "}
+                <a href="tel:+4942120315511" className="hover:text-gold transition-colors">
                   0421 / 20 31 55 11
-                </a>
+                </a>{" "}
+                oder jederzeit im{" "}
+                <a 
+                  href="https://www.eventim.de/faq/de_de/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-gold transition-colors"
+                >
+                  Helpcenter
+                </a>.
               </p>
-              <a 
-                href="https://www.eventim.de/faq/de_de/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block hover:text-gold transition-colors"
-              >
-                Helpcenter →
-              </a>
             </div>
           </div>
 
