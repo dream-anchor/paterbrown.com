@@ -10,6 +10,7 @@ const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const NewsletterThankYou = lazy(() => import("./pages/NewsletterThankYou"));
 const NewsletterSent = lazy(() => import("./pages/NewsletterSent"));
+const TicketThankYou = lazy(() => import("./pages/TicketThankYou"));
 const Impressum = lazy(() => import("./pages/Impressum"));
 const Datenschutz = lazy(() => import("./pages/Datenschutz"));
 
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/newsletter-gesendet" element={<NewsletterSent />} />
               <Route path="/danke-newsletter" element={<NewsletterThankYou />} />
+              <Route path="/danke-ticket" element={<TicketThankYou />} />
               <Route path="/impressum" element={<Impressum />} />
               <Route path="/datenschutz" element={<Datenschutz />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
