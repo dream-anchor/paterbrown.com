@@ -144,8 +144,6 @@ const Impressum = () => {
                 Quellenangaben für verwendete Bilder
               </h4>
               <p className="text-foreground/80 leading-relaxed">
-                Gregor Weidemüller (Foto Marvelin)
-                <br />
                 Gio Löwe (Fotos Wanja Mues, Antoine Monot) –{' '}
                 <a href="https://www.gio-lowe.com/photo/index.html" target="_blank" rel="noreferrer" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
                   https://www.gio-lowe.com/photo/index.html
@@ -155,6 +153,8 @@ const Impressum = () => {
                 <a href="http://andreas-achmann.com/" target="_blank" rel="noreferrer" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
                   http://andreas-achmann.com/
                 </a>
+                <br />
+                Gregor Weidemüller (Foto Marvelin)
               </p>
             </div>
           </div>
