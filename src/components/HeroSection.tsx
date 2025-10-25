@@ -90,9 +90,7 @@ const HeroSection = () => {
             <div className="divider-gold w-32 mx-auto my-8" aria-hidden="true" />
             
             <p className="text-lg md:text-xl lg:text-2xl text-gold/90 font-light leading-relaxed">
-              Ein Live-Hörspiel<br />
-              mit Antoine Monot & Wanja Mues<br />
-              wo Stimme, Klang und Beat zum Krimi werden.
+              Mit Antoine Monot und Wanja Mues, bekannt aus der ZDF-Serie „Ein Fall für Zwei", erleben Sie TV-Stars live auf der Bühne.
             </p>
 
             <div className="divider-gold w-16 mx-auto my-6 opacity-50" aria-hidden="true" />
