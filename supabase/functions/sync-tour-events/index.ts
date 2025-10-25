@@ -63,13 +63,11 @@ serve(async (req) => {
 
     if (!screenshotoneAccessKey || !screenshotoneSecretKey) {
       const error = 'ScreenshotOne API keys not configured';
-      await sendErrorEmail(error, 'Configuration Check');
       throw new Error(error);
     }
 
     if (!lovableApiKey) {
       const error = 'Lovable API key not configured';
-      await sendErrorEmail(error, 'Configuration Check');
       throw new Error(error);
     }
 
@@ -93,7 +91,6 @@ serve(async (req) => {
     
     if (!screenshotResponse.ok) {
       const error = `Screenshot capture failed: ${screenshotResponse.statusText}`;
-      await sendErrorEmail(error, 'Screenshot Capture');
       throw new Error(error);
     }
 
@@ -162,7 +159,6 @@ Gebe die Daten als JSON-Array zurück. Beispiel:
       const errorText = await aiResponse.text();
       console.error('AI API error:', aiResponse.status, errorText);
       const error = `AI extraction failed: ${aiResponse.statusText} - ${errorText}`;
-      await sendErrorEmail(error, 'AI Data Extraction');
       throw new Error(error);
     }
 
@@ -184,7 +180,6 @@ Gebe die Daten als JSON-Array zurück. Beispiel:
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', parseError);
       const error = `Could not parse event data from AI response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`;
-      await sendErrorEmail(error, 'JSON Parsing');
       throw new Error(error);
     }
 
@@ -255,9 +250,13 @@ Gebe die Daten als JSON-Array zurück. Beispiel:
     console.error('Error in sync-tour-events:', error);
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
     
-    // Send error email if not already sent
+    // Try to send error email, but don't fail if email sending fails
     if (!errorMsg.includes('not configured')) {
-      await sendErrorEmail(errorMsg, 'General Error');
+      try {
+        await sendErrorEmail(errorMsg, 'General Error');
+      } catch (emailError) {
+        console.error('Failed to send error notification email:', emailError);
+      }
     }
     
     return new Response(
