@@ -6,21 +6,18 @@ import TourDatesSection from "@/components/TourDatesSection";
 import TeamSection from "@/components/TeamSection";
 import NewsletterSection from "@/components/NewsletterSection";
 import Footer from "@/components/Footer";
+import SkipLink from "@/components/SkipLink";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-      <a 
-        href="#main-content" 
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[300] focus:bg-gold focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded"
-      >
-        Skip to main content
-      </a>
+      <SkipLink />
+      
       <h1 className="sr-only">Pater Brown - Das Live-Hörspiel mit Wanja Mues und Antoine Monot</h1>
       
       <HeroSection />
       
-      <main id="main-content">
+      <main id="main-content" tabIndex={-1}>
         <CastSection />
         <ShowConceptSection />
         <ProjectConceptSection />

@@ -4,32 +4,36 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- Performance: Early hints for critical resources -->
+    <!-- Performance optimizations -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-    <link rel="dns-prefetch" href="https://sibforms.com">
     <link rel="dns-prefetch" href="https://www.eventim.de">
+    <link rel="dns-prefetch" href="https://sibforms.com">
+    <link rel="dns-prefetch" href="https://cf890442.sibforms.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.eventim.de">
+    <link rel="preconnect" href="https://sibforms.com">
+    
+    <!-- Preload critical fonts -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtL-jTHhK4.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2" as="font" type="font/woff2" crossorigin>
     
     <title>Pater Brown - Das Live-Hörspiel | Tickets für 2025</title>
     <meta name="description" content="Erleben Sie das spannende Live-Hörspiel Pater Brown mit Wanja Mues und Antoine Monot Jr. - Ein unvergessliches Theater-Erlebnis. Jetzt Tickets für 2025 sichern!" />
     <meta name="keywords" content="Pater Brown, Live-Hörspiel, Theater, Wanja Mues, Antoine Monot Jr, G.K. Chesterton, Krimi, Detektiv, Live-Performance, Tickets 2025" />
     <meta name="author" content="Pater Brown Theater" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     
     <!-- Accessibility & UX -->
-    <meta name="theme-color" content="#050505" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#050505" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#F59E0B">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#050505">
     <link rel="canonical" href="https://paterbrownlive.de/" />
     
-    <!-- Performance: Preconnect to external domains -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://www.eventim.de">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
     
-    <!-- Critical CSS: Fonts -->
+    <!-- External CSS with font-display: swap -->
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Bebas+Neue&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    <!-- External Styles -->
     <link rel="stylesheet" href="https://sibforms.com/forms/end-form/build/sib-styles.css">
 
     <meta property="og:title" content="Pater Brown - Das Live-Hörspiel | Tickets für 2025" />
@@ -44,7 +48,22 @@
     <meta name="twitter:description" content="Erleben Sie das spannende Live-Hörspiel mit Wanja Mues und Antoine Monot Jr." />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
-    <!-- Structured Data -->
+    <!-- Structured Data (JSON-LD) - Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Pater Brown - Das Live-Hörspiel",
+      "url": "https://paterbrownlive.de",
+      "logo": "https://lovable.dev/opengraph-image-p98pqg.png",
+      "sameAs": [
+        "https://www.instagram.com/paterbrown.live",
+        "https://www.facebook.com/paterbrownlive"
+      ]
+    }
+    </script>
+    
+    <!-- Structured Data (JSON-LD) - TheaterEvent -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -69,6 +88,22 @@
         "url": "https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp",
         "availability": "https://schema.org/InStock"
       }
+    }
+    </script>
+    
+    <!-- Structured Data (JSON-LD) - BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://paterbrownlive.de/"
+        }
+      ]
     }
     </script>
   </head>
