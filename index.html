@@ -1,14 +1,30 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YJZ6J7G56J"></script>
+    <!-- Google tag (gtag.js) - Delayed for performance -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-YJZ6J7G56J');
+      
+      // Delay GTM loading until user interaction or after 3 seconds
+      function loadGTM() {
+        if (window.gtagLoaded) return;
+        window.gtagLoaded = true;
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-YJZ6J7G56J';
+        document.head.appendChild(script);
+      }
+      
+      // Load after user interaction
+      ['mousedown', 'touchstart', 'keydown', 'scroll'].forEach(event => {
+        window.addEventListener(event, loadGTM, { once: true, passive: true });
+      });
+      
+      // Load after 3 seconds as fallback
+      setTimeout(loadGTM, 3000);
     </script>
     
     <meta charset="UTF-8" />
@@ -16,12 +32,12 @@
     
     <!-- Performance optimizations -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+    <link rel="dns-prefetch" href="https://www.google-analytics.com">
     <link rel="dns-prefetch" href="https://www.eventim.de">
     <link rel="dns-prefetch" href="https://sibforms.com">
     <link rel="dns-prefetch" href="https://cf890442.sibforms.com">
-    <link rel="dns-prefetch" href="https://www.instagram.com">
-    <link rel="dns-prefetch" href="https://www.facebook.com">
-    <link rel="dns-prefetch" href="https://ticketcorner.ch">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://www.eventim.de">
@@ -31,9 +47,11 @@
     <link rel="preload" href="https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtL-jTHhK4.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2" as="font" type="font/woff2" crossorigin>
     
-    <!-- Preload critical images -->
+    <!-- Preload critical images (LCP optimization) -->
     <link rel="preload" as="image" href="/src/assets/hero-background.jpg" fetchpriority="high">
     <link rel="preload" as="image" href="/src/assets/pater-brown-logo.png" fetchpriority="high">
+    <link rel="preload" as="image" href="/src/assets/antoine-header-bg.png" fetchpriority="high">
+    <link rel="preload" as="image" href="/src/assets/wanja-header-bg.png" fetchpriority="high">
     
     <title>Pater Brown - Das Live-Hörspiel | Tickets für 2025 + 2026</title>
     <meta name="description" content="Erleben Sie das spannende Live-Hörspiel Pater Brown mit Wanja Mues und Antoine Monot Jr. - Ein unvergessliches Theater-Erlebnis. Jetzt Tickets für 2025 + 2026 sichern!" />
@@ -56,8 +74,9 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     
     <!-- External CSS with font-display: swap for optimal loading -->
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap&family=Bebas+Neue&display=swap&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://sibforms.com/forms/end-form/build/sib-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Bebas+Neue&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://sibforms.com/forms/end-form/build/sib-styles.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://sibforms.com/forms/end-form/build/sib-styles.css"></noscript>
 
     <!-- Hreflang for regional variants -->
     <link rel="alternate" hreflang="de-DE" href="https://paterbrown.com/" />

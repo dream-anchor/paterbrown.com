@@ -1,7 +1,9 @@
 // Service Worker for offline functionality and performance
-const CACHE_NAME = 'pater-brown-v2';
-const STATIC_CACHE = 'pater-brown-static-v2';
-const DYNAMIC_CACHE = 'pater-brown-dynamic-v2';
+const CACHE_NAME = 'pater-brown-v3';
+const STATIC_CACHE = 'pater-brown-static-v3';
+const DYNAMIC_CACHE = 'pater-brown-dynamic-v3';
+const IMAGE_CACHE = 'pater-brown-images-v3';
+const FONT_CACHE = 'pater-brown-fonts-v3';
 
 const urlsToCache = [
   '/',
@@ -21,11 +23,12 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
+  const currentCaches = [STATIC_CACHE, DYNAMIC_CACHE, IMAGE_CACHE, FONT_CACHE, CACHE_NAME];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE && cacheName !== CACHE_NAME) {
+          if (!currentCaches.includes(cacheName)) {
             return caches.delete(cacheName);
           }
         })
@@ -34,13 +37,13 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event - cache-first strategy for static assets, network-first for dynamic
+// Fetch event - optimized caching strategies
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip cross-origin requests
-  if (url.origin !== location.origin) {
+  // Skip cross-origin requests except for fonts
+  if (url.origin !== location.origin && !url.hostname.includes('fonts.gstatic.com')) {
     return;
   }
 
@@ -49,7 +52,76 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first strategy
+  // Font files - cache-first with long TTL
+  if (url.pathname.match(/\.(woff|woff2|ttf|eot)$/)) {
+    event.respondWith(
+      caches.open(FONT_CACHE).then((cache) => {
+        return cache.match(request).then((response) => {
+          return response || fetch(request).then((fetchResponse) => {
+            if (fetchResponse && fetchResponse.status === 200) {
+              cache.put(request, fetchResponse.clone());
+            }
+            return fetchResponse;
+          });
+        });
+      })
+    );
+    return;
+  }
+
+  // Image files - stale-while-revalidate
+  if (url.pathname.match(/\.(png|jpg|jpeg|svg|webp|avif|gif|ico)$/)) {
+    event.respondWith(
+      caches.open(IMAGE_CACHE).then((cache) => {
+        return cache.match(request).then((cachedResponse) => {
+          const fetchPromise = fetch(request).then((fetchResponse) => {
+            if (fetchResponse && fetchResponse.status === 200) {
+              cache.put(request, fetchResponse.clone());
+            }
+            return fetchResponse;
+          }).catch(() => cachedResponse);
+
+          return cachedResponse || fetchPromise;
+        });
+      })
+    );
+    return;
+  }
+
+  // CSS/JS files - network-first with cache fallback
+  if (url.pathname.match(/\.(js|css)$/)) {
+    event.respondWith(
+      fetch(request)
+        .then((fetchResponse) => {
+          if (fetchResponse && fetchResponse.status === 200) {
+            const responseToCache = fetchResponse.clone();
+            caches.open(STATIC_CACHE).then((cache) => {
+              cache.put(request, responseToCache);
+            });
+          }
+          return fetchResponse;
+        })
+        .catch(() => {
+          return caches.match(request);
+        })
+    );
+    return;
+  }
+
+  // HTML - network-first
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .catch(() => {
+          return caches.match(request).then((response) => {
+            return response || caches.match('/index.html');
+          });
+        })
+    );
+    return;
+  }
+
+  // Default strategy for everything else
   event.respondWith(
     caches.match(request)
       .then((response) => {
@@ -58,31 +130,19 @@ self.addEventListener('fetch', (event) => {
         }
         
         return fetch(request).then((fetchResponse) => {
-          // Don't cache error responses
           if (!fetchResponse || fetchResponse.status !== 200) {
             return fetchResponse;
           }
 
-          // Clone the response
           const responseToCache = fetchResponse.clone();
-
-          // Cache static assets
-          if (url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|webp|woff|woff2|ico)$/)) {
-            caches.open(STATIC_CACHE).then((cache) => {
-              cache.put(request, responseToCache);
-            });
-          } else {
-            // Cache dynamic content with shorter TTL
-            caches.open(DYNAMIC_CACHE).then((cache) => {
-              cache.put(request, responseToCache);
-            });
-          }
+          caches.open(DYNAMIC_CACHE).then((cache) => {
+            cache.put(request, responseToCache);
+          });
 
           return fetchResponse;
         });
       })
       .catch(() => {
-        // Return offline page if available
         if (request.mode === 'navigate') {
           return caches.match('/index.html');
         }
