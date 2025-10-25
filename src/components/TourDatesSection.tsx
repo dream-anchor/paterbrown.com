@@ -1,7 +1,6 @@
-import { memo } from "react";
 import { tourDates } from "@/data/tourDates";
-import { usePrefetch } from "@/hooks/usePrefetch";
-import type { TourDate } from "@/types";
+import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
+import { TourDate } from "@/types";
 
 const generateEventSchema = (date: TourDate) => {
   // Parse German date format DD.MM.YYYY to ISO format
@@ -91,86 +90,104 @@ const generateEventSchema = (date: TourDate) => {
 };
 
 const TourDatesSection = () => {
-  // Prefetch main Eventim page after 2 seconds
-  usePrefetch("https://www.eventim.de/artist/pater-brown/", { trigger: 'delay', delay: 2000 });
-
   return (
     <section 
       id="tour-dates"
-      className="py-24 px-6 bg-gradient-to-b from-card/20 to-background"
+      className="py-24 px-6 bg-gradient-to-b from-background to-card/20"
       aria-labelledby="tour-dates-heading"
+      role="region"
     >
-      <div className="container mx-auto max-w-7xl">
+      <div className="container mx-auto max-w-5xl">
         <div className="text-center mb-24">
-          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Live-Hörspiel Termine</p>
-          <h2 id="tour-dates-heading" className="text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase">
-            Tour Dates
+          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Live Tour 2025/26</p>
+          <h2 id="tour-dates-heading" className="text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase mb-8">
+            Termine
           </h2>
+          <p className="text-xl md:text-2xl text-foreground/80 font-light leading-relaxed max-w-2xl mx-auto mt-6">
+            Erlebe Pater Brown live in deiner Stadt – <br />
+            sichere dir jetzt deine Tickets:
+          </p>
         </div>
-
-        <div className="space-y-4 max-w-5xl mx-auto">
-          {tourDates.map((date, index) => {
-            const prefetchProps = usePrefetch(date.ticketUrl, { trigger: 'hover' });
-            
-            return (
-              <div key={index}>
-                <script 
-                  type="application/ld+json"
-                  dangerouslySetInnerHTML={{
-                    __html: JSON.stringify(generateEventSchema(date))
-                  }}
-                />
-                <a
-                  href={date.ticketUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex flex-col md:flex-row items-start md:items-center justify-between p-6 bg-card/30 hover:bg-card/50 border border-gold/20 hover:border-gold/40 transition-all duration-300 hover:shadow-[0_0_30px_rgba(245,158,11,0.2)]"
-                  {...prefetchProps}
-                >
-                  <div className="flex flex-col md:flex-row gap-6 flex-1">
-                    <div className="min-w-[120px]">
-                      <div className="text-3xl font-heading text-gold">
-                        {date.date}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {date.day}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-2xl text-foreground font-light">
-                        {date.city}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {date.venue}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 md:mt-0 text-gold group-hover:translate-x-2 transition-transform">
-                    Tickets →
-                  </div>
-                </a>
+        
+        <div className="space-y-2 max-w-4xl mx-auto" role="list">
+          {tourDates.map((date) => (
+            <article 
+              key={date.id}
+              className="tour-date-premium flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 group"
+              role="listitem"
+            >
+              <script type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                  __html: JSON.stringify(generateEventSchema(date))
+                }}
+              />
+              <div className="flex flex-col md:flex-row gap-6 md:gap-12 flex-1">
+                <div className="flex flex-col min-w-[160px]">
+                  <time 
+                    className="text-3xl md:text-4xl font-heading text-gold group-hover:scale-105 transition-transform"
+                    dateTime={date.date}
+                  >
+                    {date.date}
+                  </time>
+                  <span className="text-sm text-muted-foreground mt-1">
+                    {date.day}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-2xl md:text-3xl text-foreground font-light">
+                    {date.city}
+                  </span>
+                  <span className="text-sm text-muted-foreground mt-1">
+                    {date.venue}
+                  </span>
+                </div>
+                {date.note && (
+                  <span className="self-start px-4 py-1.5 bg-gold/10 text-gold text-xs uppercase tracking-[0.2em] font-bold border border-gold/30">
+                    {date.note}
+                  </span>
+                )}
               </div>
-            );
-          })}
-        </div>
-
-        <div className="text-center mt-16">
-          <p className="text-muted-foreground text-sm">
-            Tickets verfügbar über{" "}
-            <a
-              href="https://www.eventim.de/artist/pater-brown/"
+            <a 
+              href={date.ticketUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gold hover:underline"
+              className="text-foreground hover:text-gold transition-all duration-300 font-medium uppercase tracking-[0.15em] text-base border-b-2 border-transparent hover:border-gold pb-1 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background"
+              aria-label={`Tickets kaufen für ${date.city} am ${date.date}`}
+            >
+                Tickets <span aria-hidden="true">→</span>
+              </a>
+            </article>
+          ))}
+        </div>
+        
+        <div className="text-center mt-20">
+          <a 
+            href={EVENTIM_AFFILIATE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Alle Termine auf Eventim ansehen"
+          >
+            <button className="btn-premium focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background" type="button">
+              Alle Termine ansehen
+            </button>
+          </a>
+          
+          <p className="text-muted-foreground text-sm mt-8">
+            Tickets über{' '}
+            <a 
+              href={EVENTIM_AFFILIATE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
             >
               Eventim (DE)
             </a>
-            {" "}und{" "}
-            <a
-              href="https://www.ticketcorner.ch/"
+            {' '}und{' '}
+            <a 
+              href="https://www.ticketcorner.ch/artist/pater-brown-das-live-hoerspiel/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gold hover:underline"
+              className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
             >
               Ticketcorner (CH)
             </a>
@@ -181,4 +198,4 @@ const TourDatesSection = () => {
   );
 };
 
-export default memo(TourDatesSection);
+export default TourDatesSection;

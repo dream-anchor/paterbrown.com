@@ -1,48 +1,42 @@
-import { useState, useEffect, memo, useCallback } from "react";
-import { ModernImage } from "./ModernImage";
 import { castMembers } from "@/data/castData";
+import { useEffect, useState } from "react";
 import { throttle } from "@/lib/scroll-utils";
+import { ResponsiveImage } from "./ResponsiveImage";
 
 const CastSection = () => {
+  const mainCast = castMembers.filter(m => m.id !== 'marvelin');
+  const marvelin = castMembers.find(m => m.id === 'marvelin');
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  const handleScroll = useCallback(throttle(() => {
-    const castSection = document.querySelector('section[aria-labelledby="cast-heading"]');
-    if (!castSection) return;
-
-    const rect = castSection.getBoundingClientRect();
-    const windowHeight = window.innerHeight;
-    const castSectionTop = rect.top + window.scrollY;
-    const castSectionHeight = rect.height;
-    const scrollY = window.scrollY;
-
-    const progress = Math.min((scrollY - castSectionTop) / castSectionHeight, 1);
-    setScrollProgress(Math.max(0, progress));
-  }, 50), []);
-
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    const handleScroll = throttle(() => {
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY;
+      const scrollableHeight = documentHeight - windowHeight;
+      const progress = (scrollTop / scrollableHeight) * 100;
+      setScrollProgress(progress);
+    }, 100); // Throttle to 100ms for better performance
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // Initial call
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [handleScroll]);
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const calculateFade = useCallback(() => {
-    const fadeStart = 0.75; // Start fading at 75% scroll progress
-    const fadeProgress = Math.max(0, (scrollProgress - fadeStart) / (1 - fadeStart));
-    const fadeOpacity = 1 - fadeProgress;
-    const fadeBrightness = 1 - fadeProgress * 0.5;
-
-    return {
-      opacity: fadeOpacity,
-      filter: `brightness(${fadeBrightness})`,
-    };
-  }, [scrollProgress]);
+  // Calculate opacity and brightness based on scroll progress
+  // Fade starts at 75% and completes at 100%
+  const calculateFade = () => {
+    if (scrollProgress < 75) {
+      return { opacity: 1, brightness: 1 };
+    }
+    const fadeProgress = (scrollProgress - 75) / 25; // 0 to 1 over the last 25%
+    const opacity = Math.max(0, 1 - fadeProgress);
+    const brightness = Math.max(0, 1 - fadeProgress);
+    return { opacity, brightness };
+  };
 
   const fadeStyle = calculateFade();
-  const mainCast = castMembers.filter((m) => m.id !== "marvelin");
-  const marvelin = castMembers.find((m) => m.id === "marvelin");
 
   return (
     <section 
@@ -66,14 +60,18 @@ const CastSection = () => {
               className="cast-spotlight premium-card p-0 overflow-hidden"
             >
               <div className="relative overflow-hidden aspect-[3/4]">
-                <ModernImage
-                  src={member.image}
+                <ResponsiveImage 
+                  src={member.image} 
                   alt={`${member.name} als ${member.character || member.role}`}
-                  width={400}
-                  height={600}
-                  className="w-full h-auto object-cover transition-all duration-500"
+                  className="w-full h-full object-cover cast-image"
                   loading="lazy"
-                  style={fadeStyle}
+                  width={800}
+                  height={1067}
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  style={{
+                    opacity: fadeStyle.opacity,
+                    filter: `grayscale(0.3) contrast(1.1) brightness(${fadeStyle.brightness})`
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
               </div>
@@ -104,13 +102,13 @@ const CastSection = () => {
             <div className="premium-card p-0 overflow-hidden">
               <div className="grid md:grid-cols-2 gap-0">
                 <div className="relative overflow-hidden bg-gradient-to-br from-card to-background h-full min-h-[500px] md:min-h-[650px]">
-                  <ModernImage
+                  <ResponsiveImage 
                     src={marvelin.image}
                     alt={`${marvelin.name} - ${marvelin.role}`}
-                    width={800}
-                    height={1200}
                     className="w-full h-full object-cover object-top"
                     loading="lazy"
+                    width={800}
+                    height={1200}
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
                 </div>
@@ -144,4 +142,4 @@ const CastSection = () => {
   );
 };
 
-export default memo(CastSection);
+export default CastSection;
