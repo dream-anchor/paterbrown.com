@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { TeamMember } from "@/types";
 import { ResponsiveImage } from "./ResponsiveImage";
 
@@ -6,7 +7,7 @@ interface TeamMemberCardProps {
   reverse?: boolean;
 }
 
-const TeamMemberCard = ({ member, reverse = false }: TeamMemberCardProps) => {
+const TeamMemberCard = memo(({ member, reverse = false }: TeamMemberCardProps) => {
   return (
     <div className="premium-card p-0 overflow-hidden">
       <div className={`grid md:grid-cols-2 ${reverse ? 'md:grid-flow-dense' : ''}`}>
@@ -43,6 +44,8 @@ const TeamMemberCard = ({ member, reverse = false }: TeamMemberCardProps) => {
       </div>
     </div>
   );
-};
+});
+
+TeamMemberCard.displayName = 'TeamMemberCard';
 
 export default TeamMemberCard;

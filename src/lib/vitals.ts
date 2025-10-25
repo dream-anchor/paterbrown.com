@@ -111,6 +111,46 @@ export function measureFID() {
 }
 
 /**
+ * Measure Interaction to Next Paint (INP) - replacing FID in Core Web Vitals
+ */
+export function measureINP() {
+  let worstINP = 0;
+  
+  const observer = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      const eventEntry = entry as PerformanceEventTiming;
+      const duration = eventEntry.duration;
+      
+      // Only track interactions longer than 16ms (one frame)
+      if (duration > 16 && duration > worstINP) {
+        worstINP = duration;
+        const rating = duration < 200 ? 'good' : duration < 500 ? 'needs-improvement' : 'poor';
+        reportWebVitals({ name: 'INP', value: duration, rating });
+      }
+    }
+  });
+
+  try {
+    observer.observe({ type: 'event', buffered: true } as PerformanceObserverInit);
+  } catch (e) {
+    // INP observation not supported in this browser
+  }
+}
+
+/**
+ * Measure Time to First Byte (TTFB)
+ */
+export function measureTTFB() {
+  const navigationEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+  
+  if (navigationEntry) {
+    const value = navigationEntry.responseStart - navigationEntry.requestStart;
+    const rating = value < 800 ? 'good' : value < 1800 ? 'needs-improvement' : 'poor';
+    reportWebVitals({ name: 'TTFB', value, rating });
+  }
+}
+
+/**
  * Initialize all Web Vitals measurements
  */
 export function initWebVitals() {
@@ -120,4 +160,6 @@ export function initWebVitals() {
   measureLCP();
   measureCLS();
   measureFID();
+  measureINP(); // New Core Web Vital replacing FID
+  measureTTFB(); // Additional performance metric
 }

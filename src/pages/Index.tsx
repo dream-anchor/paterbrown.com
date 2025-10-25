@@ -1,16 +1,33 @@
+import { lazy, Suspense } from "react";
 import HeroSection from "@/components/HeroSection";
-import CastSection from "@/components/CastSection";
-import ShowConceptSection from "@/components/ShowConceptSection";
-import ProjectConceptSection from "@/components/ProjectConceptSection";
-import TourDatesSection from "@/components/TourDatesSection";
-import TeamSection from "@/components/TeamSection";
-import NewsletterSection from "@/components/NewsletterSection";
 import Footer from "@/components/Footer";
 import SkipLink from "@/components/SkipLink";
+import { FAQStructuredData } from "@/components/StructuredData";
+import { SEO } from "@/components/SEO";
+
+// Lazy load non-critical sections for better performance
+const CastSection = lazy(() => import("@/components/CastSection"));
+const ShowConceptSection = lazy(() => import("@/components/ShowConceptSection"));
+const ProjectConceptSection = lazy(() => import("@/components/ProjectConceptSection"));
+const TourDatesSection = lazy(() => import("@/components/TourDatesSection"));
+const TeamSection = lazy(() => import("@/components/TeamSection"));
+const NewsletterSection = lazy(() => import("@/components/NewsletterSection"));
+
+const SectionLoader = () => (
+  <div className="py-12 text-center">
+    <div className="animate-pulse text-gold">Lädt...</div>
+  </div>
+);
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Pater Brown Live-Hörspiel"
+        description="Erleben Sie Pater Brown live auf der Bühne mit Wanja Mues und Antoine Monot, bekannt aus 'Ein Fall für Zwei'. Ein einzigartiges Live-Hörspiel-Erlebnis mit Beatboxer Marvelin."
+        keywords="Pater Brown, Live-Hörspiel, Wanja Mues, Antoine Monot, Ein Fall für Zwei, Marvelin, Theater, Krimi, G.K. Chesterton"
+      />
+      <FAQStructuredData />
       <SkipLink />
       
       <h1 className="sr-only">Pater Brown - Das Live-Hörspiel mit Wanja Mues und Antoine Monot</h1>
@@ -18,10 +35,21 @@ const Index = () => {
       <HeroSection />
       
       <main id="main-content" tabIndex={-1}>
-        <CastSection />
-        <ShowConceptSection />
-        <ProjectConceptSection />
-        <TourDatesSection />
+        <Suspense fallback={<SectionLoader />}>
+          <CastSection />
+        </Suspense>
+        
+        <Suspense fallback={<SectionLoader />}>
+          <ShowConceptSection />
+        </Suspense>
+        
+        <Suspense fallback={<SectionLoader />}>
+          <ProjectConceptSection />
+        </Suspense>
+        
+        <Suspense fallback={<SectionLoader />}>
+          <TourDatesSection />
+        </Suspense>
         
         <section className="py-24 px-6 bg-card/10" aria-labelledby="project-heading">
           <div className="container mx-auto max-w-4xl text-center space-y-8">
@@ -39,8 +67,13 @@ const Index = () => {
           </div>
         </section>
 
-        <TeamSection />
-        <NewsletterSection />
+        <Suspense fallback={<SectionLoader />}>
+          <TeamSection />
+        </Suspense>
+        
+        <Suspense fallback={<SectionLoader />}>
+          <NewsletterSection />
+        </Suspense>
       </main>
       
       <Footer />

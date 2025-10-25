@@ -1,6 +1,12 @@
 import { Bell } from "lucide-react";
+
 const NewsletterSection = () => {
-  return <section className="py-24 px-6 bg-gradient-to-b from-card/20 to-background relative overflow-hidden">
+  return <section 
+    id="newsletter-heading" 
+    className="py-24 px-6 bg-gradient-to-b from-card/20 to-background relative overflow-hidden"
+    aria-labelledby="newsletter-heading"
+    role="region"
+  >
       <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-transparent to-transparent pointer-events-none" />
       
       <div className="container mx-auto max-w-3xl relative z-10">
@@ -9,7 +15,7 @@ const NewsletterSection = () => {
             <Bell className="w-8 h-8 text-gold" />
           </div>
           
-          <h2 className="text-4xl md:text-5xl font-heading tracking-wider text-foreground uppercase">
+          <h2 id="newsletter-heading" className="text-4xl md:text-5xl font-heading tracking-wider text-foreground uppercase">
             Verpasse keine neuen Termine
           </h2>
           

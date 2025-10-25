@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /newsletter-gesendet
+Disallow: /danke-newsletter
+Crawl-delay: 1
 
+# Sitemap
 Sitemap: https://paterbrownlive.com/sitemap.xml

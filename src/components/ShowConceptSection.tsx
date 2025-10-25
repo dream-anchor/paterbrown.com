@@ -1,6 +1,7 @@
+import { memo } from "react";
 import { showCases } from "@/data/castData";
 
-const ShowConceptSection = () => {
+const ShowConceptSection = memo(() => {
   return (
     <section 
       className="py-24 px-6 bg-gradient-to-b from-card/20 to-background"
@@ -44,6 +45,8 @@ const ShowConceptSection = () => {
       </div>
     </section>
   );
-};
+});
+
+ShowConceptSection.displayName = 'ShowConceptSection';
 
 export default ShowConceptSection;

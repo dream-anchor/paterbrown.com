@@ -2,56 +2,88 @@ import { tourDates } from "@/data/tourDates";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 import { TourDate } from "@/types";
 
-const generateEventSchema = (date: TourDate) => ({
-  "@context": "https://schema.org",
-  "@type": "Event",
-  "name": `Pater Brown - Das Live-Hörspiel - ${date.city}`,
-  "startDate": date.date,
-  "eventStatus": "https://schema.org/EventScheduled",
-  "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-  "location": {
-    "@type": "Place",
-    "name": date.venue,
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": date.city,
-      "addressCountry": date.city.includes("Zürich") ? "CH" : "DE"
+const generateEventSchema = (date: TourDate) => {
+  // Door time is typically 30 minutes before the event
+  const eventDateTime = new Date(date.date);
+  const doorTime = new Date(eventDateTime.getTime() - 30 * 60000).toISOString();
+  
+  return {
+    "@context": "https://schema.org",
+    "@type": "TheaterEvent",
+    "name": `Pater Brown - Das Live-Hörspiel - ${date.city}`,
+    "description": "Ein spannendes Live-Hörspiel mit Wanja Mues und Antoine Monot, bekannt aus der ZDF-Serie 'Ein Fall für Zwei', und Beatboxer Marvelin.",
+    "startDate": date.date,
+    "endDate": date.date,
+    "doorTime": doorTime,
+    "duration": "PT2H",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "location": {
+      "@type": "Place",
+      "name": date.venue,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": date.city,
+        "addressCountry": date.city.includes("Zürich") ? "CH" : "DE"
+      },
+      ...(date.geo && {
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": date.geo.latitude,
+          "longitude": date.geo.longitude
+        }
+      })
     },
-    ...(date.geo && {
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": date.geo.latitude,
-        "longitude": date.geo.longitude
+    "image": [
+      "https://paterbrownlive.com/og-image.png"
+    ],
+    "performer": [
+      {
+        "@type": "Person",
+        "name": "Wanja Mues",
+        "sameAs": [
+          "https://de.wikipedia.org/wiki/Wanja_Mues",
+          "https://www.imdb.com/name/nm0611635/"
+        ]
+      },
+      {
+        "@type": "Person",
+        "name": "Antoine Monot Jr.",
+        "sameAs": [
+          "https://de.wikipedia.org/wiki/Antoine_Monot_jr.",
+          "https://www.imdb.com/name/nm0598741/"
+        ]
+      },
+      {
+        "@type": "Person",
+        "name": "Marvelin"
       }
-    })
-  },
-  "performer": [
-    {
-      "@type": "Person",
-      "name": "Antoine Monot Jr."
+    ],
+    "organizer": {
+      "@type": "Organization",
+      "name": "Dream & Anchor",
+      "url": "https://paterbrownlive.com"
     },
-    {
-      "@type": "Person",
-      "name": "Wanja Mues"
+    "offers": {
+      "@type": "Offer",
+      "url": date.ticketUrl,
+      "availability": "https://schema.org/InStock",
+      "validFrom": "2025-01-01",
+      "priceCurrency": date.city.includes("Zürich") ? "CHF" : "EUR",
+      "price": date.city.includes("Zürich") ? "45" : "35",
+      "priceRange": date.city.includes("Zürich") ? "CHF 35-55" : "€25-45"
     },
-    {
-      "@type": "Person",
-      "name": "Marvelin"
+    "inLanguage": "de-DE",
+    "workPerformed": {
+      "@type": "CreativeWork",
+      "name": "Pater Brown Hörspiele nach G.K. Chesterton",
+      "author": {
+        "@type": "Person",
+        "name": "G.K. Chesterton"
+      }
     }
-  ],
-  "offers": {
-    "@type": "Offer",
-    "url": date.ticketUrl,
-    "availability": "https://schema.org/InStock",
-    "price": "0",
-    "priceCurrency": date.city.includes("Zürich") ? "CHF" : "EUR"
-  },
-  "organizer": {
-    "@type": "Organization",
-    "name": "Dream & Anchor",
-    "url": "https://paterbrownlive.com"
-  }
-});
+  };
+};
 
 const TourDatesSection = () => {
   return (
@@ -59,6 +91,7 @@ const TourDatesSection = () => {
       id="tour-dates"
       className="py-24 px-6 bg-gradient-to-b from-background to-card/20"
       aria-labelledby="tour-dates-heading"
+      role="region"
     >
       <div className="container mx-auto max-w-5xl">
         <div className="text-center mb-24">

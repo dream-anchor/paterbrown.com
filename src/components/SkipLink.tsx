@@ -1,21 +1,70 @@
 const SkipLink = () => {
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    const mainContent = document.getElementById('main-content');
-    if (mainContent) {
-      mainContent.focus();
-      mainContent.scrollIntoView();
-    }
-  };
-
   return (
-    <a
-      href="#main-content"
-      onClick={handleClick}
-      className="skip-link sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-6 focus:py-3 focus:bg-gold focus:text-background focus:font-bold focus:rounded-none focus:outline-none focus:ring-4 focus:ring-gold/50"
-    >
-      Zum Hauptinhalt springen
-    </a>
+    <nav aria-label="Schnellzugriff" className="sr-only focus-within:not-sr-only">
+      <ul className="fixed top-4 left-4 z-[9999] space-y-2">
+        <li>
+          <a 
+            href="#main-content" 
+            className="block bg-gold text-background px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.getElementById('main-content');
+              if (el) {
+                el.focus();
+                el.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+          >
+            Zum Hauptinhalt springen
+          </a>
+        </li>
+        <li>
+          <a 
+            href="#cast-heading" 
+            className="block bg-gold text-background px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.getElementById('cast-heading');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+          >
+            Zum Cast springen
+          </a>
+        </li>
+        <li>
+          <a 
+            href="#tour-dates-heading" 
+            className="block bg-gold text-background px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.getElementById('tour-dates-heading');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+          >
+            Zu den Terminen springen
+          </a>
+        </li>
+        <li>
+          <a 
+            href="#newsletter-heading" 
+            className="block bg-gold text-background px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.getElementById('newsletter-heading');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+          >
+            Zum Newsletter springen
+          </a>
+        </li>
+      </ul>
+    </nav>
   );
 };
 

@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { teamMembers } from "@/data/castData";
 import TeamMemberCard from "./TeamMemberCard";
 
-const TeamSection = () => {
+const TeamSection = memo(() => {
   return (
     <section 
       className="py-24 px-6 bg-gradient-to-b from-card/20 to-background"
@@ -26,6 +27,8 @@ const TeamSection = () => {
       </div>
     </section>
   );
-};
+});
+
+TeamSection.displayName = 'TeamSection';
 
 export default TeamSection;
