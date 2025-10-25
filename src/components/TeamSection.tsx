@@ -9,9 +9,9 @@ const TeamSection = () => {
     >
       <div className="container mx-auto max-w-7xl">
         <div className="text-center mb-24">
-          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Das Team</p>
+          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Die Produktion</p>
           <h2 id="team-heading" className="text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase">
-            Team
+            Produktion
           </h2>
         </div>
 
