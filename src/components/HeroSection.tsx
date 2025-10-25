@@ -46,7 +46,7 @@ const HeroSection = () => {
         backgroundImage: `url(${heroBackground})`,
         backgroundPositionY: '-200px'
       }} role="img" aria-label="Atmosphärischer Hintergrund für Pater Brown Live-Hörspiel" />
-        <div className="absolute inset-0 hero-overlay" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
         
 
         <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pb-20 pt-8">
