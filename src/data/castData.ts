@@ -14,7 +14,7 @@ export const castMembers: CastMember[] = [
     character: "Flambeau",
     image: wanjaImage,
     headerBg: wanjaHeaderBg,
-    description: "Bekannt aus ZDF \"Ein Fall für Zwei\" als Detektiv Leo Oswald. Seine Stimme verleiht Hörbüchern von James Baldwin, Haruki Murakami und Agatha Christie Kult-Status.",
+    description: "Bekannt aus ZDF \"Ein Fall für Zwei\" als Detektiv Leo Oswald. Seine Stimme verleiht Hörbüchern von Ian McEwan, Haruki Murakami, und Christian Kracht Kult-Status.",
     highlights: ["ZDF \"Ein Fall für Zwei\"", "Hörbuch-Sprecher", "Theater-Star"]
   },
   {
