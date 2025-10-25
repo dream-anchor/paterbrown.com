@@ -40,7 +40,7 @@ export const showCases: ShowCase[] = [
   {
     id: "case1",
     title: "Das blaue Kreuz",
-    description: "Ein spannender Fall: Pater Brown versucht, ein wertvolles Kreuz vor dem berüchtigten Meisterdieb Flambeau zu schützen – doch auch der brillante Detektiv Valentin ist ihnen dicht auf den Fersen. Ein cleveres Katz-und-Maus-Spiel mit überraschendem Ausgang."
+    description: "Pater Brown versucht, ein wertvolles Kreuz vor dem berüchtigten Meisterdieb Flambeau zu schützen – doch auch der brillante Detektiv Valentin ist ihnen dicht auf den Fersen. Ein cleveres Katz-und-Maus-Spiel mit überraschendem Ausgang."
   },
   {
     id: "case2",
