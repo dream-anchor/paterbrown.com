@@ -97,13 +97,12 @@ const TourDatesSection = () => {
       const { data, error } = await supabase
         .from('tour_events')
         .select('*')
-        .eq('is_active', true)
-        .order('date', { ascending: true });
+        .eq('is_active', true);
       
       if (error) throw error;
       
-      // Transform database format to component format
-      return (data || []).map(event => ({
+      // Transform database format to component format and sort by event_date
+      const transformed = (data || []).map(event => ({
         id: event.id,
         date: event.date,
         day: event.day,
@@ -114,8 +113,14 @@ const TourDatesSection = () => {
         geo: event.latitude && event.longitude ? {
           latitude: Number(event.latitude),
           longitude: Number(event.longitude)
-        } : undefined
-      })) as TourDate[];
+        } : undefined,
+        eventDate: event.event_date
+      })) as (TourDate & { eventDate: string })[];
+      
+      // Sort by event_date chronologically
+      return transformed.sort((a, b) => 
+        new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
+      );
     },
   });
 

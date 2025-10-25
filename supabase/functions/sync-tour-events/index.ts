@@ -186,6 +186,12 @@ Gebe die Daten als JSON-Array zurück. Beispiel:
     // Step 3: Update the database
     console.log('Updating database...');
     
+    // Helper function to convert DD.MM.YYYY to YYYY-MM-DD
+    const convertDateToISO = (dateStr: string): string => {
+      const [day, month, year] = dateStr.split('.');
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    };
+    
     // Mark all existing events as inactive first
     await supabase
       .from('tour_events')
@@ -194,6 +200,8 @@ Gebe die Daten als JSON-Array zurück. Beispiel:
 
     // Insert or update events
     for (const event of events) {
+      const eventDate = convertDateToISO(event.date);
+      
       const eventData = {
         date: event.date,
         day: event.day,
@@ -204,6 +212,7 @@ Gebe die Daten als JSON-Array zurück. Beispiel:
         eventim_event_id: event.eventim_event_id || null,
         latitude: event.latitude || null,
         longitude: event.longitude || null,
+        event_date: eventDate,
         is_active: true,
         last_synced_at: new Date().toISOString(),
       };

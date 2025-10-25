@@ -44,6 +44,7 @@ export type Database = {
           created_at: string
           date: string
           day: string
+          event_date: string
           eventim_event_id: string | null
           id: string
           is_active: boolean
@@ -59,6 +60,7 @@ export type Database = {
           created_at?: string
           date: string
           day: string
+          event_date: string
           eventim_event_id?: string | null
           id?: string
           is_active?: boolean
@@ -74,6 +76,7 @@ export type Database = {
           created_at?: string
           date?: string
           day?: string
+          event_date?: string
           eventim_event_id?: string | null
           id?: string
           is_active?: boolean
