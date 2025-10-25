@@ -2,24 +2,24 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://paterbrownlive.com/</loc>
+    <loc>https://paterbrown.com/</loc>
     <lastmod>2025-10-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://paterbrownlive.com/og-image.png</image:loc>
+      <image:loc>https://paterbrown.com/og-image.png</image:loc>
       <image:title>Pater Brown - Das Live-Hörspiel Logo</image:title>
       <image:caption>Pater Brown Live-Hörspiel mit Wanja Mues und Antoine Monot</image:caption>
     </image:image>
   </url>
   <url>
-    <loc>https://paterbrownlive.com/impressum</loc>
+    <loc>https://paterbrown.com/impressum</loc>
     <lastmod>2025-10-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://paterbrownlive.com/datenschutz</loc>
+    <loc>https://paterbrown.com/datenschutz</loc>
     <lastmod>2025-10-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>

@@ -38,9 +38,9 @@ const generateEventSchema = (date: TourDate) => {
         }
       })
     },
-    "image": [
-      "https://paterbrownlive.com/og-image.png"
-    ],
+      "image": [
+        "https://paterbrown.com/og-image.png"
+      ],
     "performer": [
       {
         "@type": "Person",
@@ -63,11 +63,11 @@ const generateEventSchema = (date: TourDate) => {
         "name": "Marvelin"
       }
     ],
-    "organizer": {
-      "@type": "Organization",
-      "name": "Dream & Anchor",
-      "url": "https://paterbrownlive.com"
-    },
+      "organizer": {
+        "@type": "Organization",
+        "name": "Dream & Anchor",
+        "url": "https://paterbrown.com"
+      },
     "offers": {
       "@type": "Offer",
       "url": date.ticketUrl,
