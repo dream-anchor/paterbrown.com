@@ -166,7 +166,7 @@ const HeroSection = () => {
 
               <div className="w-full bg-card/30 backdrop-blur-sm px-6 py-4 rounded-lg text-center">
                 <p className="text-gold/70 text-xs uppercase tracking-widest mb-3">
-                  📍 Große Tour 2026
+                  📍 Erste Tour 2026
                 </p>
                 <div className="text-base text-foreground/90 space-y-1.5">
                   <p>Hamburg • Bremen</p>

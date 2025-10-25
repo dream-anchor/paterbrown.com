@@ -86,7 +86,7 @@ const Footer = () => {
 
         <div className="text-center space-y-4">
           <p className="text-foreground/60 text-sm">
-            Eine Produktion der Dream & Anchor.
+            Eine Produktion der Dream & Anchor
           </p>
           <p className="text-muted-foreground text-xs tracking-wider">
             © {currentYear} Pater Brown Live-Hörspiel
