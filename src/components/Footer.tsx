@@ -7,7 +7,7 @@ const Footer = () => {
   return (
     <footer className="py-20 px-6 border-t border-gold/10 bg-background" role="contentinfo">
       <div className="container mx-auto max-w-6xl">
-        <div className="grid md:grid-cols-3 gap-12 text-center md:text-left mb-16">
+        <div className="grid md:grid-cols-4 gap-12 text-center md:text-left mb-16">
           <div>
             <h3 className="text-gold text-xs mb-4 tracking-[0.3em] uppercase font-bold">
               Kontakt
@@ -17,8 +17,35 @@ const Footer = () => {
                 hallo@paterbrown.com
               </a>
               <br />
-              +49 89 909015 3943
+              <a href="tel:+498990901539433" className="hover:text-gold transition-colors">
+                +49 89 909015 3943
+              </a>
             </address>
+          </div>
+
+          <div>
+            <h3 className="text-gold text-xs mb-4 tracking-[0.3em] uppercase font-bold">
+              Ticketservice
+            </h3>
+            <div className="text-foreground/80 text-sm leading-relaxed space-y-2">
+              <p>
+                Unser Ticketpartner <strong className="text-gold">eventim.de</strong>
+              </p>
+              <p>
+                Mo–Fr 10–16 Uhr<br />
+                <a href="tel:+494212031551" className="hover:text-gold transition-colors">
+                  0421 / 20 31 55 11
+                </a>
+              </p>
+              <a 
+                href="https://www.eventim.de/faq/de_de/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block hover:text-gold transition-colors"
+              >
+                Helpcenter →
+              </a>
+            </div>
           </div>
 
           <div>
