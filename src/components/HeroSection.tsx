@@ -132,7 +132,7 @@ const HeroSection = () => {
             
             <div className="space-y-4">
               <p className="text-xl md:text-2xl text-gold/90 font-light leading-relaxed">
-                Mit <span className="font-medium">Wanja Mues</span> und <span className="font-medium">Antoine Monot</span>,<br />
+                Mit <span className="font-medium">Antoine Monot</span> und <span className="font-medium">Wanja Mues</span>,<br />
                 bekannt aus der ZDF-Serie „Ein Fall für Zwei"
               </p>
               <p className="text-lg md:text-xl text-muted-foreground/80 font-light">
@@ -152,10 +152,10 @@ const HeroSection = () => {
 
             <div className="divider-gold w-16 mx-auto opacity-40" aria-hidden="true" />
 
-            <div className="space-y-6 pt-4 cinematic-enter" style={{
+            <div className="flex flex-col md:flex-row gap-6 justify-center pt-4 cinematic-enter" style={{
             animationDelay: "0.8s"
           }}>
-              <div className="w-full md:inline-block bg-card/20 backdrop-blur-sm px-6 py-4 rounded-lg border border-gold/20">
+              <div className="bg-card/20 backdrop-blur-sm px-6 py-4 rounded-lg border border-gold/20 text-center">
                 <p className="text-gold/70 text-xs uppercase tracking-widest mb-2">
                   🤫 Preview 2025
                 </p>
@@ -164,17 +164,23 @@ const HeroSection = () => {
                 </p>
               </div>
 
-              <div className="w-full md:inline-block bg-card/20 backdrop-blur-sm px-6 py-4 rounded-lg border border-gold/20 md:ml-4">
+              <div className="bg-card/20 backdrop-blur-sm px-6 py-4 rounded-lg border border-gold/20 text-center">
                 <p className="text-gold/70 text-xs uppercase tracking-widest mb-3">
                   📍 Große Tour 2026
                 </p>
                 <div className="text-base text-foreground/90 space-y-1.5">
                   <p>Hamburg • Bremen</p>
-                  <p>Neu-Isenburg / Frankfurt a.M.</p>
+                  <p>Neu-Isenburg / Frankfurt a.M</p>
                   <p>München • Zürich (CH)</p>
                 </div>
               </div>
             </div>
+
+            <p className="text-sm text-muted-foreground/60 mt-8 cinematic-enter" style={{
+            animationDelay: "1s"
+          }}>
+              Eine Produktion der Dream & Anchor
+            </p>
           </div>
         </div>
       </section>
