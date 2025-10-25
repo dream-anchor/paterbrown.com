@@ -65,7 +65,7 @@ const Footer = () => {
             Ticketservice
           </h3>
           <p className="text-foreground/80 text-sm leading-relaxed max-w-3xl mx-auto">
-            Unser Ticketpartner <strong className="text-gold">eventim.de</strong> hilft dir gern weiter –<br />
+            Unser Ticketpartner <a href="https://www.eventim.de" target="_blank" rel="noopener noreferrer" className="text-gold hover:text-gold/80 transition-colors font-semibold">eventim.de</a> hilft dir gern weiter –<br />
             telefonisch Montag bis Freitag von <strong>10–16 Uhr</strong> unter{" "}
             <a href="tel:+4942120315511" className="hover:text-gold transition-colors">
               +49 421 20 31 55 11
