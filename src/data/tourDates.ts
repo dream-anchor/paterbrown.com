@@ -31,7 +31,7 @@ export const tourDates: TourDate[] = [
     id: "4",
     date: "11.02.2026",
     day: "Mi. 20:00",
-    city: "Neu-Isenburg",
+    city: "Neu-Isenburg / Frankfurt a.M.",
     venue: "Hugenottenhalle",
     ticketUrl: "https://www.eventim.de/event/pater-brown-das-live-hoerspiel-mit-antoine-monot-wanja-mues-marvelin-hugenottenhalle-20792307/?affiliate=KZB"
   },
