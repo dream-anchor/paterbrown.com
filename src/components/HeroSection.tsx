@@ -91,7 +91,7 @@ const HeroSection = () => {
             
             <p className="text-lg md:text-xl lg:text-2xl text-gold/90 font-light leading-relaxed">
               Ein Live-Hörspiel<br />
-              mit Wanja Mues & Antoine Monot<br />
+              mit Antoine Monot & Wanja Mues<br />
               wo Stimme, Klang und Beat zum Krimi werden.
             </p>
 
