@@ -53,9 +53,6 @@ const Footer = () => {
                 <a href="/datenschutz" className="text-foreground/80 hover:text-gold transition-colors">
                   Datenschutz
                 </a>
-                <a href="/agb" className="text-foreground/80 hover:text-gold transition-colors">
-                  AGB
-                </a>
               </div>
             </nav>
           </div>
