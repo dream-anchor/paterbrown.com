@@ -92,7 +92,8 @@ const generateEventSchema = (date: TourDate) => {
 
 const TourDatesSection = () => {
   const { data: tourDates = [], isLoading, error } = useQuery({
-    queryKey: ['tour-events'],
+    queryKey: ['tour-events', 'v2'],
+    staleTime: 0,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tour_events')
