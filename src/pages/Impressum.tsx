@@ -11,7 +11,7 @@ const Impressum = () => {
         className="relative bg-cover bg-center"
         style={{ backgroundImage: `url(${heroBackground})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-card/30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-transparent" />
         
         <div className="relative container mx-auto px-6 py-12">
           <Link to="/" className="inline-block mb-8 hover:opacity-80 transition-opacity">
@@ -28,7 +28,10 @@ const Impressum = () => {
         </div>
       </div>
 
-      <main className="flex-1 bg-gradient-to-b from-card/30 to-background py-24">
+      {/* Smooth fade from curtain to content */}
+      <div className="absolute bottom-0 left-0 right-0 h-[400px] bg-gradient-to-b from-transparent via-transparent to-background/95 pointer-events-none z-0" style={{ top: 'auto' }} />
+
+      <main className="relative flex-1 bg-background py-24 z-10">
         <div className="container mx-auto px-6 max-w-4xl">
           <div className="premium-card p-8 md:p-12 space-y-12">
             {/* Header */}
