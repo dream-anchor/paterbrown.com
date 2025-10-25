@@ -1,4 +1,5 @@
-import { tourDates } from "@/data/tourDates";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 import { TourDate } from "@/types";
 
@@ -90,8 +91,36 @@ const generateEventSchema = (date: TourDate) => {
 };
 
 const TourDatesSection = () => {
+  const { data: tourDates = [], isLoading, error } = useQuery({
+    queryKey: ['tour-events'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tour_events')
+        .select('*')
+        .eq('is_active', true)
+        .order('date', { ascending: true });
+      
+      if (error) throw error;
+      
+      // Transform database format to component format
+      return (data || []).map(event => ({
+        id: event.id,
+        date: event.date,
+        day: event.day,
+        city: event.city,
+        venue: event.venue,
+        note: event.note || undefined,
+        ticketUrl: event.ticket_url,
+        geo: event.latitude && event.longitude ? {
+          latitude: Number(event.latitude),
+          longitude: Number(event.longitude)
+        } : undefined
+      })) as TourDate[];
+    },
+  });
+
   return (
-    <section 
+    <section
       id="tour-dates"
       className="py-24 px-6 bg-gradient-to-b from-background to-card/20"
       aria-labelledby="tour-dates-heading"
@@ -109,8 +138,26 @@ const TourDatesSection = () => {
           </p>
         </div>
         
+        {isLoading && (
+          <div className="text-center text-muted-foreground py-12">
+            <p className="text-lg">Lade Termine...</p>
+          </div>
+        )}
+        
+        {error && (
+          <div className="text-center text-destructive py-12">
+            <p className="text-lg">Fehler beim Laden der Termine</p>
+          </div>
+        )}
+        
+        {!isLoading && !error && tourDates.length === 0 && (
+          <div className="text-center text-muted-foreground py-12">
+            <p className="text-lg">Keine Termine verfügbar</p>
+          </div>
+        )}
+        
         <div className="space-y-2 max-w-4xl mx-auto" role="list">
-          {tourDates.map((date) => (
+          {!isLoading && tourDates.map((date) => (
             <article 
               key={date.id}
               className="tour-date-premium flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 group"

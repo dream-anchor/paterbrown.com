@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +16,35 @@ interface EventData {
   note?: string;
   ticket_url: string;
   eventim_event_id?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+async function sendErrorEmail(error: string, step: string) {
+  try {
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY not configured, skipping error email');
+      return;
+    }
+
+    const resend = new Resend(resendApiKey);
+    await resend.emails.send({
+      from: 'Pater Brown Sync <onboarding@resend.dev>',
+      to: ['monot@hey.com'],
+      subject: '🚨 Tour Events Sync fehlgeschlagen',
+      html: `
+        <h1>Tour Events Synchronisation Fehler</h1>
+        <p><strong>Zeitstempel:</strong> ${new Date().toISOString()}</p>
+        <p><strong>Fehlgeschlagener Schritt:</strong> ${step}</p>
+        <p><strong>Fehlermeldung:</strong></p>
+        <pre style="background: #f4f4f4; padding: 10px; border-radius: 5px;">${error}</pre>
+      `,
+    });
+    console.log('Error email sent successfully to monot@hey.com');
+  } catch (emailError) {
+    console.error('Failed to send error email:', emailError);
+  }
 }
 
 serve(async (req) => {
@@ -32,11 +62,15 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!screenshotoneAccessKey || !screenshotoneSecretKey) {
-      throw new Error('ScreenshotOne API keys not configured');
+      const error = 'ScreenshotOne API keys not configured';
+      await sendErrorEmail(error, 'Configuration Check');
+      throw new Error(error);
     }
 
     if (!lovableApiKey) {
-      throw new Error('Lovable API key not configured');
+      const error = 'Lovable API key not configured';
+      await sendErrorEmail(error, 'Configuration Check');
+      throw new Error(error);
     }
 
     // Initialize Supabase client
@@ -58,7 +92,9 @@ serve(async (req) => {
     const screenshotResponse = await fetch(screenshotUrl.toString());
     
     if (!screenshotResponse.ok) {
-      throw new Error(`Screenshot capture failed: ${screenshotResponse.statusText}`);
+      const error = `Screenshot capture failed: ${screenshotResponse.statusText}`;
+      await sendErrorEmail(error, 'Screenshot Capture');
+      throw new Error(error);
     }
 
     const screenshotBuffer = await screenshotResponse.arrayBuffer();
@@ -125,7 +161,9 @@ Gebe die Daten als JSON-Array zurück. Beispiel:
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
       console.error('AI API error:', aiResponse.status, errorText);
-      throw new Error(`AI extraction failed: ${aiResponse.statusText}`);
+      const error = `AI extraction failed: ${aiResponse.statusText} - ${errorText}`;
+      await sendErrorEmail(error, 'AI Data Extraction');
+      throw new Error(error);
     }
 
     const aiData = await aiResponse.json();
@@ -145,7 +183,9 @@ Gebe die Daten als JSON-Array zurück. Beispiel:
       console.log(`Extracted ${events.length} events`);
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', parseError);
-      throw new Error('Could not parse event data from AI response');
+      const error = `Could not parse event data from AI response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`;
+      await sendErrorEmail(error, 'JSON Parsing');
+      throw new Error(error);
     }
 
     // Step 3: Update the database
@@ -167,6 +207,8 @@ Gebe die Daten als JSON-Array zurück. Beispiel:
         note: event.note || null,
         ticket_url: event.ticket_url,
         eventim_event_id: event.eventim_event_id || null,
+        latitude: event.latitude || null,
+        longitude: event.longitude || null,
         is_active: true,
         last_synced_at: new Date().toISOString(),
       };
@@ -211,9 +253,16 @@ Gebe die Daten als JSON-Array zurück. Beispiel:
 
   } catch (error) {
     console.error('Error in sync-tour-events:', error);
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    
+    // Send error email if not already sent
+    if (!errorMsg.includes('not configured')) {
+      await sendErrorEmail(errorMsg, 'General Error');
+    }
+    
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMsg,
         success: false 
       }),
       {
