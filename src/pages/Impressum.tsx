@@ -1,12 +1,18 @@
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { Separator } from "@/components/ui/separator";
+import { SEO } from "@/components/SEO";
 import paterbrown from "@/assets/pater-brown-logo.png";
 import heroBackground from "@/assets/hero-background.jpg";
 
 const Impressum = () => {
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO 
+        title="Impressum"
+        description="Impressum und rechtliche Informationen zu Pater Brown - Das Live-Hörspiel. Dream & Anchor Handelsgesellschaft mbH."
+        robots="index, follow"
+      />
       <div 
         className="relative bg-cover bg-top bg-no-repeat min-h-[300px]"
         style={{ 

@@ -1,5 +1,45 @@
 import { tourDates } from "@/data/tourDates";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
+import { TourDate } from "@/types";
+
+const generateEventSchema = (date: TourDate) => ({
+  "@context": "https://schema.org",
+  "@type": "Event",
+  "name": `Pater Brown - Das Live-Hörspiel - ${date.city}`,
+  "startDate": date.date,
+  "eventStatus": "https://schema.org/EventScheduled",
+  "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+  "location": {
+    "@type": "Place",
+    "name": date.venue,
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": date.city,
+      "addressCountry": date.city.includes("Zürich") ? "CH" : "DE"
+    }
+  },
+  "performer": [
+    {
+      "@type": "Person",
+      "name": "Antoine Monot Jr."
+    },
+    {
+      "@type": "Person",
+      "name": "Wanja Mues"
+    },
+    {
+      "@type": "Person",
+      "name": "Marvelin"
+    }
+  ],
+  "offers": {
+    "@type": "Offer",
+    "url": date.ticketUrl,
+    "availability": "https://schema.org/InStock",
+    "price": "0",
+    "priceCurrency": date.city.includes("Zürich") ? "CHF" : "EUR"
+  }
+});
 
 const TourDatesSection = () => {
   return (
@@ -27,6 +67,10 @@ const TourDatesSection = () => {
               className="tour-date-premium flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 group"
               role="listitem"
             >
+              {/* JSON-LD structured data for each event */}
+              <script type="application/ld+json">
+                {JSON.stringify(generateEventSchema(date))}
+              </script>
               <div className="flex flex-col md:flex-row gap-6 md:gap-12 flex-1">
                 <div className="flex flex-col min-w-[160px]">
                   <time 

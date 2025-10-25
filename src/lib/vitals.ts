@@ -20,7 +20,28 @@ export function reportWebVitals(metric: Metric) {
   }
   
   // In production, send to analytics service
-  // Example: analytics.track('web_vital', metric);
+  if (import.meta.env.PROD) {
+    // Google Analytics 4
+    if (typeof window !== 'undefined' && 'gtag' in window) {
+      const gtag = (window as any).gtag;
+      gtag('event', metric.name, {
+        event_category: 'Web Vitals',
+        value: Math.round(metric.value),
+        metric_rating: metric.rating,
+        non_interaction: true,
+        metric_id: `${metric.name}_${Date.now()}`
+      });
+    }
+    
+    // Alternative: Send to custom analytics endpoint
+    // fetch('/api/analytics', {
+    //   method: 'POST',
+    //   body: JSON.stringify(metric),
+    //   headers: { 'Content-Type': 'application/json' }
+    // }).catch(() => {
+    //   // Silently fail to not impact user experience
+    // });
+  }
 }
 
 /**

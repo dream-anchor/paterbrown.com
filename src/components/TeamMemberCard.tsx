@@ -1,4 +1,5 @@
 import { TeamMember } from "@/types";
+import { ResponsiveImage } from "./ResponsiveImage";
 
 interface TeamMemberCardProps {
   member: TeamMember;
@@ -11,14 +12,14 @@ const TeamMemberCard = ({ member, reverse = false }: TeamMemberCardProps) => {
       <div className={`grid md:grid-cols-2 ${reverse ? 'md:grid-flow-dense' : ''}`}>
         {/* Image */}
         <div className={`relative overflow-hidden bg-gradient-to-br from-card to-background flex items-stretch ${reverse ? 'md:col-start-2' : ''}`}>
-          <img 
+          <ResponsiveImage 
             src={member.image}
             alt={`${member.name} - ${member.role}`}
             className="w-full h-full object-cover"
             loading="lazy"
-            decoding="async"
-            width="800"
-            height="1067"
+            width={800}
+            height={1067}
+            sizes="(max-width: 768px) 100vw, 50vw"
           />
         </div>
         
