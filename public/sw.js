@@ -42,8 +42,8 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip cross-origin requests except for fonts
-  if (url.origin !== location.origin && !url.hostname.includes('fonts.gstatic.com')) {
+  // Skip cross-origin requests (all fonts are now local)
+  if (url.origin !== location.origin) {
     return;
   }
 
