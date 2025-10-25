@@ -121,40 +121,60 @@ const HeroSection = () => {
             </div>
           </div>
 
-          <div className="max-w-4xl text-center space-y-8 cinematic-enter" style={{
+          <div className="max-w-4xl text-center space-y-6 cinematic-enter" style={{
           animationDelay: "0.3s"
         }}>
-            <p className="text-2xl md:text-4xl lg:text-5xl font-light tracking-[0.1em] text-foreground/95 leading-tight mt-16">
-              Wenn Spannung sichtbar wird: Pater Brown LIVE – Krimi, Klang & Gänsehaut auf der Bühne.
-            </p>
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-light tracking-wider text-foreground/95 leading-tight mt-16">
+              Pater Brown LIVE –<br />Krimi, Klang & Gänsehaut
+            </h1>
             
             <div className="divider-gold w-32 mx-auto my-8" aria-hidden="true" />
             
-            <p className="text-lg md:text-xl lg:text-2xl text-gold/90 font-light leading-relaxed">
-              Mit Wanja Mues und Antoine Monot, bekannt aus der ZDF-Serie „Ein Fall für Zwei", erleben Sie TV-Stars live auf der Bühne.
-            </p>
+            <div className="space-y-4">
+              <p className="text-xl md:text-2xl text-gold/90 font-light leading-relaxed">
+                Mit <span className="font-medium">Wanja Mues</span> und <span className="font-medium">Antoine Monot</span>,<br />
+                bekannt aus der ZDF-Serie „Ein Fall für Zwei"
+              </p>
+              <p className="text-lg md:text-xl text-muted-foreground/80 font-light">
+                Mit Beatboxer <span className="font-medium text-gold/80">Marvelin</span>
+              </p>
+            </div>
 
-            <div className="divider-gold w-16 mx-auto my-6 opacity-50" aria-hidden="true" />
+            <div className="py-8">
+              <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen">
+                <button className="btn-premium cinematic-enter focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background" style={{
+                animationDelay: "0.6s"
+              }} type="button" aria-label="Jetzt Tickets bei Eventim sichern">
+                  🎟 Tickets sichern
+                </button>
+              </a>
+            </div>
 
-            <p className="text-xl md:text-2xl text-muted-foreground font-light">
-              Mit Beatboxer Marvelin
-            </p>
+            <div className="divider-gold w-16 mx-auto opacity-40" aria-hidden="true" />
 
-            <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen">
-              <button className="btn-premium mt-12 cinematic-enter focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background" style={{
-              animationDelay: "0.6s"
-            }} type="button" aria-label="Jetzt Tickets bei Eventim sichern">
-                🎟 Tickets sichern
-              </button>
-            </a>
-
-            <p className="text-gold/70 text-sm uppercase tracking-[0.25em] mt-8 cinematic-enter" style={{
+            <div className="space-y-6 pt-4 cinematic-enter" style={{
             animationDelay: "0.8s"
           }}>
-              🤫 LIVE 2025 AUGSBURG (PREVIEW)<br />
-              <br />
-              📍 LIVE 2026 IN HAMBURG • BREMEN •<br />NEU-ISENBURG / FRANKFURT A.M. • MÜNCHEN • ZÜRICH (CH)
-            </p>
+              <div className="w-full md:inline-block bg-card/20 backdrop-blur-sm px-6 py-4 rounded-lg border border-gold/20">
+                <p className="text-gold/70 text-xs uppercase tracking-widest mb-2">
+                  🤫 Preview 2025
+                </p>
+                <p className="text-base text-foreground/90">
+                  Augsburg
+                </p>
+              </div>
+
+              <div className="w-full md:inline-block bg-card/20 backdrop-blur-sm px-6 py-4 rounded-lg border border-gold/20 md:ml-4">
+                <p className="text-gold/70 text-xs uppercase tracking-widest mb-3">
+                  📍 Große Tour 2026
+                </p>
+                <div className="text-base text-foreground/90 space-y-1.5">
+                  <p>Hamburg • Bremen</p>
+                  <p>Neu-Isenburg / Frankfurt a.M.</p>
+                  <p>München • Zürich (CH)</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
