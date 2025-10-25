@@ -93,15 +93,6 @@ All colors MUST be HSL.
     color: hsl(var(--copper));
   }
 
-  /* Luxury hero overlay */
-  .hero-overlay {
-    background: 
-      linear-gradient(180deg, 
-        transparent 0%,
-        transparent 70%,
-        hsl(0 0% 0% / 0.2) 85%,
-        hsl(0 0% 2% / 0.5) 100%);
-  }
 
   /* Premium card with subtle border animation */
   .premium-card {

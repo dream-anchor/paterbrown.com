@@ -48,6 +48,10 @@ const Impressum = () => {
               <p className="text-foreground/90 text-lg">
                 Dream &amp; Anchor Handelsgesellschaft mbH
               </p>
+              <p className="text-foreground/80 leading-relaxed">
+                Nördliche Münchner Straße 27a<br/>
+                82031 Grünwald
+              </p>
             </div>
 
             {/* Kontakt */}

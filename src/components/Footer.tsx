@@ -16,6 +16,10 @@ const Footer = () => {
               </a>
               <br />
               +49 123 456 789
+              <br />
+              <br />
+              Nördliche Münchner Straße 27a<br/>
+              82031 Grünwald
             </address>
           </div>
 
