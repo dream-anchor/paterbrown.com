@@ -51,14 +51,14 @@ const generateEventSchema = (date: TourDate) => {
           "https://www.imdb.com/name/nm0611635/"
         ]
       },
-      {
-        "@type": "Person",
-        "name": "Antoine Monot Jr.",
-        "sameAs": [
-          "https://de.wikipedia.org/wiki/Antoine_Monot_jr.",
-          "https://www.imdb.com/name/nm0598741/"
-        ]
-      },
+        {
+          "@type": "Person",
+          "name": "Antoine Monot",
+          "sameAs": [
+            "https://de.wikipedia.org/wiki/Antoine_Monot",
+            "https://www.imdb.com/name/nm0598741/"
+          ]
+        },
       {
         "@type": "Person",
         "name": "Marvelin"
