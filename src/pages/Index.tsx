@@ -24,7 +24,7 @@ const SectionLoader = () => (
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <SEO 
         title="Pater Brown Live-Hörspiel"
         description="Erleben Sie Pater Brown live auf der Bühne mit Wanja Mues und Antoine Monot, bekannt aus 'Ein Fall für Zwei'. Ein einzigartiges Live-Hörspiel-Erlebnis mit Beatboxer Marvelin."
