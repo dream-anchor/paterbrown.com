@@ -1,4 +1,4 @@
-import { Bell, Gift } from "lucide-react";
+import { Bell } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 import { isBlackWeekActive } from "@/lib/blackWeekConfig";
@@ -59,21 +59,6 @@ const NewsletterSection = () => {
             Trage dich ein und erhalte Updates zu neuen Shows
           </p>
 
-          {/* Newsletter Lead Magnet */}
-          {isBlackWeek && (
-            <div className="bg-gold/10 border-2 border-gold/30 rounded-lg px-6 py-4 max-w-xl mx-auto">
-              <div className="flex items-center justify-center gap-3 mb-2">
-                <Gift className="w-5 h-5 text-gold" />
-                <p className="text-gold font-bold text-center">
-                  Newsletter-Bonus: 10% Extra-Rabatt auf die nächste Buchung
-                </p>
-              </div>
-              <p className="text-muted-foreground text-sm text-center">
-                + Early-Access zu neuen Shows
-              </p>
-            </div>
-          )}
-          
           <div className="flex gap-2 text-xs text-gold uppercase tracking-[0.2em] justify-center flex-wrap">
             <span>Exklusive Updates</span>
             <span>·</span>
