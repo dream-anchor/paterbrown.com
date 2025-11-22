@@ -181,11 +181,11 @@ const HeroSection = () => {
                 )}
                 <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen">
                   <button 
-                    className={`btn-premium text-base md:text-xl px-10 md:px-16 py-6 md:py-8 rounded-full shadow-2xl relative overflow-hidden group cinematic-enter focus:outline-none focus:ring-4 focus:ring-neon-pink/50 focus:ring-offset-2 focus:ring-offset-background ${isBlackWeek ? 'mt-12 md:mt-16' : ''}`}
+                    className={`btn-premium text-base md:text-xl px-10 md:px-16 py-6 md:py-8 rounded-full shadow-2xl relative overflow-hidden group cinematic-enter focus:outline-none focus:ring-4 focus:ring-neon-gold/50 focus:ring-offset-2 focus:ring-offset-background ${isBlackWeek ? 'mt-12 md:mt-16' : ''}`}
                     style={{
                       animationDelay: "0.6s",
                       boxShadow: isBlackWeek 
-                        ? '0 0 80px hsla(340, 100%, 50%, 1), 0 0 120px hsla(340, 100%, 50%, 0.6), 0 20px 60px rgba(0,0,0,0.8)' 
+                        ? '0 0 80px hsla(45, 100%, 50%, 1), 0 0 120px hsla(28, 100%, 55%, 0.6), 0 20px 60px rgba(0,0,0,0.8)' 
                         : undefined,
                       animation: isBlackWeek ? 'pulse-strong 2s ease-in-out infinite' : undefined
                     }}
