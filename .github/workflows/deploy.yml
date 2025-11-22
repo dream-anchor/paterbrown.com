@@ -30,5 +30,5 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT }}
           source: "dist/*"
-          target: "/WEBSITE/PATERBROWN.COM"
+          target: "/home/strato/www/25/01/25/5625/htdocs/WEBSITE/PATERBROWN.COM"
           overwrite: true
