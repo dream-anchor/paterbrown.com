@@ -8,12 +8,16 @@ import wanjaHeaderBg from "@/assets/wanja-header-bg.png";
 import StickyHeader from "@/components/StickyHeader";
 import { EVENTIM_AFFILIATE_URL, SCROLL_THRESHOLD_STICKY_HEADER } from "@/lib/constants";
 import { throttle } from "@/lib/scroll-utils";
+import { isBlackWeekActive } from "@/lib/blackWeekConfig";
+import { BlackWeekBanner } from "@/components/BlackWeekBanner";
+import { BlackWeekBadge } from "@/components/BlackWeekBadge";
 
 const HeroSection = () => {
   const [logoAnimating, setLogoAnimating] = useState(false);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
   const [imageOpacity, setImageOpacity] = useState(0.3);
   const [imageBrightness, setImageBrightness] = useState(1);
+  const isBlackWeek = isBlackWeekActive();
 
   const { data: tourEvents = [] } = useQuery({
     queryKey: ['hero-tour-events', new Date().toISOString().split('T')[0]],
@@ -67,6 +71,7 @@ const HeroSection = () => {
   }, [handleScroll]);
   return <>
       {showStickyHeader && <StickyHeader />}
+      {isBlackWeek && <BlackWeekBanner />}
       
       <section className="relative min-h-screen flex flex-col overflow-hidden">
         <div 
@@ -168,13 +173,23 @@ const HeroSection = () => {
             </div>
 
             <div className="py-8">
-              <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen">
-                <button className="btn-premium cinematic-enter focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background" style={{
-                animationDelay: "0.6s"
-              }} type="button" aria-label="Jetzt Tickets bei Eventim sichern">
-                  🎟 Tickets sichern
-                </button>
-              </a>
+              <div className="relative inline-block">
+                {isBlackWeek && (
+                  <div className="absolute -top-3 -right-3 z-10 animate-bounce">
+                    <BlackWeekBadge variant="compact" />
+                  </div>
+                )}
+                <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen">
+                  <button 
+                    className={`btn-premium cinematic-enter focus:outline-none focus:ring-2 ${isBlackWeek ? 'focus:ring-red-500 ring-2 ring-red-500/50' : 'focus:ring-gold'} focus:ring-offset-2 focus:ring-offset-background`}
+                    style={{ animationDelay: "0.6s" }} 
+                    type="button" 
+                    aria-label="Jetzt Tickets bei Eventim sichern"
+                  >
+                    {isBlackWeek ? '🎟 BLACK WEEK: 30% sparen!' : '🎟 Tickets sichern'}
+                  </button>
+                </a>
+              </div>
             </div>
 
             <div className="divider-gold w-16 mx-auto opacity-40" aria-hidden="true" />
