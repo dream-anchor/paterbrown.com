@@ -8,7 +8,7 @@ export const StickyBlackWeekCTA = () => {
   if (!isBlackWeek) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50 animate-bounce-subtle">
+    <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-50">
       <a 
         href={EVENTIM_AFFILIATE_URL}
         target="_blank"
@@ -16,12 +16,12 @@ export const StickyBlackWeekCTA = () => {
         aria-label="Black Week: 30% Rabatt sichern"
       >
         <button 
-          className="stoerer-badge px-6 py-3 md:px-8 md:py-4 rounded-full shadow-2xl flex items-center gap-2 md:gap-3 hover:scale-105 transition-transform"
+          className="sticky-cta-premium px-6 py-3 md:px-8 md:py-4 rounded-full shadow-2xl flex items-center gap-2 md:gap-3 transition-all duration-300"
           type="button"
         >
-          <Flame className="w-5 h-5 md:w-6 md:h-6 text-black fill-neon-gold animate-pulse" />
+          <Flame className="w-5 h-5 md:w-6 md:h-6 text-black" />
           <span className="text-black font-black text-sm md:text-base uppercase tracking-wide whitespace-nowrap">
-            30% sichern – Nur diese Woche!
+            30% sichern
           </span>
         </button>
       </a>

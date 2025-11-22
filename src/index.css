@@ -400,21 +400,42 @@ All colors MUST be HSL.
     hsl(28, 100%, 55%), 
     hsl(45, 100%, 50%)
   );
-  border: 4px solid hsl(0, 0%, 0%);
+  border: 2px solid hsl(0, 0%, 0%);
   box-shadow: 
-    0 0 30px hsla(45, 100%, 50%, 1),
-    0 10px 25px hsla(0, 0%, 0%, 0.95),
-    0 0 60px hsla(28, 100%, 55%, 0.7);
+    0 0 20px hsla(45, 100%, 50%, 0.7),
+    0 10px 20px hsla(0, 0%, 0%, 0.9),
+    0 0 40px hsla(28, 100%, 55%, 0.5);
+  position: relative;
+  overflow: visible;
   transform: rotate(-5deg);
   transition: all 0.3s ease;
 }
 
 .stoerer-badge:hover {
-  transform: rotate(-5deg) scale(1.08);
+  transform: rotate(-3deg) scale(1.05);
   box-shadow: 
-    0 0 40px hsla(45, 100%, 50%, 1),
-    0 15px 35px hsla(0, 0%, 0%, 0.95),
-    0 0 80px hsla(28, 100%, 55%, 0.8);
+    0 0 30px hsla(45, 100%, 50%, 0.9),
+    0 15px 30px hsla(0, 0%, 0%, 1),
+    0 0 50px hsla(28, 100%, 55%, 0.7);
+}
+
+.sticky-cta-premium {
+  background: linear-gradient(135deg, 
+    hsl(28, 100%, 55%), 
+    hsl(45, 100%, 50%)
+  );
+  border: 2px solid hsl(0, 0%, 0%);
+  box-shadow: 
+    0 0 25px hsla(45, 100%, 50%, 0.6),
+    0 8px 20px hsla(0, 0%, 0%, 0.7);
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.sticky-cta-premium:hover {
+  transform: scale(1.05);
+  box-shadow: 
+    0 0 35px hsla(45, 100%, 50%, 0.8),
+    0 10px 25px hsla(0, 0%, 0%, 0.8);
 }
 
 .text-stroke-white {
@@ -455,11 +476,24 @@ All colors MUST be HSL.
 
 @keyframes shimmer-gold {
   0%, 100% { 
-    box-shadow: 0 0 20px hsla(45, 100%, 50%, 0.8); 
+    box-shadow: 0 0 15px hsla(45, 100%, 50%, 0.6); 
   }
   50% { 
-    box-shadow: 0 0 35px hsla(45, 100%, 50%, 1),
-                0 0 50px hsla(28, 100%, 55%, 0.6); 
+    box-shadow: 0 0 25px hsla(45, 100%, 50%, 0.8),
+                0 0 35px hsla(28, 100%, 55%, 0.4); 
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 25px hsla(45, 100%, 50%, 0.6),
+      0 8px 20px hsla(0, 0%, 0%, 0.7);
+  }
+  50% {
+    box-shadow: 
+      0 0 35px hsla(45, 100%, 50%, 0.8),
+      0 8px 20px hsla(0, 0%, 0%, 0.7);
   }
 }
 
