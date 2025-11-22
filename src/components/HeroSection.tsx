@@ -175,18 +175,18 @@ const HeroSection = () => {
             <div className="py-8">
               <div className="relative inline-block">
                 {isBlackWeek && (
-                  <div className="absolute -top-3 -right-3 z-10 animate-bounce">
-                    <BlackWeekBadge variant="compact" />
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                    <BlackWeekBadge variant="compact" className="animate-pulse" />
                   </div>
                 )}
                 <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen">
                   <button 
-                    className={`btn-premium cinematic-enter focus:outline-none focus:ring-2 ${isBlackWeek ? 'focus:ring-red-500 ring-2 ring-red-500/50' : 'focus:ring-gold'} focus:ring-offset-2 focus:ring-offset-background`}
+                    className={`btn-premium cinematic-enter focus:outline-none focus:ring-2 ${isBlackWeek ? 'focus:ring-gold ring-2 ring-gold/40 shadow-[0_0_40px_hsl(var(--gold)/0.3)]' : 'focus:ring-gold'} focus:ring-offset-2 focus:ring-offset-background ${isBlackWeek ? 'mt-6' : ''}`}
                     style={{ animationDelay: "0.6s" }} 
                     type="button" 
                     aria-label="Jetzt Tickets bei Eventim sichern"
                   >
-                    {isBlackWeek ? '🎟 BLACK WEEK: 30% sparen!' : '🎟 Tickets sichern'}
+                    {isBlackWeek ? 'BLACK WEEK: Jetzt 30% sparen' : 'Tickets sichern'}
                   </button>
                 </a>
               </div>
