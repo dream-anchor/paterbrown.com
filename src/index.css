@@ -378,18 +378,18 @@ All colors MUST be HSL.
   }
 }
 
-/* Black Week Störer Styles - Knallig & Modern */
+/* Black Week Störer Styles - Gold/Orange Palette */
 .stoerer-banner {
   background: linear-gradient(135deg, 
-    hsl(328, 100%, 50%) 0%, 
-    hsl(340, 100%, 50%) 50%, 
-    hsl(328, 100%, 50%) 100%
+    hsl(45, 100%, 50%) 0%, 
+    hsl(28, 100%, 55%) 50%, 
+    hsl(45, 100%, 50%) 100%
   );
   border-top: 4px solid hsl(0, 0%, 0%);
   border-bottom: 4px solid hsl(0, 0%, 0%);
   box-shadow: 
-    0 8px 32px hsla(340, 100%, 50%, 0.6),
-    0 0 60px hsla(340, 100%, 50%, 0.4);
+    0 8px 32px hsla(45, 100%, 50%, 0.6),
+    0 0 60px hsla(28, 100%, 55%, 0.4);
   animation: pulse-strong 1.5s ease-in-out infinite;
   position: relative;
   overflow: visible;
@@ -397,14 +397,14 @@ All colors MUST be HSL.
 
 .stoerer-badge {
   background: linear-gradient(135deg, 
-    hsl(340, 100%, 50%), 
-    hsl(328, 100%, 50%)
+    hsl(28, 100%, 55%), 
+    hsl(45, 100%, 50%)
   );
   border: 4px solid hsl(0, 0%, 0%);
   box-shadow: 
-    0 0 30px hsla(340, 100%, 50%, 1),
+    0 0 30px hsla(45, 100%, 50%, 1),
     0 10px 25px hsla(0, 0%, 0%, 0.95),
-    0 0 60px hsla(340, 100%, 50%, 0.7);
+    0 0 60px hsla(28, 100%, 55%, 0.7);
   transform: rotate(-5deg);
   transition: all 0.3s ease;
 }
@@ -412,9 +412,9 @@ All colors MUST be HSL.
 .stoerer-badge:hover {
   transform: rotate(-5deg) scale(1.08);
   box-shadow: 
-    0 0 40px hsla(340, 100%, 50%, 1),
+    0 0 40px hsla(45, 100%, 50%, 1),
     0 15px 35px hsla(0, 0%, 0%, 0.95),
-    0 0 80px hsla(340, 100%, 50%, 0.8);
+    0 0 80px hsla(28, 100%, 55%, 0.8);
 }
 
 .text-stroke-white {
@@ -429,10 +429,10 @@ All colors MUST be HSL.
 
 .text-neon-glow {
   text-shadow: 
-    0 0 10px hsla(340, 100%, 50%, 1),
-    0 0 20px hsla(340, 100%, 50%, 0.8),
-    0 0 30px hsla(340, 100%, 50%, 0.6),
-    0 0 40px hsla(340, 100%, 50%, 0.4);
+    0 0 10px hsla(45, 100%, 50%, 1),
+    0 0 20px hsla(45, 100%, 50%, 0.8),
+    0 0 30px hsla(28, 100%, 55%, 0.6),
+    0 0 40px hsla(28, 100%, 55%, 0.4);
 }
 
 @keyframes pulse-strong {

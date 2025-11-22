@@ -23,10 +23,10 @@ export default {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
-        "neon-pink": "hsl(328, 100%, 50%)",
-        "neon-red": "hsl(340, 100%, 50%)",
+        "neon-gold": "hsl(45, 100%, 50%)",
+        "neon-orange": "hsl(28, 100%, 55%)",
+        "neon-amber": "hsl(38, 100%, 50%)",
         "neon-yellow": "hsl(49, 100%, 50%)",
-        "electric-blue": "hsl(190, 100%, 50%)",
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
