@@ -15,7 +15,7 @@ console.log('[BlackWeek Config]', {
 export const BLACK_WEEK_CONFIG = {
   // Feature Flag für manuelle Steuerung
   // Im Dev-Mode immer aktiv, in Produktion über Env-Variable gesteuert
-  enabled: isDev ? true : enabledFromEnv,
+  enabled: false, // TEMPORÄR FÜR TEST DEAKTIVIERT
   
   // Zeitraum (MEZ/Berlin Timezone)
   startDate: new Date('2025-11-24T12:00:00+01:00'),
