@@ -49,11 +49,11 @@ const ShowConceptSection = memo(() => {
         {isBlackWeekActive() && (
           <div className="text-center mt-12">
             <div className="stoerer-badge inline-flex items-center gap-3 px-8 py-4 rounded-lg">
-              <Flame className="w-6 h-6 text-black fill-neon-gold animate-pulse" />
+              <Flame className="w-6 h-6 text-black fill-neon-gold" />
               <p className="text-black font-black text-lg uppercase tracking-wide">
                 BLACK WEEK – 30% auf alle Termine bis 1.12.
               </p>
-              <Flame className="w-6 h-6 text-black fill-neon-gold animate-pulse" />
+              <Flame className="w-6 h-6 text-black fill-neon-gold" />
             </div>
           </div>
         )}

@@ -10,13 +10,10 @@ import { EVENTIM_AFFILIATE_URL, SCROLL_THRESHOLD_STICKY_HEADER } from "@/lib/con
 import { throttle } from "@/lib/scroll-utils";
 import { isBlackWeekActive } from "@/lib/blackWeekConfig";
 import { BlackWeekBanner } from "@/components/BlackWeekBanner";
-import { BlackWeekBadge } from "@/components/BlackWeekBadge";
 
 const HeroSection = () => {
   const [logoAnimating, setLogoAnimating] = useState(false);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
-  const [imageOpacity, setImageOpacity] = useState(0.3);
-  const [imageBrightness, setImageBrightness] = useState(1);
   const isBlackWeek = isBlackWeekActive();
 
   const { data: tourEvents = [] } = useQuery({
@@ -46,11 +43,6 @@ const HeroSection = () => {
 
   const handleScroll = useCallback(() => {
     const scrollY = window.scrollY;
-    const progress = Math.min(scrollY / 200, 1);
-    const newOpacity = Math.max(0, 0.3 - progress * 0.3);
-    const newBrightness = Math.max(0, 1 - progress * 1);
-    setImageOpacity(newOpacity);
-    setImageBrightness(newBrightness);
     
     if (scrollY > SCROLL_THRESHOLD_STICKY_HEADER && !logoAnimating) {
       setLogoAnimating(true);
@@ -112,9 +104,7 @@ const HeroSection = () => {
             className="flex justify-center gap-8 mb-8 mt-16 md:mt-64 cinematic-enter" 
             style={{
               animationDelay: "0.2s",
-              opacity: imageOpacity,
-              filter: `brightness(${imageBrightness})`,
-              transition: 'opacity 0.3s, filter 0.3s'
+              opacity: 0.3
             }}
           >
             <div className="w-[200px] md:w-[280px] h-auto relative group">
@@ -181,20 +171,11 @@ const HeroSection = () => {
 
             <div className="py-8">
               <div className="relative inline-block">
-                {isBlackWeek && (
-                  <div className="absolute -top-16 md:-top-20 left-1/2 -translate-x-1/2 z-10 animate-bounce-subtle">
-                    <BlackWeekBadge variant="compact" />
-                  </div>
-                )}
                 <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen">
                   <button 
-                    className={`btn-premium text-base md:text-xl px-10 md:px-16 py-6 md:py-8 rounded-full shadow-2xl relative overflow-hidden group cinematic-enter focus:outline-none focus:ring-4 focus:ring-neon-gold/50 focus:ring-offset-2 focus:ring-offset-background ${isBlackWeek ? 'mt-12 md:mt-16' : ''}`}
+                    className="btn-premium text-base md:text-xl px-10 md:px-16 py-6 md:py-8 rounded-full shadow-2xl relative overflow-hidden group cinematic-enter focus:outline-none focus:ring-4 focus:ring-neon-gold/50 focus:ring-offset-2 focus:ring-offset-background"
                     style={{
-                      animationDelay: "0.6s",
-                      boxShadow: isBlackWeek 
-                        ? '0 0 50px hsla(45, 100%, 50%, 0.7), 0 0 80px hsla(28, 100%, 55%, 0.4), 0 20px 60px rgba(0,0,0,0.8)' 
-                        : undefined,
-                      animation: isBlackWeek ? 'pulse-strong 2s ease-in-out infinite' : undefined
+                      animationDelay: "0.6s"
                     }}
                     type="button" 
                     aria-label="Jetzt Tickets bei Eventim sichern"
