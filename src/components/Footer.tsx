@@ -12,7 +12,7 @@ const Footer = () => {
         
         {/* Black Week CTA */}
         {isBlackWeek && (
-          <div className="text-center mb-16">
+          <div className="flex items-center justify-center mb-16">
             <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer">
               <button 
                 className="stoerer-badge px-10 py-4 rounded-full inline-flex items-center gap-3 hover:scale-105 transition-transform"

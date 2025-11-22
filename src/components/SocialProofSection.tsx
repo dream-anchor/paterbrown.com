@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 const testimonials = [
   {
@@ -64,6 +65,20 @@ export const SocialProofSection = () => {
               </cite>
             </blockquote>
           ))}
+        </div>
+
+        {/* CTA Button */}
+        <div className="text-center mt-12">
+          <a 
+            href={EVENTIM_AFFILIATE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Jetzt Tickets sichern"
+          >
+            <button className="btn-premium" type="button">
+              Jetzt Tickets sichern
+            </button>
+          </a>
         </div>
       </div>
     </section>
