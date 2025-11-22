@@ -192,7 +192,7 @@ const HeroSection = () => {
                     style={{
                       animationDelay: "0.6s",
                       boxShadow: isBlackWeek 
-                        ? '0 0 80px hsla(45, 100%, 50%, 1), 0 0 120px hsla(28, 100%, 55%, 0.6), 0 20px 60px rgba(0,0,0,0.8)' 
+                        ? '0 0 50px hsla(45, 100%, 50%, 0.7), 0 0 80px hsla(28, 100%, 55%, 0.4), 0 20px 60px rgba(0,0,0,0.8)' 
                         : undefined,
                       animation: isBlackWeek ? 'pulse-strong 2s ease-in-out infinite' : undefined
                     }}

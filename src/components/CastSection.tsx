@@ -101,8 +101,8 @@ const CastSection = () => {
 
         {/* Black Week CTA nach Cast */}
         {isBlackWeekActive() && (
-          <div className="text-center mt-16 bg-card/30 backdrop-blur-sm px-8 py-6 rounded-lg max-w-2xl mx-auto">
-            <p className="text-gold text-lg mb-4">
+          <div className="text-center mt-16 bg-card/30 backdrop-blur-sm px-8 py-8 rounded-lg max-w-2xl mx-auto space-y-6">
+            <p className="text-gold text-lg mb-4 font-medium">
               Erlebe Wanja Mues & Antoine Monot live – nur diese Woche mit 30% Rabatt
             </p>
             <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer">

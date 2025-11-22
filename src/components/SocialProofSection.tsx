@@ -62,10 +62,10 @@ export const SocialProofSection = () => {
                   />
                 ))}
               </div>
-              <p className="text-foreground/90 leading-relaxed text-base">
+              <p className="text-foreground/90 leading-relaxed text-lg">
                 "{testimonial.quote}"
               </p>
-              <cite className="text-gold text-sm not-italic block mt-4">
+              <cite className="text-gold text-base not-italic block mt-4">
                 — {testimonial.author}, {testimonial.location}
               </cite>
             </blockquote>

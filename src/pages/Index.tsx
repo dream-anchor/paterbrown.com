@@ -12,6 +12,7 @@ const ShowConceptSection = lazy(() => import("@/components/ShowConceptSection"))
 const ProjectConceptSection = lazy(() => import("@/components/ProjectConceptSection"));
 const TourDatesSection = lazy(() => import("@/components/TourDatesSection"));
 const SocialProofSection = lazy(() => import("@/components/SocialProofSection"));
+const TrustBanner = lazy(() => import("@/components/TrustBanner"));
 const TeamSection = lazy(() => import("@/components/TeamSection"));
 const NewsletterSection = lazy(() => import("@/components/NewsletterSection"));
 
@@ -72,6 +73,10 @@ const Index = () => {
             </p>
           </div>
         </section>
+
+        <Suspense fallback={<SectionLoader />}>
+          <TrustBanner />
+        </Suspense>
 
         <Suspense fallback={<SectionLoader />}>
           <TeamSection />
