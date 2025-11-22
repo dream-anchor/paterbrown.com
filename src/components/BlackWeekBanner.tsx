@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BLACK_WEEK_CONFIG, getTimeRemaining } from '@/lib/blackWeekConfig';
+import { EVENTIM_AFFILIATE_URL } from '@/lib/constants';
 import { Zap, Flame, Clock } from 'lucide-react';
 
 export const BlackWeekBanner = () => {
@@ -14,8 +15,14 @@ export const BlackWeekBanner = () => {
   }, []);
 
   return (
-    <div className="stoerer-banner py-3 md:py-4 px-4 overflow-x-hidden">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 relative z-10 overflow-x-hidden">
+    <a 
+      href={EVENTIM_AFFILIATE_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="stoerer-banner py-3 md:py-4 px-4 overflow-hidden block cursor-pointer hover:brightness-110 transition-all"
+      aria-label="Black Week: 30% Rabatt sichern"
+    >
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 relative z-10">
         <div className="flex items-center gap-2 md:gap-3">
           <Zap className="w-5 h-5 md:w-7 md:h-7 text-black fill-neon-gold" />
           <span className="font-heading text-xl md:text-2xl lg:text-3xl font-black uppercase tracking-[0.15em] text-black" style={{ textShadow: '2px 2px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white' }}>
@@ -41,6 +48,6 @@ export const BlackWeekBanner = () => {
           </div>
         )}
       </div>
-    </div>
+    </a>
   );
 };

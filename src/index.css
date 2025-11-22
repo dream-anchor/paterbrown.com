@@ -399,8 +399,10 @@ All colors MUST be HSL.
     0 8px 32px hsla(45, 100%, 50%, 0.6),
     0 0 60px hsla(28, 100%, 55%, 0.4);
   animation: pulse-strong 1.5s ease-in-out infinite;
-  position: relative;
-  overflow: visible;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  overflow: hidden;
 }
 
 .stoerer-badge {
