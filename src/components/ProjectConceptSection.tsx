@@ -1,5 +1,9 @@
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
+import { isBlackWeekActive } from "@/lib/blackWeekConfig";
+import { Zap } from "lucide-react";
+
 const ProjectConceptSection = () => {
+  const isBlackWeek = isBlackWeekActive();
   return <section className="py-24 px-6 bg-card/20 relative overflow-hidden" aria-labelledby="concept-heading">
       <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-transparent to-transparent pointer-events-none" aria-hidden="true" />
       
@@ -73,6 +77,29 @@ const ProjectConceptSection = () => {
             Ein Abend, der bleibt.
           </p>
         </div>
+
+        {/* Black Week Box Banner */}
+        {isBlackWeek && (
+          <div className="max-w-2xl mx-auto mt-16">
+            <div className="bg-gold/10 border-2 border-gold/30 rounded-lg px-8 py-6 text-center">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <Zap className="w-6 h-6 text-gold fill-gold animate-pulse" />
+                <h3 className="text-2xl font-heading tracking-wider text-gold uppercase">
+                  BLACK WEEK – Jetzt sparen!
+                </h3>
+                <Zap className="w-6 h-6 text-gold fill-gold animate-pulse" />
+              </div>
+              <p className="text-foreground/90 text-lg mb-4">
+                30% Rabatt auf alle Termine – nur bis 1. Dezember
+              </p>
+              <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer">
+                <button className="btn-premium" type="button">
+                  Jetzt 30% Rabatt sichern
+                </button>
+              </a>
+            </div>
+          </div>
+        )}
       </div>
     </section>;
 };

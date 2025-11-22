@@ -2,6 +2,8 @@ import { castMembers } from "@/data/castData";
 import { useEffect, useState } from "react";
 import { throttle } from "@/lib/scroll-utils";
 import { ResponsiveImage } from "./ResponsiveImage";
+import { isBlackWeekActive } from "@/lib/blackWeekConfig";
+import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 const CastSection = () => {
   const mainCast = castMembers.filter(m => m.id !== 'marvelin');
@@ -96,6 +98,20 @@ const CastSection = () => {
             EIN FALL FÜR ZWEI
           </h3>
         </div>
+
+        {/* Black Week CTA nach Cast */}
+        {isBlackWeekActive() && (
+          <div className="text-center mt-16 bg-card/30 backdrop-blur-sm px-8 py-6 rounded-lg max-w-2xl mx-auto">
+            <p className="text-gold text-lg mb-4">
+              Erlebe Wanja Mues & Antoine Monot live – nur diese Woche mit 30% Rabatt
+            </p>
+            <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer">
+              <button className="btn-premium" type="button">
+                Jetzt 30% Rabatt sichern
+              </button>
+            </a>
+          </div>
+        )}
 
         {marvelin && (
           <article className="mt-40 max-w-4xl mx-auto">

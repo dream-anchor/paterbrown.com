@@ -4,6 +4,7 @@ import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 import { TourDate } from "@/types";
 import { isBlackWeekActive } from "@/lib/blackWeekConfig";
 import { BlackWeekBadge } from "@/components/BlackWeekBadge";
+import { LiveViewerCount } from "@/components/LiveViewerCount";
 
 const generateEventSchema = (date: TourDate) => {
   // Parse German date format DD.MM.YYYY to ISO format
@@ -158,6 +159,9 @@ const TourDatesSection = () => {
             sichere dir jetzt deine Tickets:
           </p>
         </div>
+
+        {/* Live Viewer Count - FOMO Element */}
+        {isBlackWeek && <LiveViewerCount />}
         
         {isLoading && (
           <div className="text-center text-muted-foreground py-12">
@@ -215,18 +219,25 @@ const TourDatesSection = () => {
                   </span>
                 )}
               </div>
-            <a 
-              href={date.ticketUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground hover:text-gold transition-all duration-300 font-medium uppercase tracking-[0.15em] text-base border-b-2 border-transparent hover:border-gold pb-1 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background relative inline-block"
-              aria-label={`Tickets kaufen für ${date.city} am ${date.date}`}
-            >
-                {isBlackWeek && (
-                  <BlackWeekBadge variant="compact" className="absolute -top-2 -right-2" />
-                )}
-                {isBlackWeek ? '⚡ BLACK WEEK Tickets' : 'Tickets'} <span aria-hidden="true">→</span>
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+              <a 
+                href={date.ticketUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground hover:text-gold transition-all duration-300 font-medium uppercase tracking-[0.15em] text-base border-b-2 border-transparent hover:border-gold pb-1 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background"
+                aria-label={`Tickets kaufen für ${date.city} am ${date.date}`}
+              >
+                Tickets <span aria-hidden="true">→</span>
               </a>
+              {isBlackWeek && (
+                <>
+                  <BlackWeekBadge variant="compact" className="animate-shimmer-gold" />
+                  <span className="text-sm text-gold font-medium">
+                    → Jetzt 30% Rabatt sichern
+                  </span>
+                </>
+              )}
+            </div>
             </article>
           ))}
         </div>
