@@ -29,7 +29,7 @@ export const BLACK_WEEK_CONFIG = {
     badge: 'BLACK WEEK',
     discount: '30% Rabatt',
     cta: 'JETZT 30% RABATT SICHERN!',
-    banner: 'BLACK WEEK – 30% RABATT AUF ALLE TICKETS',
+    banner: 'BLACK WEEK – 30% Rabatt auf alle Termine bis 1.12.',
     countdown: 'Noch {time}'
   }
 };

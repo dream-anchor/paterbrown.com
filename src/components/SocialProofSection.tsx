@@ -2,9 +2,9 @@ import { Star } from "lucide-react";
 
 const testimonials = [
   {
-    id: 1,
-    quote: "War ein MEGA Abend 👏👏👏👏 Muss man sich unbedingt anschauen.",
-    author: "@wieczorek3309",
+    id: 3,
+    quote: "Ein tolles Konzept mit erstklassigen Sprechern, die die Figuren zum Leben erweckten. Herrlich! Alle zusammen haben es geschafft, die passende Stimmung zu erzeugen. Sehr gerne mehr davon!",
+    author: "@majokeli2024",
     location: "Instagram"
   },
   {
@@ -14,17 +14,11 @@ const testimonials = [
     location: "Instagram"
   },
   {
-    id: 3,
-    quote: "Ein tolles Konzept mit erstklassigen Sprechern, die die Figuren zum Leben erweckten. Herrlich! Alle zusammen haben es geschafft, die passende Stimmung zu erzeugen. Sehr gerne mehr davon!",
-    author: "@majokeli2024",
+    id: 1,
+    quote: "War ein MEGA Abend 👏👏👏👏 Muss man sich unbedingt anschauen.",
+    author: "@wieczorek3309",
     location: "Instagram"
   }
-];
-
-const mediaLogos = [
-  { name: "ZDF", featured: true },
-  { name: "Kulturradio" },
-  { name: "Eventim Top 10" }
 ];
 
 export const SocialProofSection = () => {
@@ -36,13 +30,13 @@ export const SocialProofSection = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16">
           <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">
-            Social Proof
+            Erfahrungen aus erster Hand
           </p>
           <h2 
             id="testimonials-heading" 
             className="text-4xl md:text-6xl font-heading tracking-wider text-foreground uppercase"
           >
-            Das sagen Besucher
+            Das sagen unsere Besucher
           </h2>
         </div>
 
@@ -70,27 +64,6 @@ export const SocialProofSection = () => {
               </cite>
             </blockquote>
           ))}
-        </div>
-
-        <div className="divider-gold w-32 mx-auto opacity-30 mb-12" aria-hidden="true" />
-
-        {/* Media Mentions */}
-        <div className="text-center">
-          <p className="text-muted-foreground text-xs uppercase tracking-wider mb-6">
-            Bekannt aus
-          </p>
-          <div className="flex justify-center items-center gap-8 md:gap-12 flex-wrap">
-            {mediaLogos.map((logo) => (
-              <span 
-                key={logo.name}
-                className={`font-heading text-lg md:text-xl tracking-wider ${
-                  logo.featured ? 'text-gold font-bold' : 'text-gold/50'
-                }`}
-              >
-                {logo.name}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
     </section>
