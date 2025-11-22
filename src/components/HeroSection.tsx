@@ -156,9 +156,16 @@ const HeroSection = () => {
           <div className="max-w-4xl text-center space-y-6 cinematic-enter" style={{
           animationDelay: "0.3s"
         }}>
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-light tracking-wider text-foreground/95 leading-tight mt-16">
-              Pater Brown LIVE –<br />Krimi, Klang & Gänsehaut
-            </h1>
+            {isBlackWeek ? (
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-light tracking-wider text-foreground/95 leading-tight mt-16">
+                Nur diese Woche: Das Live-Hörspiel,<br />
+                das Deutschland begeistert – jetzt 30% günstiger
+              </h1>
+            ) : (
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-light tracking-wider text-foreground/95 leading-tight mt-16">
+                Pater Brown LIVE –<br />Krimi, Klang & Gänsehaut
+              </h1>
+            )}
             
             <div className="divider-gold w-32 mx-auto my-8" aria-hidden="true" />
             
@@ -192,8 +199,15 @@ const HeroSection = () => {
                     type="button" 
                     aria-label="Jetzt Tickets bei Eventim sichern"
                   >
-                    <span className="relative z-10">
-                      {isBlackWeek ? '🔥 BLACK WEEK: JETZT 30% SPAREN! 🔥' : 'Tickets sichern'}
+                    <span className="relative z-10 flex flex-col items-center gap-1">
+                      {isBlackWeek && (
+                        <span className="text-xs font-black uppercase tracking-[0.2em] text-black/80">
+                          Black Week Deal
+                        </span>
+                      )}
+                      <span className={isBlackWeek ? "text-lg font-black uppercase tracking-[0.15em]" : ""}>
+                        {isBlackWeek ? 'JETZT TICKETS SICHERN' : 'Tickets sichern'}
+                      </span>
                     </span>
                   </button>
                 </a>

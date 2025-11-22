@@ -452,3 +452,17 @@ All colors MUST be HSL.
     transform: rotate(-5deg) translateY(-5px);
   }
 }
+
+@keyframes shimmer-gold {
+  0%, 100% { 
+    box-shadow: 0 0 20px hsla(45, 100%, 50%, 0.8); 
+  }
+  50% { 
+    box-shadow: 0 0 35px hsla(45, 100%, 50%, 1),
+                0 0 50px hsla(28, 100%, 55%, 0.6); 
+  }
+}
+
+.animate-shimmer-gold {
+  animation: shimmer-gold 2s ease-in-out infinite;
+}

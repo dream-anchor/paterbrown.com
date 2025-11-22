@@ -4,12 +4,14 @@ import Footer from "@/components/Footer";
 import SkipLink from "@/components/SkipLink";
 import { FAQStructuredData } from "@/components/StructuredData";
 import { SEO } from "@/components/SEO";
+import { StickyBlackWeekCTA } from "@/components/StickyBlackWeekCTA";
 
 // Lazy load non-critical sections for better performance
 const CastSection = lazy(() => import("@/components/CastSection"));
 const ShowConceptSection = lazy(() => import("@/components/ShowConceptSection"));
 const ProjectConceptSection = lazy(() => import("@/components/ProjectConceptSection"));
 const TourDatesSection = lazy(() => import("@/components/TourDatesSection"));
+const SocialProofSection = lazy(() => import("@/components/SocialProofSection"));
 const TeamSection = lazy(() => import("@/components/TeamSection"));
 const NewsletterSection = lazy(() => import("@/components/NewsletterSection"));
 
@@ -50,6 +52,10 @@ const Index = () => {
         <Suspense fallback={<SectionLoader />}>
           <TourDatesSection />
         </Suspense>
+
+        <Suspense fallback={<SectionLoader />}>
+          <SocialProofSection />
+        </Suspense>
         
         <section className="py-24 px-6 bg-card/10" aria-labelledby="project-heading">
           <div className="container mx-auto max-w-4xl text-center space-y-8">
@@ -77,6 +83,9 @@ const Index = () => {
       </main>
       
       <Footer />
+      
+      {/* Sticky CTA Button */}
+      <StickyBlackWeekCTA />
     </div>
   );
 };

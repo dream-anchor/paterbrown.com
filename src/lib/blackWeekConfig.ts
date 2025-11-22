@@ -27,9 +27,9 @@ export const BLACK_WEEK_CONFIG = {
   // Texte
   texts: {
     badge: 'BLACK WEEK',
-    discount: '-30%',
-    cta: 'JETZT 30% SPAREN!',
-    banner: 'BLACK WEEK - 30% AUF ALLE TICKETS',
+    discount: '30% Rabatt',
+    cta: 'JETZT 30% RABATT SICHERN!',
+    banner: 'BLACK WEEK – 30% RABATT AUF ALLE TICKETS',
     countdown: 'Noch {time}'
   }
 };
@@ -42,7 +42,7 @@ export const isBlackWeekActive = (): boolean => {
   return now >= BLACK_WEEK_CONFIG.startDate && now <= BLACK_WEEK_CONFIG.endDate;
 };
 
-// Berechnet verbleibende Zeit
+// Berechnet verbleibende Zeit - Deutsche Ausgabe
 export const getTimeRemaining = () => {
   const now = new Date();
   const end = BLACK_WEEK_CONFIG.endDate;
@@ -54,7 +54,11 @@ export const getTimeRemaining = () => {
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
   
-  if (days > 0) return `${days}d ${hours}h`;
-  if (hours > 0) return `${hours}h ${minutes}min`;
-  return `${minutes}min`;
+  // Deutsche, ausgeschriebene Zeitangaben
+  if (days > 1) return `${days} Tage und ${hours} Stunden`;
+  if (days === 1) return `1 Tag und ${hours} Stunden`;
+  if (hours > 1) return `${hours} Stunden`;
+  if (hours === 1) return `1 Stunde`;
+  if (minutes > 1) return `${minutes} Minuten`;
+  return `1 Minute`;
 };
