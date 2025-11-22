@@ -175,23 +175,26 @@ const HeroSection = () => {
             <div className="py-8">
               <div className="relative inline-block">
                 {isBlackWeek && (
-                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-10">
+                  <div className="absolute -top-16 md:-top-20 left-1/2 -translate-x-1/2 z-10 animate-bounce-subtle">
                     <BlackWeekBadge variant="compact" />
                   </div>
                 )}
                 <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen">
                   <button 
-                    className={`btn-premium text-lg md:text-xl px-8 md:px-12 py-6 md:py-8 rounded-full shadow-2xl relative overflow-hidden group cinematic-enter focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background ${isBlackWeek ? 'mt-8' : ''}`}
+                    className={`btn-premium text-base md:text-xl px-10 md:px-16 py-6 md:py-8 rounded-full shadow-2xl relative overflow-hidden group cinematic-enter focus:outline-none focus:ring-4 focus:ring-neon-pink/50 focus:ring-offset-2 focus:ring-offset-background ${isBlackWeek ? 'mt-12 md:mt-16' : ''}`}
                     style={{
                       animationDelay: "0.6s",
                       boxShadow: isBlackWeek 
-                        ? '0 0 60px hsla(340, 100%, 50%, 0.8), 0 10px 40px rgba(0,0,0,0.5)' 
-                        : undefined
+                        ? '0 0 80px hsla(340, 100%, 50%, 1), 0 0 120px hsla(340, 100%, 50%, 0.6), 0 20px 60px rgba(0,0,0,0.8)' 
+                        : undefined,
+                      animation: isBlackWeek ? 'pulse-strong 2s ease-in-out infinite' : undefined
                     }}
                     type="button" 
                     aria-label="Jetzt Tickets bei Eventim sichern"
                   >
-                    {isBlackWeek ? 'JETZT 30% SPAREN!' : 'Tickets sichern'}
+                    <span className="relative z-10">
+                      {isBlackWeek ? '🔥 BLACK WEEK: JETZT 30% SPAREN! 🔥' : 'Tickets sichern'}
+                    </span>
                   </button>
                 </a>
               </div>
