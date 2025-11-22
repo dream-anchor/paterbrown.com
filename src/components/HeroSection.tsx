@@ -65,7 +65,7 @@ const HeroSection = () => {
       {showStickyHeader && <StickyHeader />}
       {isBlackWeek && <BlackWeekBanner />}
       
-      <section className="relative min-h-screen flex flex-col overflow-hidden">
+      <section className="relative min-h-screen flex flex-col overflow-hidden max-w-full">
         <div 
           className="absolute inset-0 bg-cover bg-top bg-no-repeat" 
           style={{
