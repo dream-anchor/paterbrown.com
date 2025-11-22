@@ -1,6 +1,21 @@
+// Development mode detection
+const isDev = import.meta.env.MODE === 'development';
+const envFlag = import.meta.env.VITE_BLACK_WEEK_ENABLED;
+const enabledFromEnv = envFlag?.toLowerCase() === 'true';
+
+// Optional: Debug logging
+console.log('[BlackWeek Config]', { 
+  mode: import.meta.env.MODE, 
+  envFlag, 
+  enabledFromEnv, 
+  isDev,
+  activeInDev: isDev 
+});
+
 export const BLACK_WEEK_CONFIG = {
   // Feature Flag für manuelle Steuerung
-  enabled: import.meta.env.VITE_BLACK_WEEK_ENABLED === 'true',
+  // Im Dev-Mode immer aktiv, in Produktion über Env-Variable gesteuert
+  enabled: isDev ? true : enabledFromEnv,
   
   // Zeitraum (MEZ/Berlin Timezone)
   startDate: new Date('2025-11-24T12:00:00+01:00'),
