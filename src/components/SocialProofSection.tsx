@@ -47,50 +47,30 @@ export const SocialProofSection = () => {
         </div>
 
         {/* Testimonials */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
           {testimonials.map((testimonial) => (
             <blockquote 
               key={testimonial.id}
-              className="premium-card p-6 md:p-8 space-y-4 hover:border-gold/40 transition-colors"
+              className="bg-card/30 backdrop-blur-sm border border-gold/20 p-8 md:p-10 space-y-6 hover:border-gold/40 transition-all hover:shadow-lg hover:shadow-gold/10"
             >
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <Star 
                     key={i} 
-                    className="w-4 h-4 fill-gold text-gold" 
+                    className="w-5 h-5 fill-gold text-gold" 
                     aria-hidden="true"
                   />
                 ))}
               </div>
-              <p className="text-foreground/90 leading-relaxed text-lg">
+              <p className="text-foreground/95 leading-relaxed text-base md:text-lg italic">
                 "{testimonial.quote}"
               </p>
-              <cite className="text-gold text-base not-italic block mt-4">
-                — {testimonial.author}, {testimonial.location}
+              <cite className="text-gold/80 text-sm not-italic block mt-6 pt-4 border-t border-gold/20">
+                — {testimonial.author}<br />
+                <span className="text-muted-foreground text-xs">{testimonial.location}</span>
               </cite>
             </blockquote>
           ))}
-        </div>
-
-        <div className="divider-gold w-32 mx-auto opacity-30 mb-12" aria-hidden="true" />
-
-        {/* Media Mentions */}
-        <div className="text-center">
-          <p className="text-muted-foreground text-xs uppercase tracking-wider mb-6">
-            Bekannt aus
-          </p>
-          <div className="flex justify-center items-center gap-8 md:gap-12 flex-wrap">
-            {mediaLogos.map((logo) => (
-              <span 
-                key={logo.name}
-                className={`font-heading text-lg md:text-xl tracking-wider ${
-                  logo.featured ? 'text-gold font-bold' : 'text-gold/50'
-                }`}
-              >
-                {logo.name}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
     </section>

@@ -26,7 +26,7 @@ export const BlackWeekBanner = () => {
         <div className="flex items-center gap-2 md:gap-3">
           <Zap className="w-5 h-5 md:w-7 md:h-7 text-black fill-neon-gold" />
           <span className="font-heading text-xl md:text-2xl lg:text-3xl font-black uppercase tracking-[0.15em] text-black" style={{ textShadow: '2px 2px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white' }}>
-            {BLACK_WEEK_CONFIG.texts.badge}
+            BLACK WEEK – 30% auf alle Termine bis 1.12.
           </span>
           <Zap className="w-5 h-5 md:w-7 md:h-7 text-black fill-neon-gold" />
         </div>
