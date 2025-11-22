@@ -7,12 +7,12 @@ const Footer = () => {
   const isBlackWeek = isBlackWeekActive();
   
   return (
-    <footer className="pt-4 pb-20 px-6 bg-background" role="contentinfo">
+    <footer className="pt-0 pb-20 px-6 bg-background" role="contentinfo">
       <div className="container mx-auto max-w-6xl">
         
         {/* Black Week CTA */}
         {isBlackWeek && (
-          <div className="flex items-center justify-center mt-8 mb-12">
+          <div className="flex items-center justify-center mt-0 mb-16">
             <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer">
               <button 
                 className="stoerer-badge px-10 py-4 rounded-full inline-flex items-center gap-3 hover:scale-105 transition-transform"
