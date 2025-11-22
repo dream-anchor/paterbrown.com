@@ -218,7 +218,7 @@ const TourDatesSection = () => {
                   </span>
                 )}
               </div>
-            <div className="flex items-center">
+            <div className="flex flex-col items-end gap-1">
               <a 
                 href={date.ticketUrl}
                 target="_blank"
@@ -228,6 +228,11 @@ const TourDatesSection = () => {
               >
                 Tickets <span aria-hidden="true">→</span>
               </a>
+              {isBlackWeek && (
+                <span className="text-xs text-gold/70">
+                  Jetzt 30% Rabatt sichern
+                </span>
+              )}
             </div>
             </article>
           ))}

@@ -3,21 +3,21 @@ import { Star } from "lucide-react";
 const testimonials = [
   {
     id: 1,
-    quote: "Absolut fesselnd! Die Live-Atmosphäre ist unbeschreiblich.",
-    author: "Sarah M.",
-    location: "Hamburg"
+    quote: "War ein MEGA Abend 👏👏👏👏 Muss man sich unbedingt anschauen.",
+    author: "@wieczorek3309",
+    location: "Instagram"
   },
   {
     id: 2,
-    quote: "Ein einzigartiges Erlebnis. Die Kombination aus Krimi und Beatbox ist genial!",
-    author: "Thomas K.",
-    location: "München"
+    quote: "Augsburg Spectrum war hervorragend, spannend und mit Marvelin ein genussvoller Abend. Auch die Location hat uns sehr gut gefallen.",
+    author: "@birgit.wchtr",
+    location: "Instagram"
   },
   {
     id: 3,
-    quote: "Wanja Mues und Antoine Monot sind grandios. Unbedingt hingehen!",
-    author: "Lisa B.",
-    location: "Berlin"
+    quote: "Ein tolles Konzept mit erstklassigen Sprechern, die die Figuren zum Leben erweckten. Herrlich! Alle zusammen haben es geschafft, die passende Stimmung zu erzeugen. Sehr gerne mehr davon!",
+    author: "@majokeli2024",
+    location: "Instagram"
   }
 ];
 
