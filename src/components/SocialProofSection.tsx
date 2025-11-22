@@ -2,9 +2,9 @@ import { Star } from "lucide-react";
 
 const testimonials = [
   {
-    id: 1,
-    quote: "War ein MEGA Abend 👏👏👏👏 Muss man sich unbedingt anschauen.",
-    author: "@wieczorek3309",
+    id: 3,
+    quote: "Ein tolles Konzept mit erstklassigen Sprechern, die die Figuren zum Leben erweckten. Herrlich! Alle zusammen haben es geschafft, die passende Stimmung zu erzeugen. Sehr gerne mehr davon!",
+    author: "@majokeli2024",
     location: "Instagram"
   },
   {
@@ -14,9 +14,9 @@ const testimonials = [
     location: "Instagram"
   },
   {
-    id: 3,
-    quote: "Ein tolles Konzept mit erstklassigen Sprechern, die die Figuren zum Leben erweckten. Herrlich! Alle zusammen haben es geschafft, die passende Stimmung zu erzeugen. Sehr gerne mehr davon!",
-    author: "@majokeli2024",
+    id: 1,
+    quote: "War ein MEGA Abend 👏👏👏👏 Muss man sich unbedingt anschauen.",
+    author: "@wieczorek3309",
     location: "Instagram"
   }
 ];

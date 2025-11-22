@@ -400,9 +400,15 @@ All colors MUST be HSL.
     0 0 60px hsla(28, 100%, 55%, 0.4);
   animation: pulse-strong 1.5s ease-in-out infinite;
   position: sticky;
-  top: 0;
+  top: 120px;
   z-index: 40;
   overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .stoerer-banner {
+    top: 100px;
+  }
 }
 
 .stoerer-badge {
