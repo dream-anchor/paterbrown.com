@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 import { TourDate } from "@/types";
 import { isBlackWeekActive } from "@/lib/blackWeekConfig";
-import { BlackWeekBadge } from "@/components/BlackWeekBadge";
 import { LiveViewerCount } from "@/components/LiveViewerCount";
 
 const generateEventSchema = (date: TourDate) => {
@@ -219,7 +218,7 @@ const TourDatesSection = () => {
                   </span>
                 )}
               </div>
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+            <div className="flex items-center">
               <a 
                 href={date.ticketUrl}
                 target="_blank"
@@ -229,14 +228,6 @@ const TourDatesSection = () => {
               >
                 Tickets <span aria-hidden="true">→</span>
               </a>
-              {isBlackWeek && (
-                <>
-                  <BlackWeekBadge variant="compact" className="animate-shimmer-gold" />
-                  <span className="text-sm text-gold font-medium">
-                    → Jetzt 30% Rabatt sichern
-                  </span>
-                </>
-              )}
             </div>
             </article>
           ))}

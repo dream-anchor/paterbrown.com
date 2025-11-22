@@ -426,15 +426,15 @@ All colors MUST be HSL.
   );
   border: 2px solid hsl(0, 0%, 0%);
   box-shadow: 
-    0 0 25px hsla(45, 100%, 50%, 0.6),
+    0 0 20px hsla(45, 100%, 50%, 0.3),
     0 8px 20px hsla(0, 0%, 0%, 0.7);
-  animation: glow-pulse 3s ease-in-out infinite;
+  transition: all 0.3s ease;
 }
 
 .sticky-cta-premium:hover {
   transform: scale(1.05);
   box-shadow: 
-    0 0 35px hsla(45, 100%, 50%, 0.8),
+    0 0 25px hsla(45, 100%, 50%, 0.5),
     0 10px 25px hsla(0, 0%, 0%, 0.8);
 }
 
@@ -484,18 +484,6 @@ All colors MUST be HSL.
   }
 }
 
-@keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 
-      0 0 25px hsla(45, 100%, 50%, 0.6),
-      0 8px 20px hsla(0, 0%, 0%, 0.7);
-  }
-  50% {
-    box-shadow: 
-      0 0 35px hsla(45, 100%, 50%, 0.8),
-      0 8px 20px hsla(0, 0%, 0%, 0.7);
-  }
-}
 
 .animate-shimmer-gold {
   animation: shimmer-gold 2s ease-in-out infinite;

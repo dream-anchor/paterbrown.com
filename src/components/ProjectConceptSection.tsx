@@ -83,11 +83,11 @@ const ProjectConceptSection = () => {
           <div className="max-w-2xl mx-auto mt-16">
             <div className="bg-gold/10 border-2 border-gold/30 rounded-lg px-8 py-6 text-center">
               <div className="flex items-center justify-center gap-3 mb-3">
-                <Zap className="w-6 h-6 text-gold fill-gold animate-pulse" />
+                <Zap className="w-6 h-6 text-gold fill-gold" />
                 <h3 className="text-2xl font-heading tracking-wider text-gold uppercase">
                   BLACK WEEK – Jetzt sparen!
                 </h3>
-                <Zap className="w-6 h-6 text-gold fill-gold animate-pulse" />
+                <Zap className="w-6 h-6 text-gold fill-gold" />
               </div>
               <p className="text-foreground/90 text-lg mb-4">
                 30% Rabatt auf alle Termine – nur bis 1. Dezember

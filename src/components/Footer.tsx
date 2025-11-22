@@ -18,11 +18,11 @@ const Footer = () => {
                 className="stoerer-badge px-10 py-4 rounded-full inline-flex items-center gap-3 hover:scale-105 transition-transform"
                 type="button"
               >
-                <Flame className="w-6 h-6 text-black fill-neon-gold animate-pulse" />
+                <Flame className="w-6 h-6 text-black fill-neon-gold" />
                 <span className="text-black font-black text-lg uppercase tracking-wide">
                   🔥 Jetzt letzte Tickets sichern – 30% bis 1.12.
                 </span>
-                <Flame className="w-6 h-6 text-black fill-neon-gold animate-pulse" />
+                <Flame className="w-6 h-6 text-black fill-neon-gold" />
               </button>
             </a>
           </div>
