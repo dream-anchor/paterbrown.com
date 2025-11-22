@@ -28,9 +28,9 @@ export const BLACK_WEEK_CONFIG = {
   texts: {
     badge: 'BLACK WEEK',
     discount: '30% RABATT',
-    cta: '🎟 BLACK WEEK: 30% sparen!',
-    banner: 'BLACK WEEK DEAL: 30% auf alle Tickets!',
-    countdown: 'Nur noch {time} bis zum Ende!'
+    cta: 'BLACK WEEK: Jetzt 30% sparen',
+    banner: 'BLACK WEEK SPECIAL – 30% auf alle Tickets',
+    countdown: 'Endet in {time}'
   }
 };
 
