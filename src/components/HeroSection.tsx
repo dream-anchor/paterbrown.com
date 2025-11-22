@@ -175,18 +175,23 @@ const HeroSection = () => {
             <div className="py-8">
               <div className="relative inline-block">
                 {isBlackWeek && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                    <BlackWeekBadge variant="compact" className="animate-pulse" />
+                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-10">
+                    <BlackWeekBadge variant="compact" />
                   </div>
                 )}
                 <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen">
                   <button 
-                    className={`btn-premium cinematic-enter focus:outline-none focus:ring-2 ${isBlackWeek ? 'focus:ring-gold ring-2 ring-gold/40 shadow-[0_0_40px_hsl(var(--gold)/0.3)]' : 'focus:ring-gold'} focus:ring-offset-2 focus:ring-offset-background ${isBlackWeek ? 'mt-6' : ''}`}
-                    style={{ animationDelay: "0.6s" }} 
+                    className={`btn-premium text-lg md:text-xl px-8 md:px-12 py-6 md:py-8 rounded-full shadow-2xl relative overflow-hidden group cinematic-enter focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background ${isBlackWeek ? 'mt-8' : ''}`}
+                    style={{
+                      animationDelay: "0.6s",
+                      boxShadow: isBlackWeek 
+                        ? '0 0 60px hsla(340, 100%, 50%, 0.8), 0 10px 40px rgba(0,0,0,0.5)' 
+                        : undefined
+                    }}
                     type="button" 
                     aria-label="Jetzt Tickets bei Eventim sichern"
                   >
-                    {isBlackWeek ? 'BLACK WEEK: Jetzt 30% sparen' : 'Tickets sichern'}
+                    {isBlackWeek ? 'JETZT 30% SPAREN!' : 'Tickets sichern'}
                   </button>
                 </a>
               </div>

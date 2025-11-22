@@ -23,6 +23,10 @@ export default {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
+        "neon-pink": "hsl(328, 100%, 50%)",
+        "neon-red": "hsl(340, 100%, 50%)",
+        "neon-yellow": "hsl(49, 100%, 50%)",
+        "electric-blue": "hsl(190, 100%, 50%)",
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -101,6 +105,14 @@ export default {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        "pulse-strong": {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.02)" },
+        },
+        "bounce-subtle": {
+          "0%, 100%": { transform: "rotate(-5deg) translateY(0)" },
+          "50%": { transform: "rotate(-5deg) translateY(-5px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -111,6 +123,8 @@ export default {
         "slide-up": "slide-up 0.8s ease-out",
         "glow": "glow 2s ease-in-out infinite",
         "shimmer": "shimmer 3s linear infinite",
+        "pulse-strong": "pulse-strong 1.5s ease-in-out infinite",
+        "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
       },
     },
   },
