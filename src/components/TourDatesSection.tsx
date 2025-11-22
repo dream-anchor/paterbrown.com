@@ -229,7 +229,7 @@ const TourDatesSection = () => {
                 Tickets <span aria-hidden="true">→</span>
               </a>
               {isBlackWeek && (
-                <span className="text-xs text-gold font-bold">
+                <span className="text-xs text-gold/70">
                   Jetzt 30% Rabatt sichern
                 </span>
               )}

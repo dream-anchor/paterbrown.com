@@ -181,14 +181,14 @@ const HeroSection = () => {
                     aria-label="Jetzt Tickets bei Eventim sichern"
                   >
                     <span className="relative z-10 flex flex-col items-center gap-1">
-                      <span className={isBlackWeek ? "text-lg font-black uppercase tracking-[0.15em]" : ""}>
-                        {isBlackWeek ? '🎟 Jetzt Tickets sichern' : 'Tickets sichern'}
-                      </span>
                       {isBlackWeek && (
                         <span className="text-xs font-black uppercase tracking-[0.2em] text-black/80">
-                          Black Week 30% Rabatt
+                          Black Week Deal
                         </span>
                       )}
+                      <span className={isBlackWeek ? "text-lg font-black uppercase tracking-[0.15em]" : ""}>
+                        {isBlackWeek ? 'JETZT TICKETS SICHERN' : 'Tickets sichern'}
+                      </span>
                     </span>
                   </button>
                 </a>
