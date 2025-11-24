@@ -34,9 +34,12 @@ export const BLACK_WEEK_CONFIG = {
   }
 };
 
-// Prüft, ob Black Week aktiv ist (nur Feature Flag)
+// Prüft, ob Black Week aktiv ist (Feature Flag + automatisches Ende)
 export const isBlackWeekActive = (): boolean => {
-  return BLACK_WEEK_CONFIG.enabled;
+  if (!BLACK_WEEK_CONFIG.enabled) return false;
+  
+  const now = new Date();
+  return now <= BLACK_WEEK_CONFIG.endDate;
 };
 
 // Berechnet verbleibende Zeit - Deutsche Ausgabe
