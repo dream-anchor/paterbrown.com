@@ -173,20 +173,20 @@ const HeroSection = () => {
               <div className="relative inline-block">
                 <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen">
                   <button 
-                    className="btn-premium text-base md:text-xl px-10 md:px-16 py-6 md:py-8 rounded-full shadow-2xl relative overflow-hidden group cinematic-enter focus:outline-none focus:ring-4 focus:ring-neon-gold/50 focus:ring-offset-2 focus:ring-offset-background"
+                    className="btn-premium text-base md:text-xl px-10 md:px-16 py-6 md:py-8 rounded-full shadow-2xl relative overflow-hidden group cinematic-enter focus:outline-none focus:ring-4 focus:ring-[hsl(45,100%,50%)]/50 focus:ring-offset-2 focus:ring-offset-background"
                     style={{
                       animationDelay: "0.6s"
                     }}
                     type="button" 
                     aria-label="Jetzt Tickets bei Eventim sichern"
                   >
-                    <span className="relative z-10 flex flex-col items-center gap-1">
+                    <span className="relative z-10 flex flex-col items-center gap-2">
                       {isBlackWeek && (
-                        <span className="text-xs font-black uppercase tracking-[0.2em] text-black/80">
-                          Black Week Deal
+                        <span className="price-tag-red text-[10px] md:text-xs font-black uppercase tracking-wider px-3 py-1">
+                          BLACK WEEK 30% RABATT
                         </span>
                       )}
-                      <span className={isBlackWeek ? "text-lg font-black uppercase tracking-[0.15em]" : ""}>
+                      <span className={isBlackWeek ? "text-base md:text-lg font-black uppercase tracking-[0.15em]" : ""}>
                         {isBlackWeek ? 'JETZT TICKETS SICHERN' : 'Tickets sichern'}
                       </span>
                     </span>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BLACK_WEEK_CONFIG, getTimeRemaining } from '@/lib/blackWeekConfig';
 import { EVENTIM_AFFILIATE_URL } from '@/lib/constants';
-import { Zap, Flame, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 
 export const BlackWeekBanner = () => {
   const [timeLeft, setTimeLeft] = useState<string | null>(getTimeRemaining());
@@ -9,7 +9,7 @@ export const BlackWeekBanner = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft(getTimeRemaining());
-    }, 60000); // Update jede Minute
+    }, 60000);
 
     return () => clearInterval(timer);
   }, []);
@@ -19,29 +19,21 @@ export const BlackWeekBanner = () => {
       href={EVENTIM_AFFILIATE_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="stoerer-banner py-3 md:py-4 px-4 overflow-hidden block cursor-pointer hover:brightness-110 transition-all"
+      className="stoerer-banner py-4 md:py-5 px-4 overflow-hidden block cursor-pointer hover:brightness-105 transition-all"
       aria-label="Black Week: 30% Rabatt sichern"
     >
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 relative z-10">
-        <div className="flex items-center gap-2 md:gap-3">
-          <Zap className="w-5 h-5 md:w-7 md:h-7 text-black fill-neon-gold" />
-          <span className="font-heading text-xl md:text-2xl lg:text-3xl font-black uppercase tracking-[0.15em] text-black" style={{ textShadow: '2px 2px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white' }}>
-            {BLACK_WEEK_CONFIG.texts.badge}
-          </span>
-          <Zap className="w-5 h-5 md:w-7 md:h-7 text-black fill-neon-gold" />
-        </div>
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-3 md:gap-8 relative z-10">
+        <span className="font-['Pacifico'] text-3xl md:text-5xl lg:text-6xl text-neon-tubing animate-neon-pulse">
+          BLACK WEEK
+        </span>
         
-        <div className="flex items-center gap-2">
-          <Flame className="w-7 h-7 md:w-9 md:h-9 text-neon-gold fill-neon-gold" />
-          <span className="text-black font-heading font-black text-2xl md:text-3xl lg:text-5xl uppercase tracking-tight">
-            {BLACK_WEEK_CONFIG.texts.discount}
-          </span>
-          <Flame className="w-7 h-7 md:w-9 md:h-9 text-neon-gold fill-neon-gold" />
-        </div>
+        <span className="price-tag-red text-2xl md:text-4xl lg:text-5xl font-black uppercase animate-tag-sway">
+          30%
+        </span>
         
         {timeLeft && (
-          <div className="flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-black/90 border-2 border-neon-gold shadow-lg">
-            <Clock className="w-4 h-4 md:w-5 md:h-5 text-neon-gold" />
+          <div className="flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-black/95 border-2 border-[hsl(45,100%,50%)] shadow-lg">
+            <Clock className="w-4 h-4 md:w-5 md:h-5 text-[hsl(45,100%,50%)]" />
             <span className="text-xs md:text-sm text-white font-bold tracking-wide">
               {BLACK_WEEK_CONFIG.texts.countdown.replace('{time}', timeLeft)}
             </span>
