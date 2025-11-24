@@ -386,18 +386,26 @@ All colors MUST be HSL.
   }
 }
 
-/* Black Week Störer Styles - Gold/Orange Palette */
+/* Black Week Störer Styles - Logo-based Orange/Red Palette */
 .stoerer-banner {
-  background: linear-gradient(135deg, 
-    hsl(45, 100%, 50%) 0%, 
-    hsl(28, 100%, 55%) 50%, 
-    hsl(45, 100%, 50%) 100%
-  );
-  border-top: 4px solid hsl(0, 0%, 0%);
-  border-bottom: 4px solid hsl(0, 0%, 0%);
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.05) 10px,
+      rgba(0, 0, 0, 0.05) 20px
+    ),
+    linear-gradient(135deg, 
+      hsl(22, 100%, 50%) 0%, 
+      hsl(358, 79%, 50%) 100%
+    );
+  border-top: 4px solid hsl(0, 0%, 10%);
+  border-bottom: 4px solid hsl(0, 0%, 10%);
   box-shadow: 
-    0 8px 32px hsla(45, 100%, 50%, 0.6),
-    0 0 60px hsla(28, 100%, 55%, 0.4);
+    0 8px 32px hsla(22, 100%, 50%, 0.5),
+    0 0 60px hsla(358, 79%, 50%, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   animation: pulse-strong 1.5s ease-in-out infinite;
   position: sticky;
   top: 0;
@@ -407,47 +415,50 @@ All colors MUST be HSL.
 
 .stoerer-badge {
   background: linear-gradient(135deg, 
-    hsl(28, 100%, 55%), 
-    hsl(45, 100%, 50%)
+    hsl(358, 79%, 50%) 0%, 
+    hsl(358, 79%, 45%) 100%
   );
-  border: 2px solid hsl(0, 0%, 0%);
+  border: 3px solid hsl(0, 0%, 10%);
   box-shadow: 
-    0 0 20px hsla(45, 100%, 50%, 0.7),
+    0 0 20px hsla(22, 100%, 50%, 0.4),
     0 10px 20px hsla(0, 0%, 0%, 0.9),
-    0 0 40px hsla(28, 100%, 55%, 0.5);
+    0 0 40px hsla(358, 79%, 50%, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
   position: relative;
   overflow: visible;
-  transform: rotate(-5deg);
+  transform: rotate(-8deg);
+  clip-path: polygon(0 0, 100% 0, 100% 75%, 95% 100%, 0 100%);
   transition: all 0.3s ease;
   max-width: 100%;
   contain: layout;
 }
 
 .stoerer-badge:hover {
-  transform: rotate(-3deg) scale(1.05);
+  transform: rotate(-6deg) scale(1.05);
   box-shadow: 
-    0 0 30px hsla(45, 100%, 50%, 0.9),
+    0 0 30px hsla(22, 100%, 50%, 0.6),
     0 15px 30px hsla(0, 0%, 0%, 1),
-    0 0 50px hsla(28, 100%, 55%, 0.7);
+    0 0 50px hsla(358, 79%, 50%, 0.5);
 }
 
 .sticky-cta-premium {
   background: linear-gradient(135deg, 
-    hsl(28, 100%, 55%), 
-    hsl(45, 100%, 50%)
+    hsl(358, 79%, 50%) 0%, 
+    hsl(22, 100%, 50%) 100%
   );
-  border: 2px solid hsl(0, 0%, 0%);
+  border: 3px solid hsl(0, 0%, 10%);
   box-shadow: 
-    0 0 20px hsla(45, 100%, 50%, 0.3),
-    0 8px 20px hsla(0, 0%, 0%, 0.7);
+    0 0 20px hsla(22, 100%, 50%, 0.5),
+    0 8px 25px hsla(0, 0%, 0%, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transition: all 0.3s ease;
 }
 
 .sticky-cta-premium:hover {
-  transform: scale(1.05);
+  transform: scale(1.08);
   box-shadow: 
-    0 0 25px hsla(45, 100%, 50%, 0.5),
-    0 10px 25px hsla(0, 0%, 0%, 0.8);
+    0 0 30px hsla(22, 100%, 50%, 0.7),
+    0 12px 30px hsla(0, 0%, 0%, 1);
 }
 
 .text-stroke-white {
@@ -462,10 +473,20 @@ All colors MUST be HSL.
 
 .text-neon-glow {
   text-shadow: 
-    0 0 10px hsla(45, 100%, 50%, 1),
-    0 0 20px hsla(45, 100%, 50%, 0.8),
-    0 0 30px hsla(28, 100%, 55%, 0.6),
-    0 0 40px hsla(28, 100%, 55%, 0.4);
+    0 0 10px hsla(22, 100%, 50%, 1),
+    0 0 20px hsla(22, 100%, 50%, 0.8),
+    0 0 30px hsla(22, 100%, 55%, 0.6),
+    0 0 40px hsla(358, 79%, 50%, 0.3);
+}
+
+.text-industrial-3d {
+  color: hsl(0, 0%, 10%);
+  -webkit-text-stroke: 2px hsl(0, 0%, 0%);
+  text-shadow: 
+    3px 3px 0 rgba(0, 0, 0, 0.9),
+    5px 5px 10px rgba(0, 0, 0, 0.5),
+    1px 1px 0 rgba(255, 255, 255, 0.1);
+  font-weight: 900;
 }
 
 @keyframes pulse-strong {
@@ -488,11 +509,11 @@ All colors MUST be HSL.
 
 @keyframes shimmer-gold {
   0%, 100% { 
-    box-shadow: 0 0 15px hsla(45, 100%, 50%, 0.6); 
+    box-shadow: 0 0 15px hsla(22, 100%, 50%, 0.5); 
   }
   50% { 
-    box-shadow: 0 0 25px hsla(45, 100%, 50%, 0.8),
-                0 0 35px hsla(28, 100%, 55%, 0.4); 
+    box-shadow: 0 0 25px hsla(22, 100%, 50%, 0.7),
+                0 0 35px hsla(358, 79%, 50%, 0.3); 
   }
 }
 
