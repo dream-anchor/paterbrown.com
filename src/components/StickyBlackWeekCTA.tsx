@@ -20,9 +20,12 @@ export const StickyBlackWeekCTA = () => {
           type="button"
         >
           <Flame className="w-4 h-4 md:w-6 md:h-6 text-black" />
-          <span className="text-black font-black text-xs md:text-base uppercase tracking-wide whitespace-nowrap">
-            30% Rabatt sichern
-          </span>
+          <div className="flex items-center gap-1">
+            <span className="badge-30-percent text-sm md:text-base">30%</span>
+            <span className="text-black font-black text-xs md:text-sm uppercase tracking-wide whitespace-nowrap">
+              Rabatt sichern
+            </span>
+          </div>
         </button>
       </a>
     </div>

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { BLACK_WEEK_CONFIG, getTimeRemaining } from '@/lib/blackWeekConfig';
 import { EVENTIM_AFFILIATE_URL } from '@/lib/constants';
 import { Clock } from 'lucide-react';
-import blackWeekLogo from '@/assets/black-week-logo.png';
 
 export const BlackWeekBanner = () => {
   const [timeLeft, setTimeLeft] = useState<string | null>(getTimeRemaining());
@@ -23,13 +22,15 @@ export const BlackWeekBanner = () => {
       className="stoerer-banner py-3 md:py-4 px-4 overflow-hidden block cursor-pointer hover:brightness-110 transition-all"
       aria-label="Black Week: 30% Rabatt sichern"
     >
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 relative z-10">
-        {/* Black Week Logo */}
-        <img 
-          src={blackWeekLogo} 
-          alt="Black Week 30%" 
-          className="h-16 md:h-24 lg:h-32 w-auto object-contain"
-        />
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 relative z-10">
+        {/* Black Week Text-Logo im Stil der Grafik */}
+        <div className="flex items-start gap-1 relative">
+          <span className="badge-30-percent">30%</span>
+          <div className="flex flex-col items-center">
+            <span className="text-black-neon">Black</span>
+            <span className="text-week-metal" data-text="WEEK">WEEK</span>
+          </div>
+        </div>
         
         {/* Countdown mit rotem Preisschild-Design */}
         {timeLeft && (
