@@ -27,11 +27,6 @@ export default {
         "neon-orange": "hsl(28, 100%, 55%)",
         "neon-amber": "hsl(38, 100%, 50%)",
         "neon-yellow": "hsl(49, 100%, 50%)",
-        // Black Week Logo-based colors
-        "black-week-neon": "hsl(22, 100%, 50%)",
-        "black-week-red": "hsl(358, 79%, 50%)",
-        "black-week-dark": "hsl(0, 0%, 10%)",
-        "black-week-gold": "hsl(43, 100%, 50%)",
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -90,20 +85,6 @@ export default {
           "0%, 19%, 21%, 23%, 25%, 54%, 56%, 100%": { opacity: "1" },
           "20%, 24%, 55%": { opacity: "0.6" },
         },
-        "neon-flicker": {
-          "0%, 18%, 22%, 25%, 53%, 57%, 100%": { 
-            opacity: "1",
-            textShadow: "0 0 10px hsl(22 100% 50%), 0 0 20px hsl(22 100% 50%), 0 0 30px hsl(22 100% 50%)" 
-          },
-          "20%, 24%, 55%": { 
-            opacity: "0.8",
-            textShadow: "0 0 5px hsl(22 100% 50%)" 
-          },
-        },
-        "tag-wobble": {
-          "0%, 100%": { transform: "rotate(-8deg) translateY(0)" },
-          "50%": { transform: "rotate(-6deg) translateY(-3px)" },
-        },
         "float": {
           "0%, 100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-10px)" },
@@ -137,8 +118,6 @@ export default {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "flicker": "flicker 3s infinite alternate",
-        "neon-flicker": "neon-flicker 4s infinite",
-        "tag-wobble": "tag-wobble 3s ease-in-out infinite",
         "float": "float 3s ease-in-out infinite",
         "fade-in": "fade-in 0.6s ease-out",
         "slide-up": "slide-up 0.8s ease-out",
