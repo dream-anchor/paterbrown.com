@@ -16,11 +16,11 @@ export const StickyBlackWeekCTA = () => {
         aria-label="Black Week: 30% Rabatt sichern"
       >
         <button 
-          className="sticky-cta-premium px-4 py-2 md:px-8 md:py-4 rounded-full shadow-2xl flex items-center gap-2 md:gap-3 transition-all duration-300"
+          className="sticky-cta-premium px-4 py-2 md:px-8 md:py-4 rounded-full shadow-2xl flex items-center gap-2 md:gap-3 transition-all duration-300 hover:scale-105"
           type="button"
         >
-          <Flame className="w-4 h-4 md:w-6 md:h-6 text-black" />
-          <span className="text-black font-black text-xs md:text-base uppercase tracking-wide whitespace-nowrap">
+          <Flame className="w-4 h-4 md:w-6 md:h-6 text-white drop-shadow-lg" />
+          <span className="text-white font-black text-xs md:text-base uppercase tracking-wide whitespace-nowrap drop-shadow-md">
             30% Rabatt sichern
           </span>
         </button>
