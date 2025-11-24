@@ -14,8 +14,8 @@ console.log('[BlackWeek Config]', {
 
 export const BLACK_WEEK_CONFIG = {
   // Feature Flag für manuelle Steuerung
-  // Im Dev-Mode immer aktiv, in Produktion über Env-Variable gesteuert
-  enabled: isDev ? true : enabledFromEnv,
+  // Nur über Env-Variable gesteuert (VITE_BLACK_WEEK_ENABLED=true)
+  enabled: enabledFromEnv,
   
   // Zeitraum (MEZ/Berlin Timezone)
   startDate: new Date('2025-11-25T16:00:00+01:00'),
@@ -34,12 +34,9 @@ export const BLACK_WEEK_CONFIG = {
   }
 };
 
-// Prüft, ob Black Week aktiv ist (Feature Flag ODER Zeitraum)
+// Prüft, ob Black Week aktiv ist (nur Feature Flag)
 export const isBlackWeekActive = (): boolean => {
-  if (BLACK_WEEK_CONFIG.enabled) return true;
-  
-  const now = new Date();
-  return now >= BLACK_WEEK_CONFIG.startDate && now <= BLACK_WEEK_CONFIG.endDate;
+  return BLACK_WEEK_CONFIG.enabled;
 };
 
 // Berechnet verbleibende Zeit - Deutsche Ausgabe
