@@ -1,7 +1,6 @@
 import { memo } from "react";
 import { showCases } from "@/data/castData";
 import { isBlackWeekActive } from "@/lib/blackWeekConfig";
-import { Flame } from "lucide-react";
 
 const ShowConceptSection = memo(() => {
   return (
@@ -48,13 +47,19 @@ const ShowConceptSection = memo(() => {
         {/* Black Week CTA Banner */}
         {isBlackWeekActive() && (
           <div className="text-center mt-12">
-            <div className="stoerer-badge inline-flex items-center gap-3 px-8 py-4 rounded-lg">
-              <Flame className="w-6 h-6 text-black fill-neon-gold" />
-              <p className="text-black font-black text-lg uppercase tracking-wide">
-                BLACK WEEK – 30% auf alle Termine bis 1.12.
-              </p>
-              <Flame className="w-6 h-6 text-black fill-neon-gold" />
-            </div>
+            <a href="https://www.eventim.de" target="_blank" rel="noopener noreferrer">
+              <div className="bw-box-banner inline-flex items-center gap-4 px-8 md:px-10 py-5 md:py-6 rounded-xl hover:scale-[1.02] transition-transform">
+                <span className="font-['Pacifico'] text-xl md:text-2xl text-neon-tubing">
+                  BLACK WEEK
+                </span>
+                <span className="price-tag-red text-lg md:text-xl font-black">
+                  30%
+                </span>
+                <span className="text-foreground/90 text-sm md:text-base font-medium">
+                  auf alle Termine bis 1.12.
+                </span>
+              </div>
+            </a>
           </div>
         )}
       </div>
