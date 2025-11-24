@@ -1,4 +1,4 @@
-import { Instagram } from "lucide-react";
+import { Instagram, Flame } from "lucide-react";
 import { EVENTIM_AFFILIATE_URL, INSTAGRAM_URL } from "@/lib/constants";
 import { isBlackWeekActive } from "@/lib/blackWeekConfig";
 
@@ -14,20 +14,16 @@ const Footer = () => {
         {isBlackWeek && (
           <div className="flex items-center justify-center mt-0 mb-16">
             <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer">
-              <div className="bw-box-banner rounded-full px-8 md:px-10 py-4 md:py-5 inline-flex items-center gap-3 md:gap-4 hover:scale-105 transition-transform">
-                <span className="font-['Pacifico'] text-base md:text-lg text-neon-tubing">
-                  BLACK WEEK
+              <button 
+                className="stoerer-badge px-10 py-4 rounded-full inline-flex items-center gap-3 hover:scale-105 transition-transform"
+                type="button"
+              >
+                <Flame className="w-6 h-6 text-black fill-neon-gold" />
+                <span className="text-black font-black text-lg uppercase tracking-wide">
+                  🔥 Jetzt letzte Tickets sichern – 30% bis 1.12.
                 </span>
-                <span className="price-tag-red text-sm md:text-base font-black">
-                  30%
-                </span>
-                <span className="text-foreground/90 text-sm md:text-base font-medium hidden sm:inline">
-                  Letzte Tickets sichern – bis 1.12.
-                </span>
-                <span className="text-foreground/90 text-xs font-medium sm:hidden">
-                  bis 1.12.
-                </span>
-              </div>
+                <Flame className="w-6 h-6 text-black fill-neon-gold" />
+              </button>
             </a>
           </div>
         )}

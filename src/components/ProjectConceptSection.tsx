@@ -1,5 +1,6 @@
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 import { isBlackWeekActive } from "@/lib/blackWeekConfig";
+import { Zap } from "lucide-react";
 
 const ProjectConceptSection = () => {
   const isBlackWeek = isBlackWeekActive();
@@ -80,22 +81,16 @@ const ProjectConceptSection = () => {
         {/* Black Week Box Banner */}
         {isBlackWeek && (
           <div className="max-w-2xl mx-auto mt-16">
-            <div className="bw-box-banner rounded-xl px-8 md:px-10 py-8 md:py-10 text-center space-y-6">
-              <div className="space-y-3">
-                <span className="font-['Pacifico'] text-3xl md:text-4xl text-neon-tubing block">
-                  BLACK WEEK
-                </span>
-                <span className="font-['Bebas_Neue'] text-5xl md:text-6xl text-metallic-hex block animate-metallic-shimmer">
-                  WEEK
-                </span>
-                <div className="flex justify-center">
-                  <span className="price-tag-red text-4xl md:text-5xl font-black">
-                    30% RABATT
-                  </span>
-                </div>
+            <div className="bg-gold/10 border-2 border-gold/30 rounded-lg px-8 py-6 text-center">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <Zap className="w-6 h-6 text-gold fill-gold" />
+                <h3 className="text-2xl font-heading tracking-wider text-gold uppercase">
+                  BLACK WEEK – Jetzt sparen!
+                </h3>
+                <Zap className="w-6 h-6 text-gold fill-gold" />
               </div>
-              <p className="text-foreground/80 text-base md:text-lg">
-                Auf alle Termine – nur bis 1. Dezember
+              <p className="text-foreground/90 text-lg mb-4">
+                30% Rabatt auf alle Termine – nur bis 1. Dezember
               </p>
               <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer">
                 <button className="btn-premium" type="button">

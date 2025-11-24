@@ -67,25 +67,15 @@ const CastSection = () => {
 
         {/* Black Week CTA nach Cast */}
         {isBlackWeekActive() && (
-          <div className="text-center mt-16 max-w-2xl mx-auto">
-            <div className="bw-box-banner rounded-xl px-8 md:px-10 py-8 md:py-10 space-y-6">
-              <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6">
-                <span className="font-['Pacifico'] text-2xl md:text-3xl text-neon-tubing">
-                  BLACK WEEK
-                </span>
-                <span className="price-tag-red text-2xl md:text-3xl font-black">
-                  30%
-                </span>
-              </div>
-              <p className="text-foreground/90 text-base md:text-lg font-medium">
-                Erlebe Wanja Mues & Antoine Monot live<br className="hidden md:block" /> – nur diese Woche mit 30% Rabatt
-              </p>
-              <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer">
-                <button className="btn-premium" type="button">
-                  Jetzt 30% Rabatt sichern
-                </button>
-              </a>
-            </div>
+          <div className="text-center mt-16 bg-card/30 backdrop-blur-sm px-8 py-8 rounded-lg max-w-2xl mx-auto space-y-6">
+            <p className="text-gold text-lg mb-4 font-medium">
+              Erlebe Wanja Mues & Antoine Monot live – nur diese Woche mit 30% Rabatt
+            </p>
+            <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer">
+              <button className="btn-premium" type="button">
+                Jetzt 30% Rabatt sichern
+              </button>
+            </a>
           </div>
         )}
 

@@ -1,3 +1,4 @@
+import { Flame } from "lucide-react";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 import { isBlackWeekActive } from "@/lib/blackWeekConfig";
 
@@ -15,14 +16,12 @@ export const StickyBlackWeekCTA = () => {
         aria-label="Black Week: 30% Rabatt sichern"
       >
         <button 
-          className="sticky-cta-premium px-4 py-3 md:px-6 md:py-4 rounded-full shadow-2xl flex items-center gap-2 md:gap-3 transition-all duration-300 animate-pulse-glow"
+          className="sticky-cta-premium px-4 py-2 md:px-8 md:py-4 rounded-full shadow-2xl flex items-center gap-2 md:gap-3 transition-all duration-300"
           type="button"
         >
-          <span className="font-['Pacifico'] text-sm md:text-base text-neon-tubing whitespace-nowrap">
-            BLACK WEEK
-          </span>
-          <span className="price-tag-red text-xs md:text-sm font-black whitespace-nowrap">
-            30%
+          <Flame className="w-4 h-4 md:w-6 md:h-6 text-black" />
+          <span className="text-black font-black text-xs md:text-base uppercase tracking-wide whitespace-nowrap">
+            30% Rabatt sichern
           </span>
         </button>
       </a>
