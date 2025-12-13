@@ -10,7 +10,7 @@ const Impressum = () => {
     <div className="min-h-screen flex flex-col">
       <SEO 
         title="Impressum"
-        description="Impressum und rechtliche Informationen zu Pater Brown - Das Live-Hörspiel. Dream & Anchor Handelsgesellschaft mbH."
+        description="Impressum und rechtliche Informationen zu Pater Brown Live-Hörspiel. Dream & Anchor Handelsgesellschaft mbH."
         robots="index, follow"
         canonical="/impressum"
       />

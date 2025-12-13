@@ -8,8 +8,8 @@ const NewsletterSent = () => {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
       <SEO 
-        title="Newsletter Bestätigung"
-        description="Bitte bestätigen Sie Ihre Newsletter-Anmeldung für Pater Brown - Das Live-Hörspiel."
+        title="E-Mail bestätigen"
+        description="Bitte bestätigen Sie Ihre Newsletter-Anmeldung per E-Mail."
         robots="noindex, nofollow"
         canonical="/newsletter-gesendet"
       />

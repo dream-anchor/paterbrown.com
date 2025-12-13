@@ -9,8 +9,8 @@ const Datenschutz = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEO 
-        title="Datenschutzerklärung"
-        description="Datenschutzerklärung für Pater Brown - Das Live-Hörspiel. Informationen zur Verarbeitung personenbezogener Daten gemäß DSGVO."
+        title="Datenschutz"
+        description="Datenschutzerklärung für Pater Brown Live-Hörspiel. Informationen zur Verarbeitung personenbezogener Daten gemäß DSGVO."
         robots="index, follow"
         canonical="/datenschutz"
       />

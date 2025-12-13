@@ -8,8 +8,8 @@ const TicketThankYou = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO 
-        title="Vielen Dank für Ihre Buchung"
-        description="Vielen Dank für Ihren Ticketkauf. Wir freuen uns darauf, Sie beim Pater Brown Live-Hörspiel begrüßen zu dürfen."
+        title="Buchung erfolgreich"
+        description="Vielen Dank für Ihren Ticketkauf. Wir freuen uns auf Sie!"
         robots="noindex, nofollow"
         canonical="/danke-ticket"
       />

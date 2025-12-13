@@ -12,8 +12,8 @@ const NotFound = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <SEO 
-        title="Seite nicht gefunden"
-        description="Die angeforderte Seite wurde nicht gefunden."
+        title="404 - Seite nicht gefunden"
+        description="Die angeforderte Seite wurde leider nicht gefunden."
         robots="noindex, nofollow"
       />
       <div className="text-center">
