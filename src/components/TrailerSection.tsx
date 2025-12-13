@@ -53,7 +53,7 @@ const TrailerSection = memo(() => {
           <Button
             asChild
             size="lg"
-            className="bg-gold hover:bg-gold/90 text-background font-semibold text-lg px-8 py-6"
+            className="bg-gold hover:bg-gold/90 text-black font-bold text-lg px-10 py-6 shadow-lg"
           >
             <a
               href={EVENTIM_AFFILIATE_URL}
