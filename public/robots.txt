@@ -1,8 +1,86 @@
+# robots.txt for https://paterbrown.com/
+# Goal: maximize real visibility (Search/Maps/Social/Reviews/AI recommendations),
+# while blocking bots mainly used for large-scale scraping/training without direct marketing benefit.
+
 User-agent: *
 Allow: /
-Disallow: /newsletter-gesendet
-Disallow: /danke-newsletter
-Crawl-delay: 1
+
+# --- Explicitly allow high-visibility crawlers (redundant but harmless; kept for clarity) ---
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Mobile
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Image
+Allow: /
+
+User-agent: FacebookExternalHit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: YelpBot
+Allow: /
+
+User-agent: TripAdvisorBot
+Allow: /
+
+User-agent: OpenTableBot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# --- Block large-scale scraping / AI training / data harvesting bots ---
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Cohere-ai
+Disallow: /
+
+User-agent: Ai2Bot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DataForSeoBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
 
 # Sitemap
-Sitemap: https://paterbrownlive.com/sitemap.xml
+Sitemap: https://paterbrown.com/sitemap.xml
