@@ -8,8 +8,8 @@ const NewsletterThankYou = () => {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
       <SEO 
-        title="Newsletter Anmeldung erfolgreich"
-        description="Vielen Dank für Ihre Newsletter-Anmeldung für Pater Brown - Das Live-Hörspiel."
+        title="Newsletter bestätigt"
+        description="Vielen Dank! Ihre Newsletter-Anmeldung wurde erfolgreich bestätigt."
         robots="noindex, nofollow"
         canonical="/danke-newsletter"
       />

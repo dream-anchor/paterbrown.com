@@ -17,7 +17,7 @@ export const SEO = ({
   canonical,
   keywords
 }: SEOProps) => {
-  const fullTitle = `${title} - Pater Brown Live-Hörspiel`;
+  const fullTitle = title.includes('Pater Brown') ? title : `${title} | Pater Brown`;
   
   // Build canonical URL: use provided canonical or derive from pathname
   const getCanonicalUrl = () => {
