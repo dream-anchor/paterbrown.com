@@ -12,6 +12,7 @@ const Datenschutz = () => {
         title="Datenschutzerklärung"
         description="Datenschutzerklärung für Pater Brown - Das Live-Hörspiel. Informationen zur Verarbeitung personenbezogener Daten gemäß DSGVO."
         robots="index, follow"
+        canonical="/datenschutz"
       />
       <div 
         className="relative bg-cover bg-top bg-no-repeat min-h-[300px]"

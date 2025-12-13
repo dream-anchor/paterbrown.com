@@ -1,5 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 
+const BASE_URL = 'https://paterbrownlive.com';
+
 interface SEOProps {
   title: string;
   description?: string;
@@ -16,7 +18,28 @@ export const SEO = ({
   keywords
 }: SEOProps) => {
   const fullTitle = `${title} - Pater Brown Live-Hörspiel`;
-  const canonicalUrl = canonical || `https://paterbrown.com${window.location.pathname}`;
+  
+  // Build canonical URL: use provided canonical or derive from pathname
+  const getCanonicalUrl = () => {
+    if (canonical) {
+      // If canonical starts with /, prepend base URL
+      if (canonical.startsWith('/')) {
+        const cleanPath = canonical === '/' ? '' : canonical.replace(/\/$/, '');
+        return `${BASE_URL}${cleanPath}`;
+      }
+      // If it's already a full URL, use as-is
+      if (canonical.startsWith('http')) {
+        return canonical;
+      }
+      return `${BASE_URL}/${canonical}`;
+    }
+    // Default: use current pathname without trailing slash
+    const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+    const cleanPath = pathname === '/' ? '' : pathname.replace(/\/$/, '');
+    return `${BASE_URL}${cleanPath}`;
+  };
+
+  const canonicalUrl = getCanonicalUrl();
   
   return (
     <Helmet>
