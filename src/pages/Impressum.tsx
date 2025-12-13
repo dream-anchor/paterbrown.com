@@ -60,9 +60,9 @@ const Impressum = () => {
 
             {/* Kontakt */}
             <div className="space-y-4">
-              <h4 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+              <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
                 Kontakt
-              </h4>
+              </h2>
               <p className="text-foreground/80 leading-relaxed">
                 Telefon: +49 89 909015 3943<br/>
                 E-Mail: <a href="mailto:hello@dream-anchor.com" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">hello@dream-anchor.com</a>
@@ -71,9 +71,9 @@ const Impressum = () => {
 
             {/* Geschäftsführer */}
             <div className="space-y-4">
-              <h4 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+              <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
                 Vertretungsberechtigter Geschäftsführer
-              </h4>
+              </h2>
               <p className="text-foreground/80 leading-relaxed">
                 Antoine Monot (Geschäftsführer Gesellschafter)
               </p>
@@ -84,9 +84,9 @@ const Impressum = () => {
             {/* Rechtliches */}
             <div className="space-y-8">
               <div className="space-y-4">
-                <h4 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+                <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
                   Registereintrag
-                </h4>
+                </h2>
                 <p className="text-foreground/80 leading-relaxed">
                   Registergericht: Amtsgericht München<br/>
                   Registernummer: 241987
@@ -94,18 +94,18 @@ const Impressum = () => {
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+                <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
                   Umsatzsteuer-Identifikationsnummer
-                </h4>
+                </h2>
                 <p className="text-foreground/80 leading-relaxed">
                   Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG: DE320291075
                 </p>
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+                <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
                   EU-Streitschlichtung
-                </h4>
+                </h2>
                 <p className="text-foreground/80 leading-relaxed">
                   Die EU-Kommission hat eine Internetplattform zur Online-Beilegung von Streitigkeiten (OS-Plattform) zwischen Unternehmern und Verbrauchern eingerichtet. Die OS-Plattform ist erreichbar unter{' '}
                   <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noreferrer" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
@@ -115,9 +115,9 @@ const Impressum = () => {
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+                <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
                   Verbraucherstreitbeilegung/Universalschlichtungsstelle
-                </h4>
+                </h2>
                 <p className="text-foreground/80 leading-relaxed">
                   Wir sind nicht bereit und nicht verpflichtet, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
                 </p>
@@ -128,9 +128,9 @@ const Impressum = () => {
 
             {/* Social Media */}
             <div className="space-y-4">
-              <h4 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+              <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
                 Dieses Impressum gilt auch für folgende Social-Media-Profile
-              </h4>
+              </h2>
               <p className="text-foreground/80 leading-relaxed">
                 Instagram:{' '}
                 <a href="https://www.instagram.com/paterbrown.live" target="_blank" rel="noreferrer" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
@@ -141,9 +141,9 @@ const Impressum = () => {
 
             {/* Credits */}
             <div className="space-y-4">
-              <h4 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+              <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
                 Quellenangaben für verwendete Bilder
-              </h4>
+              </h2>
               <p className="text-foreground/80 leading-relaxed">
                 Gio Löwe (Fotos Wanja Mues, Antoine Monot) –{' '}
                 <a href="https://www.gio-lowe.com/photo/index.html" target="_blank" rel="noreferrer" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
