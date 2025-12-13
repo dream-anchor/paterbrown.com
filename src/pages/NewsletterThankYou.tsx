@@ -1,11 +1,18 @@
 import logoImage from "@/assets/pater-brown-logo.png";
 import Footer from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 import { Link } from "react-router-dom";
 
 const NewsletterThankYou = () => {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
+      <SEO 
+        title="Newsletter Anmeldung erfolgreich"
+        description="Vielen Dank für Ihre Newsletter-Anmeldung für Pater Brown - Das Live-Hörspiel."
+        robots="noindex, nofollow"
+        canonical="/danke-newsletter"
+      />
       <div className="absolute inset-0 bg-background" />
       
       <main className="flex-grow flex items-center justify-center px-6 py-20 relative z-10">

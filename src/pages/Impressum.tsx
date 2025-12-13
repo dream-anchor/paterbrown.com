@@ -12,6 +12,7 @@ const Impressum = () => {
         title="Impressum"
         description="Impressum und rechtliche Informationen zu Pater Brown - Das Live-Hörspiel. Dream & Anchor Handelsgesellschaft mbH."
         robots="index, follow"
+        canonical="/impressum"
       />
       <div 
         className="relative bg-cover bg-top bg-no-repeat min-h-[300px]"
