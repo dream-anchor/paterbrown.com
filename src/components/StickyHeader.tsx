@@ -49,14 +49,14 @@ const StickyHeader = () => {
         </a>
 
         {/* Navigation Links */}
-        <div className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-6" aria-label="Hauptnavigation">
           <a 
             href="#tour-dates"
             className="text-gold/80 hover:text-gold transition-colors text-sm uppercase tracking-[0.2em] font-medium"
           >
             Termine ansehen
           </a>
-        </div>
+        </nav>
 
         {/* Ticket Button */}
         <a 

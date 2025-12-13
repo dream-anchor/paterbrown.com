@@ -38,7 +38,7 @@ const NewsletterSection = () => {
     // Form is valid, allow submission to Brevo
   };
   return <section 
-    id="newsletter-heading" 
+    id="newsletter" 
     className="pt-24 pb-16 px-6 bg-gradient-to-b from-card/20 to-background relative overflow-hidden"
     aria-labelledby="newsletter-heading"
     role="region"
