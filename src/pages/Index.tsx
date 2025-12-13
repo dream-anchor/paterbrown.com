@@ -1,10 +1,13 @@
 import { lazy, Suspense } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import HeroSection from "@/components/HeroSection";
 import Footer from "@/components/Footer";
 import SkipLink from "@/components/SkipLink";
 import { FAQStructuredData } from "@/components/StructuredData";
 import { SEO } from "@/components/SEO";
 import { StickyBlackWeekCTA } from "@/components/StickyBlackWeekCTA";
+import { getSEOTourYear } from "@/lib/dateUtils";
 
 // Lazy load non-critical sections for better performance
 const CastSection = lazy(() => import("@/components/CastSection"));
@@ -24,10 +27,26 @@ const SectionLoader = () => (
 );
 
 const Index = () => {
+  // Fetch tour events to determine dynamic year for SEO
+  const { data: tourEvents = [] } = useQuery({
+    queryKey: ['seo-tour-year'],
+    staleTime: 1000 * 60 * 60,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('tour_events')
+        .select('event_date')
+        .eq('is_active', true)
+        .gte('event_date', new Date().toISOString().split('T')[0]);
+      return data || [];
+    }
+  });
+
+  const seoYear = getSEOTourYear(tourEvents);
+
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <SEO 
-        title="Pater Brown Live-Hörspiel | Tickets & Termine 2025"
+        title={`Pater Brown Live-Hörspiel | Tickets & Termine ${seoYear}`}
         description="Erleben Sie Pater Brown live auf der Bühne mit Wanja Mues und Antoine Monot. Ein einzigartiges Live-Hörspiel-Erlebnis mit Beatboxer Marvelin."
         keywords="Pater Brown, Live-Hörspiel, Wanja Mues, Antoine Monot, Ein Fall für Zwei, Marvelin, Theater, Krimi, G.K. Chesterton"
         canonical="/"

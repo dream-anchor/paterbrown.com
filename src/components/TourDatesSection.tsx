@@ -4,6 +4,7 @@ import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 import { TourDate } from "@/types";
 import { isBlackWeekActive } from "@/lib/blackWeekConfig";
 import { LiveViewerCount } from "@/components/LiveViewerCount";
+import { getTourYearRange, getYearFromEventDate } from "@/lib/dateUtils";
 
 const generateEventSchema = (date: TourDate) => {
   // Parse German date format DD.MM.YYYY to ISO format
@@ -75,7 +76,7 @@ const generateEventSchema = (date: TourDate) => {
       "@type": "Offer",
       "url": date.ticketUrl,
       "availability": "https://schema.org/InStock",
-      "validFrom": "2025-01-01",
+      "validFrom": `${new Date().getFullYear()}-01-01`,
       "priceCurrency": date.city.includes("Zürich") ? "CHF" : "EUR",
       "price": date.city.includes("Zürich") ? "45" : "35",
       "priceRange": date.city.includes("Zürich") ? "CHF 35-55" : "€25-45"
@@ -149,7 +150,7 @@ const TourDatesSection = () => {
     >
       <div className="container mx-auto max-w-5xl">
         <div className="text-center mb-24">
-          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Live Tour 2025/26</p>
+          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Termine & Tickets {getTourYearRange(tourDates)}</p>
           <h2 id="tour-dates-heading" className="text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase mb-8">
             Termine
           </h2>
