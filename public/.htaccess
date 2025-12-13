@@ -13,9 +13,6 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 RewriteCond %{HTTP_HOST} ^www\.paterbrown\.com$ [NC]
 RewriteRule ^(.*)$ https://paterbrown.com/$1 [L,R=301]
 
-# Redirect paterbrownlive.com to paterbrown.com (if applicable)
-RewriteCond %{HTTP_HOST} ^(www\.)?paterbrownlive\.com$ [NC]
-RewriteRule ^(.*)$ https://paterbrown.com/$1 [L,R=301]
 
 # =====================================================
 # Performance & Caching
