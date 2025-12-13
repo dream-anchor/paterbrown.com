@@ -1,5 +1,7 @@
 import { memo } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 const TrailerSection = memo(() => {
   const isMobile = useIsMobile();
@@ -45,6 +47,22 @@ const TrailerSection = memo(() => {
               />
             </div>
           )}
+        </div>
+
+        <div className="text-center mt-10">
+          <Button
+            asChild
+            size="lg"
+            className="bg-gold hover:bg-gold/90 text-background font-semibold text-lg px-8 py-6"
+          >
+            <a
+              href={EVENTIM_AFFILIATE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              🎟 Jetzt Tickets sichern
+            </a>
+          </Button>
         </div>
       </div>
     </section>
