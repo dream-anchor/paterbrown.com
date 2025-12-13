@@ -8,6 +8,11 @@ interface SEOProps {
   robots?: string;
   canonical?: string;
   keywords?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  twitterCard?: 'summary' | 'summary_large_image';
 }
 
 export const SEO = ({ 
@@ -15,7 +20,12 @@ export const SEO = ({
   description, 
   robots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   canonical,
-  keywords
+  keywords,
+  ogTitle,
+  ogDescription,
+  ogImage = '/og-image.png',
+  ogType = 'website',
+  twitterCard = 'summary_large_image'
 }: SEOProps) => {
   const fullTitle = title.includes('Pater Brown') ? title : `${title} | Pater Brown`;
   
@@ -40,6 +50,9 @@ export const SEO = ({
   };
 
   const canonicalUrl = getCanonicalUrl();
+  const finalOgTitle = ogTitle || fullTitle;
+  const finalOgDescription = ogDescription || description;
+  const fullOgImage = ogImage.startsWith('http') ? ogImage : `${BASE_URL}${ogImage}`;
   
   return (
     <Helmet>
@@ -48,6 +61,24 @@ export const SEO = ({
       {keywords && <meta name="keywords" content={keywords} />}
       <meta name="robots" content={robots} />
       <link rel="canonical" href={canonicalUrl} />
+      
+      {/* Open Graph */}
+      <meta property="og:title" content={finalOgTitle} />
+      {finalOgDescription && <meta property="og:description" content={finalOgDescription} />}
+      <meta property="og:url" content={canonicalUrl} />
+      <meta property="og:image" content={fullOgImage} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:type" content={ogType} />
+      <meta property="og:locale" content="de_DE" />
+      <meta property="og:site_name" content="Pater Brown Live-Hörspiel" />
+      
+      {/* Twitter */}
+      <meta name="twitter:card" content={twitterCard} />
+      <meta name="twitter:title" content={finalOgTitle} />
+      {finalOgDescription && <meta name="twitter:description" content={finalOgDescription} />}
+      <meta name="twitter:image" content={fullOgImage} />
+      
       <html lang="de" />
     </Helmet>
   );

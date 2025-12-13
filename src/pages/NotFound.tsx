@@ -15,6 +15,8 @@ const NotFound = () => {
         title="404 - Seite nicht gefunden"
         description="Die angeforderte Seite wurde leider nicht gefunden."
         robots="noindex, nofollow"
+        ogTitle="404 - Seite nicht gefunden | Pater Brown"
+        ogDescription="Die angeforderte Seite wurde leider nicht gefunden."
       />
       <div className="text-center">
         <h1 className="mb-4 text-4xl font-bold text-foreground">404</h1>
