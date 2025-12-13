@@ -10,6 +10,7 @@ import { EVENTIM_AFFILIATE_URL, SCROLL_THRESHOLD_STICKY_HEADER } from "@/lib/con
 import { throttle } from "@/lib/scroll-utils";
 import { isBlackWeekActive } from "@/lib/blackWeekConfig";
 import { BlackWeekBanner } from "@/components/BlackWeekBanner";
+import { getTourYear } from "@/lib/dateUtils";
 
 const HeroSection = () => {
   const [logoAnimating, setLogoAnimating] = useState(false);
@@ -203,7 +204,7 @@ const HeroSection = () => {
               {previewEvents.length > 0 && (
                 <div className="w-full bg-card/30 backdrop-blur-sm px-6 pt-10 pb-4 rounded-lg text-center">
                   <p className="text-gold/70 text-xs uppercase tracking-widest mb-2">
-                    🤫 Preview 2025
+                    🤫 Preview {getTourYear(previewEvents.map(e => ({ event_date: e.event_date })))}
                   </p>
                   <div className="text-base text-foreground/90">
                     {previewEvents.map(event => (
@@ -225,7 +226,7 @@ const HeroSection = () => {
               {tour2026Events.length > 0 && (
                 <div className="w-full bg-card/30 backdrop-blur-sm px-6 py-4 rounded-lg text-center">
                   <p className="text-gold/70 text-xs uppercase tracking-widest mb-3">
-                    📍 Erste Tour 2026
+                    📍 Tour {getTourYear(tour2026Events.map(e => ({ event_date: e.event_date })))}
                   </p>
                   <div className="text-base text-foreground/90 space-y-1.5">
                     {tour2026Events.map((event, index) => {
