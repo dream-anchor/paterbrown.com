@@ -8,6 +8,7 @@ import { StickyBlackWeekCTA } from "@/components/StickyBlackWeekCTA";
 
 // Lazy load non-critical sections for better performance
 const CastSection = lazy(() => import("@/components/CastSection"));
+const TrailerSection = lazy(() => import("@/components/TrailerSection"));
 const ShowConceptSection = lazy(() => import("@/components/ShowConceptSection"));
 const ProjectConceptSection = lazy(() => import("@/components/ProjectConceptSection"));
 const TourDatesSection = lazy(() => import("@/components/TourDatesSection"));
@@ -40,6 +41,10 @@ const Index = () => {
       <main id="main-content" tabIndex={-1}>
         <Suspense fallback={<SectionLoader />}>
           <CastSection />
+        </Suspense>
+
+        <Suspense fallback={<SectionLoader />}>
+          <TrailerSection />
         </Suspense>
         
         <Suspense fallback={<SectionLoader />}>
