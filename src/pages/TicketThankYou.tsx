@@ -12,6 +12,8 @@ const TicketThankYou = () => {
         description="Vielen Dank für Ihren Ticketkauf. Wir freuen uns auf Sie!"
         robots="noindex, nofollow"
         canonical="/danke-ticket"
+        ogTitle="Buchung erfolgreich | Pater Brown Live-Hörspiel"
+        ogDescription="Vielen Dank für Ihren Ticketkauf. Wir freuen uns auf Sie!"
       />
       
       <div 

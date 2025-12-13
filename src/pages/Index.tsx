@@ -50,6 +50,8 @@ const Index = () => {
         description="Erleben Sie Pater Brown live auf der Bühne mit Wanja Mues und Antoine Monot. Ein einzigartiges Live-Hörspiel-Erlebnis mit Beatboxer Marvelin."
         keywords="Pater Brown, Live-Hörspiel, Wanja Mues, Antoine Monot, Ein Fall für Zwei, Marvelin, Theater, Krimi, G.K. Chesterton"
         canonical="/"
+        ogTitle="Pater Brown – Das Live-Hörspiel"
+        ogDescription="Mit Wanja Mues und Antoine Monot. Jetzt Tickets sichern!"
       />
       <FAQStructuredData />
       <SkipLink />

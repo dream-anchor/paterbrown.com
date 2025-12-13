@@ -12,6 +12,8 @@ const NewsletterSent = () => {
         description="Bitte bestätigen Sie Ihre Newsletter-Anmeldung per E-Mail."
         robots="noindex, nofollow"
         canonical="/newsletter-gesendet"
+        ogTitle="E-Mail bestätigen | Pater Brown Live-Hörspiel"
+        ogDescription="Bitte bestätigen Sie Ihre Newsletter-Anmeldung per E-Mail."
       />
       <div className="absolute inset-0 bg-background" />
       

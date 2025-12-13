@@ -12,6 +12,8 @@ const NewsletterThankYou = () => {
         description="Vielen Dank! Ihre Newsletter-Anmeldung wurde erfolgreich bestätigt."
         robots="noindex, nofollow"
         canonical="/danke-newsletter"
+        ogTitle="Newsletter bestätigt | Pater Brown Live-Hörspiel"
+        ogDescription="Vielen Dank! Ihre Newsletter-Anmeldung wurde erfolgreich bestätigt."
       />
       <div className="absolute inset-0 bg-background" />
       
