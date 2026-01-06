@@ -61,15 +61,32 @@ serve(async (req) => {
 
 function generateICalendar(events: any[]): string {
   const now = new Date();
-  const timestamp = formatICalDate(now);
+  const timestamp = formatICalDateUTC(now);
 
   let ical = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Pater Brown Tour//DE
+PRODID:-//TOUR Pater Brown//DE
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
-X-WR-CALNAME:Pater Brown Tour
+X-WR-CALNAME:TOUR Pater Brown
 X-WR-TIMEZONE:Europe/Berlin
+BEGIN:VTIMEZONE
+TZID:Europe/Berlin
+BEGIN:DAYLIGHT
+DTSTART:19700329T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0200
+TZNAME:CEST
+END:DAYLIGHT
+BEGIN:STANDARD
+DTSTART:19701025T030000
+RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0100
+TZNAME:CET
+END:STANDARD
+END:VTIMEZONE
 `;
 
   for (const event of events) {
@@ -98,8 +115,8 @@ X-WR-TIMEZONE:Europe/Berlin
     ical += `BEGIN:VEVENT
 UID:${uid}
 DTSTAMP:${timestamp}
-DTSTART:${formatICalDate(startTime)}
-DTEND:${formatICalDate(endTime)}
+DTSTART;TZID=Europe/Berlin:${formatLocalDate(startTime)}
+DTEND;TZID=Europe/Berlin:${formatLocalDate(endTime)}
 SUMMARY:${summary}
 LOCATION:${location}
 DESCRIPTION:${escapeICalText(description)}
@@ -112,7 +129,8 @@ END:VEVENT
   return ical;
 }
 
-function formatICalDate(date: Date): string {
+// Format date as UTC for DTSTAMP (required by iCal spec)
+function formatICalDateUTC(date: Date): string {
   const year = date.getUTCFullYear();
   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
   const day = String(date.getUTCDate()).padStart(2, "0");
@@ -120,6 +138,25 @@ function formatICalDate(date: Date): string {
   const minutes = String(date.getUTCMinutes()).padStart(2, "0");
   const seconds = String(date.getUTCSeconds()).padStart(2, "0");
   return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+}
+
+// Format date as local Berlin time (without Z suffix)
+function formatLocalDate(date: Date): string {
+  const formatter = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Berlin',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  
+  const parts = formatter.formatToParts(date);
+  const get = (type: string) => parts.find(p => p.type === type)?.value || '';
+  
+  return `${get('year')}${get('month')}${get('day')}T${get('hour')}${get('minute')}${get('second')}`;
 }
 
 function escapeICalText(text: string): string {
