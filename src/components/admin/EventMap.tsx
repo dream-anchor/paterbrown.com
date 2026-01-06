@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-
 import { Calendar, Clock, MapPin, Navigation, RefreshCw, CheckCircle, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -155,12 +156,30 @@ interface EventMapProps {
 
 const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const { toast } = useToast();
+  
   const sortedEvents = useMemo(() => {
     return [...events].sort((a, b) => 
       new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
     );
   }, [events]);
+
+  // Group events by state (Bundesland)
+  const eventsByState = useMemo(() => {
+    const grouped = new Map<string, AdminEvent[]>();
+    sortedEvents.forEach(event => {
+      const state = event.state || "Unbekannt";
+      if (!grouped.has(state)) grouped.set(state, []);
+      grouped.get(state)!.push(event);
+    });
+    return grouped;
+  }, [sortedEvents]);
+
+  // Get global index for an event
+  const getGlobalIndex = (event: AdminEvent) => {
+    return sortedEvents.findIndex(e => e.id === event.id) + 1;
+  };
 
   // Get coordinates for an event
   const getCoordinates = (event: AdminEvent): [number, number] | null => {
@@ -251,6 +270,15 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
     }
   };
 
+  // Scroll to event in list
+  const scrollToEvent = (eventId: string) => {
+    const element = document.getElementById(`station-${eventId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setActiveEventId(eventId);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Missing Geodata Warning */}
@@ -287,8 +315,9 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
         </div>
       )}
 
-      <div className="text-center mb-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Tour-Übersicht</h2>
+      {/* Header */}
+      <div className="text-center">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Tour-Karte</h2>
         <p className="text-gray-600 text-sm">
           {eventsWithCoords.length} von {sortedEvents.length} Termine auf der Karte
         </p>
@@ -300,140 +329,140 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
         )}
       </div>
 
-      {/* Leaflet Map - Portrait orientation for north-south tour route */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-        <MapContainer
-          center={germanCenter}
-          zoom={6}
-          scrollWheelZoom={true}
-          className="h-[700px] w-full"
-        >
-          <FitBoundsToMarkers coords={routeCoords} />
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          
-          {/* Route line connecting all stations */}
-          {routeCoords.length > 1 && (
-            <Polyline
-              positions={routeCoords}
-              color="#f59e0b"
-              weight={3}
-              opacity={0.7}
-              dashArray="8, 8"
-            />
-          )}
-          
-          {/* Numbered markers for each station */}
-          {eventsWithCoords.map((event, index) => (
-            <Marker 
-              key={event.id} 
-              position={event.coords as [number, number]}
-              icon={createNumberedIcon(index + 1)}
+      {/* Split Layout: Map + List */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Map - 2/5 columns (sticky) */}
+        <div className="lg:col-span-2 lg:sticky lg:top-28 lg:self-start">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <MapContainer
+              center={germanCenter}
+              zoom={6}
+              scrollWheelZoom={true}
+              className="h-[500px] lg:h-[600px] w-full"
             >
-              <Popup>
-                <div className="min-w-[200px]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                      Station {index + 1}
+              <FitBoundsToMarkers coords={routeCoords} />
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              
+              {/* Route line */}
+              {routeCoords.length > 1 && (
+                <Polyline
+                  positions={routeCoords}
+                  color="#f59e0b"
+                  weight={3}
+                  opacity={0.7}
+                  dashArray="8, 8"
+                />
+              )}
+              
+              {/* Numbered markers */}
+              {eventsWithCoords.map((event, index) => (
+                <Marker 
+                  key={event.id} 
+                  position={event.coords as [number, number]}
+                  icon={createNumberedIcon(index + 1)}
+                  eventHandlers={{
+                    click: () => scrollToEvent(event.id),
+                  }}
+                >
+                  <Popup>
+                    <div className="min-w-[180px]">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                          Station {index + 1}
+                        </span>
+                      </div>
+                      <p className="font-bold text-gray-900 mb-1">{event.title}</p>
+                      <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                        <Calendar className="w-3 h-3" />
+                        {formatDate(event.start_time)}
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-amber-600">
+                        <MapPin className="w-3 h-3" />
+                        {event.location}
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          </div>
+
+          {/* Legend */}
+          <div className="flex items-center justify-center gap-4 text-xs text-gray-500 mt-3">
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
+              <span>Station</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-6 h-0.5 bg-amber-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #f59e0b 0px, #f59e0b 4px, transparent 4px, transparent 8px)' }}></div>
+              <span>Route</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Stations List - 3/5 columns */}
+        <div className="lg:col-span-3 space-y-6">
+          {Array.from(eventsByState.entries()).map(([state, stateEvents]) => (
+            <section key={state}>
+              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sticky top-24 bg-gray-50/95 backdrop-blur-sm py-2 -mx-2 px-2">
+                {state} · {stateEvents.length} {stateEvents.length === 1 ? 'Station' : 'Stationen'}
+              </h3>
+              <div className="space-y-2">
+                {stateEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    id={`station-${event.id}`}
+                    className={cn(
+                      "flex items-center gap-3 p-3 bg-white rounded-lg border transition-all cursor-pointer",
+                      activeEventId === event.id 
+                        ? "border-amber-500 ring-2 ring-amber-200 shadow-md" 
+                        : "border-gray-200 hover:border-amber-300 hover:shadow-sm"
+                    )}
+                    onMouseEnter={() => setActiveEventId(event.id)}
+                    onMouseLeave={() => setActiveEventId(null)}
+                  >
+                    {/* Number */}
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 shadow-sm">
+                      {getGlobalIndex(event)}
+                    </div>
+                    
+                    {/* Event Details */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 truncate">{event.location}</p>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                        <span>{formatDate(event.start_time)}</span>
+                        <span>·</span>
+                        <span>{formatTime(event.start_time)} Uhr</span>
+                      </div>
+                      {event.venue_name && (
+                        <p className="text-xs text-gray-400 truncate mt-0.5">{event.venue_name}</p>
+                      )}
+                    </div>
+
+                    {/* Source Badge */}
+                    <span className={cn(
+                      "text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0",
+                      event.source === "KL" ? "bg-blue-100 text-blue-600" : "bg-purple-100 text-purple-600"
+                    )}>
+                      {event.source}
                     </span>
                   </div>
-                  <p className="font-bold text-gray-900 mb-1">{event.title}</p>
-                  <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                    <Calendar className="w-3 h-3" />
-                    {formatDate(event.start_time)}
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                    <Clock className="w-3 h-3" />
-                    {formatTime(event.start_time)} Uhr
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-amber-600">
-                    <MapPin className="w-3 h-3" />
-                    {event.location}
-                  </div>
-                  {event.venue_name && (
-                    <p className="text-xs text-gray-400 mt-1">{event.venue_name}</p>
-                  )}
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
-      </div>
-
-      {/* Legend */}
-      {eventsWithCoords.length > 0 && (
-        <div className="flex items-center justify-center gap-6 text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-xs flex items-center justify-center font-bold border-2 border-white shadow">1</div>
-            <span>Nummerierte Stationen</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-0.5 bg-amber-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #f59e0b 0px, #f59e0b 8px, transparent 8px, transparent 16px)' }}></div>
-            <span>Tourverlauf</span>
-          </div>
-        </div>
-      )}
-
-      {/* Events Timeline */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold text-gray-900">
-          {sortedEvents.length} Termine
-        </h3>
-
-        <div className="relative">
-          {/* Timeline line */}
-          <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-amber-200" />
-
-          {/* Events */}
-          <div className="space-y-4">
-            {sortedEvents.map((event) => (
-              <div key={event.id} className="relative pl-12">
-                {/* Timeline dot */}
-                <div className="absolute left-2.5 w-4 h-4 rounded-full border-2 border-white shadow bg-amber-500" />
-
-                <div className="p-4 bg-white border border-gray-200 rounded-lg hover:border-amber-300 transition-colors shadow-sm">
-                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
-                    <Calendar className="w-3 h-3" />
-                    {formatDate(event.start_time)}
-                    <span className="mx-1">·</span>
-                    <Clock className="w-3 h-3" />
-                    {formatTime(event.start_time)} Uhr
-                  </div>
-
-                  <p className="font-bold text-gray-900">{event.title}</p>
-                  
-                  <div className="flex items-center gap-2 text-amber-600 text-sm mt-1">
-                    <MapPin className="w-4 h-4" />
-                    {event.location}
-                    {event.state && ` (${event.state})`}
-                  </div>
-
-                  {event.venue_name && (
-                    <p className="text-gray-500 text-sm mt-1">
-                      {event.venue_name}
-                    </p>
-                  )}
-
-                  {event.note && (
-                    <p className="text-gray-400 text-sm italic mt-2 pt-2 border-t border-gray-200">
-                      {event.note}
-                    </p>
-                  )}
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </section>
+          ))}
+
+          {sortedEvents.length === 0 && (
+            <div className="text-center py-12 text-gray-400">
+              <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>Noch keine Termine vorhanden</p>
+            </div>
+          )}
         </div>
       </div>
-
-      {sortedEvents.length === 0 && (
-        <div className="text-center py-12 text-gray-400">
-          <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>Noch keine Termine vorhanden</p>
-        </div>
-      )}
     </div>
   );
 };

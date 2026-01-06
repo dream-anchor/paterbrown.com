@@ -5,9 +5,10 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import EventUploader from "@/components/admin/EventUploader";
 import EventCalendar from "@/components/admin/EventCalendar";
 import TourJourney from "@/components/admin/TourJourney";
+import EventMap from "@/components/admin/EventMap";
 import CalendarExport from "@/components/admin/CalendarExport";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Navigation, Upload, Share2, Sparkles } from "lucide-react";
+import { Calendar, Navigation, Upload, Share2, Sparkles, Map } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AdminEvent {
@@ -176,6 +177,13 @@ const Admin = () => {
               <span className="hidden sm:inline">Journey</span>
             </TabsTrigger>
             <TabsTrigger 
+              value="map" 
+              className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
+            >
+              <Map className="w-4 h-4 mr-2 inline-block" />
+              <span className="hidden sm:inline">Karte</span>
+            </TabsTrigger>
+            <TabsTrigger 
               value="export" 
               className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
             >
@@ -196,6 +204,10 @@ const Admin = () => {
 
           <TabsContent value="journey" className="mt-0 focus-visible:outline-none">
             <TourJourney events={events} onEventsUpdated={fetchEvents} />
+          </TabsContent>
+
+          <TabsContent value="map" className="mt-0 focus-visible:outline-none">
+            <EventMap events={events} onEventsUpdated={fetchEvents} />
           </TabsContent>
 
           <TabsContent value="export" className="mt-0 focus-visible:outline-none">
