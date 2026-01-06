@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Upload, FileText, Loader2, AlertCircle } from "lucide-react";
+import { Upload, FileText, Loader2, Sparkles, CloudUpload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import EventConfirmDialog from "./EventConfirmDialog";
@@ -93,7 +93,7 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
       setTextInput(content);
       toast({
         title: "Datei geladen",
-        description: `${file.name} wurde geladen. Klicke auf "KI Analysieren" um fortzufahren.`,
+        description: `${file.name} wurde geladen`,
       });
     };
     reader.readAsText(file);
@@ -101,7 +101,6 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
 
   const handleConfirm = async (events: ParsedEvent[]) => {
     try {
-      // Transform events to match database schema
       const dbEvents = events.map((event) => ({
         title: `TOUR PB${event.source !== "unknown" ? ` (${event.source})` : ""}`,
         location: event.city,
@@ -133,15 +132,21 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-2xl mx-auto">
+      {/* Header */}
       <div className="text-center mb-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Termine hinzufügen</h2>
-        <p className="text-gray-600 text-sm">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/20">
+          <CloudUpload className="w-6 h-6 text-white" />
+        </div>
+        <h2 className="text-xl font-semibold text-gray-900 tracking-tight">
+          Termine hinzufügen
+        </h2>
+        <p className="text-sm text-gray-500 mt-1">
           Lade eine Datei hoch oder füge Termindaten per Copy & Paste ein
         </p>
       </div>
 
-      {/* Drop Zone */}
+      {/* Drop Zone - Notion Style */}
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -150,20 +155,27 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         className={`
-          border-2 border-dashed rounded-xl p-8 text-center transition-all
+          relative border-2 border-dashed rounded-2xl p-10 text-center transition-all duration-200
           ${isDragging
-            ? "border-amber-500 bg-amber-50"
-            : "border-gray-300 hover:border-amber-400 bg-white"
+            ? "border-blue-400 bg-blue-50 scale-[1.02]"
+            : "border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50/50"
           }
         `}
       >
-        <Upload className={`w-12 h-12 mx-auto mb-4 ${isDragging ? "text-amber-500" : "text-gray-400"}`} />
-        <p className="text-gray-900 font-medium mb-2">
-          Datei hier ablegen
+        <div className={`
+          w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all duration-200
+          ${isDragging ? "bg-blue-100" : "bg-gray-100"}
+        `}>
+          <Upload className={`w-8 h-8 transition-colors duration-200 ${isDragging ? "text-blue-500" : "text-gray-400"}`} />
+        </div>
+        
+        <p className="text-gray-900 font-medium mb-1">
+          Datei hierher ziehen
         </p>
-        <p className="text-gray-500 text-sm mb-4">
-          oder klicke zum Auswählen
+        <p className="text-sm text-gray-500 mb-4">
+          oder
         </p>
+        
         <input
           type="file"
           accept=".txt,.csv,.doc,.docx"
@@ -173,25 +185,38 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
         />
         <label
           htmlFor="file-upload"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg cursor-pointer hover:border-amber-400 hover:bg-gray-50 transition-colors text-gray-700"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-gray-300 hover:shadow-sm transition-all duration-150 text-sm font-medium text-gray-700"
         >
           <FileText className="w-4 h-4" />
-          Datei auswählen
+          Durchsuchen
         </label>
+        
+        <p className="text-xs text-gray-400 mt-4">
+          Unterstützte Formate: .txt, .csv, .doc, .docx
+        </p>
+      </div>
+
+      {/* Divider */}
+      <div className="flex items-center gap-4 my-6">
+        <div className="flex-1 h-px bg-gray-200" />
+        <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">oder</span>
+        <div className="flex-1 h-px bg-gray-200" />
       </div>
 
       {/* Text Input */}
-      <div>
-        <label className="block text-sm font-medium text-gray-600 mb-2">
-          Oder Termine hier einfügen:
-        </label>
+      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
+          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Termine einfügen
+          </label>
+        </div>
         <textarea
           value={textInput}
           onChange={(e) => setTextInput(e.target.value)}
           placeholder={`Beispiel:
 08.01.2026, 20:00 Uhr, Hamburg, Friedrich-Ebert-Halle (Konzertdirektion Landgraf)
 15.01.2026, 19:30-22:00 Uhr, München, Deutsches Theater`}
-          className="w-full h-40 px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none"
+          className="w-full h-40 px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none resize-none"
         />
       </div>
 
@@ -199,17 +224,17 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
       <button
         onClick={() => parseEvents(textInput)}
         disabled={isParsing || !textInput.trim()}
-        className="w-full py-4 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full mt-6 py-4 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {isParsing ? (
           <>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            KI analysiert...
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>KI analysiert...</span>
           </>
         ) : (
           <>
-            <AlertCircle className="w-5 h-5" />
-            KI Analysieren
+            <Sparkles className="w-4 h-4" />
+            <span>Mit KI analysieren</span>
           </>
         )}
       </button>
