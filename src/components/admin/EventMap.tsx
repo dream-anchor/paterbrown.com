@@ -1,10 +1,27 @@
-import { useMemo, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
+import { useMemo, useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import { Calendar, Clock, MapPin, Navigation, RefreshCw, CheckCircle, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+
+// Component to auto-fit map bounds to all markers
+const FitBoundsToMarkers = ({ coords }: { coords: [number, number][] }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (coords.length > 0) {
+      const bounds = L.latLngBounds(coords);
+      map.fitBounds(bounds, { 
+        padding: [40, 40],
+        maxZoom: 8
+      });
+    }
+  }, [coords, map]);
+  
+  return null;
+};
 
 // Fix for default marker icons in Leaflet with bundlers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -283,14 +300,15 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
         )}
       </div>
 
-      {/* Leaflet Map */}
+      {/* Leaflet Map - Portrait orientation for north-south tour route */}
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
         <MapContainer
           center={germanCenter}
           zoom={6}
           scrollWheelZoom={true}
-          className="h-[500px] w-full"
+          className="h-[700px] w-full"
         >
+          <FitBoundsToMarkers coords={routeCoords} />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
