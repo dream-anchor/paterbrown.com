@@ -1,6 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
-import { Calendar, Clock, MapPin, Navigation } from "lucide-react";
+import { Calendar, Clock, MapPin, Navigation, RefreshCw, CheckCircle, AlertCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -131,9 +133,12 @@ interface AdminEvent {
 
 interface EventMapProps {
   events: AdminEvent[];
+  onEventsUpdated?: () => void;
 }
 
-const EventMap = ({ events }: EventMapProps) => {
+const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const { toast } = useToast();
   const sortedEvents = useMemo(() => {
     return [...events].sort((a, b) => 
       new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
@@ -193,8 +198,78 @@ const EventMap = ({ events }: EventMapProps) => {
     return eventsWithCoords.map(e => e.coords as [number, number]);
   }, [eventsWithCoords]);
 
+  // Count events with missing geodata
+  const eventsWithMissingGeodata = useMemo(() => {
+    return sortedEvents.filter(event => !event.latitude || !event.longitude || !event.state);
+  }, [sortedEvents]);
+
+  // Handle geocoding
+  const handleGeocodeEvents = async () => {
+    setIsGeocoding(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("geocode-events");
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      toast({
+        title: "Geodaten aktualisiert",
+        description: `${data.updated} von ${data.total} Events wurden aktualisiert.`,
+      });
+
+      // Refresh events
+      if (onEventsUpdated) {
+        onEventsUpdated();
+      }
+    } catch (error) {
+      console.error("Geocoding error:", error);
+      toast({
+        title: "Fehler beim Geocoding",
+        description: error instanceof Error ? error.message : "Unbekannter Fehler",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* Missing Geodata Warning */}
+      {eventsWithMissingGeodata.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600" />
+            <div>
+              <p className="font-medium text-amber-800">
+                {eventsWithMissingGeodata.length} Termine ohne vollständige Geodaten
+              </p>
+              <p className="text-sm text-amber-600">
+                KI kann fehlende Koordinaten und Bundesländer recherchieren
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleGeocodeEvents}
+            disabled={isGeocoding}
+            className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+          >
+            {isGeocoding ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                Recherchiere...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4" />
+                Geodaten ergänzen
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
       <div className="text-center mb-8">
         <h2 className="text-xl font-bold text-gray-900 mb-2">Tour-Übersicht</h2>
         <p className="text-gray-600 text-sm">
