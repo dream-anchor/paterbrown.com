@@ -22,33 +22,39 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+      {/* Premium Header */}
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+        <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <Link
             to="/"
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors duration-150 text-sm font-medium"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="hidden sm:inline">Zurück zur Website</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Zurück</span>
           </Link>
           
-          <h1 className="text-lg font-bold text-amber-600 tracking-wider uppercase">
-            Admin
-          </h1>
+          {/* Logo / Title */}
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+              <span className="text-white text-xs font-bold">PB</span>
+            </div>
+            <span className="text-sm font-semibold text-gray-900 tracking-tight">
+              Admin
+            </span>
+          </div>
           
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors duration-150 text-sm font-medium"
           >
-            <LogOut className="w-5 h-5" />
             <span className="hidden sm:inline">Abmelden</span>
+            <LogOut className="w-4 h-4" />
           </button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 max-w-6xl">
+      <main className="container mx-auto px-4 sm:px-6 py-6 max-w-7xl">
         {children}
       </main>
     </div>
