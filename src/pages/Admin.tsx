@@ -195,7 +195,7 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="map" className="mt-0 focus-visible:outline-none">
-            <EventMap events={events} />
+            <EventMap events={events} onEventsUpdated={fetchEvents} />
           </TabsContent>
 
           <TabsContent value="export" className="mt-0 focus-visible:outline-none">
