@@ -7,7 +7,8 @@ const CalendarExport = () => {
   const { toast } = useToast();
 
   const baseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const icalUrl = `${baseUrl}/functions/v1/calendar-feed?format=ics`;
+  const today = new Date().toISOString().split('T')[0]; // Cache-Busting: URL ändert sich täglich
+  const icalUrl = `${baseUrl}/functions/v1/calendar-feed?format=ics&refresh=${today}`;
   const googleCalendarUrl = `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(icalUrl)}`;
 
   const copyToClipboard = async (url: string, label: string) => {
