@@ -104,8 +104,8 @@ const Admin = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-gold text-xl">Lädt...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-pulse text-amber-600 text-xl">Lädt...</div>
       </div>
     );
   }
@@ -122,10 +122,10 @@ const Admin = () => {
     return (
       <AdminLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-          <h1 className="text-2xl font-bold text-foreground mb-4">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
             Kein Zugriff
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-gray-600">
             Du hast keine Admin-Berechtigung.
           </p>
         </div>
@@ -136,7 +136,7 @@ const Admin = () => {
   return (
     <AdminLayout>
       <Tabs defaultValue="upload" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-6 bg-card/50 backdrop-blur-sm sticky top-16 z-30">
+        <TabsList className="grid w-full grid-cols-4 mb-6 bg-white/80 backdrop-blur-sm sticky top-16 z-30 shadow-sm border border-gray-200">
           <TabsTrigger value="upload" className="flex items-center gap-2 text-xs sm:text-sm">
             <Upload className="w-4 h-4" />
             <span className="hidden sm:inline">Upload</span>
@@ -207,13 +207,13 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-      <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-foreground mb-6 text-center">
+      <div className="w-full max-w-sm bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
           Admin Login
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-muted-foreground mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-600 mb-2">
               E-Mail
             </label>
             <input
@@ -221,12 +221,12 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-gold"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
               required
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-muted-foreground mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-600 mb-2">
               Passwort
             </label>
             <input
@@ -234,14 +234,14 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-card border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-gold"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
               required
             />
           </div>
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-gold text-primary-foreground font-bold rounded-lg hover:bg-gold/90 transition-colors disabled:opacity-50"
+            className="w-full py-3 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
           >
             {isLoading ? "Anmelden..." : "Anmelden"}
           </button>

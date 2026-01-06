@@ -114,29 +114,29 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
       <div className="flex items-center justify-between">
         <button
           onClick={prevMonth}
-          className="p-2 rounded-lg hover:bg-card transition-colors"
+          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
         >
-          <ChevronLeft className="w-6 h-6 text-foreground" />
+          <ChevronLeft className="w-6 h-6 text-gray-700" />
         </button>
-        <h2 className="text-xl font-bold text-foreground">
+        <h2 className="text-xl font-bold text-gray-900">
           {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
         </h2>
         <button
           onClick={nextMonth}
-          className="p-2 rounded-lg hover:bg-card transition-colors"
+          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
         >
-          <ChevronRight className="w-6 h-6 text-foreground" />
+          <ChevronRight className="w-6 h-6 text-gray-700" />
         </button>
       </div>
 
       {/* Calendar Grid */}
-      <div className="bg-card/50 border border-border rounded-xl p-4">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
         {/* Day Names */}
         <div className="grid grid-cols-7 gap-1 mb-2">
           {dayNames.map((day) => (
             <div
               key={day}
-              className="text-center text-xs font-medium text-muted-foreground py-2"
+              className="text-center text-xs font-medium text-gray-500 py-2"
             >
               {day}
             </div>
@@ -166,9 +166,9 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
                 key={day}
                 onClick={() => handleDateClick(day)}
                 className={`
-                  aspect-square rounded-lg flex flex-col items-center justify-center relative transition-all
-                  ${isSelected ? "bg-gold text-primary-foreground" : "hover:bg-card"}
-                  ${isToday && !isSelected ? "ring-2 ring-gold/50" : ""}
+                  aspect-square rounded-lg flex flex-col items-center justify-center relative transition-all text-gray-900
+                  ${isSelected ? "bg-amber-500 text-white" : "hover:bg-gray-100"}
+                  ${isToday && !isSelected ? "ring-2 ring-amber-400" : ""}
                 `}
               >
                 <span className={`text-sm ${isSelected ? "font-bold" : ""}`}>
@@ -181,11 +181,11 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
                         key={idx}
                         className={`w-1.5 h-1.5 rounded-full ${
                           e.source === "KL"
-                            ? "bg-blue-400"
+                            ? "bg-blue-500"
                             : e.source === "KBA"
-                            ? "bg-purple-400"
-                            : "bg-yellow-400"
-                        } ${isSelected ? "opacity-70" : ""}`}
+                            ? "bg-purple-500"
+                            : "bg-yellow-500"
+                        } ${isSelected ? "opacity-80" : ""}`}
                       />
                     ))}
                   </div>
@@ -199,7 +199,7 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
       {/* Selected Date Events */}
       {selectedDate && (
         <div className="space-y-3">
-          <h3 className="text-lg font-bold text-foreground">
+          <h3 className="text-lg font-bold text-gray-900">
             {selectedDate.toLocaleDateString("de-DE", {
               weekday: "long",
               day: "numeric",
@@ -209,7 +209,7 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
           </h3>
 
           {selectedEvents.length === 0 ? (
-            <p className="text-muted-foreground text-sm p-4 bg-card/50 border border-border rounded-lg">
+            <p className="text-gray-500 text-sm p-4 bg-white border border-gray-200 rounded-lg">
               Keine Termine an diesem Tag
             </p>
           ) : (
@@ -217,35 +217,35 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
               {selectedEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="p-4 bg-card/50 border border-border rounded-lg space-y-2"
+                  className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm space-y-2"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-bold text-foreground">{event.title}</p>
-                      <div className="flex items-center gap-2 text-gold text-sm">
+                      <p className="font-bold text-gray-900">{event.title}</p>
+                      <div className="flex items-center gap-2 text-amber-600 text-sm">
                         <MapPin className="w-4 h-4" />
                         {event.location}
                         {event.state && ` (${event.state})`}
                       </div>
-                      <div className="flex items-center gap-2 text-muted-foreground text-sm mt-1">
+                      <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
                         <Clock className="w-4 h-4" />
                         {formatTime(event.start_time)}
                         {event.end_time && ` – ${formatTime(event.end_time)}`} Uhr
                       </div>
                       {event.venue_name && (
-                        <p className="text-muted-foreground text-sm mt-1">
+                        <p className="text-gray-500 text-sm mt-1">
                           📍 {event.venue_name}
                         </p>
                       )}
                       {event.note && (
-                        <p className="text-muted-foreground text-sm italic mt-1">
+                        <p className="text-gray-400 text-sm italic mt-1">
                           {event.note}
                         </p>
                       )}
                     </div>
                     <button
                       onClick={() => handleDeleteEvent(event.id)}
-                      className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -258,17 +258,17 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
       )}
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
+      <div className="flex items-center justify-center gap-6 text-xs text-gray-500">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-blue-400" />
+          <span className="w-2 h-2 rounded-full bg-blue-500" />
           KL
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-purple-400" />
+          <span className="w-2 h-2 rounded-full bg-purple-500" />
           KBA
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-yellow-400" />
+          <span className="w-2 h-2 rounded-full bg-yellow-500" />
           Unbekannt
         </div>
       </div>
