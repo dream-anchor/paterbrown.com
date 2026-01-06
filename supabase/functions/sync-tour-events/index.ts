@@ -95,9 +95,18 @@ serve(async (req) => {
     }
 
     const screenshotBuffer = await screenshotResponse.arrayBuffer();
-    const base64Screenshot = btoa(String.fromCharCode(...new Uint8Array(screenshotBuffer)));
     
-    console.log('Screenshot captured successfully');
+    // Convert to base64 in chunks to avoid stack overflow
+    const uint8Array = new Uint8Array(screenshotBuffer);
+    const chunkSize = 8192;
+    let base64Screenshot = '';
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+      const chunk = uint8Array.slice(i, i + chunkSize);
+      base64Screenshot += String.fromCharCode.apply(null, Array.from(chunk));
+    }
+    base64Screenshot = btoa(base64Screenshot);
+    
+    console.log('Screenshot captured successfully, size:', uint8Array.length, 'bytes');
 
     // Step 2: Extract event data using Lovable AI (Gemini Vision)
     console.log('Extracting event data with Gemini Vision...');
