@@ -110,26 +110,18 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
     });
   };
 
-  const getEventColor = (source: string) => {
-    switch (source) {
-      case "KL":
-        return "bg-blue-500";
-      case "KBA":
-        return "bg-purple-500";
-      default:
-        return "bg-amber-500";
-    }
+  const getEventColor = () => {
+    return "bg-amber-500"; // Einheitlich Orange
   };
 
-  const getEventTextColor = (source: string) => {
-    switch (source) {
-      case "KL":
-        return "text-blue-600";
-      case "KBA":
-        return "text-purple-600";
-      default:
-        return "text-amber-600";
-    }
+  const getEventTextColor = () => {
+    return "text-amber-600"; // Einheitlich Orange
+  };
+
+  const getEventDisplayTitle = (event: AdminEvent) => {
+    if (event.source === "KL") return "Pater Brown (KL)";
+    if (event.source === "KBA") return "Pater Brown (KBA)";
+    return event.title;
   };
 
   const selectedDateStr = selectedDate?.toISOString().split("T")[0];
@@ -214,8 +206,8 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
                   onClick={() => handleDateClick(day)}
                   className={`
                     min-h-[100px] p-1.5 border-r border-b border-gray-100 last:border-r-0 text-left transition-all duration-150
-                    hover:bg-blue-50/50
-                    ${isSelected ? "bg-blue-50 ring-1 ring-inset ring-blue-200" : ""}
+                    hover:bg-amber-50/50
+                    ${isSelected ? "bg-amber-50 ring-1 ring-inset ring-amber-200" : ""}
                     ${isWeekend && !isSelected ? "bg-gray-50/50" : ""}
                   `}
                 >
@@ -225,9 +217,9 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
                       className={`
                         w-7 h-7 flex items-center justify-center text-sm font-medium rounded-full transition-all
                         ${isToday 
-                          ? "bg-blue-500 text-white" 
+                          ? "bg-amber-500 text-white" 
                           : isSelected 
-                            ? "bg-blue-100 text-blue-700" 
+                            ? "bg-amber-100 text-amber-700" 
                             : "text-gray-700 hover:bg-gray-100"
                         }
                       `}
@@ -243,7 +235,7 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
                         key={event.id}
                         className={`
                           px-1.5 py-0.5 rounded text-[10px] font-medium text-white truncate
-                          ${getEventColor(event.source)}
+                          ${getEventColor()}
                           hover:opacity-90 transition-opacity
                         `}
                         title={`${formatTime(event.start_time)} ${event.location}`}
@@ -266,16 +258,13 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
         {/* Legend */}
         <div className="flex items-center justify-center gap-6 mt-4 text-xs text-gray-500">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded bg-blue-500" />
-            <span>KL (Landgraf)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded bg-purple-500" />
-            <span>KBA (Augsburg)</span>
-          </div>
-          <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded bg-amber-500" />
-            <span>Andere</span>
+            <span>Pater Brown Termine</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-400">
+            <span>(KL) = Konzertdirektion Landgraf</span>
+            <span>•</span>
+            <span>(KBA) = Konzertbüro Augsburg</span>
           </div>
         </div>
       </div>
@@ -329,18 +318,18 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
                     className="group relative p-3 rounded-lg border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-150"
                   >
                     {/* Color Indicator */}
-                    <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-lg ${getEventColor(event.source)}`} />
+                    <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-lg ${getEventColor()}`} />
                     
                     <div className="pl-3">
                       {/* Time */}
-                      <div className={`text-xs font-semibold ${getEventTextColor(event.source)} mb-1`}>
+                      <div className={`text-xs font-semibold ${getEventTextColor()} mb-1`}>
                         {formatTime(event.start_time)}
                         {event.end_time && ` – ${formatTime(event.end_time)}`}
                       </div>
                       
                       {/* Title */}
                       <p className="text-sm font-medium text-gray-900 mb-1">
-                        {event.title}
+                        {getEventDisplayTitle(event)}
                       </p>
                       
                       {/* Location */}
