@@ -56,32 +56,32 @@ const EventMap = ({ events }: EventMapProps) => {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-xl font-bold text-foreground mb-2">Tour-Übersicht</h2>
-        <p className="text-muted-foreground text-sm">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Tour-Übersicht</h2>
+        <p className="text-gray-600 text-sm">
           Alle Termine chronologisch sortiert
         </p>
       </div>
 
       {/* Map Placeholder - In a real implementation, this would be Mapbox or Leaflet */}
-      <div className="bg-card/50 border border-border rounded-xl p-8 text-center">
-        <MapPin className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-        <p className="text-muted-foreground mb-2">
+      <div className="bg-white border border-gray-200 rounded-xl p-8 text-center shadow-sm">
+        <MapPin className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+        <p className="text-gray-600 mb-2">
           Karten-Integration benötigt Mapbox Token
         </p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-gray-400">
           Die Events werden unten als Liste angezeigt
         </p>
       </div>
 
       {/* Events Timeline */}
       <div className="space-y-4">
-        <h3 className="text-lg font-bold text-foreground">
+        <h3 className="text-lg font-bold text-gray-900">
           {sortedEvents.length} Termine
         </h3>
 
         <div className="relative">
           {/* Timeline line */}
-          <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border" />
+          <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-300" />
 
           {/* Events */}
           <div className="space-y-4">
@@ -89,11 +89,11 @@ const EventMap = ({ events }: EventMapProps) => {
               <div key={event.id} className="relative pl-12">
                 {/* Timeline dot */}
                 <div
-                  className={`absolute left-2.5 w-4 h-4 rounded-full border-2 border-background ${getSourceColor(event.source)}`}
+                  className={`absolute left-2.5 w-4 h-4 rounded-full border-2 border-white shadow ${getSourceColor(event.source)}`}
                 />
 
-                <div className="p-4 bg-card/50 border border-border rounded-lg hover:border-gold/30 transition-colors">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                <div className="p-4 bg-white border border-gray-200 rounded-lg hover:border-amber-300 transition-colors shadow-sm">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
                     <Calendar className="w-3 h-3" />
                     {formatDate(event.start_time)}
                     <span className="mx-1">·</span>
@@ -101,22 +101,22 @@ const EventMap = ({ events }: EventMapProps) => {
                     {formatTime(event.start_time)} Uhr
                   </div>
 
-                  <p className="font-bold text-foreground">{event.title}</p>
+                  <p className="font-bold text-gray-900">{event.title}</p>
                   
-                  <div className="flex items-center gap-2 text-gold text-sm mt-1">
+                  <div className="flex items-center gap-2 text-amber-600 text-sm mt-1">
                     <MapPin className="w-4 h-4" />
                     {event.location}
                     {event.state && ` (${event.state})`}
                   </div>
 
                   {event.venue_name && (
-                    <p className="text-muted-foreground text-sm mt-1">
+                    <p className="text-gray-500 text-sm mt-1">
                       {event.venue_name}
                     </p>
                   )}
 
                   {event.note && (
-                    <p className="text-muted-foreground text-sm italic mt-2 pt-2 border-t border-border">
+                    <p className="text-gray-400 text-sm italic mt-2 pt-2 border-t border-gray-200">
                       {event.note}
                     </p>
                   )}
@@ -128,7 +128,7 @@ const EventMap = ({ events }: EventMapProps) => {
       </div>
 
       {sortedEvents.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
+        <div className="text-center py-12 text-gray-400">
           <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p>Noch keine Termine vorhanden</p>
         </div>

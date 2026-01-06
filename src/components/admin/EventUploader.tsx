@@ -135,8 +135,8 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-xl font-bold text-foreground mb-2">Termine hinzufügen</h2>
-        <p className="text-muted-foreground text-sm">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Termine hinzufügen</h2>
+        <p className="text-gray-600 text-sm">
           Lade eine Datei hoch oder füge Termindaten per Copy & Paste ein
         </p>
       </div>
@@ -152,16 +152,16 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
         className={`
           border-2 border-dashed rounded-xl p-8 text-center transition-all
           ${isDragging
-            ? "border-gold bg-gold/10"
-            : "border-border hover:border-gold/50 bg-card/50"
+            ? "border-amber-500 bg-amber-50"
+            : "border-gray-300 hover:border-amber-400 bg-white"
           }
         `}
       >
-        <Upload className={`w-12 h-12 mx-auto mb-4 ${isDragging ? "text-gold" : "text-muted-foreground"}`} />
-        <p className="text-foreground font-medium mb-2">
+        <Upload className={`w-12 h-12 mx-auto mb-4 ${isDragging ? "text-amber-500" : "text-gray-400"}`} />
+        <p className="text-gray-900 font-medium mb-2">
           Datei hier ablegen
         </p>
-        <p className="text-muted-foreground text-sm mb-4">
+        <p className="text-gray-500 text-sm mb-4">
           oder klicke zum Auswählen
         </p>
         <input
@@ -173,7 +173,7 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
         />
         <label
           htmlFor="file-upload"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg cursor-pointer hover:border-gold/50 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg cursor-pointer hover:border-amber-400 hover:bg-gray-50 transition-colors text-gray-700"
         >
           <FileText className="w-4 h-4" />
           Datei auswählen
@@ -182,7 +182,7 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
 
       {/* Text Input */}
       <div>
-        <label className="block text-sm font-medium text-muted-foreground mb-2">
+        <label className="block text-sm font-medium text-gray-600 mb-2">
           Oder Termine hier einfügen:
         </label>
         <textarea
@@ -191,7 +191,7 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
           placeholder={`Beispiel:
 08.01.2026, 20:00 Uhr, Hamburg, Friedrich-Ebert-Halle (Konzertdirektion Landgraf)
 15.01.2026, 19:30-22:00 Uhr, München, Deutsches Theater`}
-          className="w-full h-40 px-4 py-3 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-gold resize-none"
+          className="w-full h-40 px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none"
         />
       </div>
 
@@ -199,7 +199,7 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
       <button
         onClick={() => parseEvents(textInput)}
         disabled={isParsing || !textInput.trim()}
-        className="w-full py-4 bg-gold text-primary-foreground font-bold rounded-xl hover:bg-gold/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full py-4 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {isParsing ? (
           <>
