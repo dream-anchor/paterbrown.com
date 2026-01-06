@@ -16,8 +16,6 @@ interface EventData {
   note?: string;
   ticket_url: string;
   eventim_event_id?: string;
-  latitude?: number;
-  longitude?: number;
 }
 
 async function sendErrorEmail(error: string, step: string) {
@@ -62,20 +60,18 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!screenshotoneAccessKey || !screenshotoneSecretKey) {
-      const error = 'ScreenshotOne API keys not configured';
-      throw new Error(error);
+      throw new Error('ScreenshotOne API keys not configured');
     }
 
     if (!lovableApiKey) {
-      const error = 'Lovable API key not configured';
-      throw new Error(error);
+      throw new Error('Lovable API key not configured');
     }
 
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
-    // Step 1: Capture screenshot using ScreenshotOne
-    console.log('Capturing screenshot from Eventim...');
+    // Step 1: Capture FULL PAGE screenshot using ScreenshotOne
+    console.log('Capturing full page screenshot from Eventim...');
     const eventimUrl = 'https://www.eventim.de/noapp/artist/antoine-monot/';
     
     const screenshotUrl = new URL('https://api.screenshotone.com/take');
@@ -86,12 +82,16 @@ serve(async (req) => {
     screenshotUrl.searchParams.set('device_scale_factor', '1');
     screenshotUrl.searchParams.set('viewport_width', '1920');
     screenshotUrl.searchParams.set('viewport_height', '1080');
+    screenshotUrl.searchParams.set('delay', '3'); // Wait for page to fully load
+    screenshotUrl.searchParams.set('block_ads', 'true');
+    screenshotUrl.searchParams.set('block_cookie_banners', 'true');
 
     const screenshotResponse = await fetch(screenshotUrl.toString());
     
     if (!screenshotResponse.ok) {
-      const error = `Screenshot capture failed: ${screenshotResponse.statusText}`;
-      throw new Error(error);
+      const errorText = await screenshotResponse.text();
+      console.error('Screenshot error:', screenshotResponse.status, errorText);
+      throw new Error(`Screenshot capture failed: ${screenshotResponse.statusText}`);
     }
 
     const screenshotBuffer = await screenshotResponse.arrayBuffer();
@@ -118,38 +118,42 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-2.5-pro',
         messages: [
           {
             role: 'system',
-            content: `Du bist ein Datenextraktions-Assistent. Extrahiere alle Tour-Events aus dem Screenshot einer Eventim-Seite. 
+            content: `Du bist ein Experte für die Extraktion von Tour-Daten aus Screenshots. 
             
-Für jedes Event extrahiere:
-- date: Das Datum im Format "DD.MM.YYYY"
-- day: Der Wochentag (z.B. "Freitag", "Samstag")
-- city: Die Stadt
-- venue: Der Veranstaltungsort/Location
-- note: Optionale Hinweise (z.B. "Premiere", "ausverkauft", "verlegt")
-- ticket_url: Die vollständige Eventim-URL zum Event
+Analysiere den Screenshot der Eventim-Seite und extrahiere ALLE sichtbaren Tour-Events für "Pater Brown - Der Fluch der Marvelin".
 
-Gebe die Daten als JSON-Array zurück. Beispiel:
-[
-  {
-    "date": "15.03.2025",
-    "day": "Samstag",
-    "city": "Berlin",
-    "venue": "Admiralspalast",
-    "note": "Premiere",
-    "ticket_url": "https://www.eventim.de/event/..."
-  }
-]`
+SEHR WICHTIG:
+- Extrahiere JEDES Event das du siehst - es können 4-8 oder mehr Events sein!
+- Lies das Datum genau ab - das Jahr ist wahrscheinlich 2025 oder 2026
+- Achte genau auf die Venue-Namen - jede Stadt hat einen anderen Venue!
+
+STÄDTENAMEN REGELN:
+- Verwende NUR den Hauptstadtnamen, KEINE Stadtteile oder Zusätze!
+- RICHTIG: "Hamburg", "München", "Frankfurt"
+- FALSCH: "Hamburg / Harburg", "München / Schwanthalerhöhe", "Frankfurt a.M."
+- Bei "Neu-Isenburg" schreibe einfach "Neu-Isenburg" (das ist eine eigenständige Stadt)
+
+Für jedes Event extrahiere:
+- date: Datum im Format "DD.MM.YYYY" (z.B. "18.02.2026")
+- day: Wochentag auf Deutsch (Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag, Sonntag)
+- city: Nur die Stadt ohne Stadtteil (z.B. "Hamburg", "Bremen", "München", "Zürich")
+- venue: Location/Veranstaltungsort (z.B. "Friedrich-Ebert-Halle", "Alte Kongresshalle")
+- note: Hinweise wie "Premiere", "ausverkauft", "verlegt" oder null
+- ticket_url: Eventim-URL falls sichtbar, sonst "https://www.eventim.de/noapp/artist/antoine-monot/"
+
+Antworte NUR mit einem JSON-Array, keine Erklärungen!
+Beispiel: [{"date":"18.02.2026","day":"Mittwoch","city":"Hamburg","venue":"Friedrich-Ebert-Halle","note":null,"ticket_url":"https://www.eventim.de/noapp/artist/antoine-monot/"}]`
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: 'Extrahiere alle Tour-Events aus diesem Screenshot der Eventim-Seite:'
+                text: 'Extrahiere ALLE Tour-Events aus diesem Screenshot. Achte genau auf jede Stadt und jeden Venue:'
               },
               {
                 type: 'image_url',
@@ -167,8 +171,7 @@ Gebe die Daten als JSON-Array zurück. Beispiel:
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
       console.error('AI API error:', aiResponse.status, errorText);
-      const error = `AI extraction failed: ${aiResponse.statusText} - ${errorText}`;
-      throw new Error(error);
+      throw new Error(`AI extraction failed: ${aiResponse.statusText} - ${errorText}`);
     }
 
     const aiData = await aiResponse.json();
@@ -179,36 +182,73 @@ Gebe die Daten als JSON-Array zurück. Beispiel:
     // Parse the JSON from the AI response
     let events: EventData[] = [];
     try {
-      // Extract JSON from markdown code blocks if present
       const jsonMatch = extractedText.match(/```json\n([\s\S]*?)\n```/) || 
                        extractedText.match(/```\n([\s\S]*?)\n```/) ||
-                       [null, extractedText];
-      const jsonString = jsonMatch[1] || extractedText;
+                       extractedText.match(/\[[\s\S]*\]/);
+      
+      let jsonString = '';
+      if (jsonMatch) {
+        jsonString = jsonMatch[1] || jsonMatch[0];
+      } else {
+        jsonString = extractedText;
+      }
+      
       events = JSON.parse(jsonString.trim());
-      console.log(`Extracted ${events.length} events`);
+      console.log(`Extracted ${events.length} events from AI`);
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', parseError);
-      const error = `Could not parse event data from AI response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`;
-      throw new Error(error);
+      console.error('Raw AI response:', extractedText);
+      throw new Error(`Could not parse event data from AI response`);
+    }
+
+    // Validate each event
+    console.log('Validating extracted events...');
+    const validEvents: EventData[] = [];
+    for (const event of events) {
+      if (!event.date || !event.city || !event.venue) {
+        console.log(`Skipping invalid event: ${JSON.stringify(event)}`);
+        continue;
+      }
+      
+      // Ensure ticket_url is valid
+      if (!event.ticket_url || !event.ticket_url.startsWith('http')) {
+        event.ticket_url = `https://www.eventim.de/noapp/artist/antoine-monot/`;
+      }
+      
+      console.log(`Valid event: ${event.date} - ${event.city} - ${event.venue}`);
+      validEvents.push(event);
+    }
+
+    if (validEvents.length === 0) {
+      throw new Error('No valid events could be extracted');
     }
 
     // Step 3: Update the database
-    console.log('Updating database...');
+    console.log('Updating database with', validEvents.length, 'events...');
     
     // Helper function to convert DD.MM.YYYY to YYYY-MM-DD
     const convertDateToISO = (dateStr: string): string => {
-      const [day, month, year] = dateStr.split('.');
+      const parts = dateStr.split('.');
+      if (parts.length !== 3) return dateStr;
+      const [day, month, year] = parts;
       return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     };
     
     // Mark all existing events as inactive first
-    await supabase
+    const { error: deactivateError } = await supabase
       .from('tour_events')
       .update({ is_active: false })
       .eq('is_active', true);
+    
+    if (deactivateError) {
+      console.error('Error deactivating events:', deactivateError);
+    }
 
     // Insert or update events
-    for (const event of events) {
+    let insertedCount = 0;
+    let updatedCount = 0;
+    
+    for (const event of validEvents) {
       const eventDate = convertDateToISO(event.date);
       
       const eventData = {
@@ -219,45 +259,52 @@ Gebe die Daten als JSON-Array zurück. Beispiel:
         note: event.note || null,
         ticket_url: event.ticket_url,
         eventim_event_id: event.eventim_event_id || null,
-        latitude: event.latitude || null,
-        longitude: event.longitude || null,
         event_date: eventDate,
         is_active: true,
         last_synced_at: new Date().toISOString(),
       };
 
-      // Try to find existing event by date, city, and venue
+      // Try to find existing event by event_date and city
       const { data: existing } = await supabase
         .from('tour_events')
         .select('id')
-        .eq('date', event.date)
+        .eq('event_date', eventDate)
         .eq('city', event.city)
-        .eq('venue', event.venue)
-        .single();
+        .maybeSingle();
 
       if (existing) {
-        // Update existing event
-        await supabase
+        const { error: updateError } = await supabase
           .from('tour_events')
           .update(eventData)
           .eq('id', existing.id);
-        console.log(`Updated event: ${event.city} - ${event.date}`);
+        
+        if (updateError) {
+          console.error(`Error updating event ${event.city}:`, updateError);
+        } else {
+          console.log(`Updated event: ${event.city} - ${event.date}`);
+          updatedCount++;
+        }
       } else {
-        // Insert new event
-        await supabase
+        const { error: insertError } = await supabase
           .from('tour_events')
           .insert(eventData);
-        console.log(`Inserted new event: ${event.city} - ${event.date}`);
+        
+        if (insertError) {
+          console.error(`Error inserting event ${event.city}:`, insertError);
+        } else {
+          console.log(`Inserted new event: ${event.city} - ${event.date}`);
+          insertedCount++;
+        }
       }
     }
 
-    console.log('Sync completed successfully');
+    console.log(`Sync completed: ${insertedCount} inserted, ${updatedCount} updated`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Successfully synced ${events.length} events`,
-        events 
+        message: `Successfully synced ${validEvents.length} events (${insertedCount} new, ${updatedCount} updated)`,
+        events: validEvents
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -268,7 +315,6 @@ Gebe die Daten als JSON-Array zurück. Beispiel:
     console.error('Error in sync-tour-events:', error);
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
     
-    // Try to send error email, but don't fail if email sending fails
     if (!errorMsg.includes('not configured')) {
       try {
         await sendErrorEmail(errorMsg, 'General Error');
