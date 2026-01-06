@@ -423,7 +423,7 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
         </div>
 
         {/* Stations List - 3/5 columns */}
-        <div className="lg:col-span-3 space-y-2 lg:max-h-[800px] lg:overflow-y-auto lg:pr-2">
+        <div className="lg:col-span-3 space-y-2">
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sticky top-24 bg-gray-50/95 backdrop-blur-sm py-2">
             Alle Stationen · {sortedEvents.length} Termine
           </h3>
