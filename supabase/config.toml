@@ -2,3 +2,9 @@ project_id = "ymfujbhonvvabivjnnyj"
 
 [functions.sync-tour-events]
 verify_jwt = false
+
+[functions.parse-events]
+verify_jwt = true
+
+[functions.calendar-feed]
+verify_jwt = false

@@ -77,6 +77,9 @@ const Footer = () => {
                 <a href="/datenschutz" className="text-foreground/80 hover:text-gold transition-colors focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded">
                   Datenschutz
                 </a>
+                <a href="/admin" className="text-foreground/80 hover:text-gold transition-colors focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded">
+                  Admin
+                </a>
               </div>
             </nav>
           </div>
