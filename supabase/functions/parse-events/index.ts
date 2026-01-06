@@ -46,20 +46,22 @@ Für jeden Termin gib ein JSON-Objekt zurück mit:
   - Dresden → "Sachsen"
   - Leipzig → "Sachsen"
   Dies ist IMMER erforderlich und darf NIEMALS null sein!
+- latitude: PFLICHTFELD! Breitengrad der Stadt im Dezimalformat (z.B. 53.5511 für Hamburg). Recherchiere die genauen Koordinaten!
+- longitude: PFLICHTFELD! Längengrad der Stadt im Dezimalformat (z.B. 9.9937 für Hamburg). Recherchiere die genauen Koordinaten!
 - venue: Name des Veranstaltungsortes, falls vorhanden
 - venue_url: URL zum Veranstaltungsort, falls vorhanden
 - note: Wichtige Anmerkungen, falls vorhanden
-- source: Die Quelle/Veranstalter - einer von:
-  - "KL" wenn "Konzertdirektion Landgraf", "KDL", "Landgraf" erwähnt wird
-  - "KBA" wenn "Konzertbüro Augsburg", "KBA", "Augsburg" im Veranstalter-Kontext erwähnt wird
-  - "unknown" wenn die Quelle nicht eindeutig erkennbar ist
+- source: Quelle/Veranstalter - erkenne anhand der Daten:
+  - "KL" = Konzertdirektion Landgraf
+  - "KBA" = Künstlerbüro Albrecht
+  - "unknown" = nicht erkennbar
 
-Wichtige Hinweise:
-- Extrahiere ALLE Termine aus dem Text
+WICHTIG:
 - Bei deutschen Datumsformaten (z.B. 08.01.2026) ins ISO-Format konvertieren
 - Zeitangaben wie "20 Uhr" zu "20:00" konvertieren
 - Wenn du unsicher über die Quelle bist, setze "unknown"
 - Das Bundesland (state) MUSS für jede deutsche Stadt ermittelt werden!
+- Die Koordinaten (latitude, longitude) MÜSSEN für jede Stadt recherchiert werden!
 
 Antworte NUR mit einem JSON-Array der extrahierten Events, keine weiteren Erklärungen.
 Beispiel-Antwort:
