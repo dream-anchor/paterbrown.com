@@ -1,6 +1,6 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, LogOut } from "lucide-react";
+import { ArrowLeft, LogOut, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -10,6 +10,17 @@ interface AdminLayoutProps {
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { toast } = useToast();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email) {
+        setUserEmail(session.user.email);
+      }
+    };
+    getUser();
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -19,6 +30,9 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     });
     window.location.reload();
   };
+
+  // Get display name from email (before @)
+  const displayName = userEmail?.split("@")[0] || "Admin";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -35,21 +49,43 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           
           {/* Logo / Title */}
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-sm">
               <span className="text-white text-xs font-bold">PB</span>
             </div>
             <span className="text-sm font-semibold text-gray-900 tracking-tight">
-              Admin
+              Pater Brown Admin
             </span>
           </div>
           
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors duration-150 text-sm font-medium"
-          >
-            <span className="hidden sm:inline">Abmelden</span>
-            <LogOut className="w-4 h-4" />
-          </button>
+          {/* User Info + Logout */}
+          <div className="flex items-center gap-3">
+            {userEmail && (
+              <>
+                {/* User Avatar */}
+                <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center shadow-sm">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+                
+                {/* User Info (hidden on mobile) */}
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-medium text-gray-900 leading-tight">
+                    {displayName}
+                  </p>
+                  <p className="text-xs text-gray-500 leading-tight">
+                    {userEmail}
+                  </p>
+                </div>
+              </>
+            )}
+            
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors duration-150 text-sm font-medium ml-2"
+              title="Abmelden"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </header>
 

@@ -115,7 +115,7 @@ const Admin = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
           <span className="text-sm text-gray-500 font-medium">Lädt...</span>
         </div>
       </div>
@@ -242,7 +242,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
       <div className="w-full max-w-sm">
         {/* Logo / Header */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/20">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/20">
             <Sparkles className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
@@ -265,7 +265,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-150"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all duration-150"
                 placeholder="name@beispiel.de"
                 required
               />
@@ -279,7 +279,7 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-150"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all duration-150"
                 placeholder="••••••••"
                 required
               />

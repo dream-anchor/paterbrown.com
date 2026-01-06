@@ -135,7 +135,7 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
     <div className="max-w-2xl mx-auto">
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/20">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/20">
           <CloudUpload className="w-6 h-6 text-white" />
         </div>
         <h2 className="text-xl font-semibold text-gray-900 tracking-tight">
@@ -157,16 +157,16 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
         className={`
           relative border-2 border-dashed rounded-2xl p-10 text-center transition-all duration-200
           ${isDragging
-            ? "border-blue-400 bg-blue-50 scale-[1.02]"
+            ? "border-amber-400 bg-amber-50 scale-[1.02]"
             : "border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50/50"
           }
         `}
       >
         <div className={`
           w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all duration-200
-          ${isDragging ? "bg-blue-100" : "bg-gray-100"}
+          ${isDragging ? "bg-amber-100" : "bg-gray-100"}
         `}>
-          <Upload className={`w-8 h-8 transition-colors duration-200 ${isDragging ? "text-blue-500" : "text-gray-400"}`} />
+          <Upload className={`w-8 h-8 transition-colors duration-200 ${isDragging ? "text-amber-500" : "text-gray-400"}`} />
         </div>
         
         <p className="text-gray-900 font-medium mb-1">
@@ -224,7 +224,7 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
       <button
         onClick={() => parseEvents(textInput)}
         disabled={isParsing || !textInput.trim()}
-        className="w-full mt-6 py-4 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full mt-6 py-4 bg-amber-500 text-white text-sm font-medium rounded-xl hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {isParsing ? (
           <>
