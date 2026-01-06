@@ -102,8 +102,8 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
   const handleConfirm = async (events: ParsedEvent[]) => {
     try {
       const dbEvents = events.map((event) => ({
-        title: `TOUR PB${event.source !== "unknown" ? ` (${event.source})` : ""}`,
-        location: event.city,
+        title: `TOUR PB (${event.source === "unknown" ? "?" : event.source})`,
+        location: event.state ? `${event.city} (${event.state})` : event.city,
         state: event.state || null,
         venue_name: event.venue || null,
         venue_url: event.venue_url || null,
