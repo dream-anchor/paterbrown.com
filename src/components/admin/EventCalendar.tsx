@@ -119,9 +119,14 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
   };
 
   const getEventDisplayTitle = (event: AdminEvent) => {
-    if (event.source === "KL") return "Pater Brown (KL)";
-    if (event.source === "KBA") return "Pater Brown (KBA)";
-    return event.title;
+    const sourceLabel = event.source === "unknown" ? "?" : event.source;
+    return `TOUR PB (${sourceLabel})`;
+  };
+
+  const getEventLocation = (event: AdminEvent) => {
+    return event.state 
+      ? `${event.location} (${event.state})` 
+      : event.location;
   };
 
   const selectedDateStr = selectedDate?.toISOString().split("T")[0];
@@ -238,9 +243,9 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
                           ${getEventColor()}
                           hover:opacity-90 transition-opacity
                         `}
-                        title={`${formatTime(event.start_time)} ${event.location}`}
+                        title={`${formatTime(event.start_time)} ${getEventLocation(event)}`}
                       >
-                        {formatTime(event.start_time)} {event.location}
+                        {formatTime(event.start_time)} {getEventLocation(event)}
                       </div>
                     ))}
                     {dayEvents.length > 3 && (
@@ -329,14 +334,13 @@ const EventCalendar = ({ events, onEventUpdate }: EventCalendarProps) => {
                       
                       {/* Title */}
                       <p className="text-sm font-medium text-gray-900 mb-1">
-                        {getEventDisplayTitle(event)}
+                        {getEventDisplayTitle(event)}, {getEventLocation(event)}
                       </p>
                       
-                      {/* Location */}
+                      {/* Venue */}
                       <div className="flex items-center gap-1.5 text-xs text-gray-600">
                         <MapPin className="w-3 h-3" />
-                        <span>{event.location}</span>
-                        {event.state && <span className="text-gray-400">({event.state})</span>}
+                        <span>{event.venue_name || getEventLocation(event)}</span>
                       </div>
                       
                       {/* Venue */}
