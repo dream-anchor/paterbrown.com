@@ -56,6 +56,37 @@ const createNumberedIcon = (num: number) => {
   });
 };
 
+// Create highlighted marker icon (red, larger, pulsating)
+const createHighlightedIcon = (num: number) => {
+  return L.divIcon({
+    className: 'custom-highlighted-marker',
+    html: `<div style="
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+      border: 4px solid white;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.6), 0 4px 12px rgba(0,0,0,0.3);
+      animation: marker-pulse 1.5s infinite;
+    ">${num}</div>
+    <style>
+      @keyframes marker-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.15); }
+      }
+    </style>`,
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
+    popupAnchor: [0, -20],
+  });
+};
+
 // Known German cities with coordinates
 const CITY_COORDINATES: Record<string, [number, number]> = {
   "Hamburg": [53.5511, 9.9937],
@@ -347,7 +378,9 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
                 <Marker 
                   key={event.id} 
                   position={event.coords as [number, number]}
-                  icon={createNumberedIcon(index + 1)}
+                  icon={activeEventId === event.id 
+                    ? createHighlightedIcon(index + 1) 
+                    : createNumberedIcon(index + 1)}
                   eventHandlers={{
                     click: () => scrollToEvent(event.id),
                   }}
@@ -406,6 +439,7 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
               )}
               onMouseEnter={() => setActiveEventId(event.id)}
               onMouseLeave={() => setActiveEventId(null)}
+              onClick={() => setActiveEventId(activeEventId === event.id ? null : event.id)}
             >
               {/* Number */}
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 shadow-sm">
