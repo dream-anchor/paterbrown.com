@@ -165,21 +165,6 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
     );
   }, [events]);
 
-  // Group events by state (Bundesland)
-  const eventsByState = useMemo(() => {
-    const grouped = new Map<string, AdminEvent[]>();
-    sortedEvents.forEach(event => {
-      const state = event.state || "Unbekannt";
-      if (!grouped.has(state)) grouped.set(state, []);
-      grouped.get(state)!.push(event);
-    });
-    return grouped;
-  }, [sortedEvents]);
-
-  // Get global index for an event
-  const getGlobalIndex = (event: AdminEvent) => {
-    return sortedEvents.findIndex(e => e.id === event.id) + 1;
-  };
 
   // Get coordinates for an event
   const getCoordinates = (event: AdminEvent): [number, number] | null => {
@@ -338,7 +323,7 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
               center={germanCenter}
               zoom={6}
               scrollWheelZoom={true}
-              className="h-[500px] lg:h-[600px] w-full"
+              className="h-[600px] lg:h-[800px] w-full"
             >
               <FitBoundsToMarkers coords={routeCoords} />
               <TileLayer
@@ -404,55 +389,52 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
         </div>
 
         {/* Stations List - 3/5 columns */}
-        <div className="lg:col-span-3 space-y-6">
-          {Array.from(eventsByState.entries()).map(([state, stateEvents]) => (
-            <section key={state}>
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sticky top-24 bg-gray-50/95 backdrop-blur-sm py-2 -mx-2 px-2">
-                {state} · {stateEvents.length} {stateEvents.length === 1 ? 'Station' : 'Stationen'}
-              </h3>
-              <div className="space-y-2">
-                {stateEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    id={`station-${event.id}`}
-                    className={cn(
-                      "flex items-center gap-3 p-3 bg-white rounded-lg border transition-all cursor-pointer",
-                      activeEventId === event.id 
-                        ? "border-amber-500 ring-2 ring-amber-200 shadow-md" 
-                        : "border-gray-200 hover:border-amber-300 hover:shadow-sm"
-                    )}
-                    onMouseEnter={() => setActiveEventId(event.id)}
-                    onMouseLeave={() => setActiveEventId(null)}
-                  >
-                    {/* Number */}
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 shadow-sm">
-                      {getGlobalIndex(event)}
-                    </div>
-                    
-                    {/* Event Details */}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 truncate">{event.location}</p>
-                      <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
-                        <span>{formatDate(event.start_time)}</span>
-                        <span>·</span>
-                        <span>{formatTime(event.start_time)} Uhr</span>
-                      </div>
-                      {event.venue_name && (
-                        <p className="text-xs text-gray-400 truncate mt-0.5">{event.venue_name}</p>
-                      )}
-                    </div>
-
-                    {/* Source Badge */}
-                    <span className={cn(
-                      "text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0",
-                      event.source === "KL" ? "bg-blue-100 text-blue-600" : "bg-purple-100 text-purple-600"
-                    )}>
-                      {event.source}
-                    </span>
-                  </div>
-                ))}
+        <div className="lg:col-span-3 space-y-2">
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sticky top-24 bg-gray-50/95 backdrop-blur-sm py-2">
+            Alle Stationen · {sortedEvents.length} Termine
+          </h3>
+          
+          {sortedEvents.map((event, index) => (
+            <div
+              key={event.id}
+              id={`station-${event.id}`}
+              className={cn(
+                "flex items-center gap-3 p-3 bg-white rounded-lg border transition-all cursor-pointer",
+                activeEventId === event.id 
+                  ? "border-amber-500 ring-2 ring-amber-200 shadow-md" 
+                  : "border-gray-200 hover:border-amber-300 hover:shadow-sm"
+              )}
+              onMouseEnter={() => setActiveEventId(event.id)}
+              onMouseLeave={() => setActiveEventId(null)}
+            >
+              {/* Number */}
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 shadow-sm">
+                {index + 1}
               </div>
-            </section>
+              
+              {/* Event Details */}
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 truncate">
+                  {event.location}{event.state ? ` (${event.state})` : ''}
+                </p>
+                <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                  <span>{formatDate(event.start_time)}</span>
+                  <span>·</span>
+                  <span>{formatTime(event.start_time)} Uhr</span>
+                </div>
+                {event.venue_name && (
+                  <p className="text-xs text-gray-400 truncate mt-0.5">{event.venue_name}</p>
+                )}
+              </div>
+
+              {/* Source Badge */}
+              <span className={cn(
+                "text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0",
+                event.source === "KL" ? "bg-blue-100 text-blue-600" : "bg-purple-100 text-purple-600"
+              )}>
+                {event.source}
+              </span>
+            </div>
           ))}
 
           {sortedEvents.length === 0 && (
