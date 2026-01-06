@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, LogOut, User } from "lucide-react";
+import { ArrowLeft, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -34,6 +34,15 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   // Get display name from email (before @)
   const displayName = userEmail?.split("@")[0] || "Admin";
 
+  // Get initials from display name
+  const getInitials = (name: string) => {
+    const parts = name.split(/[.\-_\s]/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Premium Header */}
@@ -49,7 +58,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           
           {/* Logo / Title */}
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-sm">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-sm">
               <span className="text-white text-xs font-bold">PB</span>
             </div>
             <span className="text-sm font-semibold text-gray-900 tracking-tight">
@@ -57,34 +66,39 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             </span>
           </div>
           
-          {/* User Info + Logout */}
-          <div className="flex items-center gap-3">
+          {/* Modern User Profile Pill */}
+          <div className="flex items-center">
             {userEmail && (
-              <>
-                {/* User Avatar */}
-                <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center shadow-sm">
-                  <User className="w-4 h-4 text-white" />
+              <button
+                onClick={handleLogout}
+                className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-full 
+                           bg-white/60 border border-gray-200/60 
+                           hover:bg-white hover:border-orange-200 hover:shadow-sm
+                           transition-all duration-200"
+                title="Abmelden"
+              >
+                {/* Gradient Initial Avatar */}
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 
+                                flex items-center justify-center shadow-sm ring-2 ring-white">
+                  <span className="text-[10px] font-bold text-white">
+                    {getInitials(displayName)}
+                  </span>
                 </div>
                 
-                {/* User Info (hidden on mobile) */}
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-gray-900 leading-tight">
+                {/* Name + Email (Desktop) */}
+                <div className="hidden sm:flex flex-col items-start">
+                  <span className="text-sm font-medium text-gray-900 leading-tight">
                     {displayName}
-                  </p>
-                  <p className="text-xs text-gray-500 leading-tight">
+                  </span>
+                  <span className="text-[11px] text-gray-500 leading-tight">
                     {userEmail}
-                  </p>
+                  </span>
                 </div>
-              </>
+                
+                {/* Logout Icon with Hover */}
+                <LogOut className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors ml-1" />
+              </button>
             )}
-            
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors duration-150 text-sm font-medium ml-2"
-              title="Abmelden"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
           </div>
         </div>
       </header>
