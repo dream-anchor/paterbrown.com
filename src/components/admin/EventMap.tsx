@@ -349,13 +349,13 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
       {/* Split Layout: Map + List */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Map - 2/5 columns (sticky) */}
-        <div className="lg:col-span-2 lg:sticky lg:top-28 lg:self-start">
+        <div className="lg:col-span-2 lg:sticky lg:top-32 lg:self-start">
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
             <MapContainer
               center={germanCenter}
               zoom={6}
               scrollWheelZoom={true}
-              className="h-[600px] lg:h-[800px] w-full"
+              className="h-[600px] lg:h-[calc(100vh-180px)] lg:max-h-[800px] w-full"
             >
               <FitBoundsToMarkers coords={routeCoords} />
               <TileLayer

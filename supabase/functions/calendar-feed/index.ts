@@ -130,10 +130,17 @@ END:VTIMEZONE
     const sequence = Math.floor(updatedAt.getTime() / 1000);
 
     const uid = `${event.id}@paterbrown.com`;
-    const summary = escapeICalText(event.title);
-    const location = event.venue_name
-      ? escapeICalText(`${event.venue_name}, ${event.location}`)
-      : escapeICalText(event.location);
+    
+    // CRITICAL: Format as "TOUR PB, Ort (Bundesland)"
+    const locationWithState = event.state 
+      ? `${event.location} (${event.state})`
+      : event.location;
+    const summary = escapeICalText(`TOUR PB, ${locationWithState}`);
+    
+    // Location field: Venue, Ort (Bundesland)
+    const locationField = event.venue_name
+      ? escapeICalText(`${event.venue_name}, ${locationWithState}`)
+      : escapeICalText(locationWithState);
 
     let description = `TOUR PB`;
     if (event.source !== "unknown") {
@@ -154,7 +161,7 @@ SEQUENCE:${sequence}
 DTSTART;TZID=Europe/Berlin:${formatLocalDate(startTime)}
 DTEND;TZID=Europe/Berlin:${formatLocalDate(endTime)}
 SUMMARY:${summary}
-LOCATION:${location}
+LOCATION:${locationField}
 DESCRIPTION:${escapeICalText(description)}
 STATUS:CONFIRMED
 END:VEVENT
