@@ -1,6 +1,6 @@
-import { useMemo, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { useMemo } from "react";
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
+import { Calendar, Clock, MapPin, Navigation } from "lucide-react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -12,15 +12,29 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-// Custom orange marker
-const orangeIcon = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
+// Create numbered marker icon
+const createNumberedIcon = (num: number) => {
+  return L.divIcon({
+    className: 'custom-numbered-marker',
+    html: `<div style="
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 12px;
+      border: 3px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    ">${num}</div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -14],
+  });
+};
 
 // Known German cities with coordinates
 const CITY_COORDINATES: Record<string, [number, number]> = {
@@ -174,6 +188,11 @@ const EventMap = ({ events }: EventMapProps) => {
   // Germany center
   const germanCenter: [number, number] = [51.1657, 10.4515];
 
+  // Route coordinates for polyline
+  const routeCoords = useMemo(() => {
+    return eventsWithCoords.map(e => e.coords as [number, number]);
+  }, [eventsWithCoords]);
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
@@ -181,6 +200,12 @@ const EventMap = ({ events }: EventMapProps) => {
         <p className="text-gray-600 text-sm">
           {eventsWithCoords.length} von {sortedEvents.length} Termine auf der Karte
         </p>
+        {eventsWithCoords.length > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-2 text-amber-600 text-sm">
+            <Navigation className="w-4 h-4" />
+            <span>Tourverlauf: {eventsWithCoords.length} Stationen</span>
+          </div>
+        )}
       </div>
 
       {/* Leaflet Map */}
@@ -189,20 +214,38 @@ const EventMap = ({ events }: EventMapProps) => {
           center={germanCenter}
           zoom={6}
           scrollWheelZoom={true}
-          className="h-[400px] w-full"
+          className="h-[500px] w-full"
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          {eventsWithCoords.map((event) => (
+          
+          {/* Route line connecting all stations */}
+          {routeCoords.length > 1 && (
+            <Polyline
+              positions={routeCoords}
+              color="#f59e0b"
+              weight={3}
+              opacity={0.7}
+              dashArray="8, 8"
+            />
+          )}
+          
+          {/* Numbered markers for each station */}
+          {eventsWithCoords.map((event, index) => (
             <Marker 
               key={event.id} 
               position={event.coords as [number, number]}
-              icon={orangeIcon}
+              icon={createNumberedIcon(index + 1)}
             >
               <Popup>
                 <div className="min-w-[200px]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                      Station {index + 1}
+                    </span>
+                  </div>
                   <p className="font-bold text-gray-900 mb-1">{event.title}</p>
                   <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
                     <Calendar className="w-3 h-3" />
@@ -225,6 +268,20 @@ const EventMap = ({ events }: EventMapProps) => {
           ))}
         </MapContainer>
       </div>
+
+      {/* Legend */}
+      {eventsWithCoords.length > 0 && (
+        <div className="flex items-center justify-center gap-6 text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-xs flex items-center justify-center font-bold border-2 border-white shadow">1</div>
+            <span>Nummerierte Stationen</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-0.5 bg-amber-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #f59e0b 0px, #f59e0b 8px, transparent 8px, transparent 16px)' }}></div>
+            <span>Tourverlauf</span>
+          </div>
+        </div>
+      )}
 
       {/* Events Timeline */}
       <div className="space-y-4">

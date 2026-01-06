@@ -14,6 +14,8 @@ interface ParsedEvent {
   venue_url?: string;
   note?: string;
   source: "KL" | "KBA" | "unknown";
+  latitude?: number;
+  longitude?: number;
 }
 
 interface EventUploaderProps {
@@ -111,6 +113,8 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
         end_time: event.end_time ? `${event.date}T${event.end_time}:00` : null,
         note: event.note || null,
         source: event.source,
+        latitude: event.latitude || null,
+        longitude: event.longitude || null,
       }));
 
       const { error } = await supabase.from("admin_events").insert(dbEvents);
