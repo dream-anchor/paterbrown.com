@@ -29,43 +29,48 @@ serve(async (req) => {
 
 Für jeden Termin gib ein JSON-Objekt zurück mit:
 - date: Datum im Format YYYY-MM-DD
-- start_time: Startzeit im Format HH:MM (24h)
+- start_time: Startzeit im Format HH:MM (24h) - WICHTIG: "19.30 Uhr" wird zu "19:30", "20 Uhr" zu "20:00"
 - end_time: Endzeit im Format HH:MM (24h), falls vorhanden, sonst null
-- city: Name der Stadt (nur der Hauptort, z.B. "Hamburg" statt "Hamburg-Harburg")
-- state: PFLICHTFELD! Das deutsche Bundesland der Stadt. Nutze dein Wissen über deutsche Geografie:
-  - Hamburg → "Hamburg"
-  - Berlin → "Berlin"
-  - Bremen → "Bremen"
-  - München → "Bayern"
-  - Nürnberg → "Bayern"
-  - Frankfurt → "Hessen"
-  - Köln → "Nordrhein-Westfalen"
-  - Düsseldorf → "Nordrhein-Westfalen"
-  - Stuttgart → "Baden-Württemberg"
-  - Hannover → "Niedersachsen"
-  - Dresden → "Sachsen"
-  - Leipzig → "Sachsen"
+- city: Name der Stadt EXAKT wie angegeben - WICHTIG: Ortszusätze beibehalten!
+  - "Homberg (Efze)" NICHT zu "Homberg" kürzen
+  - "Neustadt / Holstein" NICHT zu "Neustadt" kürzen
+  - "Bad Oeynhausen" vollständig übernehmen
+  - Wenn eine PLZ angegeben ist (z.B. "D 23730 NEUSTADT / HOLSTEIN"), nutze diese zur Identifikation!
+- state: PFLICHTFELD! Das deutsche Bundesland der Stadt. Nutze PLZ-Bereiche zur korrekten Zuordnung:
+  - PLZ 23xxx = Schleswig-Holstein (z.B. 23730 Neustadt/Holstein)
+  - PLZ 67xxx = Rheinland-Pfalz (z.B. 67433 Neustadt an der Weinstraße)
+  - PLZ 34xxx = Hessen (z.B. 34576 Homberg/Efze)
+  - PLZ 58xxx = Nordrhein-Westfalen
+  - PLZ 83xxx = Bayern
+  - PLZ 79xxx = Baden-Württemberg
+  - PLZ 25xxx-27xxx = Schleswig-Holstein/Niedersachsen
   Dies ist IMMER erforderlich und darf NIEMALS null sein!
-- latitude: PFLICHTFELD! Breitengrad der Stadt im Dezimalformat (z.B. 53.5511 für Hamburg). Recherchiere die genauen Koordinaten!
-- longitude: PFLICHTFELD! Längengrad der Stadt im Dezimalformat (z.B. 9.9937 für Hamburg). Recherchiere die genauen Koordinaten!
-- venue: Name des Veranstaltungsortes, falls vorhanden
+- latitude: PFLICHTFELD! Breitengrad der Stadt im Dezimalformat. Nutze die PLZ für exakte Zuordnung!
+- longitude: PFLICHTFELD! Längengrad der Stadt im Dezimalformat. Nutze die PLZ für exakte Zuordnung!
+- venue: Name des Veranstaltungsortes, falls vorhanden (z.B. "Bürgerhaus", "Stadthalle", "Theater im Park")
+- venue_address: Adresse des Veranstaltungsortes, falls vorhanden
 - venue_url: URL zum Veranstaltungsort, falls vorhanden
-- note: Wichtige Anmerkungen, falls vorhanden
+- note: Wichtige Anmerkungen, Sonderinfos oder Gebietsausschlüsse (vollständig übernehmen!)
 - source: Quelle/Veranstalter - erkenne anhand der Daten:
   - "KL" = Konzertdirektion Landgraf
-  - "KBA" = Künstlerbüro Albrecht
+  - "KBA" = Künstlerbüro Albrecht / Konzertbüro Augsburg
   - "unknown" = nicht erkennbar
 
-WICHTIG:
-- Bei deutschen Datumsformaten (z.B. 08.01.2026) ins ISO-Format konvertieren
-- Zeitangaben wie "20 Uhr" zu "20:00" konvertieren
-- Wenn du unsicher über die Quelle bist, setze "unknown"
-- Das Bundesland (state) MUSS für jede deutsche Stadt ermittelt werden!
-- Die Koordinaten (latitude, longitude) MÜSSEN für jede Stadt recherchiert werden!
+KRITISCH - ZEITFORMATE:
+- "19.30 Uhr" → "19:30" (Punkt zu Doppelpunkt!)
+- "20.00 Uhr" → "20:00"
+- "20 Uhr" → "20:00"
+- "19:30-22:00 Uhr" → start_time: "19:30", end_time: "22:00"
+
+KRITISCH - ORTE MIT GLEICHEM NAMEN:
+Verschiedene deutsche Städte haben gleiche Namen! Nutze IMMER die PLZ zur Unterscheidung:
+- 23730 = Neustadt in Holstein (Schleswig-Holstein) - Koordinaten: 54.107, 10.815
+- 67433 = Neustadt an der Weinstraße (Rheinland-Pfalz) - Koordinaten: 49.35, 8.14
+- 34576 = Homberg (Efze) (Hessen) - Koordinaten: 51.03, 9.40
 
 Antworte NUR mit einem JSON-Array der extrahierten Events, keine weiteren Erklärungen.
-Beispiel-Antwort:
-[{"date":"2026-01-08","start_time":"20:00","end_time":null,"city":"Hamburg","state":"Hamburg","venue":"Friedrich-Ebert-Halle","venue_url":null,"note":null,"source":"KL"}]`;
+Beispiel:
+[{"date":"2026-11-25","start_time":"19:30","end_time":null,"city":"Schwalbach","state":"Hessen","latitude":50.15,"longitude":8.53,"venue":"Bürgerhaus","venue_address":"Marktplatz 1-2","note":null,"source":"KL"}]`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -125,13 +130,15 @@ Beispiel-Antwort:
       );
     }
 
-    // Validate and clean up events
+    // Validate and clean up events - include latitude/longitude!
     const validatedEvents = events.map((event: any) => ({
       date: event.date || "",
-      start_time: event.start_time || "20:00",
-      end_time: event.end_time || null,
+      start_time: event.start_time ? event.start_time.replace(".", ":") : "20:00", // Fix "19.30" → "19:30"
+      end_time: event.end_time ? event.end_time.replace(".", ":") : null,
       city: event.city || "",
       state: event.state || null,
+      latitude: event.latitude || null,
+      longitude: event.longitude || null,
       venue: event.venue || null,
       venue_url: event.venue_url || null,
       note: event.note || null,

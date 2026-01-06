@@ -101,16 +101,42 @@ const EventUploader = ({ onEventsAdded }: EventUploaderProps) => {
     reader.readAsText(file);
   };
 
+  // Helper: Get Berlin timezone offset for a given date
+  const getBerlinOffset = (dateStr: string): string => {
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    
+    // Calculate last Sunday of March (start of DST)
+    const marchLast = new Date(year, 2, 31);
+    const dstStart = new Date(year, 2, 31 - ((marchLast.getDay() + 7) % 7));
+    
+    // Calculate last Sunday of October (end of DST)
+    const octLast = new Date(year, 9, 31);
+    const dstEnd = new Date(year, 9, 31 - ((octLast.getDay() + 7) % 7));
+    
+    // Check if date is in DST (CEST = +02:00) or standard time (CET = +01:00)
+    if (date >= dstStart && date < dstEnd) {
+      return "+02:00";
+    }
+    return "+01:00";
+  };
+
+  // Helper: Create a timestamp with correct Berlin timezone
+  const makeBerlinTimestamp = (dateStr: string, timeStr: string): string => {
+    const offset = getBerlinOffset(dateStr);
+    return `${dateStr}T${timeStr}:00${offset}`;
+  };
+
   const handleConfirm = async (events: ParsedEvent[]) => {
     try {
       const dbEvents = events.map((event) => ({
         title: `TOUR PB (${event.source === "unknown" ? "?" : event.source})`,
-        location: event.state ? `${event.city} (${event.state})` : event.city,
+        location: event.city, // Only city name, no state suffix
         state: event.state || null,
         venue_name: event.venue || null,
         venue_url: event.venue_url || null,
-        start_time: `${event.date}T${event.start_time}:00`,
-        end_time: event.end_time ? `${event.date}T${event.end_time}:00` : null,
+        start_time: makeBerlinTimestamp(event.date, event.start_time),
+        end_time: event.end_time ? makeBerlinTimestamp(event.date, event.end_time) : null,
         note: event.note || null,
         source: event.source,
         latitude: event.latitude || null,
