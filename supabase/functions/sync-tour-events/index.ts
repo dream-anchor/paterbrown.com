@@ -1,7 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
-import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,49 +13,83 @@ interface EventData {
   venue: string;
   note?: string;
   ticket_url: string;
-  eventim_event_id?: string;
 }
 
 async function sendErrorEmail(error: string, step: string) {
-  try {
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    if (!resendApiKey) {
-      console.error('RESEND_API_KEY not configured, skipping error email');
-      return;
-    }
+  const resendApiKey = Deno.env.get('RESEND_API_KEY');
+  if (!resendApiKey) {
+    console.log('No Resend API key configured, skipping error email');
+    return;
+  }
 
-    const resend = new Resend(resendApiKey);
-    await resend.emails.send({
-      from: 'Pater Brown Sync <onboarding@resend.dev>',
-      to: ['monot@hey.com'],
-      subject: '🚨 Tour Events Sync fehlgeschlagen',
-      html: `
-        <h1>Tour Events Synchronisation Fehler</h1>
-        <p><strong>Zeitstempel:</strong> ${new Date().toISOString()}</p>
-        <p><strong>Fehlgeschlagener Schritt:</strong> ${step}</p>
-        <p><strong>Fehlermeldung:</strong></p>
-        <pre style="background: #f4f4f4; padding: 10px; border-radius: 5px;">${error}</pre>
-      `,
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Pater Brown Sync <onboarding@resend.dev>',
+        to: ['monot@hey.com'],
+        subject: `[FEHLER] Tour-Events Sync fehlgeschlagen: ${step}`,
+        html: `
+          <h2>Sync-Fehler aufgetreten</h2>
+          <p><strong>Schritt:</strong> ${step}</p>
+          <p><strong>Fehler:</strong></p>
+          <pre>${error}</pre>
+          <p><strong>Zeitpunkt:</strong> ${new Date().toISOString()}</p>
+        `,
+      }),
     });
-    console.log('Error email sent successfully to monot@hey.com');
+    console.log('Error notification email sent');
   } catch (emailError) {
     console.error('Failed to send error email:', emailError);
   }
 }
 
-serve(async (req) => {
+// Clean city name - remove districts and normalize
+function cleanCityName(city: string): string {
+  // Map of city variations to clean names
+  const cityMap: Record<string, string> = {
+    'hamburg / harburg': 'Hamburg',
+    'hamburg/harburg': 'Hamburg',
+    'münchen / schwanthalerhöhe': 'München',
+    'münchen/schwanthalerhöhe': 'München',
+    'frankfurt / neu-isenburg': 'Neu-Isenburg',
+    'frankfurt a.m.': 'Frankfurt',
+    'frankfurt am main': 'Frankfurt',
+  };
+  
+  const lowerCity = city.toLowerCase().trim();
+  if (cityMap[lowerCity]) {
+    return cityMap[lowerCity];
+  }
+  
+  // Generic cleanup: take first part before / or -
+  let cleaned = city.split('/')[0].trim();
+  
+  // Keep Neu-Isenburg as is (it's a separate city, not a district)
+  if (cleaned.toLowerCase().includes('neu-isenburg') || cleaned.toLowerCase().includes('isenburg')) {
+    return 'Neu-Isenburg';
+  }
+  
+  return cleaned;
+}
+
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    console.log('Starting tour events sync...');
+  console.log('=== Starting Tour Events Sync with Screenshot ===');
 
+  try {
     const screenshotoneAccessKey = Deno.env.get('SCREENSHOTONE_ACCESS_KEY');
     const screenshotoneSecretKey = Deno.env.get('SCREENSHOTONE_SECRET_KEY');
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
     if (!screenshotoneAccessKey || !screenshotoneSecretKey) {
       throw new Error('ScreenshotOne API keys not configured');
@@ -67,12 +99,14 @@ serve(async (req) => {
       throw new Error('Lovable API key not configured');
     }
 
-    // Initialize Supabase client
-    const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Step 1: Capture FULL PAGE screenshot using ScreenshotOne
-    console.log('Capturing full page screenshot from Eventim...');
+    // Use the main pater brown artist page
     const eventimUrl = 'https://www.eventim.de/noapp/artist/antoine-monot/';
+    console.log('Fetching events from:', eventimUrl);
+
+    // Step 1: Capture full page screenshot
+    console.log('Step 1: Capturing full page screenshot...');
     
     const screenshotUrl = new URL('https://api.screenshotone.com/take');
     screenshotUrl.searchParams.set('access_key', screenshotoneAccessKey);
@@ -82,7 +116,7 @@ serve(async (req) => {
     screenshotUrl.searchParams.set('device_scale_factor', '1');
     screenshotUrl.searchParams.set('viewport_width', '1920');
     screenshotUrl.searchParams.set('viewport_height', '1080');
-    screenshotUrl.searchParams.set('delay', '3'); // Wait for page to fully load
+    screenshotUrl.searchParams.set('delay', '5');
     screenshotUrl.searchParams.set('block_ads', 'true');
     screenshotUrl.searchParams.set('block_cookie_banners', 'true');
 
@@ -91,13 +125,14 @@ serve(async (req) => {
     if (!screenshotResponse.ok) {
       const errorText = await screenshotResponse.text();
       console.error('Screenshot error:', screenshotResponse.status, errorText);
+      await sendErrorEmail(`Screenshot failed: ${screenshotResponse.status} - ${errorText}`, 'Screenshot Capture');
       throw new Error(`Screenshot capture failed: ${screenshotResponse.statusText}`);
     }
 
     const screenshotBuffer = await screenshotResponse.arrayBuffer();
-    
-    // Convert to base64 in chunks to avoid stack overflow
     const uint8Array = new Uint8Array(screenshotBuffer);
+    
+    // Convert to base64 in chunks
     const chunkSize = 8192;
     let base64Screenshot = '';
     for (let i = 0; i < uint8Array.length; i += chunkSize) {
@@ -108,8 +143,8 @@ serve(async (req) => {
     
     console.log('Screenshot captured successfully, size:', uint8Array.length, 'bytes');
 
-    // Step 2: Extract event data using Lovable AI (Gemini Vision)
-    console.log('Extracting event data with Gemini Vision...');
+    // Step 2: Extract events with Lovable AI (Gemini Vision)
+    console.log('Step 2: Extracting events with Gemini Vision...');
     
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -122,38 +157,31 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `Du bist ein Experte für die Extraktion von Tour-Daten aus Screenshots. 
-            
-Analysiere den Screenshot der Eventim-Seite und extrahiere ALLE sichtbaren Tour-Events für "Pater Brown - Der Fluch der Marvelin".
+            content: `Du extrahierst Tour-Events aus Screenshots. Analysiere ALLE sichtbaren Events.
 
-SEHR WICHTIG:
-- Extrahiere JEDES Event das du siehst - es können 4-8 oder mehr Events sein!
-- Lies das Datum genau ab - das Jahr ist wahrscheinlich 2025 oder 2026
-- Achte genau auf die Venue-Namen - jede Stadt hat einen anderen Venue!
+STÄDTENAMEN - WICHTIG:
+- NUR der Hauptstadtname, KEINE Stadtteile!
+- "Hamburg / Harburg" → "Hamburg"
+- "München / Schwanthalerhöhe" → "München"  
+- "Neu-Isenburg" bleibt "Neu-Isenburg" (eigene Stadt)
+- "Frankfurt a.M." → "Frankfurt"
 
-STÄDTENAMEN REGELN:
-- Verwende NUR den Hauptstadtnamen, KEINE Stadtteile oder Zusätze!
-- RICHTIG: "Hamburg", "München", "Frankfurt"
-- FALSCH: "Hamburg / Harburg", "München / Schwanthalerhöhe", "Frankfurt a.M."
-- Bei "Neu-Isenburg" schreibe einfach "Neu-Isenburg" (das ist eine eigenständige Stadt)
+Für jedes Event:
+- date: "DD.MM.YYYY"
+- day: Wochentag (Montag, Dienstag, etc.)
+- city: NUR Hauptstadt (siehe oben)
+- venue: Vollständiger Venue-Name
+- note: "Premiere", "ausverkauft" oder null
+- ticket_url: URL falls sichtbar, sonst "https://www.eventim.de/artist/pater-brown/"
 
-Für jedes Event extrahiere:
-- date: Datum im Format "DD.MM.YYYY" (z.B. "18.02.2026")
-- day: Wochentag auf Deutsch (Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag, Sonntag)
-- city: Nur die Stadt ohne Stadtteil (z.B. "Hamburg", "Bremen", "München", "Zürich")
-- venue: Location/Veranstaltungsort (z.B. "Friedrich-Ebert-Halle", "Alte Kongresshalle")
-- note: Hinweise wie "Premiere", "ausverkauft", "verlegt" oder null
-- ticket_url: Eventim-URL falls sichtbar, sonst "https://www.eventim.de/noapp/artist/antoine-monot/"
-
-Antworte NUR mit einem JSON-Array, keine Erklärungen!
-Beispiel: [{"date":"18.02.2026","day":"Mittwoch","city":"Hamburg","venue":"Friedrich-Ebert-Halle","note":null,"ticket_url":"https://www.eventim.de/noapp/artist/antoine-monot/"}]`
+Antworte NUR mit JSON-Array!`
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: 'Extrahiere ALLE Tour-Events aus diesem Screenshot. Achte genau auf jede Stadt und jeden Venue:'
+                text: 'Extrahiere ALLE Tour-Events für "Pater Brown" aus diesem Screenshot:'
               },
               {
                 type: 'image_url',
@@ -171,48 +199,46 @@ Beispiel: [{"date":"18.02.2026","day":"Mittwoch","city":"Hamburg","venue":"Fried
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
       console.error('AI API error:', aiResponse.status, errorText);
-      throw new Error(`AI extraction failed: ${aiResponse.statusText} - ${errorText}`);
+      await sendErrorEmail(`AI extraction failed: ${aiResponse.status} - ${errorText}`, 'AI Extraction');
+      throw new Error(`AI extraction failed: ${aiResponse.statusText}`);
     }
 
     const aiData = await aiResponse.json();
     const extractedText = aiData.choices?.[0]?.message?.content || '';
     
-    console.log('AI response:', extractedText);
+    console.log('AI response preview:', extractedText.substring(0, 500));
 
-    // Parse the JSON from the AI response
+    // Parse JSON from AI response
     let events: EventData[] = [];
     try {
       const jsonMatch = extractedText.match(/```json\n([\s\S]*?)\n```/) || 
                        extractedText.match(/```\n([\s\S]*?)\n```/) ||
                        extractedText.match(/\[[\s\S]*\]/);
       
-      let jsonString = '';
-      if (jsonMatch) {
-        jsonString = jsonMatch[1] || jsonMatch[0];
-      } else {
-        jsonString = extractedText;
-      }
-      
+      let jsonString = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : extractedText;
       events = JSON.parse(jsonString.trim());
-      console.log(`Extracted ${events.length} events from AI`);
+      console.log(`Parsed ${events.length} events from AI`);
     } catch (parseError) {
-      console.error('Failed to parse AI response as JSON:', parseError);
-      console.error('Raw AI response:', extractedText);
-      throw new Error(`Could not parse event data from AI response`);
+      console.error('Failed to parse AI response:', parseError);
+      console.log('Raw AI response:', extractedText);
+      await sendErrorEmail(`JSON parse error: ${parseError}\n\nRaw: ${extractedText}`, 'JSON Parsing');
+      throw new Error('Could not parse event data from AI response');
     }
 
-    // Validate each event
-    console.log('Validating extracted events...');
+    // Validate and clean events
     const validEvents: EventData[] = [];
     for (const event of events) {
       if (!event.date || !event.city || !event.venue) {
-        console.log(`Skipping invalid event: ${JSON.stringify(event)}`);
+        console.log('Skipping invalid event:', JSON.stringify(event));
         continue;
       }
       
-      // Ensure ticket_url is valid
+      // Clean the city name
+      event.city = cleanCityName(event.city);
+      
+      // Ensure valid ticket URL
       if (!event.ticket_url || !event.ticket_url.startsWith('http')) {
-        event.ticket_url = `https://www.eventim.de/noapp/artist/antoine-monot/`;
+        event.ticket_url = 'https://www.eventim.de/noapp/artist/antoine-monot/';
       }
       
       console.log(`Valid event: ${event.date} - ${event.city} - ${event.venue}`);
@@ -223,31 +249,35 @@ Beispiel: [{"date":"18.02.2026","day":"Mittwoch","city":"Hamburg","venue":"Fried
       throw new Error('No valid events could be extracted');
     }
 
-    // Step 3: Update the database
-    console.log('Updating database with', validEvents.length, 'events...');
-    
-    // Helper function to convert DD.MM.YYYY to YYYY-MM-DD
+    // Log all found events
+    console.log('=== Found Events ===');
+    validEvents.forEach((event, i) => {
+      console.log(`${i + 1}. ${event.date} - ${event.city} - ${event.venue}`);
+    });
+
+    // Step 3: Update database
+    console.log('Step 3: Updating database...');
+
+    // Helper to convert DD.MM.YYYY to YYYY-MM-DD
     const convertDateToISO = (dateStr: string): string => {
       const parts = dateStr.split('.');
       if (parts.length !== 3) return dateStr;
-      const [day, month, year] = parts;
-      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
     };
-    
-    // Mark all existing events as inactive first
+
+    // Mark all existing events as inactive
     const { error: deactivateError } = await supabase
       .from('tour_events')
       .update({ is_active: false })
       .eq('is_active', true);
-    
+
     if (deactivateError) {
       console.error('Error deactivating events:', deactivateError);
     }
 
-    // Insert or update events
     let insertedCount = 0;
     let updatedCount = 0;
-    
+
     for (const event of validEvents) {
       const eventDate = convertDateToISO(event.date);
       
@@ -258,13 +288,12 @@ Beispiel: [{"date":"18.02.2026","day":"Mittwoch","city":"Hamburg","venue":"Fried
         venue: event.venue,
         note: event.note || null,
         ticket_url: event.ticket_url,
-        eventim_event_id: event.eventim_event_id || null,
         event_date: eventDate,
         is_active: true,
         last_synced_at: new Date().toISOString(),
       };
 
-      // Try to find existing event by event_date and city
+      // Check for existing event
       const { data: existing } = await supabase
         .from('tour_events')
         .select('id')
@@ -279,9 +308,9 @@ Beispiel: [{"date":"18.02.2026","day":"Mittwoch","city":"Hamburg","venue":"Fried
           .eq('id', existing.id);
         
         if (updateError) {
-          console.error(`Error updating event ${event.city}:`, updateError);
+          console.error(`Error updating ${event.city}:`, updateError);
         } else {
-          console.log(`Updated event: ${event.city} - ${event.date}`);
+          console.log(`Updated: ${event.city} - ${event.date}`);
           updatedCount++;
         }
       } else {
@@ -290,48 +319,38 @@ Beispiel: [{"date":"18.02.2026","day":"Mittwoch","city":"Hamburg","venue":"Fried
           .insert(eventData);
         
         if (insertError) {
-          console.error(`Error inserting event ${event.city}:`, insertError);
+          console.error(`Error inserting ${event.city}:`, insertError);
         } else {
-          console.log(`Inserted new event: ${event.city} - ${event.date}`);
+          console.log(`Inserted: ${event.city} - ${event.date}`);
           insertedCount++;
         }
       }
     }
 
-    console.log(`Sync completed: ${insertedCount} inserted, ${updatedCount} updated`);
+    console.log('=== Sync Complete ===');
+    console.log(`Total: ${validEvents.length}, Inserted: ${insertedCount}, Updated: ${updatedCount}`);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Successfully synced ${validEvents.length} events (${insertedCount} new, ${updatedCount} updated)`,
-        events: validEvents
+      JSON.stringify({
+        success: true,
+        message: `Synced ${validEvents.length} events (${insertedCount} new, ${updatedCount} updated)`,
+        eventsFound: validEvents.length,
+        inserted: insertedCount,
+        updated: updatedCount,
+        events: validEvents,
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error in sync-tour-events:', error);
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Sync error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     
-    if (!errorMsg.includes('not configured')) {
-      try {
-        await sendErrorEmail(errorMsg, 'General Error');
-      } catch (emailError) {
-        console.error('Failed to send error notification email:', emailError);
-      }
-    }
-    
+    await sendErrorEmail(errorMessage, 'Main Process');
+
     return new Response(
-      JSON.stringify({ 
-        error: errorMsg,
-        success: false 
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ success: false, error: errorMessage }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
