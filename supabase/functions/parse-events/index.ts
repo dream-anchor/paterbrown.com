@@ -32,7 +32,20 @@ Für jeden Termin gib ein JSON-Objekt zurück mit:
 - start_time: Startzeit im Format HH:MM (24h)
 - end_time: Endzeit im Format HH:MM (24h), falls vorhanden, sonst null
 - city: Name der Stadt (nur der Hauptort, z.B. "Hamburg" statt "Hamburg-Harburg")
-- state: Bundesland, falls erkennbar, sonst null
+- state: PFLICHTFELD! Das deutsche Bundesland der Stadt. Nutze dein Wissen über deutsche Geografie:
+  - Hamburg → "Hamburg"
+  - Berlin → "Berlin"
+  - Bremen → "Bremen"
+  - München → "Bayern"
+  - Nürnberg → "Bayern"
+  - Frankfurt → "Hessen"
+  - Köln → "Nordrhein-Westfalen"
+  - Düsseldorf → "Nordrhein-Westfalen"
+  - Stuttgart → "Baden-Württemberg"
+  - Hannover → "Niedersachsen"
+  - Dresden → "Sachsen"
+  - Leipzig → "Sachsen"
+  Dies ist IMMER erforderlich und darf NIEMALS null sein!
 - venue: Name des Veranstaltungsortes, falls vorhanden
 - venue_url: URL zum Veranstaltungsort, falls vorhanden
 - note: Wichtige Anmerkungen, falls vorhanden
@@ -46,6 +59,7 @@ Wichtige Hinweise:
 - Bei deutschen Datumsformaten (z.B. 08.01.2026) ins ISO-Format konvertieren
 - Zeitangaben wie "20 Uhr" zu "20:00" konvertieren
 - Wenn du unsicher über die Quelle bist, setze "unknown"
+- Das Bundesland (state) MUSS für jede deutsche Stadt ermittelt werden!
 
 Antworte NUR mit einem JSON-Array der extrahierten Events, keine weiteren Erklärungen.
 Beispiel-Antwort:

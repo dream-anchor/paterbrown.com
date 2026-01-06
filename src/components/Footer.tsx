@@ -74,11 +74,8 @@ const Footer = () => {
                 <a href="/impressum" className="text-foreground/80 hover:text-gold transition-colors focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded">
                   Impressum
                 </a>
-                <a href="/datenschutz" className="text-foreground/80 hover:text-gold transition-colors focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded">
+              <a href="/datenschutz" className="text-foreground/80 hover:text-gold transition-colors focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded">
                   Datenschutz
-                </a>
-                <a href="/admin" className="text-foreground/80 hover:text-gold transition-colors focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded">
-                  Admin
                 </a>
               </div>
             </nav>
@@ -125,6 +122,14 @@ const Footer = () => {
               aria-label="Noch keine Tickets? Jetzt bei Eventim sichern"
             >
               Noch keine Tickets? Jetzt sichern <span aria-hidden="true">→</span>
+            </a>
+          </div>
+          <div className="mt-4">
+            <a 
+              href="/admin" 
+              className="text-muted-foreground/50 hover:text-foreground/60 transition-colors text-xs"
+            >
+              Admin
             </a>
           </div>
         </div>
