@@ -34,14 +34,35 @@ serve(async (req) => {
     if (format === "ics") {
       // Generate iCal format
       const icalContent = generateICalendar(events || []);
-      
-      return new Response(icalContent, {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "text/calendar; charset=utf-8",
-          "Content-Disposition": 'attachment; filename="pater-brown-tour.ics"',
-        },
-      });
+
+      const lastUpdatedMs = (events || [])
+        .map((e: any) => (e?.updated_at ? new Date(e.updated_at).getTime() : 0))
+        .reduce((max: number, v: number) => Math.max(max, v), 0);
+
+      const etag = `\"${(events || []).length}-${lastUpdatedMs}\"`;
+      const lastModified = lastUpdatedMs ? new Date(lastUpdatedMs).toUTCString() : new Date().toUTCString();
+
+      const headers = {
+        ...corsHeaders,
+        "Content-Type": "text/calendar; charset=utf-8",
+        // For calendar subscriptions, "inline" is friendlier than forcing a download.
+        "Content-Disposition": 'inline; filename="pater-brown-tour.ics"',
+
+        // Encourage clients (incl. Google) to re-fetch more aggressively.
+        // Note: Google still uses its own refresh schedule, but these help.
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+        Pragma: "no-cache",
+        Expires: "0",
+        ETag: etag,
+        "Last-Modified": lastModified,
+      };
+
+      // Support conditional requests.
+      if (req.headers.get("if-none-match") === etag) {
+        return new Response(null, { status: 304, headers });
+      }
+
+      return new Response(icalContent, { headers });
     }
 
     // Return JSON for other formats
@@ -60,8 +81,12 @@ serve(async (req) => {
 });
 
 function generateICalendar(events: any[]): string {
-  const now = new Date();
-  const timestamp = formatICalDateUTC(now);
+  // Use the most recent event update for calendar-level metadata.
+  const lastUpdatedMs = events
+    .map((e: any) => (e?.updated_at ? new Date(e.updated_at).getTime() : 0))
+    .reduce((max, v) => Math.max(max, v), 0);
+
+  const calendarStamp = formatICalDateUTC(lastUpdatedMs ? new Date(lastUpdatedMs) : new Date());
 
   let ical = `BEGIN:VCALENDAR
 VERSION:2.0
@@ -70,6 +95,8 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:TOUR Pater Brown
 X-WR-TIMEZONE:Europe/Berlin
+REFRESH-INTERVAL;VALUE=DURATION:PT1H
+X-PUBLISHED-TTL:PT1H
 BEGIN:VTIMEZONE
 TZID:Europe/Berlin
 BEGIN:DAYLIGHT
@@ -89,18 +116,25 @@ END:STANDARD
 END:VTIMEZONE
 `;
 
+  // Calendar-level DTSTAMP is not required, but some clients appreciate a stable stamp.
+  ical += `X-WR-CALDESC:Live Tourtermine (automatisch aktualisiert)\n`;
+  ical += `X-WR-LAST-MODIFIED:${calendarStamp}\n`;
   for (const event of events) {
     const startTime = new Date(event.start_time);
-    const endTime = event.end_time 
-      ? new Date(event.end_time) 
+    const endTime = event.end_time
+      ? new Date(event.end_time)
       : new Date(startTime.getTime() + 2 * 60 * 60 * 1000); // Default 2 hours
+
+    const updatedAt = event.updated_at ? new Date(event.updated_at) : new Date();
+    const eventStamp = formatICalDateUTC(updatedAt);
+    const sequence = Math.floor(updatedAt.getTime() / 1000);
 
     const uid = `${event.id}@paterbrown.com`;
     const summary = escapeICalText(event.title);
-    const location = event.venue_name 
+    const location = event.venue_name
       ? escapeICalText(`${event.venue_name}, ${event.location}`)
       : escapeICalText(event.location);
-    
+
     let description = `TOUR PB`;
     if (event.source !== "unknown") {
       description += ` (${event.source})`;
@@ -114,7 +148,9 @@ END:VTIMEZONE
 
     ical += `BEGIN:VEVENT
 UID:${uid}
-DTSTAMP:${timestamp}
+DTSTAMP:${eventStamp}
+LAST-MODIFIED:${eventStamp}
+SEQUENCE:${sequence}
 DTSTART;TZID=Europe/Berlin:${formatLocalDate(startTime)}
 DTEND;TZID=Europe/Berlin:${formatLocalDate(endTime)}
 SUMMARY:${summary}

@@ -134,7 +134,7 @@ const CalendarExport = () => {
       {/* Info Box */}
       <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
         <p className="text-sm text-amber-700">
-          💡 Tipp: Abonnierte Kalender werden automatisch aktualisiert, wenn du neue Termine hinzufügst.
+          Hinweis: Abonnierte Google-Kalender aktualisieren nicht sofort, sondern in Intervallen (typisch alle paar Stunden). Änderungen aus dem Admin-Bereich werden dann automatisch übernommen.
         </p>
       </div>
     </div>
