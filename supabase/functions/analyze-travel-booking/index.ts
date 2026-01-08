@@ -90,11 +90,11 @@ Anhänge: ${attachments?.map(a => a.file_name).join(", ") || "keine"}
         ).join('\n')}`
       : '';
 
-    const systemPrompt = `Du bist ein Experte für die Analyse von Reisebuchungs-E-Mails. Extrahiere alle Buchungsinformationen aus der E-Mail.
+    const systemPrompt = `Du bist ein Experte für die Analyse von Reisebuchungs-E-Mails. Extrahiere ALLE Buchungsinformationen aus der E-Mail mit höchster Präzision.
 
 Für jede gefundene Buchung extrahiere:
 - booking_type: "hotel", "train", "flight", "bus", "rental_car" oder "other"
-- booking_number: Buchungsnummer/Reservierungscode
+- booking_number: Buchungsnummer/Reservierungscode/Auftragsnummer (PFLICHT falls vorhanden)
 - provider: Anbieter (z.B. "Deutsche Bahn", "Lufthansa", "Marriott")
 - traveler_name: Name des Hauptreisenden
 - traveler_names: Array aller Reisenden (falls mehrere)
@@ -104,11 +104,54 @@ Für jede gefundene Buchung extrahiere:
 - destination_city: Zielort/Hotelstadt (PFLICHT)
 - venue_name: Hotel-/Bahnhofsname
 - venue_address: Vollständige Adresse
-- details: Zusatzinfos als Objekt, z.B.:
-  - Für Hotels: room_category, breakfast_included, room_number, wifi_included
-  - Für Züge: train_number, wagon, seat, class
-  - Für Flüge: flight_number, terminal, gate, seat, baggage
+- details: Zusatzinfos als Objekt (WICHTIG - extrahiere alle verfügbaren Details!)
 - confidence: Deine Sicherheit bei der Extraktion (0.0 bis 1.0)
+
+=== KRITISCH: DETAILS-OBJEKT MUSS AUSGEFÜLLT WERDEN ===
+
+Für ZUGBUCHUNGEN (train) - extrahiere IMMER in details:
+- train_number: Zugnummer (z.B. "ICE 1044", "IC 2023", "RE 5")
+- class: Wagenklasse als Zahl ("1" oder "2")
+- wagon: Wagennummer
+- seat: Sitzplatznummer(n)
+- bahncard: BahnCard-Typ (z.B. "BC 25", "BC 50", "BC 100", "BahnCard 25 1. Klasse")
+- price: Gesamtpreis als Zahl (z.B. 89.90)
+- connection_type: "direkt" oder "mit Umstieg"
+- order_number: Auftragsnummer (falls anders als booking_number)
+- cancellation_policy: Stornierungsbedingungen
+
+Für FLUGBUCHUNGEN (flight) - extrahiere IMMER in details:
+- flight_number: Flugnummer (z.B. "LH 123", "EW 9876")
+- airline: Fluggesellschaft
+- terminal: Terminal-Nummer
+- gate: Gate-Nummer
+- seat: Sitzplatz
+- baggage: Gepäckinfo (z.B. "23kg Freigepäck", "nur Handgepäck")
+- booking_class: Buchungsklasse (z.B. "Economy", "Business")
+- pnr: PNR/Buchungscode
+
+Für HOTELBUCHUNGEN (hotel) - extrahiere IMMER in details:
+- room_type: Zimmerkategorie (z.B. "Superior", "Komfort Plus", "Suite")
+- room_number: Zimmernummer (falls bekannt)
+- breakfast_included: true/false
+- wifi_included: true/false
+- price_per_night: Preis pro Nacht als Zahl
+- total_price: Gesamtpreis als Zahl
+- cancellation_policy: Stornierungsbedingungen
+- cancellation_deadline: Stornierungsfrist (ISO 8601 Datum)
+
+Für MIETWAGEN (rental_car) - extrahiere in details:
+- vehicle_type: Fahrzeugkategorie
+- pickup_location: Abholort
+- dropoff_location: Rückgabeort
+- price: Gesamtpreis
+
+WICHTIG:
+- Extrahiere JEDES Detail das in der E-Mail steht
+- Preise als Zahlen ohne Währungssymbol
+- Boolean-Werte für ja/nein Felder
+- Bei mehreren Verbindungen: Erstelle separate Buchungen ODER nutze das erste Segment
+- Auftragsnummern bei Deutsche Bahn haben oft das Format "XXXXXX" (6-stellig)
 
 Prüfe auch, ob es sich um ein UPDATE einer bestehenden Buchung handelt (gleiche Buchungsnummer oder gleicher Reisender + Datum + Typ). Falls ja, setze is_update: true und gib die update_booking_id an.
 
@@ -132,7 +175,7 @@ ${existingBookingsContext}`;
             type: "function",
             function: {
               name: "extract_bookings",
-              description: "Extrahiere Buchungsinformationen aus der E-Mail",
+              description: "Extrahiere Buchungsinformationen aus der E-Mail mit allen verfügbaren Details",
               parameters: {
                 type: "object",
                 properties: {
@@ -142,7 +185,7 @@ ${existingBookingsContext}`;
                       type: "object",
                       properties: {
                         booking_type: { type: "string", enum: ["hotel", "train", "flight", "bus", "rental_car", "other"] },
-                        booking_number: { type: "string" },
+                        booking_number: { type: "string", description: "Buchungsnummer, Auftragsnummer oder Reservierungscode" },
                         provider: { type: "string" },
                         traveler_name: { type: "string" },
                         traveler_names: { type: "array", items: { type: "string" } },
@@ -152,10 +195,32 @@ ${existingBookingsContext}`;
                         destination_city: { type: "string" },
                         venue_name: { type: "string" },
                         venue_address: { type: "string" },
-                        details: { type: "object" },
+                        details: { 
+                          type: "object",
+                          description: "Alle extrahierten Details - MUSS ausgefüllt werden mit allen verfügbaren Infos wie train_number, class, seat, wagon, price, etc.",
+                          properties: {
+                            train_number: { type: "string", description: "Zugnummer z.B. ICE 1044" },
+                            class: { type: "string", description: "Wagenklasse 1 oder 2" },
+                            wagon: { type: "string", description: "Wagennummer" },
+                            seat: { type: "string", description: "Sitzplatz(e)" },
+                            bahncard: { type: "string", description: "BahnCard Typ" },
+                            price: { type: "number", description: "Preis in EUR" },
+                            order_number: { type: "string", description: "Auftragsnummer" },
+                            flight_number: { type: "string" },
+                            airline: { type: "string" },
+                            terminal: { type: "string" },
+                            gate: { type: "string" },
+                            baggage: { type: "string" },
+                            room_type: { type: "string" },
+                            breakfast_included: { type: "boolean" },
+                            wifi_included: { type: "boolean" },
+                            price_per_night: { type: "number" },
+                            cancellation_policy: { type: "string" }
+                          }
+                        },
                         confidence: { type: "number" }
                       },
-                      required: ["booking_type", "start_datetime", "destination_city"]
+                      required: ["booking_type", "start_datetime", "destination_city", "details"]
                     }
                   },
                   is_update: { type: "boolean" },
@@ -204,12 +269,16 @@ ${existingBookingsContext}`;
 
     const analysisResult: AIAnalysisResult = JSON.parse(toolCall.function.arguments);
     console.log("Extracted bookings:", analysisResult.bookings.length);
+    console.log("Booking details:", JSON.stringify(analysisResult.bookings.map(b => ({ type: b.booking_type, details: b.details })), null, 2));
 
     let bookingsCreated = 0;
     let bookingsUpdated = 0;
 
     for (const booking of analysisResult.bookings) {
       try {
+        // Ensure details is always an object
+        const bookingDetails = booking.details || {};
+        
         // Check if this is an update to an existing booking
         let existingBookingId: string | null = null;
         
@@ -252,6 +321,12 @@ ${existingBookingsContext}`;
                 source_email_id: email_id,
               });
 
+            // Merge details - keep existing and add new
+            const mergedDetails = {
+              ...currentBooking.details,
+              ...bookingDetails
+            };
+
             // Update the booking
             await supabase
               .from("travel_bookings")
@@ -267,7 +342,7 @@ ${existingBookingsContext}`;
                 destination_city: booking.destination_city,
                 venue_name: booking.venue_name,
                 venue_address: booking.venue_address,
-                details: booking.details || {},
+                details: mergedDetails,
                 status: "changed",
                 source_email_id: email_id,
                 ai_confidence: booking.confidence,
@@ -292,7 +367,7 @@ ${existingBookingsContext}`;
               destination_city: booking.destination_city,
               venue_name: booking.venue_name,
               venue_address: booking.venue_address,
-              details: booking.details || {},
+              details: bookingDetails,
               status: "confirmed",
               source_email_id: email_id,
               ai_confidence: booking.confidence,
