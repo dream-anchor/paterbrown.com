@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, addHours } from "date-fns";
 import { de } from "date-fns/locale";
 import {
   Hotel, Train, Plane, Bus, Car, Package,
   MapPin, Clock, Users, Hash, Building2, Phone,
   Mail, FileText, History, X, ExternalLink, Download,
-  ChevronDown, ChevronUp, AlertCircle
+  ChevronDown, ChevronUp, AlertCircle, Copy, Calendar, Navigation
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 import DocumentViewer from "./DocumentViewer";
 
 interface TravelBooking {
@@ -130,6 +131,93 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
     return [];
   };
 
+  // Erweiterte Buchungsnummer-Logik
+  const getBookingNumber = () => {
+    if (booking.booking_number) return booking.booking_number;
+    if (booking.details?.order_number) return booking.details.order_number;
+    if (booking.details?.confirmation_number) return booking.details.confirmation_number;
+    if (booking.details?.reference) return booking.details.reference;
+    if (booking.details?.pnr) return booking.details.pnr;
+    if (booking.details?.booking_code) return booking.details.booking_code;
+    if (booking.details?.auftragsnummer) return booking.details.auftragsnummer;
+    return null;
+  };
+
+  const bookingNumber = getBookingNumber();
+
+  // Google Maps URL
+  const getGoogleMapsUrl = () => {
+    const address = [
+      booking.venue_name,
+      booking.venue_address,
+      booking.destination_city
+    ].filter(Boolean).join(', ');
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  };
+
+  // Copy booking number
+  const copyBookingNumber = () => {
+    if (bookingNumber) {
+      navigator.clipboard.writeText(bookingNumber);
+      toast.success("Buchungsnummer kopiert");
+    }
+  };
+
+  // Generate iCal Event
+  const generateICalEvent = () => {
+    const start = format(parseISO(booking.start_datetime), "yyyyMMdd'T'HHmmss");
+    const end = booking.end_datetime 
+      ? format(parseISO(booking.end_datetime), "yyyyMMdd'T'HHmmss")
+      : format(addHours(parseISO(booking.start_datetime), 2), "yyyyMMdd'T'HHmmss");
+    
+    const title = booking.venue_name || `${booking.origin_city || ''} → ${booking.destination_city}`.trim();
+    const location = booking.venue_address || booking.destination_city;
+    const description = [
+      booking.provider,
+      bookingNumber ? `Buchung: ${bookingNumber}` : null,
+      getTravelers().length > 0 ? `Reisende: ${getTravelers().join(', ')}` : null
+    ].filter(Boolean).join('\\n');
+
+    const ics = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Travel Manager//DE
+BEGIN:VEVENT
+DTSTART:${start}
+DTEND:${end}
+SUMMARY:${title}
+LOCATION:${location}
+DESCRIPTION:${description}
+END:VEVENT
+END:VCALENDAR`;
+
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${booking.destination_city}-${format(parseISO(booking.start_datetime), 'yyyy-MM-dd')}.ics`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Kalendereintrag heruntergeladen");
+  };
+
+  // Generate Google Calendar URL
+  const generateGoogleCalendarUrl = () => {
+    const start = format(parseISO(booking.start_datetime), "yyyyMMdd'T'HHmmss");
+    const end = booking.end_datetime 
+      ? format(parseISO(booking.end_datetime), "yyyyMMdd'T'HHmmss")
+      : format(addHours(parseISO(booking.start_datetime), 2), "yyyyMMdd'T'HHmmss");
+    
+    const title = booking.venue_name || `${booking.origin_city || ''} → ${booking.destination_city}`.trim();
+    const location = booking.venue_address || booking.destination_city;
+    const description = [
+      booking.provider,
+      bookingNumber ? `Buchung: ${bookingNumber}` : null,
+      getTravelers().length > 0 ? `Reisende: ${getTravelers().join(', ')}` : null
+    ].filter(Boolean).join('\n');
+
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${start}/${end}&location=${encodeURIComponent(location)}&details=${encodeURIComponent(description)}`;
+  };
+
   return (
     <div style={{ color: '#111827' }}>
       <div className={`bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-100 overflow-hidden ${isMobile ? 'rounded-t-2xl rounded-b-none' : ''}`}>
@@ -147,26 +235,74 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
                 <p className="text-sm text-gray-500">{typeConfig.label}</p>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={onClose} 
-              className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full -mr-2 -mt-2"
-            >
-              <X className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              {/* Export Buttons */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={generateICalEvent}
+                title="Als iCal exportieren"
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"
+              >
+                <Download className="w-4 h-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => window.open(generateGoogleCalendarUrl(), '_blank')}
+                title="Zu Google Calendar hinzufügen"
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"
+              >
+                <Calendar className="w-4 h-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={onClose} 
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Content */}
         <div className="p-5 space-y-5 max-h-[60vh] lg:max-h-none overflow-y-auto">
           {/* Booking Number & Status */}
-          {booking.booking_number && (
-            <div className="flex items-center justify-between p-3.5 bg-gray-50/80 rounded-xl">
-              <div className="flex items-center gap-2 text-sm">
-                <Hash className="w-4 h-4 text-gray-400" />
-                <span className="font-mono font-medium text-gray-900">{booking.booking_number}</span>
+          {bookingNumber && (
+            <div className="flex items-center justify-between p-3.5 bg-blue-50/80 rounded-xl">
+              <div className="flex items-center gap-2">
+                <Hash className="w-4 h-4 text-blue-500" />
+                <span className="font-mono font-semibold text-blue-900 text-base tracking-wide">{bookingNumber}</span>
               </div>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={copyBookingNumber}
+                  className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-100 rounded-full"
+                  title="Kopieren"
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+                <Badge variant="outline" className={
+                  booking.status === "confirmed" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                  booking.status === "changed" ? "bg-amber-50 text-amber-700 border-amber-200" :
+                  booking.status === "cancelled" ? "bg-red-50 text-red-700 border-red-200" :
+                  "bg-gray-50 text-gray-600 border-gray-200"
+                }>
+                  {booking.status === "confirmed" ? "Bestätigt" :
+                   booking.status === "changed" ? "Geändert" :
+                   booking.status === "cancelled" ? "Storniert" : "Ausstehend"}
+                </Badge>
+              </div>
+            </div>
+          )}
+          
+          {/* Status without booking number */}
+          {!bookingNumber && (
+            <div className="flex items-center justify-end">
               <Badge variant="outline" className={
                 booking.status === "confirmed" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
                 booking.status === "changed" ? "bg-amber-50 text-amber-700 border-amber-200" :
@@ -221,7 +357,31 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
                 <span className="font-medium text-gray-900">{booking.destination_city}</span>
               </div>
               {booking.venue_address && (
-                <div className="text-gray-500 mt-1">{booking.venue_address}</div>
+                <div className="flex items-start justify-between gap-2 mt-2">
+                  <div className="text-gray-500">{booking.venue_address}</div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(getGoogleMapsUrl(), '_blank')}
+                    className="flex-shrink-0 text-blue-600 hover:bg-blue-50 border-blue-200 h-8 px-3"
+                  >
+                    <Navigation className="w-3.5 h-3.5 mr-1.5" />
+                    Maps
+                  </Button>
+                </div>
+              )}
+              {!booking.venue_address && (booking.venue_name || booking.destination_city) && (
+                <div className="mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(getGoogleMapsUrl(), '_blank')}
+                    className="text-blue-600 hover:bg-blue-50 border-blue-200 h-8 px-3"
+                  >
+                    <Navigation className="w-3.5 h-3.5 mr-1.5" />
+                    In Maps öffnen
+                  </Button>
+                </div>
               )}
             </div>
           </div>
@@ -258,6 +418,57 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
             </>
           )}
 
+          {/* Attachments - prominently after travelers */}
+          {(attachments.length > 0 || originalEmail) && (
+            <>
+              <Separator className="bg-gray-100" />
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-gray-400" />
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Buchungsdokumente</span>
+                </div>
+                <div className="space-y-2">
+                  {originalEmail && (
+                    <button
+                      onClick={() => setViewingDocument({ 
+                        id: "email", 
+                        file_name: originalEmail.subject || "Original E-Mail",
+                        file_path: "",
+                        content_type: "text/html"
+                      })}
+                      className="flex items-center gap-3 w-full p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 hover:shadow-sm transition-all"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <Mail className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <div className="font-medium text-gray-900 text-sm">Original E-Mail</div>
+                        <div className="text-xs text-gray-500 truncate max-w-[200px]">{originalEmail.subject}</div>
+                      </div>
+                      <ExternalLink className="w-4 h-4 text-gray-400" />
+                    </button>
+                  )}
+                  {attachments.map((att) => (
+                    <button
+                      key={att.id}
+                      onClick={() => setViewingDocument(att)}
+                      className="flex items-center gap-3 w-full p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 hover:shadow-sm transition-all"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-red-500" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <div className="font-medium text-gray-900 text-sm truncate max-w-[200px]">{att.file_name}</div>
+                        <div className="text-xs text-gray-500">{att.content_type || 'Dokument'}</div>
+                      </div>
+                      <ExternalLink className="w-4 h-4 text-gray-400" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
           {/* Details */}
           {booking.details && Object.keys(booking.details).length > 0 && (
             <>
@@ -283,44 +494,7 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
             </>
           )}
 
-          {/* Documents */}
-          {(attachments.length > 0 || originalEmail) && (
-            <>
-              <Separator className="bg-gray-100" />
-              <div className="space-y-2.5">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Dokumente</span>
-                </div>
-                <div className="pl-6 space-y-2">
-                  {originalEmail && (
-                    <button
-                      onClick={() => setViewingDocument({ 
-                        id: "email", 
-                        file_name: originalEmail.subject || "Original E-Mail",
-                        file_path: "",
-                        content_type: "text/html"
-                      })}
-                      className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                    >
-                      <Mail className="w-4 h-4" />
-                      Original E-Mail anzeigen
-                    </button>
-                  )}
-                  {attachments.map((att) => (
-                    <button
-                      key={att.id}
-                      onClick={() => setViewingDocument(att)}
-                      className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                    >
-                      <FileText className="w-4 h-4" />
-                      {att.file_name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
+          {/* Details - moved after attachments */}
 
           {/* Version History */}
           {versions.length > 0 && (
