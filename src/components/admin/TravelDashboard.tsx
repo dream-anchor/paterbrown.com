@@ -183,9 +183,10 @@ export default function TravelDashboard() {
         </div>
 
         <TabsContent value="bookings" className="mt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Bookings List */}
-            <div className="lg:col-span-2 space-y-6">
+          {/* Split View Container - Fixed height, no page scroll */}
+          <div className="h-[calc(100vh-220px)] min-h-[500px] flex gap-6 overflow-hidden">
+            {/* Bookings List - Scrollable */}
+            <div className="flex-1 md:flex-[2] overflow-y-auto min-h-0 space-y-6 pr-2">
               {sortedDates.length === 0 ? (
                 <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-100 p-12 text-center">
                   <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
@@ -330,9 +331,9 @@ export default function TravelDashboard() {
               )}
             </div>
 
-            {/* Detail Panel (sticky with proper scroll) */}
-            <div className="hidden lg:block">
-              <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl">
+            {/* Detail Panel - Fixed, scrollable internally (Desktop) */}
+            <div className="hidden md:flex md:flex-1 h-full overflow-hidden">
+              <div className="w-full h-full overflow-y-auto rounded-2xl">
                 <TravelBookingDetail 
                   booking={selectedBooking} 
                   onClose={() => setSelectedBooking(null)}
@@ -342,9 +343,9 @@ export default function TravelDashboard() {
             </div>
           </div>
 
-          {/* Mobile Detail Panel */}
+          {/* Mobile Detail Panel - Sheet-style overlay */}
           {selectedBooking && (
-            <div className="lg:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedBooking(null)}>
+            <div className="md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedBooking(null)}>
               <div 
                 className="absolute bottom-0 left-0 right-0 bg-gray-50 rounded-t-3xl max-h-[85vh] overflow-auto shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
