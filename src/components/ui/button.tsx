@@ -16,6 +16,7 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         neon: "bg-transparent border-2 border-[hsl(var(--neon-gold))] text-[hsl(var(--neon-gold))] hover:bg-[hsl(var(--neon-gold))]/10 shadow-[0_0_20px_hsl(var(--neon-gold)/0.5),inset_0_0_20px_hsl(var(--neon-gold)/0.1)] hover:shadow-[0_0_30px_hsl(var(--neon-gold)/0.8),inset_0_0_30px_hsl(var(--neon-gold)/0.2)] transition-all font-bold tracking-[0.3em] uppercase",
+        apple: "bg-white border border-gray-200 text-gray-900 hover:bg-gray-50 hover:border-gray-300 shadow-sm",
       },
       size: {
         default: "h-10 px-4 py-2",

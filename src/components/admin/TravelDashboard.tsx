@@ -171,10 +171,10 @@ export default function TravelDashboard() {
                 />
               </div>
               <Button 
-                variant="outline" 
+                variant="apple" 
                 size="icon" 
                 onClick={fetchBookings}
-                className="rounded-full border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                className="rounded-full"
               >
                 <RefreshCw className="w-4 h-4 text-gray-600" />
               </Button>
