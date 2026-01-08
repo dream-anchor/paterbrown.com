@@ -94,7 +94,7 @@ Anhänge: ${attachments?.map(a => a.file_name).join(", ") || "keine"}
 
 Für jede gefundene Buchung extrahiere:
 - booking_type: "hotel", "train", "flight", "bus", "rental_car" oder "other"
-- booking_number: Buchungsnummer/Reservierungscode/Auftragsnummer (PFLICHT falls vorhanden)
+- booking_number: Buchungsnummer/Reservierungscode/Auftragsnummer (PFLICHT - siehe unten!)
 - provider: Anbieter (z.B. "Deutsche Bahn", "Lufthansa", "Marriott")
 - traveler_name: Name des Hauptreisenden
 - traveler_names: Array aller Reisenden (falls mehrere)
@@ -107,9 +107,28 @@ Für jede gefundene Buchung extrahiere:
 - details: Zusatzinfos als Objekt (WICHTIG - extrahiere alle verfügbaren Details!)
 - confidence: Deine Sicherheit bei der Extraktion (0.0 bis 1.0)
 
-=== KRITISCH: DETAILS-OBJEKT MUSS AUSGEFÜLLT WERDEN ===
+=== KRITISCH: BOOKING_NUMBER / AUFTRAGSNUMMER ===
+Die booking_number ist das WICHTIGSTE Feld! Suche aktiv nach:
+
+Bei Deutsche Bahn:
+- "Auftragsnummer:" gefolgt von 6-stelligem Code (z.B. "Q7K5M2", "ABC123")
+- "Ihre Bestellung" + Nummer
+- Oft im Format: Großbuchstaben + Zahlen gemischt
+
+Bei Hotels:
+- "Bestätigungsnummer:", "Confirmation Number:", "Buchungsnummer:", "Reservierungsnummer:"
+- Manchmal auch "Booking ID:", "Reference:", "Buchungs-ID:"
+
+Bei Flügen:
+- "PNR:", "Buchungscode:", "Booking Reference:"
+- Meist 6-stellig, nur Buchstaben (z.B. "XYZABC")
+
+WICHTIG: Setze booking_number UND details.order_number auf denselben Wert!
+
+=== DETAILS-OBJEKT MUSS AUSGEFÜLLT WERDEN ===
 
 Für ZUGBUCHUNGEN (train) - extrahiere IMMER in details:
+- order_number: Auftragsnummer (PFLICHT - gleicher Wert wie booking_number!)
 - train_number: Zugnummer (z.B. "ICE 1044", "IC 2023", "RE 5")
 - class: Wagenklasse als Zahl ("1" oder "2")
 - wagon: Wagennummer
@@ -117,10 +136,10 @@ Für ZUGBUCHUNGEN (train) - extrahiere IMMER in details:
 - bahncard: BahnCard-Typ (z.B. "BC 25", "BC 50", "BC 100", "BahnCard 25 1. Klasse")
 - price: Gesamtpreis als Zahl (z.B. 89.90)
 - connection_type: "direkt" oder "mit Umstieg"
-- order_number: Auftragsnummer (falls anders als booking_number)
 - cancellation_policy: Stornierungsbedingungen
 
 Für FLUGBUCHUNGEN (flight) - extrahiere IMMER in details:
+- order_number: Buchungscode/PNR (PFLICHT - gleicher Wert wie booking_number!)
 - flight_number: Flugnummer (z.B. "LH 123", "EW 9876")
 - airline: Fluggesellschaft
 - terminal: Terminal-Nummer
@@ -128,9 +147,10 @@ Für FLUGBUCHUNGEN (flight) - extrahiere IMMER in details:
 - seat: Sitzplatz
 - baggage: Gepäckinfo (z.B. "23kg Freigepäck", "nur Handgepäck")
 - booking_class: Buchungsklasse (z.B. "Economy", "Business")
-- pnr: PNR/Buchungscode
 
 Für HOTELBUCHUNGEN (hotel) - extrahiere IMMER in details:
+- order_number: Buchungsnummer (PFLICHT - gleicher Wert wie booking_number!)
+- hotel_url: Website-URL des Hotels (falls in der E-Mail enthalten)
 - room_type: Zimmerkategorie (z.B. "Superior", "Komfort Plus", "Suite")
 - room_number: Zimmernummer (falls bekannt)
 - breakfast_included: true/false
@@ -141,6 +161,7 @@ Für HOTELBUCHUNGEN (hotel) - extrahiere IMMER in details:
 - cancellation_deadline: Stornierungsfrist (ISO 8601 Datum)
 
 Für MIETWAGEN (rental_car) - extrahiere in details:
+- order_number: Buchungsnummer (PFLICHT!)
 - vehicle_type: Fahrzeugkategorie
 - pickup_location: Abholort
 - dropoff_location: Rückgabeort
@@ -148,10 +169,10 @@ Für MIETWAGEN (rental_car) - extrahiere in details:
 
 WICHTIG:
 - Extrahiere JEDES Detail das in der E-Mail steht
+- booking_number ist PFLICHT wenn irgendwo eine Nummer steht!
 - Preise als Zahlen ohne Währungssymbol
 - Boolean-Werte für ja/nein Felder
 - Bei mehreren Verbindungen: Erstelle separate Buchungen ODER nutze das erste Segment
-- Auftragsnummern bei Deutsche Bahn haben oft das Format "XXXXXX" (6-stellig)
 
 Prüfe auch, ob es sich um ein UPDATE einer bestehenden Buchung handelt (gleiche Buchungsnummer oder gleicher Reisender + Datum + Typ). Falls ja, setze is_update: true und gib die update_booking_id an.
 
@@ -383,12 +404,19 @@ ${existingBookingsContext}`;
             bookingsUpdated++;
           }
         } else {
+          // Post-processing: Ensure booking_number is set from details if missing
+          let finalBookingNumber = booking.booking_number;
+          if (!finalBookingNumber && bookingDetails.order_number) {
+            finalBookingNumber = bookingDetails.order_number;
+            console.log(`Set booking_number from details.order_number: ${finalBookingNumber}`);
+          }
+          
           // Create new booking
           const { error: insertError } = await supabase
             .from("travel_bookings")
             .insert({
               booking_type: booking.booking_type,
-              booking_number: booking.booking_number,
+              booking_number: finalBookingNumber,
               provider: booking.provider,
               traveler_name: booking.traveler_name,
               traveler_names: booking.traveler_names,

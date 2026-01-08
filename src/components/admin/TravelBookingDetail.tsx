@@ -277,6 +277,11 @@ END:VCALENDAR`;
     return null;
   };
 
+  // Get hotel website URL
+  const getHotelWebsiteUrl = () => {
+    return getDetail('hotel_url', 'website', 'url', 'hotel_website', 'booking_url', 'hotelWebsite');
+  };
+
   // Render train-specific route card
   const renderTrainRoute = () => {
     const trainNumber = getDetail('train_number', 'ice_number', 'zugnummer', 'zug');
@@ -629,7 +634,20 @@ END:VCALENDAR`;
                 <h3 className="text-lg font-semibold text-gray-900 tracking-tight">
                   {booking.venue_name || booking.destination_city}
                 </h3>
-                <p className="text-sm text-gray-500">{typeConfig.label}</p>
+                {/* Hotel Website Link - directly below name */}
+                {booking.booking_type === 'hotel' && getHotelWebsiteUrl() ? (
+                  <a 
+                    href={getHotelWebsiteUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-500 hover:text-blue-600 hover:underline flex items-center gap-1"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Hotel-Website
+                  </a>
+                ) : (
+                  <p className="text-sm text-gray-500">{typeConfig.label}</p>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -716,7 +734,37 @@ END:VCALENDAR`;
           )}
 
           {/* Type-specific route/details */}
-          {booking.booking_type === 'train' && renderTrainRoute()}
+          {booking.booking_type === 'train' && (
+            <>
+              {renderTrainRoute()}
+              {/* Fahrkarte PDF - prominent display for train tickets */}
+              {attachments.filter(a => a.content_type?.includes('pdf')).length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+                    Fahrkarte
+                  </div>
+                  {attachments
+                    .filter(a => a.content_type?.includes('pdf'))
+                    .map(att => (
+                      <button
+                        key={att.id}
+                        onClick={() => setViewingDocument(att)}
+                        className="flex items-center gap-3 w-full p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200 hover:border-green-400 hover:shadow-md transition-all text-left"
+                      >
+                        <div className="w-12 h-12 rounded-lg bg-green-500 flex items-center justify-center shadow-sm">
+                          <FileText className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-gray-900">PDF öffnen</div>
+                          <div className="text-sm text-gray-500 truncate">{att.file_name}</div>
+                        </div>
+                        <ExternalLink className="w-5 h-5 text-green-600 flex-shrink-0" />
+                      </button>
+                    ))}
+                </div>
+              )}
+            </>
+          )}
           {booking.booking_type === 'flight' && renderFlightRoute()}
           {booking.booking_type === 'hotel' && (
             <>
