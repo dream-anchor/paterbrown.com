@@ -65,6 +65,114 @@ serve(async (req) => {
       .select("*")
       .eq("email_id", email_id);
 
+    console.log("Found attachments:", attachments?.length || 0);
+
+    // ========== EXTRACT PDF CONTENT USING GEMINI VISION ==========
+    let attachmentContents = "";
+    
+    if (attachments && attachments.length > 0) {
+      for (const attachment of attachments) {
+        if (attachment.content_type?.includes('pdf') || attachment.file_name?.toLowerCase().endsWith('.pdf')) {
+          console.log(`Processing PDF attachment: ${attachment.file_name}`);
+          
+          try {
+            // Download PDF from Supabase Storage
+            const { data: fileData, error: downloadError } = await supabase.storage
+              .from("travel-attachments")
+              .download(attachment.file_path);
+            
+            if (downloadError) {
+              console.error(`Error downloading PDF ${attachment.file_name}:`, downloadError);
+              continue;
+            }
+            
+            if (fileData) {
+              // Convert blob to base64
+              const arrayBuffer = await fileData.arrayBuffer();
+              const uint8Array = new Uint8Array(arrayBuffer);
+              let binaryString = '';
+              for (let i = 0; i < uint8Array.length; i++) {
+                binaryString += String.fromCharCode(uint8Array[i]);
+              }
+              const pdfBase64 = btoa(binaryString);
+              
+              console.log(`PDF converted to base64, size: ${pdfBase64.length} chars`);
+              
+              // Use Gemini Vision to extract text from PDF
+              const visionResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${lovableApiKey}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  model: "google/gemini-2.5-flash",
+                  messages: [{
+                    role: "user",
+                    content: [
+                      { 
+                        type: "text", 
+                        text: `Extrahiere ALLE Informationen aus diesem Reisedokument/Ticket. Gib die Daten strukturiert zurück:
+
+Für Bahntickets:
+- Auftragsnummer / Buchungsnummer (SEHR WICHTIG!)
+- Zugnummer(n) (z.B. ICE 1044)
+- Abfahrt: Ort, Datum, Uhrzeit
+- Ankunft: Ort, Datum, Uhrzeit
+- Klasse (1 oder 2)
+- Wagen und Sitzplatz
+- Reisende(r) Name(n)
+- Preis
+- BahnCard falls vorhanden
+
+Für Flugtickets:
+- Buchungscode / PNR
+- Flugnummer
+- Abflug/Ankunft Ort, Datum, Uhrzeit
+- Terminal, Gate
+- Passagier(e)
+
+Für Hotelbestätigungen:
+- Buchungsnummer
+- Hotelname und Adresse
+- Check-in / Check-out Datum und Uhrzeit
+- Zimmertyp
+- Gast(en) Name(n)
+- Preis
+
+Gib alle gefundenen Informationen als lesbaren Text zurück.` 
+                      },
+                      { 
+                        type: "image_url", 
+                        image_url: { 
+                          url: `data:application/pdf;base64,${pdfBase64}` 
+                        } 
+                      }
+                    ]
+                  }]
+                }),
+              });
+              
+              if (visionResponse.ok) {
+                const visionData = await visionResponse.json();
+                const extractedText = visionData.choices?.[0]?.message?.content || '';
+                console.log(`Extracted from ${attachment.file_name}:`, extractedText.substring(0, 500));
+                
+                if (extractedText) {
+                  attachmentContents += `\n\n=== INHALT AUS ANHANG "${attachment.file_name}" ===\n${extractedText}`;
+                }
+              } else {
+                const errorText = await visionResponse.text();
+                console.error(`Vision API error for ${attachment.file_name}:`, errorText);
+              }
+            }
+          } catch (pdfError) {
+            console.error(`Error processing PDF ${attachment.file_name}:`, pdfError);
+          }
+        }
+      }
+    }
+
     // Fetch existing bookings to detect updates
     const { data: existingBookings } = await supabase
       .from("travel_bookings")
@@ -72,7 +180,7 @@ serve(async (req) => {
       .order("created_at", { ascending: false })
       .limit(100);
 
-    // Build prompt for AI
+    // Build prompt for AI - now including PDF content!
     const emailContent = `
 E-Mail von: ${email.from_address}
 Betreff: ${email.subject}
@@ -82,7 +190,10 @@ Inhalt:
 ${email.body_text || email.body_html?.replace(/<[^>]*>/g, ' ') || '(kein Inhalt)'}
 
 Anhänge: ${attachments?.map(a => a.file_name).join(", ") || "keine"}
+${attachmentContents}
     `.trim();
+
+    console.log("Email content length including attachments:", emailContent.length);
 
     const existingBookingsContext = existingBookings?.length 
       ? `\n\nBereits erfasste Buchungen (zum Erkennen von Updates):\n${existingBookings.map(b => 
