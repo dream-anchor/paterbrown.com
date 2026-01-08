@@ -139,10 +139,10 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
           {emails.length} E-Mail{emails.length !== 1 ? "s" : ""}
         </h3>
         <Button 
-          variant="outline" 
+          variant="apple" 
           size="sm" 
           onClick={fetchEmails}
-          className="rounded-full border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+          className="rounded-full"
         >
           <RefreshCw className="w-4 h-4 mr-2 text-gray-600" />
           <span className="text-gray-700">Aktualisieren</span>

@@ -282,15 +282,46 @@ ${existingBookingsContext}`;
         // Check if this is an update to an existing booking
         let existingBookingId: string | null = null;
         
+        // First try: Match by booking_number
         if (booking.booking_number) {
           const { data: existing } = await supabase
             .from("travel_bookings")
             .select("id")
             .eq("booking_number", booking.booking_number)
-            .single();
+            .maybeSingle();
           
           if (existing) {
             existingBookingId = existing.id;
+            console.log(`Matched by booking_number: ${booking.booking_number}`);
+          }
+        }
+        
+        // Fallback: Match by booking_type + traveler + destination + date (same day)
+        if (!existingBookingId) {
+          const bookingDate = new Date(booking.start_datetime);
+          const dateStr = bookingDate.toISOString().split('T')[0];
+          
+          // Build query for matching
+          let query = supabase
+            .from("travel_bookings")
+            .select("id, details")
+            .eq("booking_type", booking.booking_type)
+            .eq("destination_city", booking.destination_city)
+            .gte("start_datetime", `${dateStr}T00:00:00`)
+            .lte("start_datetime", `${dateStr}T23:59:59`);
+          
+          // Match by traveler name(s)
+          const travelerName = booking.traveler_name || (booking.traveler_names?.length ? booking.traveler_names[0] : null);
+          if (travelerName) {
+            query = query.or(`traveler_name.ilike.%${travelerName}%,traveler_names.cs.{"${travelerName}"}`);
+          }
+          
+          const { data: potentialMatches } = await query;
+          
+          if (potentialMatches && potentialMatches.length > 0) {
+            // Take the first match (oldest entry for this criteria)
+            existingBookingId = potentialMatches[0].id;
+            console.log(`Matched by fallback (type+traveler+dest+date): ${existingBookingId}`);
           }
         }
 
