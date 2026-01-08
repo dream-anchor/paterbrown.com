@@ -131,7 +131,7 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
   };
 
   return (
-    <>
+    <div style={{ color: '#111827' }}>
       <div className={`bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-100 overflow-hidden ${isMobile ? 'rounded-t-2xl rounded-b-none' : ''}`}>
         {/* Header - Apple-style gradient */}
         <div className="p-5 border-b border-gray-100/80 bg-gradient-to-b from-gray-50 to-white">
@@ -380,6 +380,6 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
           onClose={() => setViewingDocument(null)}
         />
       )}
-    </>
+    </div>
   );
 }
