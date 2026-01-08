@@ -330,9 +330,9 @@ export default function TravelDashboard() {
               )}
             </div>
 
-            {/* Detail Panel (sticky) */}
+            {/* Detail Panel (sticky with proper scroll) */}
             <div className="hidden lg:block">
-              <div className="sticky top-32">
+              <div className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl">
                 <TravelBookingDetail 
                   booking={selectedBooking} 
                   onClose={() => setSelectedBooking(null)}
