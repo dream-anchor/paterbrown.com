@@ -121,6 +121,10 @@ async function downloadAttachmentFromUrl(url: string): Promise<{
 }
 
 serve(async (req) => {
+  console.log("=== PROCESS TRAVEL EMAIL CALLED ===");
+  console.log("Timestamp:", new Date().toISOString());
+  console.log("Request method:", req.method);
+  
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -136,7 +140,7 @@ serve(async (req) => {
     
     // Debug: Log the raw payload structure
     console.log("Raw payload keys:", Object.keys(emailPayload));
-    console.log("Raw payload:", JSON.stringify(emailPayload, null, 2));
+    console.log("Raw payload (first 2000 chars):", JSON.stringify(emailPayload, null, 2).substring(0, 2000));
 
     // Flexibly extract fields from various formats
     const fromAddress = extractEmailAddress(
