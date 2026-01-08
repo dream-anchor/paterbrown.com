@@ -72,6 +72,54 @@ function extractEmailAddress(value: unknown): string {
   return "unknown";
 }
 
+// Helper function to download attachment from URL (Zapier S3 format)
+async function downloadAttachmentFromUrl(url: string): Promise<{
+  content: Uint8Array;
+  filename: string;
+  contentType: string;
+} | null> {
+  try {
+    console.log("Downloading attachment from URL:", url.substring(0, 100) + "...");
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error("Failed to download attachment:", response.status, response.statusText);
+      return null;
+    }
+    
+    const arrayBuffer = await response.arrayBuffer();
+    const content = new Uint8Array(arrayBuffer);
+    
+    // Extract filename from URL or Content-Disposition header
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = 'attachment.pdf';
+    
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      if (match) filename = match[1].replace(/['"]/g, '');
+    } else {
+      // Try to extract from URL
+      try {
+        const urlPath = new URL(url).pathname;
+        const urlFilename = urlPath.split('/').pop();
+        if (urlFilename && urlFilename.includes('.')) {
+          filename = decodeURIComponent(urlFilename);
+        }
+      } catch {
+        // Keep default filename
+      }
+    }
+    
+    const contentType = response.headers.get('Content-Type') || 'application/pdf';
+    
+    console.log(`Downloaded: ${filename}, size: ${content.length}, type: ${contentType}`);
+    return { content, filename, contentType };
+  } catch (error) {
+    console.error("Error downloading attachment from URL:", error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -232,6 +280,61 @@ serve(async (req) => {
         }
       } catch (attachErr) {
         console.error("Error processing attachment:", attachErr);
+      }
+    }
+
+    // Check for Zapier URL format (string with S3 URL)
+    const attachmentsField = (emailPayload as any).Attachments;
+    if (typeof attachmentsField === 'string' && attachmentsField.includes('http')) {
+      // Zapier sends attachment URLs as comma-separated string or single URL
+      const zapierAttachmentUrls = attachmentsField.split(',').map((url: string) => url.trim()).filter(Boolean);
+      console.log("Detected Zapier S3 attachment URLs:", zapierAttachmentUrls.length);
+
+      for (const url of zapierAttachmentUrls) {
+        const downloaded = await downloadAttachmentFromUrl(url);
+        
+        if (!downloaded) {
+          console.warn("Could not download attachment from URL:", url.substring(0, 80));
+          continue;
+        }
+        
+        const { content, filename, contentType } = downloaded;
+        
+        // Generate unique file path
+        const timestamp = Date.now();
+        const sanitizedName = filename.replace(/[^a-zA-Z0-9.-]/g, "_");
+        const filePath = `${emailRecord.id}/${timestamp}_${sanitizedName}`;
+
+        console.log(`Uploading URL attachment to path: ${filePath}, size: ${content.length}`);
+
+        // Upload to storage
+        const { error: uploadError } = await supabase.storage
+          .from("travel-attachments")
+          .upload(filePath, content, {
+            contentType: contentType,
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error("Error uploading URL attachment:", uploadError);
+          continue;
+        }
+
+        // Save attachment record
+        const { error: attachError } = await supabase
+          .from("travel_attachments")
+          .insert({
+            email_id: emailRecord.id,
+            file_name: filename,
+            file_path: filePath,
+            content_type: contentType,
+            file_size: content.length,
+          });
+
+        if (!attachError) {
+          savedAttachments.push(filename);
+          console.log(`URL attachment saved: ${filename}`);
+        }
       }
     }
 
