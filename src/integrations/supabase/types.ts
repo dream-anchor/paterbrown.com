@@ -65,6 +65,54 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_versions: {
+        Row: {
+          booking_id: string
+          change_summary: string | null
+          changed_by: string
+          created_at: string
+          id: string
+          previous_data: Json
+          source_email_id: string | null
+          version_number: number
+        }
+        Insert: {
+          booking_id: string
+          change_summary?: string | null
+          changed_by?: string
+          created_at?: string
+          id?: string
+          previous_data: Json
+          source_email_id?: string | null
+          version_number?: number
+        }
+        Update: {
+          booking_id?: string
+          change_summary?: string | null
+          changed_by?: string
+          created_at?: string
+          id?: string
+          previous_data?: Json
+          source_email_id?: string | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_versions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "travel_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_versions_source_email_id_fkey"
+            columns: ["source_email_id"]
+            isOneToOne: false
+            referencedRelation: "travel_emails"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string | null
@@ -140,6 +188,219 @@ export type Database = {
         }
         Relationships: []
       }
+      travel_attachments: {
+        Row: {
+          booking_id: string | null
+          content_type: string | null
+          created_at: string
+          email_id: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+        }
+        Insert: {
+          booking_id?: string | null
+          content_type?: string | null
+          created_at?: string
+          email_id?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+        }
+        Update: {
+          booking_id?: string | null
+          content_type?: string | null
+          created_at?: string
+          email_id?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "travel_attachments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "travel_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "travel_attachments_email_id_fkey"
+            columns: ["email_id"]
+            isOneToOne: false
+            referencedRelation: "travel_emails"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      travel_bookings: {
+        Row: {
+          ai_confidence: number | null
+          booking_number: string | null
+          booking_type: Database["public"]["Enums"]["booking_type"]
+          created_at: string
+          destination_city: string
+          details: Json | null
+          end_datetime: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          origin_city: string | null
+          provider: string | null
+          source_email_id: string | null
+          start_datetime: string
+          status: Database["public"]["Enums"]["booking_status"]
+          traveler_name: string | null
+          traveler_names: string[] | null
+          trip_id: string | null
+          updated_at: string
+          venue_address: string | null
+          venue_name: string | null
+        }
+        Insert: {
+          ai_confidence?: number | null
+          booking_number?: string | null
+          booking_type: Database["public"]["Enums"]["booking_type"]
+          created_at?: string
+          destination_city: string
+          details?: Json | null
+          end_datetime?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          origin_city?: string | null
+          provider?: string | null
+          source_email_id?: string | null
+          start_datetime: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          traveler_name?: string | null
+          traveler_names?: string[] | null
+          trip_id?: string | null
+          updated_at?: string
+          venue_address?: string | null
+          venue_name?: string | null
+        }
+        Update: {
+          ai_confidence?: number | null
+          booking_number?: string | null
+          booking_type?: Database["public"]["Enums"]["booking_type"]
+          created_at?: string
+          destination_city?: string
+          details?: Json | null
+          end_datetime?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          origin_city?: string | null
+          provider?: string | null
+          source_email_id?: string | null
+          start_datetime?: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          traveler_name?: string | null
+          traveler_names?: string[] | null
+          trip_id?: string | null
+          updated_at?: string
+          venue_address?: string | null
+          venue_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "travel_bookings_source_email_id_fkey"
+            columns: ["source_email_id"]
+            isOneToOne: false
+            referencedRelation: "travel_emails"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "travel_bookings_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "travel_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      travel_emails: {
+        Row: {
+          body_html: string | null
+          body_text: string | null
+          created_at: string
+          error_message: string | null
+          from_address: string
+          id: string
+          raw_payload: Json | null
+          received_at: string
+          status: Database["public"]["Enums"]["email_status"]
+          subject: string | null
+          to_address: string | null
+          updated_at: string
+        }
+        Insert: {
+          body_html?: string | null
+          body_text?: string | null
+          created_at?: string
+          error_message?: string | null
+          from_address: string
+          id?: string
+          raw_payload?: Json | null
+          received_at?: string
+          status?: Database["public"]["Enums"]["email_status"]
+          subject?: string | null
+          to_address?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body_html?: string | null
+          body_text?: string | null
+          created_at?: string
+          error_message?: string | null
+          from_address?: string
+          id?: string
+          raw_payload?: Json | null
+          received_at?: string
+          status?: Database["public"]["Enums"]["email_status"]
+          subject?: string | null
+          to_address?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      travel_trips: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          notes: string | null
+          start_date: string | null
+          status: Database["public"]["Enums"]["trip_status"]
+          trip_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["trip_status"]
+          trip_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["trip_status"]
+          trip_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -176,7 +437,17 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      booking_status: "confirmed" | "changed" | "cancelled" | "pending"
+      booking_type:
+        | "hotel"
+        | "train"
+        | "flight"
+        | "bus"
+        | "rental_car"
+        | "other"
+      email_status: "pending" | "processing" | "processed" | "error"
       event_source: "KL" | "KBA" | "unknown"
+      trip_status: "active" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -305,7 +576,11 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      booking_status: ["confirmed", "changed", "cancelled", "pending"],
+      booking_type: ["hotel", "train", "flight", "bus", "rental_car", "other"],
+      email_status: ["pending", "processing", "processed", "error"],
       event_source: ["KL", "KBA", "unknown"],
+      trip_status: ["active", "completed", "cancelled"],
     },
   },
 } as const

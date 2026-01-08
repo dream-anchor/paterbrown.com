@@ -7,8 +7,9 @@ import EventCalendar from "@/components/admin/EventCalendar";
 
 import EventMap from "@/components/admin/EventMap";
 import CalendarExport from "@/components/admin/CalendarExport";
+import TravelDashboard from "@/components/admin/TravelDashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Upload, Share2, Sparkles, Map } from "lucide-react";
+import { Calendar, Upload, Share2, Sparkles, Map, Plane } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AdminEvent {
@@ -183,6 +184,13 @@ const Admin = () => {
               <Share2 className="w-4 h-4 mr-2 inline-block" />
               <span className="hidden sm:inline">Teilen</span>
             </TabsTrigger>
+            <TabsTrigger 
+              value="travel" 
+              className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
+            >
+              <Plane className="w-4 h-4 mr-2 inline-block" />
+              <span className="hidden sm:inline">Reisen</span>
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -202,6 +210,10 @@ const Admin = () => {
 
           <TabsContent value="export" className="mt-0 focus-visible:outline-none">
             <CalendarExport />
+          </TabsContent>
+
+          <TabsContent value="travel" className="mt-0 focus-visible:outline-none">
+            <TravelDashboard />
           </TabsContent>
         </div>
       </Tabs>

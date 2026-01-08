@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.geocode-events]
 verify_jwt = true
+
+[functions.process-travel-email]
+verify_jwt = false
+
+[functions.analyze-travel-booking]
+verify_jwt = false
