@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TravelBookingDetail from "./TravelBookingDetail";
 import TravelEmailInbox from "./TravelEmailInbox";
+import TravelImportModal from "./TravelImportModal";
 
 interface TravelBooking {
   id: string;
@@ -104,6 +105,7 @@ export default function TravelDashboard() {
   const [selectedBooking, setSelectedBooking] = useState<TravelBooking | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("bookings");
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -222,6 +224,7 @@ export default function TravelDashboard() {
                 <RefreshCw className="w-4 h-4" />
               </Button>
               <Button 
+                onClick={() => setIsImportModalOpen(true)}
                 className="rounded-full bg-[#1a1a1a] text-white hover:bg-gray-800 px-4 gap-2"
               >
                 <Upload className="w-4 h-4" />
@@ -230,6 +233,16 @@ export default function TravelDashboard() {
             </div>
           )}
         </div>
+
+        {/* Import Modal */}
+        <TravelImportModal
+          open={isImportModalOpen}
+          onOpenChange={setIsImportModalOpen}
+          onImportComplete={() => {
+            fetchBookings();
+            setIsImportModalOpen(false);
+          }}
+        />
 
         <TabsContent value="bookings" className="mt-6">
           {/* Split View Container */}
