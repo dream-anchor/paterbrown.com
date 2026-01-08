@@ -6,20 +6,70 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface PostmarkInboundEmail {
-  FromFull: { Email: string; Name: string };
-  ToFull: Array<{ Email: string; Name: string }>;
-  Subject: string;
-  TextBody: string;
-  HtmlBody: string;
-  Date: string;
+// Flexible interface supporting both Postmark and Zapier formats
+interface FlexibleEmailPayload {
+  // Postmark format (nested objects)
+  FromFull?: { Email: string; Name: string };
+  ToFull?: Array<{ Email: string; Name: string }>;
+  
+  // Zapier/Simple format (flat strings)
+  From?: string;
+  To?: string;
+  from?: string;
+  to?: string;
+  
+  // Subject variations
+  Subject?: string;
+  subject?: string;
+  
+  // Body variations
+  TextBody?: string;
+  text_body?: string;
+  body?: string;
+  Body?: string;
+  plain?: string;
+  Plain?: string;
+  
+  // HTML body variations
+  HtmlBody?: string;
+  html_body?: string;
+  html?: string;
+  Html?: string;
+  
+  // Date variations
+  Date?: string;
+  date?: string;
+  received_at?: string;
+  
+  // Attachments (Postmark format)
   Attachments?: Array<{
     Name: string;
     Content: string;
     ContentType: string;
     ContentLength: number;
   }>;
+  
+  // Headers (Postmark format)
   Headers?: Array<{ Name: string; Value: string }>;
+}
+
+// Helper function to extract email address from various formats
+function extractEmailAddress(value: unknown): string {
+  if (!value) return "unknown";
+  
+  // If it's an object with Email property (Postmark format)
+  if (typeof value === "object" && value !== null && "Email" in value) {
+    return (value as { Email: string }).Email || "unknown";
+  }
+  
+  // If it's a string, it might be "Name <email@example.com>" or just "email@example.com"
+  if (typeof value === "string") {
+    const emailMatch = value.match(/<([^>]+)>/);
+    if (emailMatch) return emailMatch[1];
+    return value;
+  }
+  
+  return "unknown";
 }
 
 serve(async (req) => {
@@ -33,22 +83,64 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Parse the incoming email from Postmark
-    const emailPayload: PostmarkInboundEmail = await req.json();
+    // Parse the incoming email payload
+    const emailPayload: FlexibleEmailPayload = await req.json();
     
-    console.log("Received email from:", emailPayload.FromFull?.Email);
-    console.log("Subject:", emailPayload.Subject);
+    // Debug: Log the raw payload structure
+    console.log("Raw payload keys:", Object.keys(emailPayload));
+    console.log("Raw payload:", JSON.stringify(emailPayload, null, 2));
+
+    // Flexibly extract fields from various formats
+    const fromAddress = extractEmailAddress(
+      emailPayload.FromFull || emailPayload.From || emailPayload.from
+    );
+    
+    const toAddress = extractEmailAddress(
+      emailPayload.ToFull?.[0] || emailPayload.To || emailPayload.to
+    );
+    
+    const subject = 
+      emailPayload.Subject || 
+      emailPayload.subject || 
+      "(kein Betreff)";
+    
+    const textBody = 
+      emailPayload.TextBody || 
+      emailPayload.text_body || 
+      emailPayload.body || 
+      emailPayload.Body ||
+      emailPayload.plain ||
+      emailPayload.Plain ||
+      "";
+    
+    const htmlBody = 
+      emailPayload.HtmlBody || 
+      emailPayload.html_body ||
+      emailPayload.html ||
+      emailPayload.Html ||
+      "";
+    
+    const receivedAt = 
+      emailPayload.Date || 
+      emailPayload.date ||
+      emailPayload.received_at ||
+      new Date().toISOString();
+
+    console.log("Extracted - From:", fromAddress);
+    console.log("Extracted - To:", toAddress);
+    console.log("Extracted - Subject:", subject);
+    console.log("Extracted - Body length:", textBody.length);
 
     // Save the email to the database
     const { data: emailRecord, error: emailError } = await supabase
       .from("travel_emails")
       .insert({
-        from_address: emailPayload.FromFull?.Email || "unknown",
-        to_address: emailPayload.ToFull?.[0]?.Email || null,
-        subject: emailPayload.Subject || "(kein Betreff)",
-        body_text: emailPayload.TextBody || "",
-        body_html: emailPayload.HtmlBody || "",
-        received_at: emailPayload.Date ? new Date(emailPayload.Date).toISOString() : new Date().toISOString(),
+        from_address: fromAddress,
+        to_address: toAddress,
+        subject: subject,
+        body_text: textBody,
+        body_html: htmlBody,
+        received_at: new Date(receivedAt).toISOString(),
         status: "pending",
         raw_payload: emailPayload,
       })
@@ -62,7 +154,7 @@ serve(async (req) => {
 
     console.log("Email saved with ID:", emailRecord.id);
 
-    // Process attachments if any
+    // Process attachments if any (Postmark format)
     const attachments = emailPayload.Attachments || [];
     const savedAttachments: string[] = [];
 
@@ -147,7 +239,8 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         email_id: emailRecord.id,
-        attachments_saved: savedAttachments.length 
+        attachments_saved: savedAttachments.length,
+        extracted: { fromAddress, toAddress, subject, bodyLength: textBody.length }
       }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
