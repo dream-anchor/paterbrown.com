@@ -154,25 +154,55 @@ serve(async (req) => {
 
     console.log("Email saved with ID:", emailRecord.id);
 
-    // Process attachments if any (Postmark format)
-    const attachments = emailPayload.Attachments || [];
+    // Process attachments - support multiple formats
+    // Postmark: emailPayload.Attachments
+    // Zapier/other: emailPayload.attachments or emailPayload.files
+    const rawAttachments = 
+      emailPayload.Attachments || 
+      (emailPayload as any).attachments ||
+      (emailPayload as any).files ||
+      [];
+    
+    console.log("Raw attachments received:", rawAttachments?.length || 0);
+    console.log("Attachment format check:", {
+      hasPostmarkAttachments: !!emailPayload.Attachments,
+      hasLowerAttachments: !!(emailPayload as any).attachments,
+      hasFiles: !!(emailPayload as any).files,
+      attachmentKeys: rawAttachments?.length > 0 ? Object.keys(rawAttachments[0]) : []
+    });
+
     const savedAttachments: string[] = [];
 
-    for (const attachment of attachments) {
+    for (const attachment of rawAttachments) {
       try {
+        // Support different attachment formats
+        const name = attachment.Name || attachment.name || attachment.filename || attachment.fileName || 'unknown';
+        const content = attachment.Content || attachment.content || attachment.data || attachment.base64;
+        const contentType = attachment.ContentType || attachment.contentType || attachment.content_type || attachment.mime_type || 'application/octet-stream';
+        const contentLength = attachment.ContentLength || attachment.contentLength || attachment.size || 0;
+
+        console.log(`Processing attachment: ${name}, type: ${contentType}, hasContent: ${!!content}`);
+
+        if (!content) {
+          console.warn(`Attachment ${name} has no content, skipping`);
+          continue;
+        }
+
         // Decode base64 content
-        const binaryContent = Uint8Array.from(atob(attachment.Content), c => c.charCodeAt(0));
+        const binaryContent = Uint8Array.from(atob(content), c => c.charCodeAt(0));
         
         // Generate unique file path
         const timestamp = Date.now();
-        const sanitizedName = attachment.Name.replace(/[^a-zA-Z0-9.-]/g, "_");
+        const sanitizedName = name.replace(/[^a-zA-Z0-9.-]/g, "_");
         const filePath = `${emailRecord.id}/${timestamp}_${sanitizedName}`;
+
+        console.log(`Uploading to path: ${filePath}, size: ${binaryContent.length}`);
 
         // Upload to storage
         const { error: uploadError } = await supabase.storage
           .from("travel-attachments")
           .upload(filePath, binaryContent, {
-            contentType: attachment.ContentType,
+            contentType: contentType,
             upsert: false,
           });
 
@@ -181,28 +211,31 @@ serve(async (req) => {
           continue;
         }
 
+        console.log(`Successfully uploaded: ${filePath}`);
+
         // Save attachment record
         const { error: attachError } = await supabase
           .from("travel_attachments")
           .insert({
             email_id: emailRecord.id,
-            file_name: attachment.Name,
+            file_name: name,
             file_path: filePath,
-            content_type: attachment.ContentType,
-            file_size: attachment.ContentLength,
+            content_type: contentType,
+            file_size: contentLength || binaryContent.length,
           });
 
         if (attachError) {
           console.error("Error saving attachment record:", attachError);
         } else {
-          savedAttachments.push(attachment.Name);
+          savedAttachments.push(name);
+          console.log(`Attachment record saved: ${name}`);
         }
       } catch (attachErr) {
-        console.error("Error processing attachment:", attachment.Name, attachErr);
+        console.error("Error processing attachment:", attachErr);
       }
     }
 
-    console.log("Saved attachments:", savedAttachments);
+    console.log("Total saved attachments:", savedAttachments.length, savedAttachments);
 
     // Update email status to processing
     await supabase
