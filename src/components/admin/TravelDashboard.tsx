@@ -41,21 +41,21 @@ interface GroupedBookings {
   [date: string]: TravelBooking[];
 }
 
-// Dark mode config
+// Light mode config - Apple HIG inspired
 const bookingTypeConfig = {
-  hotel: { icon: Hotel, label: "Hotel", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
-  train: { icon: Train, label: "Zug", color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
-  flight: { icon: Plane, label: "Flug", color: "bg-orange-500/20 text-orange-400 border-orange-500/30" },
-  bus: { icon: Bus, label: "Bus", color: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
-  rental_car: { icon: Car, label: "Mietwagen", color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" },
-  other: { icon: Package, label: "Sonstiges", color: "bg-gray-500/20 text-gray-400 border-gray-500/30" },
+  hotel: { icon: Hotel, label: "Hotel", color: "bg-blue-50 text-blue-600 border-blue-200" },
+  train: { icon: Train, label: "Zug", color: "bg-red-50 text-red-600 border-red-200" }, // DB-Rot
+  flight: { icon: Plane, label: "Flug", color: "bg-orange-50 text-orange-600 border-orange-200" },
+  bus: { icon: Bus, label: "Bus", color: "bg-purple-50 text-purple-600 border-purple-200" },
+  rental_car: { icon: Car, label: "Mietwagen", color: "bg-cyan-50 text-cyan-600 border-cyan-200" },
+  other: { icon: Package, label: "Sonstiges", color: "bg-gray-50 text-gray-600 border-gray-200" },
 };
 
 const statusConfig = {
   confirmed: { accent: "bg-emerald-500" },
   changed: { accent: "bg-amber-500" },
   cancelled: { accent: "bg-red-500" },
-  pending: { accent: "bg-gray-500" },
+  pending: { accent: "bg-gray-400" },
 };
 
 // Helper: Check if datetime has a real time (not 00:00 UTC placeholder)
@@ -66,10 +66,36 @@ const hasRealTime = (datetime: string): boolean => {
   return !(hours === 0 && minutes === 0);
 };
 
-// Format time with fallback
+// Format time with fallback - show "TBA" if no real time
 const formatTime = (datetime: string): string => {
-  if (!hasRealTime(datetime)) return "–";
+  if (!hasRealTime(datetime)) return "TBA";
   return format(parseISO(datetime), "HH:mm", { locale: de });
+};
+
+// Deduplicate bookings by type, date, and route
+const deduplicateBookings = (bookings: TravelBooking[]): TravelBooking[] => {
+  const seen = new Map<string, TravelBooking>();
+  
+  for (const booking of bookings) {
+    const key = `${booking.booking_type}-${booking.start_datetime.split('T')[0]}-${booking.origin_city || ''}-${booking.destination_city}`;
+    
+    const existing = seen.get(key);
+    if (!existing) {
+      seen.set(key, booking);
+    } else {
+      // Keep the booking with more details
+      if (
+        (booking.end_datetime && !existing.end_datetime) ||
+        (booking.booking_number && !existing.booking_number) ||
+        (hasRealTime(booking.start_datetime) && !hasRealTime(existing.start_datetime)) ||
+        Object.keys(booking.details || {}).length > Object.keys(existing.details || {}).length
+      ) {
+        seen.set(key, booking);
+      }
+    }
+  }
+  
+  return Array.from(seen.values());
 };
 
 export default function TravelDashboard() {
@@ -93,7 +119,9 @@ export default function TravelDashboard() {
         .order("start_datetime", { ascending: true });
 
       if (error) throw error;
-      setBookings((data as TravelBooking[]) || []);
+      // Deduplicate the bookings
+      const deduplicated = deduplicateBookings((data as TravelBooking[]) || []);
+      setBookings(deduplicated);
     } catch (error: any) {
       console.error("Error fetching bookings:", error);
       toast({
@@ -147,7 +175,7 @@ export default function TravelDashboard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-white/50" />
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
       </div>
     );
   }
@@ -157,17 +185,17 @@ export default function TravelDashboard() {
       {/* Sub-Navigation - Apple Segmented Control Style */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <TabsList className="inline-flex p-1 bg-[#1c1c1e] rounded-full gap-0.5 border border-white/5">
+          <TabsList className="inline-flex p-1 bg-gray-100 rounded-full gap-0.5">
             <TabsTrigger 
               value="bookings" 
-              className="px-5 py-2 rounded-full text-sm font-medium text-gray-400 hover:text-white data-[state=active]:bg-white/10 data-[state=active]:text-white transition-all duration-200"
+              className="px-5 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm transition-all duration-200"
             >
               <Calendar className="w-4 h-4 mr-2" />
               Buchungen
             </TabsTrigger>
             <TabsTrigger 
               value="inbox" 
-              className="px-5 py-2 rounded-full text-sm font-medium text-gray-400 hover:text-white data-[state=active]:bg-white/10 data-[state=active]:text-white transition-all duration-200"
+              className="px-5 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm transition-all duration-200"
             >
               <Mail className="w-4 h-4 mr-2" />
               Posteingang
@@ -177,24 +205,24 @@ export default function TravelDashboard() {
           {activeTab === "bookings" && (
             <div className="flex items-center gap-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   placeholder="Suchen..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 w-64 bg-[#1c1c1e] border-white/10 text-white placeholder:text-gray-500 rounded-full focus:ring-2 focus:ring-white/20 focus:border-white/20 transition-all"
+                  className="pl-9 w-64 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-full focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all"
                 />
               </div>
               <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={fetchBookings}
-                className="rounded-full bg-[#1c1c1e] border border-white/10 hover:bg-white/10 text-gray-400 hover:text-white"
+                className="rounded-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 hover:text-gray-900"
               >
                 <RefreshCw className="w-4 h-4" />
               </Button>
               <Button 
-                className="rounded-full bg-white text-gray-900 hover:bg-gray-100 px-4 gap-2"
+                className="rounded-full bg-[#1a1a1a] text-white hover:bg-gray-800 px-4 gap-2"
               >
                 <Upload className="w-4 h-4" />
                 <span className="hidden sm:inline">Import</span>
@@ -207,11 +235,11 @@ export default function TravelDashboard() {
           {/* Split View Container */}
           <div className="h-[calc(100vh-220px)] min-h-[500px] flex gap-6 overflow-hidden">
             {/* Bookings List - Scrollable */}
-            <div className="flex-1 md:flex-[2] overflow-y-auto min-h-0 space-y-6 pr-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
+            <div className="flex-1 md:flex-[2] overflow-y-auto min-h-0 space-y-6 pr-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-200">
               {sortedDates.length === 0 ? (
-                <div className="bg-[#1c1c1e] rounded-2xl border border-white/10 p-12 text-center">
-                  <Package className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-white mb-1">
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-12 text-center">
+                  <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-[#1a1a1a] mb-1">
                     Keine Buchungen
                   </h3>
                   <p className="text-sm text-gray-500">
@@ -225,14 +253,14 @@ export default function TravelDashboard() {
                     <div className="flex items-center gap-3">
                       <div className={`px-4 py-1.5 rounded-full text-sm font-semibold ${
                         isPast(parseISO(date)) && !isToday(parseISO(date))
-                          ? "bg-white/5 text-gray-500"
+                          ? "bg-gray-100 text-gray-400"
                           : isToday(parseISO(date))
-                          ? "bg-white text-gray-900"
-                          : "bg-white/10 text-white"
+                          ? "bg-[#1a1a1a] text-white"
+                          : "bg-gray-100 text-gray-700"
                       }`}>
                         {getDateLabel(date)}
                       </div>
-                      <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                      <div className="h-px flex-1 bg-gradient-to-r from-gray-200 to-transparent" />
                     </div>
 
                     {/* Bookings for this date */}
@@ -246,10 +274,10 @@ export default function TravelDashboard() {
                           <button
                             key={booking.id}
                             onClick={() => setSelectedBooking(booking)}
-                            className={`group relative w-full text-left bg-[#1c1c1e] rounded-xl p-4 border transition-all duration-150 active:scale-[0.98] ${
+                            className={`group relative w-full text-left bg-white rounded-xl p-4 border shadow-sm transition-all duration-150 active:scale-[0.98] ${
                               selectedBooking?.id === booking.id
-                                ? "border-white/30 bg-white/5"
-                                : "border-white/5 hover:border-white/15 hover:bg-white/[0.03]"
+                                ? "border-gray-400 shadow-md"
+                                : "border-gray-200 hover:border-gray-300 hover:shadow-md"
                             }`}
                           >
                             {/* Status indicator - vertical bar */}
@@ -264,7 +292,7 @@ export default function TravelDashboard() {
                               {/* Main Content - Compact */}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-2">
-                                  <span className="font-semibold text-white truncate">
+                                  <span className="font-semibold text-[#1a1a1a] truncate">
                                     {booking.booking_type === "hotel" 
                                       ? booking.venue_name || booking.destination_city
                                       : booking.origin_city 
@@ -272,16 +300,22 @@ export default function TravelDashboard() {
                                         : booking.destination_city
                                     }
                                   </span>
-                                  <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                                 </div>
                                 
                                 {/* Meta - Single line */}
                                 <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
                                   <span className="flex items-center gap-1">
                                     <Clock className="w-3.5 h-3.5" />
-                                    {formatTime(booking.start_datetime)}
-                                    {booking.end_datetime && hasRealTime(booking.end_datetime) && (
-                                      <> – {formatTime(booking.end_datetime)}</>
+                                    {hasRealTime(booking.start_datetime) ? (
+                                      <>
+                                        {formatTime(booking.start_datetime)}
+                                        {booking.end_datetime && hasRealTime(booking.end_datetime) && (
+                                          <> – {formatTime(booking.end_datetime)}</>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <span className="text-gray-400 italic">TBA</span>
                                     )}
                                   </span>
                                   {booking.provider && (
@@ -299,7 +333,7 @@ export default function TravelDashboard() {
               )}
             </div>
 
-            {/* Detail Panel - Floating Glass Sheet (Desktop) */}
+            {/* Detail Panel (Desktop) */}
             <div className="hidden md:flex md:flex-1 h-full overflow-hidden">
               <div className="w-full h-full overflow-y-auto rounded-2xl">
                 <TravelBookingDetail 
@@ -313,9 +347,9 @@ export default function TravelDashboard() {
 
           {/* Mobile Detail Panel - Sheet-style overlay */}
           {selectedBooking && (
-            <div className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedBooking(null)}>
+            <div className="md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedBooking(null)}>
               <div 
-                className="absolute bottom-0 left-0 right-0 bg-[#1c1c1e] rounded-t-3xl max-h-[85vh] overflow-auto shadow-2xl animate-slide-up"
+                className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[85vh] overflow-auto shadow-2xl animate-slide-up"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-4">
