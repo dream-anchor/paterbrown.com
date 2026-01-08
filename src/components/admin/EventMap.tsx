@@ -297,7 +297,7 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Missing Geodata Warning */}
       {eventsWithMissingGeodata.length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between">
@@ -346,16 +346,17 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
         )}
       </div>
 
-      {/* Split Layout: Map + List */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Map - 2/5 columns (sticky) */}
-        <div className="lg:col-span-2 lg:sticky lg:top-32 lg:self-start">
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+      {/* Split View Container - Fixed height for proper scrolling */}
+      <div className="h-[calc(100vh-280px)] min-h-[500px] flex flex-col md:flex-row gap-4 overflow-hidden">
+        
+        {/* Map - Fixed position (does not scroll) */}
+        <div className="h-[250px] md:h-full md:flex-[2] flex-shrink-0">
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm h-full">
             <MapContainer
               center={germanCenter}
               zoom={6}
               scrollWheelZoom={true}
-              className="h-[600px] lg:h-[calc(100vh-180px)] lg:max-h-[800px] w-full"
+              className="h-full w-full"
             >
               <FitBoundsToMarkers coords={routeCoords} />
               <TileLayer
@@ -409,8 +410,8 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
             </MapContainer>
           </div>
 
-          {/* Legend */}
-          <div className="flex items-center justify-center gap-4 text-xs text-gray-500 mt-3">
+          {/* Legend - only visible on desktop */}
+          <div className="hidden md:flex items-center justify-center gap-4 text-xs text-gray-500 mt-3">
             <div className="flex items-center gap-1.5">
               <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
               <span>Station</span>
@@ -422,9 +423,9 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
           </div>
         </div>
 
-        {/* Stations List - 3/5 columns */}
-        <div className="lg:col-span-3 space-y-2">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sticky top-24 bg-gray-50/95 backdrop-blur-sm py-2">
+        {/* Stations List - Scrollable */}
+        <div className="flex-1 md:flex-[3] overflow-y-auto min-h-0 space-y-2 pr-2">
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sticky top-0 bg-gray-50/95 backdrop-blur-sm py-2 z-10">
             Alle Stationen · {sortedEvents.length} Termine
           </h3>
           
