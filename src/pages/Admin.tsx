@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/admin/AdminLayout";
 import EventUploader from "@/components/admin/EventUploader";
 import EventCalendar from "@/components/admin/EventCalendar";
-
 import EventMap from "@/components/admin/EventMap";
 import CalendarExport from "@/components/admin/CalendarExport";
 import TravelDashboard from "@/components/admin/TravelDashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Upload, Share2, Sparkles, Map, Plane } from "lucide-react";
+import { Calendar, Upload, Sparkles, Map, Plane } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AdminEvent {
@@ -29,12 +28,20 @@ interface AdminEvent {
 }
 
 const Admin = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Get active tab from URL or default to "calendar"
+  const activeTab = searchParams.get("tab") || "calendar";
+
+  const handleTabChange = (value: string) => {
+    setSearchParams({ tab: value });
+  };
 
   // Hide Osano cookie banner for admin users
   useEffect(() => {
@@ -152,17 +159,10 @@ const Admin = () => {
 
   return (
     <AdminLayout>
-      <Tabs defaultValue="calendar" className="w-full">
-        {/* Premium Pill-Style Tabs */}
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        {/* Premium Pill-Style Tabs - Reordered: Kalender → Karte → Reisen → Upload */}
         <div className="sticky top-16 z-30 -mx-4 px-4 py-3 bg-gray-50/80 backdrop-blur-md border-b border-gray-100">
           <TabsList className="inline-flex p-1 bg-white rounded-full shadow-sm border border-gray-200 gap-1">
-            <TabsTrigger 
-              value="upload" 
-              className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
-            >
-              <Upload className="w-4 h-4 mr-2 inline-block" />
-              <span className="hidden sm:inline">Upload</span>
-            </TabsTrigger>
             <TabsTrigger 
               value="calendar" 
               className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
@@ -178,42 +178,37 @@ const Admin = () => {
               <span className="hidden sm:inline">Karte</span>
             </TabsTrigger>
             <TabsTrigger 
-              value="export" 
-              className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
-            >
-              <Share2 className="w-4 h-4 mr-2 inline-block" />
-              <span className="hidden sm:inline">Teilen</span>
-            </TabsTrigger>
-            <TabsTrigger 
               value="travel" 
               className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
             >
               <Plane className="w-4 h-4 mr-2 inline-block" />
               <span className="hidden sm:inline">Reisen</span>
             </TabsTrigger>
+            <TabsTrigger 
+              value="upload" 
+              className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
+            >
+              <Upload className="w-4 h-4 mr-2 inline-block" />
+              <span className="hidden sm:inline">Upload</span>
+            </TabsTrigger>
           </TabsList>
         </div>
 
         <div className="mt-6">
-          <TabsContent value="upload" className="mt-0 focus-visible:outline-none">
-            <EventUploader onEventsAdded={handleEventsAdded} />
-          </TabsContent>
-
           <TabsContent value="calendar" className="mt-0 focus-visible:outline-none">
             <EventCalendar events={events} onEventUpdate={fetchEvents} />
           </TabsContent>
-
 
           <TabsContent value="map" className="mt-0 focus-visible:outline-none">
             <EventMap events={events} onEventsUpdated={fetchEvents} />
           </TabsContent>
 
-          <TabsContent value="export" className="mt-0 focus-visible:outline-none">
-            <CalendarExport />
-          </TabsContent>
-
           <TabsContent value="travel" className="mt-0 focus-visible:outline-none">
             <TravelDashboard />
+          </TabsContent>
+
+          <TabsContent value="upload" className="mt-0 focus-visible:outline-none">
+            <EventUploader onEventsAdded={handleEventsAdded} />
           </TabsContent>
         </div>
       </Tabs>

@@ -34,8 +34,19 @@ const statusConfig = {
 export default function TravelEmailInbox({ onEmailProcessed }: Props) {
   const [emails, setEmails] = useState<TravelEmail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [reprocessingId, setReprocessingId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchEmails();
+    setIsRefreshing(false);
+    toast({
+      title: "Aktualisiert",
+      description: `${emails.length} E-Mails geladen`,
+    });
+  };
 
   useEffect(() => {
     fetchEmails();
@@ -141,11 +152,12 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
         <Button 
           variant="apple" 
           size="sm" 
-          onClick={fetchEmails}
+          onClick={handleRefresh}
+          disabled={isRefreshing}
           className="rounded-full"
         >
-          <RefreshCw className="w-4 h-4 mr-2 text-gray-600" />
-          <span className="text-gray-700">Aktualisieren</span>
+          <RefreshCw className={`w-4 h-4 mr-2 text-gray-600 ${isRefreshing ? "animate-spin" : ""}`} />
+          <span className="text-gray-700">{isRefreshing ? "Lädt..." : "Aktualisieren"}</span>
         </Button>
       </div>
 
