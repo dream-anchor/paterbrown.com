@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TravelBookingDetail from "./TravelBookingDetail";
 import TravelEmailInbox from "./TravelEmailInbox";
@@ -42,21 +41,14 @@ interface GroupedBookings {
   [date: string]: TravelBooking[];
 }
 
-// Light mode config - Apple HIG inspired
+// Monochrome Apple Design 2026 - icons only, no colors
 const bookingTypeConfig = {
-  hotel: { icon: Hotel, label: "Hotel", color: "bg-blue-50 text-blue-600 border-blue-200" },
-  train: { icon: Train, label: "Zug", color: "bg-red-50 text-red-600 border-red-200" }, // DB-Rot
-  flight: { icon: Plane, label: "Flug", color: "bg-orange-50 text-orange-600 border-orange-200" },
-  bus: { icon: Bus, label: "Bus", color: "bg-purple-50 text-purple-600 border-purple-200" },
-  rental_car: { icon: Car, label: "Mietwagen", color: "bg-cyan-50 text-cyan-600 border-cyan-200" },
-  other: { icon: Package, label: "Sonstiges", color: "bg-gray-50 text-gray-600 border-gray-200" },
-};
-
-const statusConfig = {
-  confirmed: { accent: "bg-emerald-500" },
-  changed: { accent: "bg-amber-500" },
-  cancelled: { accent: "bg-red-500" },
-  pending: { accent: "bg-gray-400" },
+  hotel: { icon: Hotel, label: "Hotel" },
+  train: { icon: Train, label: "Zug" },
+  flight: { icon: Plane, label: "Flug" },
+  bus: { icon: Bus, label: "Bus" },
+  rental_car: { icon: Car, label: "Mietwagen" },
+  other: { icon: Package, label: "Sonstiges" },
 };
 
 // Helper: Check if datetime has a real time (not 00:00 UTC placeholder)
@@ -167,17 +159,10 @@ export default function TravelDashboard() {
     return format(date, "EEEE, d. MMMM yyyy", { locale: de });
   };
 
-  const getTravelerDisplay = (booking: TravelBooking) => {
-    if (booking.traveler_names?.length) {
-      return booking.traveler_names.join(", ");
-    }
-    return booking.traveler_name || "-";
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
       </div>
     );
   }
@@ -187,17 +172,17 @@ export default function TravelDashboard() {
       {/* Sub-Navigation - Apple Segmented Control Style */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <TabsList className="inline-flex p-1 bg-gray-100 rounded-full gap-0.5">
+          <TabsList className="inline-flex p-1 bg-gray-100/80 rounded-xl gap-0.5">
             <TabsTrigger 
               value="bookings" 
-              className="px-5 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm transition-all duration-200"
+              className="px-5 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm transition-all duration-200"
             >
               <Calendar className="w-4 h-4 mr-2" />
               Buchungen
             </TabsTrigger>
             <TabsTrigger 
               value="inbox" 
-              className="px-5 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm transition-all duration-200"
+              className="px-5 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm transition-all duration-200"
             >
               <Mail className="w-4 h-4 mr-2" />
               Posteingang
@@ -212,20 +197,21 @@ export default function TravelDashboard() {
                   placeholder="Suchen..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 w-64 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-full focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all"
+                  className="pl-9 w-56 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-lg focus:ring-1 focus:ring-gray-300 focus:border-gray-300 transition-all h-9"
                 />
               </div>
               <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={fetchBookings}
-                className="rounded-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 hover:text-gray-900"
+                className="h-9 w-9 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100"
               >
                 <RefreshCw className="w-4 h-4" />
               </Button>
               <Button 
+                variant="ghost"
                 onClick={() => setIsImportModalOpen(true)}
-                className="rounded-full bg-[#1a1a1a] text-white hover:bg-gray-800 px-4 gap-2"
+                className="h-9 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 gap-2"
               >
                 <Upload className="w-4 h-4" />
                 <span className="hidden sm:inline">Import</span>
@@ -248,11 +234,11 @@ export default function TravelDashboard() {
           {/* Split View Container */}
           <div className="h-[calc(100vh-220px)] min-h-[500px] flex gap-6 overflow-hidden">
             {/* Bookings List - Scrollable */}
-            <div className="flex-1 md:flex-[2] overflow-y-auto min-h-0 space-y-6 pr-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-200">
+            <div className="flex-1 md:flex-[2] overflow-y-auto min-h-0 space-y-6 pr-2">
               {sortedDates.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-12 text-center">
-                  <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-[#1a1a1a] mb-1">
+                <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
+                  <Package className="w-10 h-10 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-base font-semibold text-gray-900 mb-1">
                     Keine Buchungen
                   </h3>
                   <p className="text-sm text-gray-500">
@@ -264,48 +250,44 @@ export default function TravelDashboard() {
                   <div key={date} className="space-y-3">
                     {/* Date Header */}
                     <div className="flex items-center gap-3">
-                      <div className={`px-4 py-1.5 rounded-full text-sm font-semibold ${
+                      <div className={`px-3 py-1 rounded-lg text-sm font-medium ${
                         isPast(parseISO(date)) && !isToday(parseISO(date))
-                          ? "bg-gray-100 text-gray-400"
+                          ? "text-gray-400"
                           : isToday(parseISO(date))
-                          ? "bg-[#1a1a1a] text-white"
-                          : "bg-gray-100 text-gray-700"
+                          ? "bg-gray-900 text-white"
+                          : "text-gray-700"
                       }`}>
                         {getDateLabel(date)}
                       </div>
-                      <div className="h-px flex-1 bg-gradient-to-r from-gray-200 to-transparent" />
+                      <div className="h-px flex-1 bg-gray-100" />
                     </div>
 
                     {/* Bookings for this date */}
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       {groupedBookings[date].map((booking) => {
                         const typeConfig = bookingTypeConfig[booking.booking_type];
                         const TypeIcon = typeConfig.icon;
-                        const status = statusConfig[booking.status];
 
                         return (
                           <button
                             key={booking.id}
                             onClick={() => setSelectedBooking(booking)}
-                            className={`group relative w-full text-left bg-white rounded-xl p-4 border shadow-sm transition-all duration-150 active:scale-[0.98] ${
+                            className={`group w-full text-left py-3 px-4 border-b border-gray-100 transition-colors ${
                               selectedBooking?.id === booking.id
-                                ? "border-gray-400 shadow-md"
-                                : "border-gray-200 hover:border-gray-300 hover:shadow-md"
+                                ? "bg-gray-50"
+                                : "hover:bg-gray-50"
                             }`}
                           >
-                            {/* Status indicator - vertical bar */}
-                            <div className={`absolute left-0 top-3 bottom-3 w-1 rounded-r-full ${status.accent}`} />
-                            
-                            <div className="flex items-center gap-3 pl-3">
-                              {/* Type Icon - Primary visual anchor */}
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${typeConfig.color} border`}>
-                                <TypeIcon className="w-5 h-5" />
+                            <div className="flex items-center gap-3">
+                              {/* Type Icon - Simple gray */}
+                              <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center">
+                                <TypeIcon className="w-4 h-4 text-gray-500" />
                               </div>
 
-                              {/* Main Content - Compact */}
+                              {/* Main Content */}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-2">
-                                  <span className="font-semibold text-[#1a1a1a] truncate">
+                                  <span className="font-medium text-gray-900 truncate">
                                     {booking.booking_type === "hotel" 
                                       ? booking.venue_name || booking.destination_city
                                       : booking.origin_city 
@@ -313,13 +295,13 @@ export default function TravelDashboard() {
                                         : booking.destination_city
                                     }
                                   </span>
-                                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-400 flex-shrink-0" />
                                 </div>
                                 
                                 {/* Meta - Single line */}
-                                <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                                <div className="flex items-center gap-3 mt-0.5 text-sm text-gray-500">
                                   <span className="flex items-center gap-1">
-                                    <Clock className="w-3.5 h-3.5" />
+                                    <Clock className="w-3.5 h-3.5 text-gray-400" />
                                     {hasRealTime(booking.start_datetime) ? (
                                       <>
                                         {formatTime(booking.start_datetime)}
@@ -328,11 +310,11 @@ export default function TravelDashboard() {
                                         )}
                                       </>
                                     ) : (
-                                      <span className="text-gray-400 italic">TBA</span>
+                                      <span className="text-gray-400">TBA</span>
                                     )}
                                   </span>
                                   {booking.provider && (
-                                    <span className="truncate">{booking.provider}</span>
+                                    <span className="truncate text-gray-400">{booking.provider}</span>
                                   )}
                                 </div>
                               </div>
@@ -360,9 +342,9 @@ export default function TravelDashboard() {
 
           {/* Mobile Detail Panel - Sheet-style overlay */}
           {selectedBooking && (
-            <div className="md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedBooking(null)}>
+            <div className="md:hidden fixed inset-0 z-50 bg-black/20 backdrop-blur-sm" onClick={() => setSelectedBooking(null)}>
               <div 
-                className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[85vh] overflow-auto shadow-2xl animate-slide-up"
+                className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[85vh] overflow-auto shadow-xl"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-4">

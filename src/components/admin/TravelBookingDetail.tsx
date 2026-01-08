@@ -10,7 +10,6 @@ import {
   CreditCard, Star, Armchair, Luggage, Coffee, Wifi, Euro, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import DocumentViewer from "./DocumentViewer";
@@ -69,62 +68,14 @@ interface Props {
   isMobile?: boolean;
 }
 
-// Light mode config - Apple HIG inspired
+// Monochrome Apple Design 2026
 const bookingTypeConfig = {
-  hotel: { 
-    icon: Hotel, 
-    label: "Hotel", 
-    iconColor: "text-blue-600",
-    bg: "bg-blue-50",
-    gradient: "from-blue-50 to-blue-100",
-    border: "border-blue-200",
-    accent: "bg-blue-500"
-  },
-  train: { 
-    icon: Train, 
-    label: "Zug", 
-    iconColor: "text-red-600", // DB-Rot
-    bg: "bg-red-50",
-    gradient: "from-red-50 to-red-100",
-    border: "border-red-200",
-    accent: "bg-red-500"
-  },
-  flight: { 
-    icon: Plane, 
-    label: "Flug", 
-    iconColor: "text-orange-600",
-    bg: "bg-orange-50",
-    gradient: "from-orange-50 to-orange-100",
-    border: "border-orange-200",
-    accent: "bg-orange-500"
-  },
-  bus: { 
-    icon: Bus, 
-    label: "Bus", 
-    iconColor: "text-purple-600",
-    bg: "bg-purple-50",
-    gradient: "from-purple-50 to-purple-100",
-    border: "border-purple-200",
-    accent: "bg-purple-500"
-  },
-  rental_car: { 
-    icon: Car, 
-    label: "Mietwagen", 
-    iconColor: "text-cyan-600",
-    bg: "bg-cyan-50",
-    gradient: "from-cyan-50 to-cyan-100",
-    border: "border-cyan-200",
-    accent: "bg-cyan-500"
-  },
-  other: { 
-    icon: Package, 
-    label: "Sonstiges", 
-    iconColor: "text-gray-600",
-    bg: "bg-gray-50",
-    gradient: "from-gray-50 to-gray-100",
-    border: "border-gray-200",
-    accent: "bg-gray-500"
-  },
+  hotel: { icon: Hotel, label: "Hotel" },
+  train: { icon: Train, label: "Zug" },
+  flight: { icon: Plane, label: "Flug" },
+  bus: { icon: Bus, label: "Bus" },
+  rental_car: { icon: Car, label: "Mietwagen" },
+  other: { icon: Package, label: "Sonstiges" },
 };
 
 // Helper: Check if datetime has a real time (not 00:00 UTC placeholder)
@@ -209,9 +160,9 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
   if (!booking) {
     return (
       <div className="bg-gray-50 rounded-2xl border border-gray-200 p-8 text-center h-full flex flex-col items-center justify-center">
-        <Package className="w-10 h-10 text-gray-300 mb-3" />
+        <Package className="w-8 h-8 text-gray-300 mb-3" />
         <p className="text-sm text-gray-400">
-          Wähle eine Buchung aus, um Details anzuzeigen
+          Wähle eine Buchung aus
         </p>
       </div>
     );
@@ -251,7 +202,7 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
   const copyBookingNumber = () => {
     if (bookingNumber) {
       navigator.clipboard.writeText(bookingNumber);
-      toast.success("Buchungsnummer kopiert");
+      toast.success("Kopiert");
     }
   };
 
@@ -326,7 +277,7 @@ END:VCALENDAR`;
     return format(parseISO(datetime), "HH:mm 'Uhr'", { locale: de });
   };
 
-  // Render train-specific route card
+  // Render train-specific route card - MONOCHROME
   const renderTrainRoute = () => {
     const trainNumber = getDetail('train_number', 'ice_number', 'zugnummer', 'zug');
     const trainClass = getDetail('class', 'klasse', 'wagon_class');
@@ -337,91 +288,72 @@ END:VCALENDAR`;
 
     return (
       <div className="space-y-4">
-        {/* Route Card - Light Mode */}
-        <div className={`relative bg-gradient-to-br ${typeConfig.gradient} rounded-2xl p-5 border ${typeConfig.border}`}>
+        {/* Route Card - Monochrome */}
+        <div className="rounded-xl border border-gray-200 p-5">
           <div className="flex items-start gap-4">
-            {/* Timeline */}
+            {/* Timeline - Gray only */}
             <div className="flex flex-col items-center pt-1">
-              <div className={`w-3 h-3 rounded-full ${typeConfig.accent} ring-4 ring-white shadow-sm`} />
-              <div className="w-0.5 h-16 bg-gradient-to-b from-red-400 to-red-500" />
-              <div className={`w-3 h-3 rounded-full ${typeConfig.accent} ring-4 ring-white shadow-sm`} />
+              <div className="w-2 h-2 rounded-full bg-gray-400" />
+              <div className="w-0.5 h-14 bg-gray-200" />
+              <div className="w-2 h-2 rounded-full bg-gray-400" />
             </div>
             
             {/* Route Info */}
-            <div className="flex-1 space-y-8">
+            <div className="flex-1 space-y-6">
               <div>
-                <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-1">Abfahrt</div>
-                <div className="text-lg font-semibold text-[#1a1a1a]">{booking.origin_city || '–'}</div>
-                <div className="text-sm text-gray-500">
-                  {formatTimeDisplay(booking.start_datetime)}
-                </div>
+                <div className="text-xs text-gray-400 uppercase tracking-wide">Abfahrt</div>
+                <div className="text-base font-medium text-gray-900">{booking.origin_city || '–'}</div>
+                <div className="text-sm text-gray-500">{formatTimeDisplay(booking.start_datetime)}</div>
               </div>
               <div>
-                <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-1">Ankunft</div>
-                <div className="text-lg font-semibold text-[#1a1a1a]">{booking.destination_city}</div>
+                <div className="text-xs text-gray-400 uppercase tracking-wide">Ankunft</div>
+                <div className="text-base font-medium text-gray-900">{booking.destination_city}</div>
                 {booking.end_datetime && hasRealTime(booking.end_datetime) && (
-                  <div className="text-sm text-gray-500">
-                    {formatTimeDisplay(booking.end_datetime)}
-                  </div>
+                  <div className="text-sm text-gray-500">{formatTimeDisplay(booking.end_datetime)}</div>
                 )}
               </div>
             </div>
+            
+            {/* Train Number */}
+            {trainNumber && (
+              <div className="px-3 py-1.5 bg-gray-100 rounded-lg">
+                <span className="font-mono font-semibold text-gray-700 text-sm">{trainNumber}</span>
+              </div>
+            )}
           </div>
-          
-          {/* Train Number Badge */}
-          {trainNumber && (
-            <div className="absolute top-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur rounded-full border border-red-200 shadow-sm">
-              <span className="font-mono font-bold text-red-600 text-sm">{trainNumber}</span>
-            </div>
-          )}
         </div>
 
-        {/* Detail Grid - Light iOS Settings Style */}
+        {/* Detail List - iOS Settings Style */}
         {(trainClass || wagon || seat || bahncard || price) && (
-          <div className="bg-gray-50 rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
+          <div className="rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
             {trainClass && (
-              <div className="flex items-center justify-between px-4 py-3 bg-white">
-                <div className="flex items-center gap-3">
-                  <Star className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">Klasse</span>
-                </div>
-                <span className="text-sm font-semibold text-[#1a1a1a]">{trainClass}. Klasse</span>
+              <div className="flex items-center justify-between px-4 py-3">
+                <span className="text-sm text-gray-500">Klasse</span>
+                <span className="text-sm font-medium text-gray-900">{trainClass}. Klasse</span>
               </div>
             )}
             {wagon && (
-              <div className="flex items-center justify-between px-4 py-3 bg-white">
-                <div className="flex items-center gap-3">
-                  <Train className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">Wagen</span>
-                </div>
-                <span className="text-sm font-semibold text-[#1a1a1a]">{wagon}</span>
+              <div className="flex items-center justify-between px-4 py-3">
+                <span className="text-sm text-gray-500">Wagen</span>
+                <span className="text-sm font-medium text-gray-900">{wagon}</span>
               </div>
             )}
             {seat && (
-              <div className="flex items-center justify-between px-4 py-3 bg-white">
-                <div className="flex items-center gap-3">
-                  <Armchair className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">Sitzplatz</span>
-                </div>
-                <span className="text-sm font-semibold text-[#1a1a1a]">{seat}</span>
+              <div className="flex items-center justify-between px-4 py-3">
+                <span className="text-sm text-gray-500">Sitzplatz</span>
+                <span className="text-sm font-medium text-gray-900">{seat}</span>
               </div>
             )}
             {bahncard && (
-              <div className="flex items-center justify-between px-4 py-3 bg-white">
-                <div className="flex items-center gap-3">
-                  <CreditCard className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">BahnCard</span>
-                </div>
-                <span className="text-sm font-semibold text-[#1a1a1a]">{bahncard}</span>
+              <div className="flex items-center justify-between px-4 py-3">
+                <span className="text-sm text-gray-500">BahnCard</span>
+                <span className="text-sm font-medium text-gray-900">{bahncard}</span>
               </div>
             )}
             {price && (
-              <div className="flex items-center justify-between px-4 py-3 bg-white">
-                <div className="flex items-center gap-3">
-                  <Euro className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">Preis</span>
-                </div>
-                <span className="text-sm font-semibold text-[#1a1a1a]">{typeof price === 'number' ? `${price.toFixed(2)} €` : price}</span>
+              <div className="flex items-center justify-between px-4 py-3">
+                <span className="text-sm text-gray-500">Preis</span>
+                <span className="text-sm font-medium text-gray-900">{typeof price === 'number' ? `${price.toFixed(2)} €` : price}</span>
               </div>
             )}
           </div>
@@ -430,7 +362,7 @@ END:VCALENDAR`;
     );
   };
 
-  // Render flight-specific route card
+  // Render flight-specific route card - MONOCHROME
   const renderFlightRoute = () => {
     const flightNumber = getDetail('flight_number', 'flugnummer', 'flight');
     const terminal = getDetail('terminal');
@@ -442,87 +374,68 @@ END:VCALENDAR`;
     return (
       <div className="space-y-4">
         {/* Route Card */}
-        <div className={`relative bg-gradient-to-br ${typeConfig.gradient} rounded-2xl p-5 border ${typeConfig.border}`}>
+        <div className="rounded-xl border border-gray-200 p-5">
           <div className="flex items-start gap-4">
             <div className="flex flex-col items-center pt-1">
-              <div className={`w-3 h-3 rounded-full ${typeConfig.accent} ring-4 ring-white shadow-sm`} />
-              <div className="w-0.5 h-16 bg-gradient-to-b from-orange-400 to-orange-500" />
-              <div className={`w-3 h-3 rounded-full ${typeConfig.accent} ring-4 ring-white shadow-sm`} />
+              <div className="w-2 h-2 rounded-full bg-gray-400" />
+              <div className="w-0.5 h-14 bg-gray-200" />
+              <div className="w-2 h-2 rounded-full bg-gray-400" />
             </div>
             
-            <div className="flex-1 space-y-8">
+            <div className="flex-1 space-y-6">
               <div>
-                <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-1">Abflug</div>
-                <div className="text-lg font-semibold text-[#1a1a1a]">{booking.origin_city || '–'}</div>
-                <div className="text-sm text-gray-500">
-                  {formatTimeDisplay(booking.start_datetime)}
-                </div>
+                <div className="text-xs text-gray-400 uppercase tracking-wide">Abflug</div>
+                <div className="text-base font-medium text-gray-900">{booking.origin_city || '–'}</div>
+                <div className="text-sm text-gray-500">{formatTimeDisplay(booking.start_datetime)}</div>
               </div>
               <div>
-                <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-1">Ankunft</div>
-                <div className="text-lg font-semibold text-[#1a1a1a]">{booking.destination_city}</div>
+                <div className="text-xs text-gray-400 uppercase tracking-wide">Ankunft</div>
+                <div className="text-base font-medium text-gray-900">{booking.destination_city}</div>
                 {booking.end_datetime && hasRealTime(booking.end_datetime) && (
-                  <div className="text-sm text-gray-500">
-                    {formatTimeDisplay(booking.end_datetime)}
-                  </div>
+                  <div className="text-sm text-gray-500">{formatTimeDisplay(booking.end_datetime)}</div>
                 )}
               </div>
             </div>
+            
+            {flightNumber && (
+              <div className="px-3 py-1.5 bg-gray-100 rounded-lg">
+                <span className="font-mono font-semibold text-gray-700 text-sm">{flightNumber}</span>
+              </div>
+            )}
           </div>
-          
-          {flightNumber && (
-            <div className="absolute top-4 right-4 px-3 py-1.5 bg-white/90 backdrop-blur rounded-full border border-orange-200 shadow-sm">
-              <span className="font-mono font-bold text-orange-600 text-sm">{flightNumber}</span>
-            </div>
-          )}
         </div>
 
-        {/* Detail Grid */}
+        {/* Detail List */}
         {(airline || terminal || gate || seat || baggage) && (
-          <div className="bg-gray-50 rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
+          <div className="rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
             {airline && (
-              <div className="flex items-center justify-between px-4 py-3 bg-white">
-                <div className="flex items-center gap-3">
-                  <Plane className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">Airline</span>
-                </div>
-                <span className="text-sm font-semibold text-[#1a1a1a]">{airline}</span>
+              <div className="flex items-center justify-between px-4 py-3">
+                <span className="text-sm text-gray-500">Airline</span>
+                <span className="text-sm font-medium text-gray-900">{airline}</span>
               </div>
             )}
             {terminal && (
-              <div className="flex items-center justify-between px-4 py-3 bg-white">
-                <div className="flex items-center gap-3">
-                  <Building2 className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">Terminal</span>
-                </div>
-                <span className="text-sm font-semibold text-[#1a1a1a]">{terminal}</span>
+              <div className="flex items-center justify-between px-4 py-3">
+                <span className="text-sm text-gray-500">Terminal</span>
+                <span className="text-sm font-medium text-gray-900">{terminal}</span>
               </div>
             )}
             {gate && (
-              <div className="flex items-center justify-between px-4 py-3 bg-white">
-                <div className="flex items-center gap-3">
-                  <MapPin className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">Gate</span>
-                </div>
-                <span className="text-sm font-semibold text-[#1a1a1a]">{gate}</span>
+              <div className="flex items-center justify-between px-4 py-3">
+                <span className="text-sm text-gray-500">Gate</span>
+                <span className="text-sm font-medium text-gray-900">{gate}</span>
               </div>
             )}
             {seat && (
-              <div className="flex items-center justify-between px-4 py-3 bg-white">
-                <div className="flex items-center gap-3">
-                  <Armchair className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">Sitzplatz</span>
-                </div>
-                <span className="text-sm font-semibold text-[#1a1a1a]">{seat}</span>
+              <div className="flex items-center justify-between px-4 py-3">
+                <span className="text-sm text-gray-500">Sitzplatz</span>
+                <span className="text-sm font-medium text-gray-900">{seat}</span>
               </div>
             )}
             {baggage && (
-              <div className="flex items-center justify-between px-4 py-3 bg-white">
-                <div className="flex items-center gap-3">
-                  <Luggage className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">Gepäck</span>
-                </div>
-                <span className="text-sm font-semibold text-[#1a1a1a]">{baggage}</span>
+              <div className="flex items-center justify-between px-4 py-3">
+                <span className="text-sm text-gray-500">Gepäck</span>
+                <span className="text-sm font-medium text-gray-900">{baggage}</span>
               </div>
             )}
           </div>
@@ -531,7 +444,7 @@ END:VCALENDAR`;
     );
   };
 
-  // Render hotel-specific details
+  // Render hotel-specific details - MONOCHROME
   const renderHotelDetails = () => {
     const roomType = getDetail('room_type', 'room_category', 'zimmer', 'zimmerkategorie');
     const roomNumber = getDetail('room_number', 'zimmernummer');
@@ -544,63 +457,41 @@ END:VCALENDAR`;
     if (!hasDetails) return null;
 
     return (
-      <div className="bg-gray-50 rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
+      <div className="rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
         {roomType && (
-          <div className="flex items-center justify-between px-4 py-3 bg-white">
-            <div className="flex items-center gap-3">
-              <Hotel className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-500">Zimmer</span>
-            </div>
-            <span className="text-sm font-semibold text-[#1a1a1a]">{roomType}</span>
+          <div className="flex items-center justify-between px-4 py-3">
+            <span className="text-sm text-gray-500">Zimmer</span>
+            <span className="text-sm font-medium text-gray-900">{roomType}</span>
           </div>
         )}
         {roomNumber && (
-          <div className="flex items-center justify-between px-4 py-3 bg-white">
-            <div className="flex items-center gap-3">
-              <Hash className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-500">Zimmernummer</span>
-            </div>
-            <span className="text-sm font-semibold text-[#1a1a1a]">{roomNumber}</span>
+          <div className="flex items-center justify-between px-4 py-3">
+            <span className="text-sm text-gray-500">Zimmernummer</span>
+            <span className="text-sm font-medium text-gray-900">{roomNumber}</span>
           </div>
         )}
         {breakfast !== null && (
-          <div className="flex items-center justify-between px-4 py-3 bg-white">
-            <div className="flex items-center gap-3">
-              <Coffee className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-500">Frühstück</span>
-            </div>
-            <span className={`text-sm font-semibold ${breakfast ? 'text-emerald-600' : 'text-gray-400'}`}>
-              {breakfast ? 'Inklusive' : 'Nicht inklusive'}
-            </span>
+          <div className="flex items-center justify-between px-4 py-3">
+            <span className="text-sm text-gray-500">Frühstück</span>
+            <span className="text-sm font-medium text-gray-900">{breakfast ? 'Inklusive' : 'Nicht inklusive'}</span>
           </div>
         )}
         {wifi !== null && (
-          <div className="flex items-center justify-between px-4 py-3 bg-white">
-            <div className="flex items-center gap-3">
-              <Wifi className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-500">WLAN</span>
-            </div>
-            <span className={`text-sm font-semibold ${wifi ? 'text-emerald-600' : 'text-gray-400'}`}>
-              {wifi ? 'Inklusive' : 'Nicht inklusive'}
-            </span>
+          <div className="flex items-center justify-between px-4 py-3">
+            <span className="text-sm text-gray-500">WLAN</span>
+            <span className="text-sm font-medium text-gray-900">{wifi ? 'Inklusive' : 'Nicht inklusive'}</span>
           </div>
         )}
         {pricePerNight && (
-          <div className="flex items-center justify-between px-4 py-3 bg-white">
-            <div className="flex items-center gap-3">
-              <Euro className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-500">Preis/Nacht</span>
-            </div>
-            <span className="text-sm font-semibold text-[#1a1a1a]">{typeof pricePerNight === 'number' ? `${pricePerNight.toFixed(2)} €` : pricePerNight}</span>
+          <div className="flex items-center justify-between px-4 py-3">
+            <span className="text-sm text-gray-500">Preis/Nacht</span>
+            <span className="text-sm font-medium text-gray-900">{typeof pricePerNight === 'number' ? `${pricePerNight.toFixed(2)} €` : pricePerNight}</span>
           </div>
         )}
         {cancellation && (
-          <div className="flex items-center justify-between px-4 py-3 bg-white">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-500">Stornierung</span>
-            </div>
-            <span className="text-sm font-semibold text-[#1a1a1a] text-right max-w-[60%]">{cancellation}</span>
+          <div className="flex items-center justify-between px-4 py-3">
+            <span className="text-sm text-gray-500">Stornierung</span>
+            <span className="text-sm font-medium text-gray-900 text-right max-w-[60%]">{cancellation}</span>
           </div>
         )}
       </div>
@@ -617,11 +508,11 @@ END:VCALENDAR`;
     if (detailEntries.length === 0) return null;
 
     return (
-      <div className="bg-gray-50 rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
+      <div className="rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
         {detailEntries.map(([key, value]) => (
-          <div key={key} className="flex items-center justify-between px-4 py-3 bg-white">
+          <div key={key} className="flex items-center justify-between px-4 py-3">
             <span className="text-sm text-gray-500 capitalize">{key.replace(/_/g, ' ')}</span>
-            <span className="text-sm font-semibold text-[#1a1a1a]">
+            <span className="text-sm font-medium text-gray-900">
               {typeof value === 'boolean' ? (value ? 'Ja' : 'Nein') : String(value)}
             </span>
           </div>
@@ -630,26 +521,24 @@ END:VCALENDAR`;
     );
   };
 
-  // Render travelers
+  // Render travelers - MONOCHROME
   const renderTravelers = () => {
     const travelers = getTravelers();
     if (travelers.length === 0) return null;
 
     return (
       <div className="space-y-3">
-        <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-          Reisende
-        </div>
+        <div className="text-xs text-gray-400 uppercase tracking-wide">Reisende</div>
         <div className="space-y-2">
           {travelers.map((name, i) => (
             <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
-              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${typeConfig.gradient} flex items-center justify-center border ${typeConfig.border}`}>
-                <span className={`${typeConfig.iconColor} font-semibold text-sm`}>
+              <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-600 font-medium text-sm">
                   {name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-[#1a1a1a] truncate">{name}</div>
+                <div className="font-medium text-gray-900 truncate">{name}</div>
                 {booking.details?.traveler_bookings?.[name] && (
                   <div className="text-xs text-gray-400 font-mono">
                     #{booking.details.traveler_bookings[name]}
@@ -668,16 +557,16 @@ END:VCALENDAR`;
 
   return (
     <div>
-      <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${isMobile ? 'rounded-t-2xl rounded-b-none' : ''}`}>
-        {/* Header */}
-        <div className="relative p-5 border-b border-gray-100">
-          <div className="relative flex items-start justify-between">
+      <div className={`bg-white rounded-2xl border border-gray-200 overflow-hidden ${isMobile ? 'rounded-t-2xl rounded-b-none' : ''}`}>
+        {/* Header - Clean */}
+        <div className="p-5 border-b border-gray-100">
+          <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className={`w-11 h-11 rounded-xl ${typeConfig.bg} flex items-center justify-center border ${typeConfig.border}`}>
-                <TypeIcon className={`w-5 h-5 ${typeConfig.iconColor}`} />
+              <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+                <TypeIcon className="w-5 h-5 text-gray-500" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-[#1a1a1a] tracking-tight">
+                <h3 className="text-lg font-semibold text-gray-900">
                   {booking.venue_name || booking.destination_city}
                 </h3>
                 {booking.booking_type === 'hotel' && getHotelWebsiteUrl() ? (
@@ -685,10 +574,10 @@ END:VCALENDAR`;
                     href={getHotelWebsiteUrl()}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                    className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
                   >
                     <ExternalLink className="w-3 h-3" />
-                    Hotel-Website
+                    Website
                   </a>
                 ) : (
                   <p className="text-sm text-gray-500">{typeConfig.label}</p>
@@ -701,7 +590,7 @@ END:VCALENDAR`;
                 size="icon" 
                 onClick={generateICalEvent}
                 title="Als iCal exportieren"
-                className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                className="h-8 w-8 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
               >
                 <Download className="w-4 h-4" />
               </Button>
@@ -710,7 +599,7 @@ END:VCALENDAR`;
                 size="icon" 
                 onClick={() => window.open(generateGoogleCalendarUrl(), '_blank')}
                 title="Zu Google Calendar hinzufügen"
-                className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                className="h-8 w-8 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
               >
                 <Calendar className="w-4 h-4" />
               </Button>
@@ -718,9 +607,9 @@ END:VCALENDAR`;
                 variant="ghost" 
                 size="icon" 
                 onClick={onClose} 
-                className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                className="h-8 w-8 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -728,62 +617,50 @@ END:VCALENDAR`;
 
         {/* Content */}
         <div className="p-5 space-y-5 max-h-[60vh] lg:max-h-none overflow-y-auto">
-          {/* Booking Number - Prominent Card */}
+          {/* Booking Number - Simple */}
           {bookingNumber && (
-            <div className={`flex items-center justify-between p-4 bg-gradient-to-br ${typeConfig.gradient} rounded-xl border ${typeConfig.border}`}>
-              <div className="flex items-center gap-3">
-                <Hash className={`w-5 h-5 ${typeConfig.iconColor}`} />
-                <div>
-                  <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Buchungsnummer</div>
-                  <div className="font-mono font-bold text-[#1a1a1a] text-lg tracking-wide">{bookingNumber}</div>
-                </div>
+            <button 
+              onClick={copyBookingNumber}
+              className="flex items-center justify-between w-full p-4 bg-gray-50 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors"
+            >
+              <div>
+                <div className="text-xs text-gray-400 uppercase tracking-wide">Buchungsnummer</div>
+                <div className="font-mono font-semibold text-gray-900 text-lg">{bookingNumber}</div>
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={copyBookingNumber}
-                className={`h-9 w-9 p-0 ${typeConfig.iconColor} hover:bg-white/50 rounded-full`}
-                title="Kopieren"
-              >
-                <Copy className="w-4 h-4" />
-              </Button>
-            </div>
+              <Copy className="w-4 h-4 text-gray-400" />
+            </button>
           )}
 
           {/* Type-specific route/details */}
           {booking.booking_type === 'train' && (
             <>
               {renderTrainRoute()}
-              {/* Ticket PDF - Prominent display */}
+              {/* Ticket PDF */}
               {pdfAttachments.length > 0 ? (
                 <div className="space-y-2">
-                  <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-                    Fahrkarte
-                  </div>
+                  <div className="text-xs text-gray-400 uppercase tracking-wide">Fahrkarte</div>
                   {pdfAttachments.map(att => (
                     <button
                       key={att.id}
                       onClick={() => setViewingDocument(att)}
-                      className="flex items-center gap-4 w-full p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-200 hover:border-red-400 hover:shadow-md transition-all text-left group"
+                      className="flex items-center gap-4 w-full p-4 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors text-left"
                     >
-                      <div className="w-14 h-14 rounded-xl bg-red-500 flex items-center justify-center shadow-sm">
-                        <FileText className="w-7 h-7 text-white" />
+                      <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-gray-500" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-[#1a1a1a] group-hover:text-red-700 transition-colors">
-                          Ticket anzeigen
-                        </div>
+                        <div className="font-medium text-gray-900">Ticket anzeigen</div>
                         <div className="text-sm text-gray-500 truncate">{att.file_name}</div>
                       </div>
-                      <ExternalLink className="w-5 h-5 text-red-500 flex-shrink-0" />
+                      <ExternalLink className="w-4 h-4 text-gray-400" />
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">
-                  <AlertCircle className="w-5 h-5 text-amber-500" />
-                  <div className="text-sm text-amber-700">
-                    Kein Ticket-PDF verfügbar. Bitte E-Mail mit PDF-Anhang weiterleiten.
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <AlertCircle className="w-5 h-5 text-gray-400" />
+                  <div className="text-sm text-gray-600">
+                    Kein Ticket-PDF verfügbar
                   </div>
                 </div>
               )}
@@ -796,33 +673,29 @@ END:VCALENDAR`;
               {/* Flight Ticket PDF */}
               {pdfAttachments.length > 0 ? (
                 <div className="space-y-2">
-                  <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-                    Flugticket
-                  </div>
+                  <div className="text-xs text-gray-400 uppercase tracking-wide">Flugticket</div>
                   {pdfAttachments.map(att => (
                     <button
                       key={att.id}
                       onClick={() => setViewingDocument(att)}
-                      className="flex items-center gap-4 w-full p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200 hover:border-orange-400 hover:shadow-md transition-all text-left group"
+                      className="flex items-center gap-4 w-full p-4 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors text-left"
                     >
-                      <div className="w-14 h-14 rounded-xl bg-orange-500 flex items-center justify-center shadow-sm">
-                        <FileText className="w-7 h-7 text-white" />
+                      <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-gray-500" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-[#1a1a1a] group-hover:text-orange-700 transition-colors">
-                          Ticket anzeigen
-                        </div>
+                        <div className="font-medium text-gray-900">Ticket anzeigen</div>
                         <div className="text-sm text-gray-500 truncate">{att.file_name}</div>
                       </div>
-                      <ExternalLink className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                      <ExternalLink className="w-4 h-4 text-gray-400" />
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">
-                  <AlertCircle className="w-5 h-5 text-amber-500" />
-                  <div className="text-sm text-amber-700">
-                    Kein Ticket-PDF verfügbar. Bitte E-Mail mit PDF-Anhang weiterleiten.
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <AlertCircle className="w-5 h-5 text-gray-400" />
+                  <div className="text-sm text-gray-600">
+                    Kein Ticket-PDF verfügbar
                   </div>
                 </div>
               )}
@@ -832,26 +705,22 @@ END:VCALENDAR`;
           {booking.booking_type === 'hotel' && (
             <>
               {/* Hotel Date Info */}
-              <div className={`bg-gradient-to-br ${typeConfig.gradient} rounded-2xl p-5 border ${typeConfig.border}`}>
+              <div className="rounded-xl border border-gray-200 p-5">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-1">Check-in</div>
-                    <div className="text-lg font-semibold text-[#1a1a1a]">
+                    <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Check-in</div>
+                    <div className="text-base font-medium text-gray-900">
                       {format(parseISO(booking.start_datetime), "d. MMM", { locale: de })}
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {formatTimeDisplay(booking.start_datetime)}
-                    </div>
+                    <div className="text-sm text-gray-500">{formatTimeDisplay(booking.start_datetime)}</div>
                   </div>
                   {booking.end_datetime && (
                     <div>
-                      <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-1">Check-out</div>
-                      <div className="text-lg font-semibold text-[#1a1a1a]">
+                      <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Check-out</div>
+                      <div className="text-base font-medium text-gray-900">
                         {format(parseISO(booking.end_datetime), "d. MMM", { locale: de })}
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {formatTimeDisplay(booking.end_datetime)}
-                      </div>
+                      <div className="text-sm text-gray-500">{formatTimeDisplay(booking.end_datetime)}</div>
                     </div>
                   )}
                 </div>
@@ -863,24 +732,19 @@ END:VCALENDAR`;
           {/* Generic transport (bus, rental car, other) */}
           {!['train', 'flight', 'hotel'].includes(booking.booking_type) && (
             <>
-              <div className="space-y-2.5">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-gray-400" />
-                  <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Zeitraum</span>
-                </div>
-                <div className="pl-6 text-sm">
-                  <div className="text-gray-500">
-                    <span className="font-medium text-[#1a1a1a]">
-                      {format(parseISO(booking.start_datetime), "EEEE, d. MMMM yyyy", { locale: de })}
-                      {hasRealTime(booking.start_datetime) && (
-                        <> um {format(parseISO(booking.start_datetime), "HH:mm 'Uhr'", { locale: de })}</>
-                      )}
-                    </span>
+              <div className="space-y-2">
+                <div className="text-xs text-gray-400 uppercase tracking-wide">Zeitraum</div>
+                <div className="text-sm">
+                  <div className="text-gray-900">
+                    {format(parseISO(booking.start_datetime), "EEEE, d. MMMM yyyy", { locale: de })}
+                    {hasRealTime(booking.start_datetime) && (
+                      <span className="text-gray-500"> um {format(parseISO(booking.start_datetime), "HH:mm 'Uhr'", { locale: de })}</span>
+                    )}
                   </div>
                   {booking.end_datetime && (
-                    <div className="mt-1.5 text-gray-500">
+                    <div className="mt-1 text-gray-500">
                       bis{' '}
-                      <span className="font-medium text-[#1a1a1a]">
+                      <span className="text-gray-900">
                         {format(parseISO(booking.end_datetime), "EEEE, d. MMMM yyyy", { locale: de })}
                         {hasRealTime(booking.end_datetime) && (
                           <> um {format(parseISO(booking.end_datetime), "HH:mm 'Uhr'", { locale: de })}</>
@@ -896,14 +760,9 @@ END:VCALENDAR`;
 
           {/* Related Event - Link to Tour */}
           {relatedEvent && (
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="w-4 h-4 text-amber-600" />
-                <span className="text-[10px] font-semibold text-amber-600 uppercase tracking-widest">
-                  In Verbindung mit
-                </span>
-              </div>
-              <div className="text-[#1a1a1a] font-semibold">{relatedEvent.title}</div>
+            <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
+              <div className="text-xs text-gray-400 uppercase tracking-wide mb-2">In Verbindung mit</div>
+              <div className="text-gray-900 font-medium">{relatedEvent.title}</div>
               <div className="text-sm text-gray-500">
                 {relatedEvent.venue_name || relatedEvent.location}, {format(parseISO(relatedEvent.start_time), "HH:mm 'Uhr'", { locale: de })}
               </div>
@@ -914,17 +773,17 @@ END:VCALENDAR`;
           {(booking.venue_address || (booking.booking_type === 'hotel' && booking.destination_city)) && (
             <>
               <Separator className="bg-gray-100" />
-              <div className="space-y-2.5">
-                <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Adresse</div>
+              <div className="space-y-2">
+                <div className="text-xs text-gray-400 uppercase tracking-wide">Adresse</div>
                 <div className="flex items-start justify-between gap-3">
-                  <div className="text-sm text-gray-500 flex-1">
+                  <div className="text-sm text-gray-600 flex-1">
                     {booking.venue_address || booking.destination_city}
                   </div>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={() => window.open(getGoogleMapsUrl(), '_blank')}
-                    className="flex-shrink-0 bg-white border-gray-200 text-gray-700 hover:bg-gray-50 h-8 px-3"
+                    className="flex-shrink-0 text-gray-500 hover:text-gray-900 hover:bg-gray-100 h-8 px-3"
                   >
                     <Navigation className="w-3.5 h-3.5 mr-1.5" />
                     Maps
@@ -938,9 +797,9 @@ END:VCALENDAR`;
           {booking.provider && (
             <>
               <Separator className="bg-gray-100" />
-              <div className="space-y-2">
-                <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Anbieter</div>
-                <div className="text-sm font-medium text-[#1a1a1a]">{booking.provider}</div>
+              <div className="space-y-1">
+                <div className="text-xs text-gray-400 uppercase tracking-wide">Anbieter</div>
+                <div className="text-sm font-medium text-gray-900">{booking.provider}</div>
               </div>
             </>
           )}
@@ -958,7 +817,7 @@ END:VCALENDAR`;
             <>
               <Separator className="bg-gray-100" />
               <div className="space-y-3">
-                <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Dokumente</div>
+                <div className="text-xs text-gray-400 uppercase tracking-wide">Dokumente</div>
                 <div className="space-y-2">
                   {originalEmail && (
                     <button
@@ -968,13 +827,13 @@ END:VCALENDAR`;
                         file_path: "",
                         content_type: "text/html"
                       })}
-                      className="flex items-center gap-3 w-full p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all"
+                      className="flex items-center gap-3 w-full p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
                     >
-                      <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                        <Mail className="w-5 h-5 text-blue-600" />
+                      <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <Mail className="w-4 h-4 text-gray-500" />
                       </div>
                       <div className="flex-1 text-left">
-                        <div className="font-medium text-[#1a1a1a] text-sm">Original E-Mail</div>
+                        <div className="font-medium text-gray-900 text-sm">Original E-Mail</div>
                         <div className="text-xs text-gray-500 truncate max-w-[200px]">{originalEmail.subject}</div>
                       </div>
                       <ExternalLink className="w-4 h-4 text-gray-400" />
@@ -986,13 +845,13 @@ END:VCALENDAR`;
                     <button
                       key={att.id}
                       onClick={() => setViewingDocument(att)}
-                      className="flex items-center gap-3 w-full p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-100 transition-all"
+                      className="flex items-center gap-3 w-full p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
                     >
-                      <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
-                        <FileText className="w-5 h-5 text-red-600" />
+                      <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-gray-500" />
                       </div>
                       <div className="flex-1 text-left">
-                        <div className="font-medium text-[#1a1a1a] text-sm truncate max-w-[200px]">{att.file_name}</div>
+                        <div className="font-medium text-gray-900 text-sm truncate max-w-[200px]">{att.file_name}</div>
                         <div className="text-xs text-gray-500">{att.content_type || 'Dokument'}</div>
                       </div>
                       <ExternalLink className="w-4 h-4 text-gray-400" />
@@ -1007,13 +866,13 @@ END:VCALENDAR`;
           {versions.length > 0 && (
             <>
               <Separator className="bg-gray-100" />
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 <button
                   onClick={() => setShowVersions(!showVersions)}
                   className="flex items-center gap-2 text-sm w-full group"
                 >
                   <History className="w-4 h-4 text-gray-400" />
-                  <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors">
+                  <span className="text-xs text-gray-400 uppercase tracking-wide group-hover:text-gray-600 transition-colors">
                     Versionen ({versions.length})
                   </span>
                   {showVersions ? (
@@ -1023,12 +882,10 @@ END:VCALENDAR`;
                   )}
                 </button>
                 {showVersions && (
-                  <div className="space-y-3">
+                  <div className="space-y-3 pt-2">
                     {versions.map((version) => (
                       <div key={version.id} className="text-sm border-l-2 border-gray-200 pl-3 py-1">
-                        <div className="font-medium text-[#1a1a1a]">
-                          Version {version.version_number}
-                        </div>
+                        <div className="font-medium text-gray-900">Version {version.version_number}</div>
                         <div className="text-gray-400 text-xs">
                           {format(parseISO(version.created_at), "d. MMM yyyy, HH:mm", { locale: de })}
                         </div>
