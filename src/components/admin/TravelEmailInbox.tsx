@@ -25,10 +25,10 @@ interface Props {
 }
 
 const statusConfig = {
-  pending: { icon: Clock, label: "Ausstehend", color: "bg-gray-100 text-gray-600" },
-  processing: { icon: Loader2, label: "Wird verarbeitet", color: "bg-blue-100 text-blue-600" },
-  processed: { icon: CheckCircle2, label: "Verarbeitet", color: "bg-emerald-100 text-emerald-600" },
-  error: { icon: AlertCircle, label: "Fehler", color: "bg-red-100 text-red-600" },
+  pending: { icon: Clock, label: "Ausstehend", color: "bg-gray-100 text-gray-600 border-gray-200" },
+  processing: { icon: Loader2, label: "Wird verarbeitet", color: "bg-blue-50 text-blue-600 border-blue-100" },
+  processed: { icon: CheckCircle2, label: "Verarbeitet", color: "bg-emerald-50 text-emerald-600 border-emerald-100" },
+  error: { icon: AlertCircle, label: "Fehler", color: "bg-red-50 text-red-600 border-red-100" },
 };
 
 export default function TravelEmailInbox({ onEmailProcessed }: Props) {
@@ -112,16 +112,16 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
+        <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
       </div>
     );
   }
 
   if (emails.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+      <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-100 p-12 text-center">
         <Inbox className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-1">
+        <h3 className="text-lg font-semibold text-gray-900 mb-1">
           Posteingang leer
         </h3>
         <p className="text-sm text-gray-500 max-w-md mx-auto">
@@ -135,17 +135,22 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="font-medium text-gray-900">
+        <h3 className="font-semibold text-gray-900">
           {emails.length} E-Mail{emails.length !== 1 ? "s" : ""}
         </h3>
-        <Button variant="outline" size="sm" onClick={fetchEmails}>
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Aktualisieren
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={fetchEmails}
+          className="rounded-full border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+        >
+          <RefreshCw className="w-4 h-4 mr-2 text-gray-600" />
+          <span className="text-gray-700">Aktualisieren</span>
         </Button>
       </div>
 
       {/* Email List */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100">
+      <div className="bg-white border border-gray-100 rounded-2xl shadow-lg shadow-gray-200/50 overflow-hidden divide-y divide-gray-100">
         {emails.map((email) => {
           const status = statusConfig[email.status];
           const StatusIcon = status.icon;
@@ -154,11 +159,11 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
           return (
             <div
               key={email.id}
-              className="p-4 hover:bg-gray-50 transition-colors"
+              className="p-5 hover:bg-gray-50/50 transition-colors"
             >
               <div className="flex items-start gap-4">
                 {/* Status Icon */}
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${status.color}`}>
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${status.color} border shadow-sm`}>
                   <StatusIcon className={`w-5 h-5 ${isProcessing ? "animate-spin" : ""}`} />
                 </div>
 
@@ -166,19 +171,19 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="font-medium text-gray-900 truncate">
+                      <div className="font-semibold text-gray-900 truncate tracking-tight">
                         {email.subject || "(kein Betreff)"}
                       </div>
                       <div className="text-sm text-gray-500 mt-0.5">
                         {email.from_address}
                       </div>
                     </div>
-                    <Badge variant="outline" className={status.color}>
+                    <Badge variant="outline" className={`${status.color} border`}>
                       {status.label}
                     </Badge>
                   </div>
 
-                  <div className="flex items-center justify-between mt-2">
+                  <div className="flex items-center justify-between mt-3">
                     <div className="text-xs text-gray-400">
                       {format(parseISO(email.received_at), "d. MMM yyyy, HH:mm", { locale: de })}
                     </div>
@@ -189,12 +194,12 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
                         size="sm"
                         onClick={() => reprocessEmail(email.id)}
                         disabled={isProcessing}
-                        className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-full font-medium"
                       >
                         {isProcessing ? (
-                          <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                          <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
                         ) : (
-                          <RefreshCw className="w-4 h-4 mr-1" />
+                          <RefreshCw className="w-4 h-4 mr-1.5" />
                         )}
                         Erneut verarbeiten
                       </Button>
@@ -202,7 +207,7 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
                   </div>
 
                   {email.error_message && (
-                    <div className="mt-2 p-2 bg-red-50 border border-red-100 rounded-lg text-sm text-red-600">
+                    <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
                       {email.error_message}
                     </div>
                   )}
