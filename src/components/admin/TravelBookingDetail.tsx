@@ -4,9 +4,10 @@ import { format, parseISO, addHours } from "date-fns";
 import { de } from "date-fns/locale";
 import {
   Hotel, Train, Plane, Bus, Car, Package,
-  MapPin, Clock, Users, Hash, Building2, Phone,
+  MapPin, Clock, Users, Hash, Building2,
   Mail, FileText, History, X, ExternalLink, Download,
-  ChevronDown, ChevronUp, AlertCircle, Copy, Calendar, Navigation
+  ChevronDown, ChevronUp, AlertCircle, Copy, Calendar, Navigation,
+  CreditCard, Star, Armchair, Luggage, Coffee, Wifi, Euro
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,12 +60,60 @@ interface Props {
 }
 
 const bookingTypeConfig = {
-  hotel: { icon: Hotel, label: "Hotel", color: "text-blue-600", bg: "bg-blue-50" },
-  train: { icon: Train, label: "Zug", color: "text-green-600", bg: "bg-green-50" },
-  flight: { icon: Plane, label: "Flug", color: "text-orange-600", bg: "bg-orange-50" },
-  bus: { icon: Bus, label: "Bus", color: "text-purple-600", bg: "bg-purple-50" },
-  rental_car: { icon: Car, label: "Mietwagen", color: "text-teal-600", bg: "bg-teal-50" },
-  other: { icon: Package, label: "Sonstiges", color: "text-gray-600", bg: "bg-gray-50" },
+  hotel: { 
+    icon: Hotel, 
+    label: "Hotel", 
+    color: "text-blue-600", 
+    bg: "bg-blue-50",
+    gradient: "from-blue-50 to-indigo-50",
+    border: "border-blue-100",
+    accent: "bg-blue-500"
+  },
+  train: { 
+    icon: Train, 
+    label: "Zug", 
+    color: "text-green-600", 
+    bg: "bg-green-50",
+    gradient: "from-green-50 to-emerald-50",
+    border: "border-green-100",
+    accent: "bg-green-500"
+  },
+  flight: { 
+    icon: Plane, 
+    label: "Flug", 
+    color: "text-orange-600", 
+    bg: "bg-orange-50",
+    gradient: "from-orange-50 to-amber-50",
+    border: "border-orange-100",
+    accent: "bg-orange-500"
+  },
+  bus: { 
+    icon: Bus, 
+    label: "Bus", 
+    color: "text-purple-600", 
+    bg: "bg-purple-50",
+    gradient: "from-purple-50 to-violet-50",
+    border: "border-purple-100",
+    accent: "bg-purple-500"
+  },
+  rental_car: { 
+    icon: Car, 
+    label: "Mietwagen", 
+    color: "text-teal-600", 
+    bg: "bg-teal-50",
+    gradient: "from-teal-50 to-cyan-50",
+    border: "border-teal-100",
+    accent: "bg-teal-500"
+  },
+  other: { 
+    icon: Package, 
+    label: "Sonstiges", 
+    color: "text-gray-600", 
+    bg: "bg-gray-50",
+    gradient: "from-gray-50 to-slate-50",
+    border: "border-gray-100",
+    accent: "bg-gray-500"
+  },
 };
 
 export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobile }: Props) {
@@ -218,6 +267,354 @@ END:VCALENDAR`;
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${start}/${end}&location=${encodeURIComponent(location)}&details=${encodeURIComponent(description)}`;
   };
 
+  // Get detail value with fallback keys
+  const getDetail = (...keys: string[]) => {
+    for (const key of keys) {
+      if (booking.details?.[key] !== undefined && booking.details?.[key] !== null && booking.details?.[key] !== '') {
+        return booking.details[key];
+      }
+    }
+    return null;
+  };
+
+  // Render train-specific route card
+  const renderTrainRoute = () => {
+    const trainNumber = getDetail('train_number', 'ice_number', 'zugnummer', 'zug');
+    const trainClass = getDetail('class', 'klasse', 'wagon_class');
+    const wagon = getDetail('wagon', 'wagen', 'car');
+    const seat = getDetail('seat', 'sitzplatz', 'seats', 'platz');
+    const bahncard = getDetail('bahncard', 'bahncard_type', 'bc');
+    const price = getDetail('price', 'preis', 'total_price');
+
+    return (
+      <div className="space-y-4">
+        {/* Route Card - Apple Maps Style */}
+        <div className={`relative bg-gradient-to-br ${typeConfig.gradient} rounded-2xl p-5 border ${typeConfig.border}`}>
+          <div className="flex items-start gap-4">
+            {/* Timeline */}
+            <div className="flex flex-col items-center pt-1">
+              <div className={`w-3 h-3 rounded-full ${typeConfig.accent} ring-4 ring-white shadow-sm`} />
+              <div className={`w-0.5 h-16 bg-gradient-to-b from-green-400 to-green-600`} />
+              <div className={`w-3 h-3 rounded-full ${typeConfig.accent} ring-4 ring-white shadow-sm`} />
+            </div>
+            
+            {/* Route Info */}
+            <div className="flex-1 space-y-8">
+              <div>
+                <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Abfahrt</div>
+                <div className="text-lg font-semibold text-gray-900">{booking.origin_city || '–'}</div>
+                <div className="text-sm text-gray-600">
+                  {format(parseISO(booking.start_datetime), "HH:mm 'Uhr'", { locale: de })}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Ankunft</div>
+                <div className="text-lg font-semibold text-gray-900">{booking.destination_city}</div>
+                {booking.end_datetime && (
+                  <div className="text-sm text-gray-600">
+                    {format(parseISO(booking.end_datetime), "HH:mm 'Uhr'", { locale: de })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Train Number Badge */}
+          {trainNumber && (
+            <div className="absolute top-4 right-4 px-3 py-1.5 bg-white rounded-full shadow-sm border border-green-200">
+              <span className="font-mono font-bold text-green-700 text-sm">{trainNumber}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Detail Grid - iOS Settings Style */}
+        {(trainClass || wagon || seat || bahncard || price) && (
+          <div className="bg-white rounded-xl border border-gray-100 divide-y divide-gray-100 overflow-hidden">
+            {trainClass && (
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <Star className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">Klasse</span>
+                </div>
+                <span className="text-sm font-semibold text-gray-900">{trainClass}. Klasse</span>
+              </div>
+            )}
+            {wagon && (
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <Train className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">Wagen</span>
+                </div>
+                <span className="text-sm font-semibold text-gray-900">{wagon}</span>
+              </div>
+            )}
+            {seat && (
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <Armchair className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">Sitzplatz</span>
+                </div>
+                <span className="text-sm font-semibold text-gray-900">{seat}</span>
+              </div>
+            )}
+            {bahncard && (
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <CreditCard className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">BahnCard</span>
+                </div>
+                <span className="text-sm font-semibold text-gray-900">{bahncard}</span>
+              </div>
+            )}
+            {price && (
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <Euro className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">Preis</span>
+                </div>
+                <span className="text-sm font-semibold text-gray-900">{typeof price === 'number' ? `${price.toFixed(2)} €` : price}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Render flight-specific route card
+  const renderFlightRoute = () => {
+    const flightNumber = getDetail('flight_number', 'flugnummer', 'flight');
+    const terminal = getDetail('terminal');
+    const gate = getDetail('gate');
+    const seat = getDetail('seat', 'sitzplatz');
+    const baggage = getDetail('baggage', 'baggage_allowance', 'gepaeck');
+    const airline = getDetail('airline', 'carrier');
+
+    return (
+      <div className="space-y-4">
+        {/* Route Card */}
+        <div className={`relative bg-gradient-to-br ${typeConfig.gradient} rounded-2xl p-5 border ${typeConfig.border}`}>
+          <div className="flex items-start gap-4">
+            <div className="flex flex-col items-center pt-1">
+              <div className={`w-3 h-3 rounded-full ${typeConfig.accent} ring-4 ring-white shadow-sm`} />
+              <div className="w-0.5 h-16 bg-gradient-to-b from-orange-400 to-orange-600" />
+              <div className={`w-3 h-3 rounded-full ${typeConfig.accent} ring-4 ring-white shadow-sm`} />
+            </div>
+            
+            <div className="flex-1 space-y-8">
+              <div>
+                <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Abflug</div>
+                <div className="text-lg font-semibold text-gray-900">{booking.origin_city || '–'}</div>
+                <div className="text-sm text-gray-600">
+                  {format(parseISO(booking.start_datetime), "HH:mm 'Uhr'", { locale: de })}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Ankunft</div>
+                <div className="text-lg font-semibold text-gray-900">{booking.destination_city}</div>
+                {booking.end_datetime && (
+                  <div className="text-sm text-gray-600">
+                    {format(parseISO(booking.end_datetime), "HH:mm 'Uhr'", { locale: de })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {flightNumber && (
+            <div className="absolute top-4 right-4 px-3 py-1.5 bg-white rounded-full shadow-sm border border-orange-200">
+              <span className="font-mono font-bold text-orange-700 text-sm">{flightNumber}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Detail Grid */}
+        {(airline || terminal || gate || seat || baggage) && (
+          <div className="bg-white rounded-xl border border-gray-100 divide-y divide-gray-100 overflow-hidden">
+            {airline && (
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <Plane className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">Airline</span>
+                </div>
+                <span className="text-sm font-semibold text-gray-900">{airline}</span>
+              </div>
+            )}
+            {terminal && (
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <Building2 className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">Terminal</span>
+                </div>
+                <span className="text-sm font-semibold text-gray-900">{terminal}</span>
+              </div>
+            )}
+            {gate && (
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">Gate</span>
+                </div>
+                <span className="text-sm font-semibold text-gray-900">{gate}</span>
+              </div>
+            )}
+            {seat && (
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <Armchair className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">Sitzplatz</span>
+                </div>
+                <span className="text-sm font-semibold text-gray-900">{seat}</span>
+              </div>
+            )}
+            {baggage && (
+              <div className="flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <Luggage className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">Gepäck</span>
+                </div>
+                <span className="text-sm font-semibold text-gray-900">{baggage}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Render hotel-specific details
+  const renderHotelDetails = () => {
+    const roomType = getDetail('room_type', 'room_category', 'zimmer', 'zimmerkategorie');
+    const roomNumber = getDetail('room_number', 'zimmernummer');
+    const breakfast = getDetail('breakfast_included', 'breakfast', 'fruehstueck');
+    const wifi = getDetail('wifi_included', 'wifi', 'wlan');
+    const pricePerNight = getDetail('price_per_night', 'preis_pro_nacht');
+    const cancellation = getDetail('cancellation_policy', 'stornierung', 'cancellation_deadline');
+
+    const hasDetails = roomType || roomNumber || breakfast !== null || wifi !== null || pricePerNight || cancellation;
+    if (!hasDetails) return null;
+
+    return (
+      <div className="bg-white rounded-xl border border-gray-100 divide-y divide-gray-100 overflow-hidden">
+        {roomType && (
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-3">
+              <Hotel className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-600">Zimmer</span>
+            </div>
+            <span className="text-sm font-semibold text-gray-900">{roomType}</span>
+          </div>
+        )}
+        {roomNumber && (
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-3">
+              <Hash className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-600">Zimmernummer</span>
+            </div>
+            <span className="text-sm font-semibold text-gray-900">{roomNumber}</span>
+          </div>
+        )}
+        {breakfast !== null && (
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-3">
+              <Coffee className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-600">Frühstück</span>
+            </div>
+            <span className={`text-sm font-semibold ${breakfast ? 'text-green-600' : 'text-gray-500'}`}>
+              {breakfast ? 'Inklusive' : 'Nicht inklusive'}
+            </span>
+          </div>
+        )}
+        {wifi !== null && (
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-3">
+              <Wifi className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-600">WLAN</span>
+            </div>
+            <span className={`text-sm font-semibold ${wifi ? 'text-green-600' : 'text-gray-500'}`}>
+              {wifi ? 'Inklusive' : 'Nicht inklusive'}
+            </span>
+          </div>
+        )}
+        {pricePerNight && (
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-3">
+              <Euro className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-600">Preis/Nacht</span>
+            </div>
+            <span className="text-sm font-semibold text-gray-900">{typeof pricePerNight === 'number' ? `${pricePerNight.toFixed(2)} €` : pricePerNight}</span>
+          </div>
+        )}
+        {cancellation && (
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-600">Stornierung</span>
+            </div>
+            <span className="text-sm font-semibold text-gray-900 text-right max-w-[60%]">{cancellation}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Render generic details for other booking types
+  const renderGenericDetails = () => {
+    if (!booking.details || Object.keys(booking.details).length === 0) return null;
+
+    // Filter out keys that are already shown elsewhere
+    const excludedKeys = ['order_number', 'confirmation_number', 'reference', 'pnr', 'booking_code', 'auftragsnummer'];
+    const detailEntries = Object.entries(booking.details).filter(([key]) => !excludedKeys.includes(key));
+    
+    if (detailEntries.length === 0) return null;
+
+    return (
+      <div className="bg-white rounded-xl border border-gray-100 divide-y divide-gray-100 overflow-hidden">
+        {detailEntries.map(([key, value]) => (
+          <div key={key} className="flex items-center justify-between px-4 py-3">
+            <span className="text-sm text-gray-600 capitalize">{key.replace(/_/g, ' ')}</span>
+            <span className="text-sm font-semibold text-gray-900">
+              {typeof value === 'boolean' ? (value ? 'Ja' : 'Nein') : String(value)}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Render travelers with Apple Contacts style
+  const renderTravelers = () => {
+    const travelers = getTravelers();
+    if (travelers.length === 0) return null;
+
+    return (
+      <div className="space-y-3">
+        <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+          Reisende
+        </div>
+        <div className="space-y-2">
+          {travelers.map((name, i) => (
+            <div key={i} className="flex items-center gap-3 p-3 bg-gray-50/80 rounded-xl">
+              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${typeConfig.gradient} flex items-center justify-center border ${typeConfig.border}`}>
+                <span className={`${typeConfig.color} font-semibold text-sm`}>
+                  {name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-gray-900 truncate">{name}</div>
+                {booking.details?.traveler_bookings?.[name] && (
+                  <div className="text-xs text-gray-500 font-mono">
+                    #{booking.details.traveler_bookings[name]}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div style={{ color: '#111827' }}>
       <div className={`bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-100 overflow-hidden ${isMobile ? 'rounded-t-2xl rounded-b-none' : ''}`}>
@@ -236,7 +633,6 @@ END:VCALENDAR`;
               </div>
             </div>
             <div className="flex items-center gap-1">
-              {/* Export Buttons */}
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -269,28 +665,31 @@ END:VCALENDAR`;
 
         {/* Content */}
         <div className="p-5 space-y-5 max-h-[60vh] lg:max-h-none overflow-y-auto">
-          {/* Booking Number & Status */}
+          {/* Booking Number & Status - Prominent Card */}
           {bookingNumber && (
-            <div className="flex items-center justify-between p-3.5 bg-blue-50/80 rounded-xl">
-              <div className="flex items-center gap-2">
-                <Hash className="w-4 h-4 text-blue-500" />
-                <span className="font-mono font-semibold text-blue-900 text-base tracking-wide">{bookingNumber}</span>
+            <div className={`flex items-center justify-between p-4 bg-gradient-to-br ${typeConfig.gradient} rounded-xl border ${typeConfig.border}`}>
+              <div className="flex items-center gap-3">
+                <Hash className={`w-5 h-5 ${typeConfig.color}`} />
+                <div>
+                  <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Buchungsnummer</div>
+                  <div className="font-mono font-bold text-gray-900 text-lg tracking-wide">{bookingNumber}</div>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <Button 
                   variant="ghost" 
                   size="sm"
                   onClick={copyBookingNumber}
-                  className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-100 rounded-full"
+                  className={`h-9 w-9 p-0 ${typeConfig.color} hover:bg-white/50 rounded-full`}
                   title="Kopieren"
                 >
                   <Copy className="w-4 h-4" />
                 </Button>
                 <Badge variant="outline" className={
-                  booking.status === "confirmed" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
-                  booking.status === "changed" ? "bg-amber-50 text-amber-700 border-amber-200" :
-                  booking.status === "cancelled" ? "bg-red-50 text-red-700 border-red-200" :
-                  "bg-gray-50 text-gray-600 border-gray-200"
+                  booking.status === "confirmed" ? "bg-emerald-50 text-emerald-700 border-emerald-200 font-medium" :
+                  booking.status === "changed" ? "bg-amber-50 text-amber-700 border-amber-200 font-medium" :
+                  booking.status === "cancelled" ? "bg-red-50 text-red-700 border-red-200 font-medium" :
+                  "bg-gray-50 text-gray-600 border-gray-200 font-medium"
                 }>
                   {booking.status === "confirmed" ? "Bestätigt" :
                    booking.status === "changed" ? "Geändert" :
@@ -316,86 +715,99 @@ END:VCALENDAR`;
             </div>
           )}
 
-          {/* Date & Time */}
-          <div className="space-y-2.5">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-gray-400" />
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Zeitraum</span>
-            </div>
-            <div className="pl-6 text-sm">
-              <div className="text-gray-600">
-                {booking.booking_type === "hotel" ? "Check-in: " : "Abfahrt: "}
-                <span className="font-medium text-gray-900">
-                  {format(parseISO(booking.start_datetime), "EEEE, d. MMMM yyyy 'um' HH:mm 'Uhr'", { locale: de })}
-                </span>
-              </div>
-              {booking.end_datetime && (
-                <div className="mt-1.5 text-gray-600">
-                  {booking.booking_type === "hotel" ? "Check-out: " : "Ankunft: "}
-                  <span className="font-medium text-gray-900">
-                    {format(parseISO(booking.end_datetime), "EEEE, d. MMMM yyyy 'um' HH:mm 'Uhr'", { locale: de })}
-                  </span>
+          {/* Type-specific route/details */}
+          {booking.booking_type === 'train' && renderTrainRoute()}
+          {booking.booking_type === 'flight' && renderFlightRoute()}
+          {booking.booking_type === 'hotel' && (
+            <>
+              {/* Hotel Date Info */}
+              <div className={`bg-gradient-to-br ${typeConfig.gradient} rounded-2xl p-5 border ${typeConfig.border}`}>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Check-in</div>
+                    <div className="text-lg font-semibold text-gray-900">
+                      {format(parseISO(booking.start_datetime), "d. MMM", { locale: de })}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {format(parseISO(booking.start_datetime), "HH:mm 'Uhr'", { locale: de })}
+                    </div>
+                  </div>
+                  {booking.end_datetime && (
+                    <div>
+                      <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Check-out</div>
+                      <div className="text-lg font-semibold text-gray-900">
+                        {format(parseISO(booking.end_datetime), "d. MMM", { locale: de })}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {format(parseISO(booking.end_datetime), "HH:mm 'Uhr'", { locale: de })}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-
-          <Separator className="bg-gray-100" />
-
-          {/* Location */}
-          <div className="space-y-2.5">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-gray-400" />
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Ort</span>
-            </div>
-            <div className="pl-6 text-sm space-y-1">
-              {booking.origin_city && (
-                <div className="text-gray-600">Von: <span className="font-medium text-gray-900">{booking.origin_city}</span></div>
-              )}
-              <div className="text-gray-600">
-                {booking.origin_city ? "Nach: " : ""}
-                <span className="font-medium text-gray-900">{booking.destination_city}</span>
               </div>
-              {booking.venue_address && (
-                <div className="flex items-start justify-between gap-2 mt-2">
-                  <div className="text-gray-500">{booking.venue_address}</div>
+              {renderHotelDetails()}
+            </>
+          )}
+
+          {/* Generic transport (bus, rental car, other) - show date/time */}
+          {!['train', 'flight', 'hotel'].includes(booking.booking_type) && (
+            <>
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-gray-400" />
+                  <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Zeitraum</span>
+                </div>
+                <div className="pl-6 text-sm">
+                  <div className="text-gray-600">
+                    <span className="font-medium text-gray-900">
+                      {format(parseISO(booking.start_datetime), "EEEE, d. MMMM yyyy 'um' HH:mm 'Uhr'", { locale: de })}
+                    </span>
+                  </div>
+                  {booking.end_datetime && (
+                    <div className="mt-1.5 text-gray-600">
+                      bis{' '}
+                      <span className="font-medium text-gray-900">
+                        {format(parseISO(booking.end_datetime), "EEEE, d. MMMM yyyy 'um' HH:mm 'Uhr'", { locale: de })}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {renderGenericDetails()}
+            </>
+          )}
+
+          {/* Location - for trains/flights show Maps button, for hotels show address */}
+          {(booking.venue_address || (booking.booking_type === 'hotel' && booking.destination_city)) && (
+            <>
+              <Separator className="bg-gray-100" />
+              <div className="space-y-2.5">
+                <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Adresse</div>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="text-sm text-gray-600 flex-1">
+                    {booking.venue_address || booking.destination_city}
+                  </div>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => window.open(getGoogleMapsUrl(), '_blank')}
-                    className="flex-shrink-0 text-blue-600 hover:bg-blue-50 border-blue-200 h-8 px-3"
+                    className={`flex-shrink-0 ${typeConfig.color} hover:bg-gray-50 border-gray-200 h-8 px-3`}
                   >
                     <Navigation className="w-3.5 h-3.5 mr-1.5" />
                     Maps
                   </Button>
                 </div>
-              )}
-              {!booking.venue_address && (booking.venue_name || booking.destination_city) && (
-                <div className="mt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(getGoogleMapsUrl(), '_blank')}
-                    className="text-blue-600 hover:bg-blue-50 border-blue-200 h-8 px-3"
-                  >
-                    <Navigation className="w-3.5 h-3.5 mr-1.5" />
-                    In Maps öffnen
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
+              </div>
+            </>
+          )}
 
           {/* Provider */}
           {booking.provider && (
             <>
               <Separator className="bg-gray-100" />
-              <div className="space-y-2.5">
-                <div className="flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Anbieter</span>
-                </div>
-                <div className="pl-6 text-sm font-medium text-gray-900">{booking.provider}</div>
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Anbieter</div>
+                <div className="text-sm font-medium text-gray-900">{booking.provider}</div>
               </div>
             </>
           )}
@@ -404,29 +816,16 @@ END:VCALENDAR`;
           {getTravelers().length > 0 && (
             <>
               <Separator className="bg-gray-100" />
-              <div className="space-y-2.5">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Reisende</span>
-                </div>
-                <div className="pl-6 space-y-1">
-                  {getTravelers().map((name, i) => (
-                    <div key={i} className="text-sm font-medium text-gray-900">{name}</div>
-                  ))}
-                </div>
-              </div>
+              {renderTravelers()}
             </>
           )}
 
-          {/* Attachments - prominently after travelers */}
+          {/* Attachments */}
           {(attachments.length > 0 || originalEmail) && (
             <>
               <Separator className="bg-gray-100" />
               <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Buchungsdokumente</span>
-                </div>
+                <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Dokumente</div>
                 <div className="space-y-2">
                   {originalEmail && (
                     <button
@@ -469,33 +868,6 @@ END:VCALENDAR`;
             </>
           )}
 
-          {/* Details */}
-          {booking.details && Object.keys(booking.details).length > 0 && (
-            <>
-              <Separator className="bg-gray-100" />
-              <div className="space-y-2.5">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Details</span>
-                </div>
-                <div className="pl-6 grid grid-cols-2 gap-2 text-sm">
-                  {Object.entries(booking.details).map(([key, value]) => (
-                    <div key={key}>
-                      <span className="text-gray-500 capitalize">
-                        {key.replace(/_/g, " ")}:
-                      </span>{" "}
-                      <span className="font-medium text-gray-900">
-                        {typeof value === "boolean" ? (value ? "Ja" : "Nein") : String(value)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Details - moved after attachments */}
-
           {/* Version History */}
           {versions.length > 0 && (
             <>
@@ -506,7 +878,7 @@ END:VCALENDAR`;
                   className="flex items-center gap-2 text-sm w-full group"
                 >
                   <History className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide group-hover:text-gray-700 transition-colors">
+                  <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest group-hover:text-gray-600 transition-colors">
                     Versionen ({versions.length})
                   </span>
                   {showVersions ? (
@@ -516,9 +888,9 @@ END:VCALENDAR`;
                   )}
                 </button>
                 {showVersions && (
-                  <div className="pl-6 space-y-3">
+                  <div className="space-y-3">
                     {versions.map((version) => (
-                      <div key={version.id} className="text-sm border-l-2 border-gray-200 pl-3">
+                      <div key={version.id} className="text-sm border-l-2 border-gray-200 pl-3 py-1">
                         <div className="font-medium text-gray-900">
                           Version {version.version_number}
                         </div>
