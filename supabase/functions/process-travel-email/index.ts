@@ -91,12 +91,26 @@ function extractAttachmentInfo(attachments: unknown): AttachmentInfo[] {
   return attachments.map((att: unknown) => {
     if (typeof att !== "object" || att === null) return null;
     const a = att as Record<string, unknown>;
+    
+    // Handle Buffer data format from email parsers (e.g., HEY/Make)
+    let contentData: string | undefined = undefined;
+    if (a.data && typeof a.data === "object") {
+      const dataObj = a.data as Record<string, unknown>;
+      if (dataObj.type === "Buffer" && Array.isArray(dataObj.data)) {
+        // Convert Buffer array to base64
+        const bytes = new Uint8Array(dataObj.data as number[]);
+        contentData = btoa(String.fromCharCode(...bytes));
+      }
+    } else if (a.Content || a.content || a.base64) {
+      contentData = String(a.Content || a.content || a.base64);
+    }
+    
     return {
-      name: String(a.Name || a.name || a.FileName || a.filename || "attachment"),
+      name: String(a.Name || a.name || a.FileName || a.fileName || a.filename || "attachment"),
       contentType: String(a.ContentType || a.contentType || a.content_type || a.mime_type || "application/octet-stream"),
       url: a.url ? String(a.url) : undefined,
-      content: a.Content || a.content || a.data || a.base64 ? String(a.Content || a.content || a.data || a.base64) : undefined,
-      size: a.ContentLength || a.contentLength || a.size ? Number(a.ContentLength || a.contentLength || a.size) : undefined,
+      content: contentData,
+      size: a.ContentLength || a.contentLength || a.fileSize || a.size ? Number(a.ContentLength || a.contentLength || a.fileSize || a.size) : undefined,
     };
   }).filter(Boolean) as AttachmentInfo[];
 }
