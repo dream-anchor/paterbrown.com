@@ -252,6 +252,7 @@ serve(async (req) => {
     console.info("To:", toAddress);
     console.info("Subject:", subject);
     console.info("Attachments from payload:", attachmentInfo.length);
+    console.info("Attachments with Base64 content:", attachmentInfo.filter(a => a.content).length);
     console.info("PDF links from body:", bodyPdfLinks.length);
     console.info("Total attachments queued:", allAttachments.length);
 
@@ -278,15 +279,74 @@ serve(async (req) => {
     }
 
     console.info("Email saved:", emailData.id);
-    console.info("Response time: < 100ms");
 
-    // Return immediately - no attachment processing, no AI analysis
+    // ===== UPLOAD ATTACHMENTS WITH BASE64 CONTENT TO STORAGE =====
+    let uploadedCount = 0;
+    const attachmentsWithContent = attachmentInfo.filter(a => a.content);
+    
+    for (const attachment of attachmentsWithContent) {
+      try {
+        console.info(`Uploading attachment: ${attachment.name}`);
+        
+        // Decode Base64
+        const cleanBase64 = attachment.content!.includes(',') 
+          ? attachment.content!.split(',')[1] 
+          : attachment.content!;
+        const binaryString = atob(cleanBase64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        // Create unique file path
+        const sanitizedFilename = attachment.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const filePath = `${emailData.id}/${Date.now()}-${sanitizedFilename}`;
+        
+        // Upload to storage
+        const { error: uploadError } = await supabase.storage
+          .from("travel-attachments")
+          .upload(filePath, bytes, {
+            contentType: attachment.contentType || "application/pdf",
+            upsert: false
+          });
+        
+        if (uploadError) {
+          console.error(`Upload error for ${attachment.name}:`, uploadError);
+          continue;
+        }
+        
+        // Create attachment record in database
+        const { error: insertError } = await supabase.from("travel_attachments").insert({
+          email_id: emailData.id,
+          file_name: attachment.name,
+          file_path: filePath,
+          content_type: attachment.contentType,
+          file_size: bytes.length
+        });
+        
+        if (insertError) {
+          console.error(`DB insert error for ${attachment.name}:`, insertError);
+          continue;
+        }
+        
+        uploadedCount++;
+        console.info(`✓ Attachment saved: ${filePath} (${bytes.length} bytes)`);
+        
+      } catch (attError) {
+        console.error(`Error processing attachment ${attachment.name}:`, attError);
+      }
+    }
+    
+    console.info(`Uploaded ${uploadedCount}/${attachmentsWithContent.length} attachments to storage`);
+
+    // Return immediately
     return new Response(
       JSON.stringify({
         success: true,
         email_id: emailData.id,
         message: "Email queued for processing",
         attachments_queued: allAttachments.length,
+        attachments_uploaded: uploadedCount,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
