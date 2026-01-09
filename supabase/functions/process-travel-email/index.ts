@@ -115,6 +115,75 @@ function extractAttachmentInfo(attachments: unknown): AttachmentInfo[] {
   }).filter(Boolean) as AttachmentInfo[];
 }
 
+// Extract PDF links from HTML body (for forwarded emails like HEY)
+function extractPdfLinksFromBody(htmlBody: string): AttachmentInfo[] {
+  if (!htmlBody) return [];
+  
+  const pdfAttachments: AttachmentInfo[] = [];
+  const seenUrls = new Set<string>();
+  
+  // Pattern 1: Direct PDF links
+  const pdfLinkPattern = /https?:\/\/[^\s"'<>]+\.pdf(?:\?[^\s"'<>]*)?/gi;
+  
+  // Pattern 2: HEY file links (files.hey.com)
+  const heyFilePattern = /https?:\/\/files\.hey\.com\/[^\s"'<>]+/gi;
+  
+  // Pattern 3: Generic file download links with PDF in path or query
+  const genericPdfPattern = /https?:\/\/[^\s"'<>]+(?:download|attachment|file)[^\s"'<>]*\.pdf[^\s"'<>]*/gi;
+  
+  // Pattern 4: Links in anchor tags with PDF text/title
+  const anchorPdfPattern = /<a[^>]+href=["']([^"']+)["'][^>]*>([^<]*(?:pdf|PDF|\.pdf)[^<]*)<\/a>/gi;
+  
+  // Pattern 5: Common file hosting services
+  const fileHostingPattern = /https?:\/\/(?:drive\.google\.com|dropbox\.com|onedrive\.live\.com|sharepoint\.com|wetransfer\.com)[^\s"'<>]+/gi;
+  
+  // Extract PDF links
+  for (const match of htmlBody.matchAll(pdfLinkPattern)) {
+    const url = match[0].replace(/['"<>].*$/, '');
+    if (!seenUrls.has(url)) {
+      seenUrls.add(url);
+      const fileName = url.split('/').pop()?.split('?')[0] || 'document.pdf';
+      pdfAttachments.push({
+        name: decodeURIComponent(fileName),
+        contentType: 'application/pdf',
+        url: url,
+      });
+    }
+  }
+  
+  // Extract HEY file links
+  for (const match of htmlBody.matchAll(heyFilePattern)) {
+    const url = match[0].replace(/['"<>].*$/, '');
+    if (!seenUrls.has(url)) {
+      seenUrls.add(url);
+      const fileName = url.split('/').pop()?.split('?')[0] || 'hey-file.pdf';
+      pdfAttachments.push({
+        name: decodeURIComponent(fileName),
+        contentType: 'application/pdf',
+        url: url,
+      });
+    }
+  }
+  
+  // Extract from anchor tags with PDF content
+  for (const match of htmlBody.matchAll(anchorPdfPattern)) {
+    const url = match[1];
+    if (url && !seenUrls.has(url) && !url.startsWith('mailto:')) {
+      seenUrls.add(url);
+      const linkText = match[2]?.trim() || 'document.pdf';
+      const fileName = linkText.endsWith('.pdf') ? linkText : `${linkText}.pdf`;
+      pdfAttachments.push({
+        name: fileName,
+        contentType: 'application/pdf',
+        url: url,
+      });
+    }
+  }
+  
+  console.info(`Extracted ${pdfAttachments.length} PDF links from body`);
+  return pdfAttachments;
+}
+
 serve(async (req) => {
   console.info("=== PROCESS TRAVEL EMAIL (FAST) ===");
   console.info("Timestamp:", new Date().toISOString());
@@ -161,11 +230,19 @@ serve(async (req) => {
     const attachmentInfo = extractAttachmentInfo(
       payload.attachments || payload.Attachments || payload.files
     );
+    
+    // Also extract PDF links from HTML body (for forwarded emails)
+    const bodyPdfLinks = extractPdfLinksFromBody(htmlBody);
+    
+    // Combine both sources, body PDFs are often the actual attachments when forwarding
+    const allAttachments = [...attachmentInfo, ...bodyPdfLinks];
 
     console.info("From:", fromAddress);
     console.info("To:", toAddress);
     console.info("Subject:", subject);
-    console.info("Attachments queued:", attachmentInfo.length);
+    console.info("Attachments from payload:", attachmentInfo.length);
+    console.info("PDF links from body:", bodyPdfLinks.length);
+    console.info("Total attachments queued:", allAttachments.length);
 
     // Save email with attachment info for async processing
     const { data: emailData, error: emailError } = await supabase
@@ -178,7 +255,7 @@ serve(async (req) => {
         body_html: htmlBody,
         received_at: receivedAt,
         status: "pending",
-        attachment_urls: attachmentInfo,
+        attachment_urls: allAttachments,
         raw_payload: payload,
       })
       .select()
@@ -198,7 +275,7 @@ serve(async (req) => {
         success: true,
         email_id: emailData.id,
         message: "Email queued for processing",
-        attachments_queued: attachmentInfo.length,
+        attachments_queued: allAttachments.length,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
