@@ -1,11 +1,44 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
-import { Calendar, Clock, MapPin, Navigation, RefreshCw, CheckCircle, AlertCircle } from "lucide-react";
+import { Calendar, Clock, MapPin, Navigation, RefreshCw, CheckCircle, AlertCircle, Car } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+
+// Type for driving distance between events
+interface DrivingDistance {
+  fromId: string;
+  toId: string;
+  distanceKm: number;
+  durationMin: number;
+}
+
+// Function to fetch driving distance using OSRM
+const fetchDrivingDistance = async (
+  from: [number, number],
+  to: [number, number]
+): Promise<{ distanceKm: number; durationMin: number } | null> => {
+  try {
+    // OSRM expects coordinates as longitude,latitude
+    const url = `https://router.project-osrm.org/route/v1/driving/${from[1]},${from[0]};${to[1]},${to[0]}?overview=false`;
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.code === "Ok" && data.routes?.[0]) {
+      const route = data.routes[0];
+      return {
+        distanceKm: Math.round(route.distance / 1000),
+        durationMin: Math.round(route.duration / 60),
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching driving distance:", error);
+    return null;
+  }
+};
 
 // Component to auto-fit map bounds to all markers
 const FitBoundsToMarkers = ({ coords }: { coords: [number, number][] }) => {
@@ -188,6 +221,8 @@ interface EventMapProps {
 const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
+  const [drivingDistances, setDrivingDistances] = useState<Map<string, DrivingDistance>>(new Map());
+  const [isLoadingDistances, setIsLoadingDistances] = useState(false);
   const { toast } = useToast();
   
   const sortedEvents = useMemo(() => {
@@ -225,6 +260,68 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
       }))
       .filter(event => event.coords !== null);
   }, [sortedEvents]);
+
+  // Fetch driving distances between consecutive events
+  const loadDrivingDistances = useCallback(async () => {
+    if (eventsWithCoords.length < 2) return;
+    
+    setIsLoadingDistances(true);
+    const newDistances = new Map<string, DrivingDistance>();
+    
+    // Fetch distances sequentially to avoid rate limiting
+    for (let i = 0; i < eventsWithCoords.length - 1; i++) {
+      const fromEvent = eventsWithCoords[i];
+      const toEvent = eventsWithCoords[i + 1];
+      const key = `${fromEvent.id}-${toEvent.id}`;
+      
+      // Skip if already cached
+      if (drivingDistances.has(key)) {
+        newDistances.set(key, drivingDistances.get(key)!);
+        continue;
+      }
+      
+      const result = await fetchDrivingDistance(
+        fromEvent.coords as [number, number],
+        toEvent.coords as [number, number]
+      );
+      
+      if (result) {
+        newDistances.set(key, {
+          fromId: fromEvent.id,
+          toId: toEvent.id,
+          distanceKm: result.distanceKm,
+          durationMin: result.durationMin,
+        });
+      }
+      
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+    
+    setDrivingDistances(newDistances);
+    setIsLoadingDistances(false);
+  }, [eventsWithCoords, drivingDistances]);
+
+  // Load distances when events change
+  useEffect(() => {
+    if (eventsWithCoords.length > 1) {
+      loadDrivingDistances();
+    }
+  }, [eventsWithCoords.length]); // Only reload when count changes
+
+  // Get distance to next event
+  const getDistanceToNext = (eventId: string, nextEventId: string | null): DrivingDistance | null => {
+    if (!nextEventId) return null;
+    return drivingDistances.get(`${eventId}-${nextEventId}`) || null;
+  };
+
+  // Format duration in hours and minutes
+  const formatDuration = (minutes: number): string => {
+    if (minutes < 60) return `${minutes} Min`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+  };
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("de-DE", {
@@ -427,53 +524,86 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
 
         {/* Stations List - Scrollable */}
         <div className="max-h-[400px] overflow-y-auto space-y-2 pr-2">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sticky top-0 bg-gray-50/95 backdrop-blur-sm py-2 z-10">
-            Alle Stationen · {sortedEvents.length} Termine
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sticky top-0 bg-gray-50/95 backdrop-blur-sm py-2 z-10 flex items-center justify-between">
+            <span>Alle Stationen · {sortedEvents.length} Termine</span>
+            {isLoadingDistances && (
+              <span className="text-amber-500 flex items-center gap-1">
+                <RefreshCw className="w-3 h-3 animate-spin" />
+                Routen laden...
+              </span>
+            )}
           </h3>
           
-          {sortedEvents.map((event, index) => (
-            <div
-              key={event.id}
-              id={`station-${event.id}`}
-              className={cn(
-                "flex items-center gap-3 p-3 bg-white rounded-lg border transition-all cursor-pointer",
-                activeEventId === event.id 
-                  ? "border-amber-500 ring-2 ring-amber-200 shadow-md" 
-                  : "border-gray-200 hover:border-amber-300 hover:shadow-sm"
-              )}
-              onMouseEnter={() => setActiveEventId(event.id)}
-              onMouseLeave={() => setActiveEventId(null)}
-              onClick={() => setActiveEventId(activeEventId === event.id ? null : event.id)}
-            >
-              {/* Number */}
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 shadow-sm">
-                {index + 1}
-              </div>
-              
-              {/* Event Details */}
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 truncate">
-                  {event.location}{event.state ? ` (${event.state})` : ''}
-                </p>
-                <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
-                  <span>{formatDate(event.start_time)}</span>
-                  <span>·</span>
-                  <span>{formatTime(event.start_time)} Uhr</span>
+          {sortedEvents.map((event, index) => {
+            const nextEvent = sortedEvents[index + 1];
+            const distanceInfo = nextEvent ? getDistanceToNext(event.id, nextEvent.id) : null;
+            
+            return (
+              <div key={event.id}>
+                {/* Event Card */}
+                <div
+                  id={`station-${event.id}`}
+                  className={cn(
+                    "flex items-center gap-3 p-3 bg-white rounded-lg border transition-all cursor-pointer",
+                    activeEventId === event.id 
+                      ? "border-amber-500 ring-2 ring-amber-200 shadow-md" 
+                      : "border-gray-200 hover:border-amber-300 hover:shadow-sm"
+                  )}
+                  onMouseEnter={() => setActiveEventId(event.id)}
+                  onMouseLeave={() => setActiveEventId(null)}
+                  onClick={() => setActiveEventId(activeEventId === event.id ? null : event.id)}
+                >
+                  {/* Number */}
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 shadow-sm">
+                    {index + 1}
+                  </div>
+                  
+                  {/* Event Details */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">
+                      {event.location}{event.state ? ` (${event.state})` : ''}
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                      <span>{formatDate(event.start_time)}</span>
+                      <span>·</span>
+                      <span>{formatTime(event.start_time)} Uhr</span>
+                    </div>
+                    {event.venue_name && (
+                      <p className="text-xs text-gray-400 truncate mt-0.5">{event.venue_name}</p>
+                    )}
+                  </div>
+
+                  {/* Source Badge */}
+                  <span className={cn(
+                    "text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0",
+                    event.source === "KL" ? "bg-blue-100 text-blue-600" : "bg-purple-100 text-purple-600"
+                  )}>
+                    {event.source}
+                  </span>
                 </div>
-                {event.venue_name && (
-                  <p className="text-xs text-gray-400 truncate mt-0.5">{event.venue_name}</p>
+
+                {/* Distance to next station */}
+                {nextEvent && (
+                  <div className="flex items-center justify-center py-2 px-4">
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <div className="h-4 w-px bg-gray-300"></div>
+                      <Car className="w-3.5 h-3.5 text-amber-500" />
+                      {distanceInfo ? (
+                        <span className="font-medium text-gray-600">
+                          {distanceInfo.distanceKm} km · {formatDuration(distanceInfo.durationMin)}
+                        </span>
+                      ) : isLoadingDistances ? (
+                        <span className="text-gray-400">...</span>
+                      ) : (
+                        <span className="text-gray-400">Route nicht verfügbar</span>
+                      )}
+                      <div className="h-4 w-px bg-gray-300"></div>
+                    </div>
+                  </div>
                 )}
               </div>
-
-              {/* Source Badge */}
-              <span className={cn(
-                "text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0",
-                event.source === "KL" ? "bg-blue-100 text-blue-600" : "bg-purple-100 text-purple-600"
-              )}>
-                {event.source}
-              </span>
-            </div>
-          ))}
+            );
+          })}
 
           {sortedEvents.length === 0 && (
             <div className="text-center py-12 text-gray-400">
