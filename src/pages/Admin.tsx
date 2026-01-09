@@ -221,6 +221,8 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isResetMode, setIsResetMode] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -245,6 +247,129 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
       setIsLoading(false);
     }
   };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast({
+        title: "E-Mail erforderlich",
+        description: "Bitte gib deine E-Mail-Adresse ein",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/admin`,
+      });
+
+      if (error) throw error;
+      
+      setResetSent(true);
+      toast({
+        title: "E-Mail gesendet",
+        description: "Prüfe dein Postfach für den Reset-Link",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Fehler",
+        description: error.message || "Reset-Link konnte nicht gesendet werden",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (resetSent) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
+        <div className="w-full max-w-sm text-center">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-500/20">
+            <span className="text-white text-xl">✓</span>
+          </div>
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight mb-2">
+            E-Mail gesendet
+          </h1>
+          <p className="text-sm text-gray-500 mb-6">
+            Wir haben einen Passwort-Reset-Link an <strong>{email}</strong> gesendet.
+          </p>
+          <button
+            onClick={() => {
+              setIsResetMode(false);
+              setResetSent(false);
+            }}
+            className="text-sm text-amber-600 hover:text-amber-700 font-medium"
+          >
+            ← Zurück zum Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isResetMode) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-8">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/20">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+              Passwort zurücksetzen
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Gib deine E-Mail-Adresse ein
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100">
+            <form onSubmit={handlePasswordReset} className="space-y-4">
+              <div>
+                <label htmlFor="reset-email" className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                  E-Mail
+                </label>
+                <input
+                  id="reset-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all duration-150"
+                  placeholder="name@beispiel.de"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Senden...
+                  </span>
+                ) : (
+                  "Reset-Link senden"
+                )}
+              </button>
+            </form>
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setIsResetMode(false)}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                ← Zurück zum Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
@@ -308,6 +433,14 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
               )}
             </button>
           </form>
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => setIsResetMode(true)}
+              className="text-sm text-gray-500 hover:text-amber-600 transition-colors"
+            >
+              Passwort vergessen?
+            </button>
+          </div>
         </div>
       </div>
     </div>
