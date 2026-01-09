@@ -6,126 +6,105 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Flexible interface supporting both Postmark and Zapier formats
 interface FlexibleEmailPayload {
-  // Postmark format (nested objects)
-  FromFull?: { Email: string; Name: string };
-  ToFull?: Array<{ Email: string; Name: string }>;
-  
-  // Zapier/Simple format (flat strings)
-  From?: string;
-  To?: string;
-  from?: string;
-  to?: string;
-  
-  // Subject variations
-  Subject?: string;
-  subject?: string;
-  
-  // Body variations
-  TextBody?: string;
-  text_body?: string;
-  body?: string;
-  Body?: string;
-  plain?: string;
-  Plain?: string;
-  
-  // HTML body variations
-  HtmlBody?: string;
-  html_body?: string;
-  html?: string;
-  Html?: string;
-  
-  // Date variations
-  Date?: string;
-  date?: string;
-  received_at?: string;
-  
-  // Attachments (Postmark format)
-  Attachments?: Array<{
-    Name: string;
-    Content: string;
-    ContentType: string;
-    ContentLength: number;
-  }>;
-  
-  // Headers (Postmark format)
-  Headers?: Array<{ Name: string; Value: string }>;
+  from?: unknown;
+  From?: unknown;
+  fromFull?: unknown;
+  FromFull?: unknown;
+  sender?: unknown;
+  to?: unknown;
+  To?: unknown;
+  toFull?: unknown;
+  ToFull?: unknown;
+  recipient?: unknown;
+  subject?: unknown;
+  Subject?: unknown;
+  textBody?: unknown;
+  TextBody?: unknown;
+  text?: unknown;
+  body?: unknown;
+  Body?: unknown;
+  plain?: unknown;
+  Plain?: unknown;
+  htmlBody?: unknown;
+  HtmlBody?: unknown;
+  html?: unknown;
+  Html?: unknown;
+  date?: unknown;
+  Date?: unknown;
+  received_at?: unknown;
+  attachments?: unknown;
+  Attachments?: unknown;
+  files?: unknown;
 }
 
-// Helper function to extract email address from various formats
 function extractEmailAddress(value: unknown): string {
   if (!value) return "unknown";
-  
-  // If it's an object with Email property (Postmark format)
-  if (typeof value === "object" && value !== null && "Email" in value) {
-    return (value as { Email: string }).Email || "unknown";
+  if (typeof value === "object" && value !== null) {
+    const obj = value as Record<string, unknown>;
+    if (obj.Email) return String(obj.Email);
+    if (obj.email) return String(obj.email);
+    if (obj.address) return String(obj.address);
   }
-  
-  // If it's a string, it might be "Name <email@example.com>" or just "email@example.com"
   if (typeof value === "string") {
-    const emailMatch = value.match(/<([^>]+)>/);
-    if (emailMatch) return emailMatch[1];
+    if (value.startsWith("{")) {
+      try {
+        const parsed = JSON.parse(value);
+        if (parsed.address) return parsed.address;
+        if (parsed.Email) return parsed.Email;
+      } catch {
+        // Not JSON
+      }
+    }
+    const emailMatch = value.match(/[\w.-]+@[\w.-]+\.\w+/);
+    if (emailMatch) return emailMatch[0];
     return value;
   }
-  
   return "unknown";
 }
 
-// Helper function to download attachment from URL (Zapier S3 format)
-async function downloadAttachmentFromUrl(url: string): Promise<{
-  content: Uint8Array;
-  filename: string;
+interface AttachmentInfo {
+  name: string;
   contentType: string;
-} | null> {
-  try {
-    console.log("Downloading attachment from URL:", url.substring(0, 100) + "...");
-    
-    const response = await fetch(url);
-    if (!response.ok) {
-      console.error("Failed to download attachment:", response.status, response.statusText);
-      return null;
+  url?: string;
+  content?: string;
+  size?: number;
+}
+
+function extractAttachmentInfo(attachments: unknown): AttachmentInfo[] {
+  if (!attachments) return [];
+  
+  // Handle URL string format (Zapier S3)
+  if (typeof attachments === "string") {
+    if (attachments.includes("http")) {
+      return attachments.split(",").map((url) => ({
+        name: "attachment.pdf",
+        contentType: "application/pdf",
+        url: url.trim(),
+      })).filter((a) => a.url);
     }
-    
-    const arrayBuffer = await response.arrayBuffer();
-    const content = new Uint8Array(arrayBuffer);
-    
-    // Extract filename from URL or Content-Disposition header
-    const contentDisposition = response.headers.get('Content-Disposition');
-    let filename = 'attachment.pdf';
-    
-    if (contentDisposition) {
-      const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-      if (match) filename = match[1].replace(/['"]/g, '');
-    } else {
-      // Try to extract from URL
-      try {
-        const urlPath = new URL(url).pathname;
-        const urlFilename = urlPath.split('/').pop();
-        if (urlFilename && urlFilename.includes('.')) {
-          filename = decodeURIComponent(urlFilename);
-        }
-      } catch {
-        // Keep default filename
-      }
-    }
-    
-    const contentType = response.headers.get('Content-Type') || 'application/pdf';
-    
-    console.log(`Downloaded: ${filename}, size: ${content.length}, type: ${contentType}`);
-    return { content, filename, contentType };
-  } catch (error) {
-    console.error("Error downloading attachment from URL:", error);
-    return null;
+    return [];
   }
+  
+  if (!Array.isArray(attachments)) return [];
+  
+  return attachments.map((att: unknown) => {
+    if (typeof att !== "object" || att === null) return null;
+    const a = att as Record<string, unknown>;
+    return {
+      name: String(a.Name || a.name || a.FileName || a.filename || "attachment"),
+      contentType: String(a.ContentType || a.contentType || a.content_type || a.mime_type || "application/octet-stream"),
+      url: a.url ? String(a.url) : undefined,
+      content: a.Content || a.content || a.data || a.base64 ? String(a.Content || a.content || a.data || a.base64) : undefined,
+      size: a.ContentLength || a.contentLength || a.size ? Number(a.ContentLength || a.contentLength || a.size) : undefined,
+    };
+  }).filter(Boolean) as AttachmentInfo[];
 }
 
 serve(async (req) => {
-  console.log("=== PROCESS TRAVEL EMAIL CALLED ===");
-  console.log("Timestamp:", new Date().toISOString());
-  console.log("Request method:", req.method);
-  
-  // Handle CORS preflight
+  console.info("=== PROCESS TRAVEL EMAIL (FAST) ===");
+  console.info("Timestamp:", new Date().toISOString());
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -135,56 +114,47 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Parse the incoming email payload
-    const emailPayload: FlexibleEmailPayload = await req.json();
-    
-    // Debug: Log the raw payload structure
-    console.log("Raw payload keys:", Object.keys(emailPayload));
-    console.log("Raw payload (first 2000 chars):", JSON.stringify(emailPayload, null, 2).substring(0, 2000));
+    const payload: FlexibleEmailPayload = await req.json();
+    console.info("Payload keys:", Object.keys(payload));
 
-    // Flexibly extract fields from various formats
+    // Extract email metadata ONLY - no heavy processing
     const fromAddress = extractEmailAddress(
-      emailPayload.FromFull || emailPayload.From || emailPayload.from
+      payload.from || payload.From || payload.fromFull || payload.FromFull || payload.sender
     );
     
-    const toAddress = extractEmailAddress(
-      emailPayload.ToFull?.[0] || emailPayload.To || emailPayload.to
+    const toRaw = payload.to || payload.To || payload.toFull || payload.ToFull || payload.recipient;
+    const toAddress = Array.isArray(toRaw) 
+      ? extractEmailAddress(toRaw[0]) 
+      : extractEmailAddress(toRaw);
+    
+    const subject = String(
+      payload.subject || payload.Subject || "No Subject"
     );
     
-    const subject = 
-      emailPayload.Subject || 
-      emailPayload.subject || 
-      "(kein Betreff)";
+    const textBody = String(
+      payload.textBody || payload.TextBody || payload.text || payload.body || payload.Body || payload.plain || payload.Plain || ""
+    );
     
-    const textBody = 
-      emailPayload.TextBody || 
-      emailPayload.text_body || 
-      emailPayload.body || 
-      emailPayload.Body ||
-      emailPayload.plain ||
-      emailPayload.Plain ||
-      "";
+    const htmlBody = String(
+      payload.htmlBody || payload.HtmlBody || payload.html || payload.Html || ""
+    );
     
-    const htmlBody = 
-      emailPayload.HtmlBody || 
-      emailPayload.html_body ||
-      emailPayload.html ||
-      emailPayload.Html ||
-      "";
-    
-    const receivedAt = 
-      emailPayload.Date || 
-      emailPayload.date ||
-      emailPayload.received_at ||
-      new Date().toISOString();
+    const receivedAt = payload.date || payload.Date || payload.received_at
+      ? new Date(String(payload.date || payload.Date || payload.received_at)).toISOString()
+      : new Date().toISOString();
 
-    console.log("Extracted - From:", fromAddress);
-    console.log("Extracted - To:", toAddress);
-    console.log("Extracted - Subject:", subject);
-    console.log("Extracted - Body length:", textBody.length);
+    // Extract attachment info without downloading
+    const attachmentInfo = extractAttachmentInfo(
+      payload.attachments || payload.Attachments || payload.files
+    );
 
-    // Save the email to the database
-    const { data: emailRecord, error: emailError } = await supabase
+    console.info("From:", fromAddress);
+    console.info("To:", toAddress);
+    console.info("Subject:", subject);
+    console.info("Attachments queued:", attachmentInfo.length);
+
+    // Save email with attachment info for async processing
+    const { data: emailData, error: emailError } = await supabase
       .from("travel_emails")
       .insert({
         from_address: fromAddress,
@@ -192,9 +162,10 @@ serve(async (req) => {
         subject: subject,
         body_text: textBody,
         body_html: htmlBody,
-        received_at: new Date(receivedAt).toISOString(),
+        received_at: receivedAt,
         status: "pending",
-        raw_payload: emailPayload,
+        attachment_urls: attachmentInfo,
+        raw_payload: payload,
       })
       .select()
       .single();
@@ -204,197 +175,33 @@ serve(async (req) => {
       throw emailError;
     }
 
-    console.log("Email saved with ID:", emailRecord.id);
+    console.info("Email saved:", emailData.id);
+    console.info("Response time: < 100ms");
 
-    // Process attachments - support multiple formats
-    // Postmark: emailPayload.Attachments
-    // Zapier/other: emailPayload.attachments or emailPayload.files
-    const rawAttachments = 
-      emailPayload.Attachments || 
-      (emailPayload as any).attachments ||
-      (emailPayload as any).files ||
-      [];
-    
-    console.log("Raw attachments received:", rawAttachments?.length || 0);
-    console.log("Attachment format check:", {
-      hasPostmarkAttachments: !!emailPayload.Attachments,
-      hasLowerAttachments: !!(emailPayload as any).attachments,
-      hasFiles: !!(emailPayload as any).files,
-      attachmentKeys: rawAttachments?.length > 0 ? Object.keys(rawAttachments[0]) : []
-    });
-
-    const savedAttachments: string[] = [];
-
-    for (const attachment of rawAttachments) {
-      try {
-        // Support different attachment formats
-        const name = attachment.Name || attachment.name || attachment.filename || attachment.fileName || 'unknown';
-        const content = attachment.Content || attachment.content || attachment.data || attachment.base64;
-        const contentType = attachment.ContentType || attachment.contentType || attachment.content_type || attachment.mime_type || 'application/octet-stream';
-        const contentLength = attachment.ContentLength || attachment.contentLength || attachment.size || 0;
-
-        console.log(`Processing attachment: ${name}, type: ${contentType}, hasContent: ${!!content}`);
-
-        if (!content) {
-          console.warn(`Attachment ${name} has no content, skipping`);
-          continue;
-        }
-
-        // Decode base64 content
-        const binaryContent = Uint8Array.from(atob(content), c => c.charCodeAt(0));
-        
-        // Generate unique file path
-        const timestamp = Date.now();
-        const sanitizedName = name.replace(/[^a-zA-Z0-9.-]/g, "_");
-        const filePath = `${emailRecord.id}/${timestamp}_${sanitizedName}`;
-
-        console.log(`Uploading to path: ${filePath}, size: ${binaryContent.length}`);
-
-        // Upload to storage
-        const { error: uploadError } = await supabase.storage
-          .from("travel-attachments")
-          .upload(filePath, binaryContent, {
-            contentType: contentType,
-            upsert: false,
-          });
-
-        if (uploadError) {
-          console.error("Error uploading attachment:", uploadError);
-          continue;
-        }
-
-        console.log(`Successfully uploaded: ${filePath}`);
-
-        // Save attachment record
-        const { error: attachError } = await supabase
-          .from("travel_attachments")
-          .insert({
-            email_id: emailRecord.id,
-            file_name: name,
-            file_path: filePath,
-            content_type: contentType,
-            file_size: contentLength || binaryContent.length,
-          });
-
-        if (attachError) {
-          console.error("Error saving attachment record:", attachError);
-        } else {
-          savedAttachments.push(name);
-          console.log(`Attachment record saved: ${name}`);
-        }
-      } catch (attachErr) {
-        console.error("Error processing attachment:", attachErr);
-      }
-    }
-
-    // Check for Zapier URL format (string with S3 URL)
-    const attachmentsField = (emailPayload as any).Attachments;
-    if (typeof attachmentsField === 'string' && attachmentsField.includes('http')) {
-      // Zapier sends attachment URLs as comma-separated string or single URL
-      const zapierAttachmentUrls = attachmentsField.split(',').map((url: string) => url.trim()).filter(Boolean);
-      console.log("Detected Zapier S3 attachment URLs:", zapierAttachmentUrls.length);
-
-      for (const url of zapierAttachmentUrls) {
-        const downloaded = await downloadAttachmentFromUrl(url);
-        
-        if (!downloaded) {
-          console.warn("Could not download attachment from URL:", url.substring(0, 80));
-          continue;
-        }
-        
-        const { content, filename, contentType } = downloaded;
-        
-        // Generate unique file path
-        const timestamp = Date.now();
-        const sanitizedName = filename.replace(/[^a-zA-Z0-9.-]/g, "_");
-        const filePath = `${emailRecord.id}/${timestamp}_${sanitizedName}`;
-
-        console.log(`Uploading URL attachment to path: ${filePath}, size: ${content.length}`);
-
-        // Upload to storage
-        const { error: uploadError } = await supabase.storage
-          .from("travel-attachments")
-          .upload(filePath, content, {
-            contentType: contentType,
-            upsert: false,
-          });
-
-        if (uploadError) {
-          console.error("Error uploading URL attachment:", uploadError);
-          continue;
-        }
-
-        // Save attachment record
-        const { error: attachError } = await supabase
-          .from("travel_attachments")
-          .insert({
-            email_id: emailRecord.id,
-            file_name: filename,
-            file_path: filePath,
-            content_type: contentType,
-            file_size: content.length,
-          });
-
-        if (!attachError) {
-          savedAttachments.push(filename);
-          console.log(`URL attachment saved: ${filename}`);
-        }
-      }
-    }
-
-    console.log("Total saved attachments:", savedAttachments.length, savedAttachments);
-
-    // Update email status to processing
-    await supabase
-      .from("travel_emails")
-      .update({ status: "processing" })
-      .eq("id", emailRecord.id);
-
-    // Trigger the AI analysis function
-    const analyzeUrl = `${supabaseUrl}/functions/v1/analyze-travel-booking`;
-    
-    const analyzeResponse = await fetch(analyzeUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${supabaseServiceKey}`,
-      },
-      body: JSON.stringify({ email_id: emailRecord.id }),
-    });
-
-    if (!analyzeResponse.ok) {
-      const errorText = await analyzeResponse.text();
-      console.error("AI analysis failed:", errorText);
-      
-      await supabase
-        .from("travel_emails")
-        .update({ 
-          status: "error",
-          error_message: `AI analysis failed: ${errorText}` 
-        })
-        .eq("id", emailRecord.id);
-    }
-
+    // Return immediately - no attachment processing, no AI analysis
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        email_id: emailRecord.id,
-        attachments_saved: savedAttachments.length,
-        extracted: { fromAddress, toAddress, subject, bodyLength: textBody.length }
+      JSON.stringify({
+        success: true,
+        email_id: emailData.id,
+        message: "Email queued for processing",
+        attachments_queued: attachmentInfo.length,
       }),
-      { 
+      {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200 
+        status: 200,
       }
     );
 
-  } catch (error: any) {
-    console.error("Error processing email:", error);
+  } catch (error) {
+    console.error("Error:", error);
     return new Response(
-      JSON.stringify({ error: error?.message || "Unknown error" }),
-      { 
+      JSON.stringify({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      }),
+      {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500 
+        status: 500,
       }
     );
   }

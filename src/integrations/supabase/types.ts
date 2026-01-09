@@ -325,6 +325,7 @@ export type Database = {
       }
       travel_emails: {
         Row: {
+          attachment_urls: Json | null
           body_html: string | null
           body_text: string | null
           created_at: string
@@ -339,6 +340,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attachment_urls?: Json | null
           body_html?: string | null
           body_text?: string | null
           created_at?: string
@@ -353,6 +355,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attachment_urls?: Json | null
           body_html?: string | null
           body_text?: string | null
           created_at?: string

@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.analyze-travel-booking]
 verify_jwt = false
+
+[functions.process-attachments]
+verify_jwt = false
