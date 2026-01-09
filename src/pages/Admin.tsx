@@ -539,9 +539,16 @@ const PasswordUpdateForm = ({ onSuccess }: { onSuccess: () => void }) => {
       
       onSuccess();
     } catch (error: any) {
+      // Translate Supabase error messages to German
+      let errorMessage = error.message || "Passwort konnte nicht geändert werden";
+      
+      if (error.message?.includes("same password") || error.message?.includes("different from the old")) {
+        errorMessage = "Bitte wähle ein anderes Passwort. Dieses wurde bereits verwendet.";
+      }
+      
       toast({
         title: "Fehler",
-        description: error.message || "Passwort konnte nicht geändert werden",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
