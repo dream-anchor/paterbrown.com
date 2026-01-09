@@ -67,22 +67,67 @@ serve(async (req) => {
 
     console.log("Found attachments:", attachments?.length || 0);
 
-    // ========== EXTRACT PDF CONTENT USING GEMINI VISION ==========
+    // ========== EXTRACT CONTENT FROM PDF AND IMAGE ATTACHMENTS ==========
     let attachmentContents = "";
+    
+    const extractionPrompt = `Extrahiere ALLE Informationen aus diesem Reisedokument/Ticket. Gib die Daten strukturiert zurück:
+
+Für Bahntickets:
+- Auftragsnummer / Buchungsnummer (SEHR WICHTIG!)
+- Zugnummer(n) (z.B. ICE 1044)
+- Abfahrt: Ort, Datum, Uhrzeit
+- Ankunft: Ort, Datum, Uhrzeit
+- Klasse (1 oder 2)
+- Wagen und Sitzplatz
+- Reisende(r) Name(n)
+- Preis / Gesamtbetrag
+- Währung (EUR, USD, CHF, etc.)
+- BahnCard falls vorhanden
+
+Für Flugtickets:
+- Buchungscode / PNR
+- Flugnummer
+- Abflug/Ankunft Ort, Datum, Uhrzeit
+- Terminal, Gate
+- Passagier(e)
+- Preis / Gesamtbetrag
+- Währung
+
+Für Hotelbestätigungen:
+- Buchungsnummer
+- Hotelname und Adresse
+- Check-in / Check-out Datum und Uhrzeit
+- Zimmertyp
+- Gast(en) Name(n)
+- Preis pro Nacht und Gesamtpreis
+- Währung
+
+Für Rechnungen:
+- Rechnungsnummer / Auftragsnummer
+- Gesamtbetrag
+- Währung
+- Zahlungsstatus
+
+Gib alle gefundenen Informationen als lesbaren Text zurück.`;
     
     if (attachments && attachments.length > 0) {
       for (const attachment of attachments) {
-        if (attachment.content_type?.includes('pdf') || attachment.file_name?.toLowerCase().endsWith('.pdf')) {
-          console.log(`Processing PDF attachment: ${attachment.file_name}`);
+        const isPdf = attachment.content_type?.includes('pdf') || attachment.file_name?.toLowerCase().endsWith('.pdf');
+        const isImage = attachment.content_type?.includes('image/') || 
+                        attachment.file_name?.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|bmp|tiff?)$/);
+        
+        if (isPdf || isImage) {
+          const fileType = isPdf ? 'PDF' : 'Image';
+          console.log(`Processing ${fileType} attachment: ${attachment.file_name}`);
           
           try {
-            // Download PDF from Supabase Storage
+            // Download file from Supabase Storage
             const { data: fileData, error: downloadError } = await supabase.storage
               .from("travel-attachments")
               .download(attachment.file_path);
             
             if (downloadError) {
-              console.error(`Error downloading PDF ${attachment.file_name}:`, downloadError);
+              console.error(`Error downloading ${fileType} ${attachment.file_name}:`, downloadError);
               continue;
             }
             
@@ -94,11 +139,29 @@ serve(async (req) => {
               for (let i = 0; i < uint8Array.length; i++) {
                 binaryString += String.fromCharCode(uint8Array[i]);
               }
-              const pdfBase64 = btoa(binaryString);
+              const base64Content = btoa(binaryString);
               
-              console.log(`PDF converted to base64, size: ${pdfBase64.length} chars`);
+              console.log(`${fileType} converted to base64, size: ${base64Content.length} chars`);
               
-              // Use Gemini Vision to extract text from PDF
+              // Determine MIME type
+              let mimeType: string;
+              if (isPdf) {
+                mimeType = 'application/pdf';
+              } else {
+                // Infer from content_type or file extension
+                mimeType = attachment.content_type || 'image/jpeg';
+                if (!mimeType.startsWith('image/')) {
+                  const ext = attachment.file_name?.toLowerCase().split('.').pop();
+                  const mimeMap: Record<string, string> = {
+                    'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png',
+                    'gif': 'image/gif', 'webp': 'image/webp', 'bmp': 'image/bmp',
+                    'tiff': 'image/tiff', 'tif': 'image/tiff'
+                  };
+                  mimeType = mimeMap[ext || ''] || 'image/jpeg';
+                }
+              }
+              
+              // Use Gemini Vision to extract text
               const visionResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
                 method: "POST",
                 headers: {
@@ -110,43 +173,10 @@ serve(async (req) => {
                   messages: [{
                     role: "user",
                     content: [
-                      { 
-                        type: "text", 
-                        text: `Extrahiere ALLE Informationen aus diesem Reisedokument/Ticket. Gib die Daten strukturiert zurück:
-
-Für Bahntickets:
-- Auftragsnummer / Buchungsnummer (SEHR WICHTIG!)
-- Zugnummer(n) (z.B. ICE 1044)
-- Abfahrt: Ort, Datum, Uhrzeit
-- Ankunft: Ort, Datum, Uhrzeit
-- Klasse (1 oder 2)
-- Wagen und Sitzplatz
-- Reisende(r) Name(n)
-- Preis
-- BahnCard falls vorhanden
-
-Für Flugtickets:
-- Buchungscode / PNR
-- Flugnummer
-- Abflug/Ankunft Ort, Datum, Uhrzeit
-- Terminal, Gate
-- Passagier(e)
-
-Für Hotelbestätigungen:
-- Buchungsnummer
-- Hotelname und Adresse
-- Check-in / Check-out Datum und Uhrzeit
-- Zimmertyp
-- Gast(en) Name(n)
-- Preis
-
-Gib alle gefundenen Informationen als lesbaren Text zurück.` 
-                      },
+                      { type: "text", text: extractionPrompt },
                       { 
                         type: "image_url", 
-                        image_url: { 
-                          url: `data:application/pdf;base64,${pdfBase64}` 
-                        } 
+                        image_url: { url: `data:${mimeType};base64,${base64Content}` } 
                       }
                     ]
                   }]
@@ -159,16 +189,18 @@ Gib alle gefundenen Informationen als lesbaren Text zurück.`
                 console.log(`Extracted from ${attachment.file_name}:`, extractedText.substring(0, 500));
                 
                 if (extractedText) {
-                  attachmentContents += `\n\n=== INHALT AUS ANHANG "${attachment.file_name}" ===\n${extractedText}`;
+                  attachmentContents += `\n\n=== INHALT AUS ANHANG "${attachment.file_name}" (${fileType}) ===\n${extractedText}`;
                 }
               } else {
                 const errorText = await visionResponse.text();
                 console.error(`Vision API error for ${attachment.file_name}:`, errorText);
               }
             }
-          } catch (pdfError) {
-            console.error(`Error processing PDF ${attachment.file_name}:`, pdfError);
+          } catch (fileError) {
+            console.error(`Error processing ${fileType} ${attachment.file_name}:`, fileError);
           }
+        } else {
+          console.log(`Skipping non-analyzable attachment: ${attachment.file_name} (${attachment.content_type})`);
         }
       }
     }
@@ -236,6 +268,11 @@ Bei Flügen:
 
 WICHTIG: Setze booking_number UND details.order_number auf denselben Wert!
 
+=== FINANZIELLE FELDER (IMMER EXTRAHIEREN WENN VORHANDEN) ===
+- total_amount: Gesamtbetrag als ZAHL ohne Währungssymbol (z.B. 89.90, 156.50, 320.00)
+- currency: Währungscode ISO 4217 (EUR, USD, CHF, GBP) - Standard ist EUR
+- order_number: Auftrags-/Rechnungsnummer (oft identisch mit booking_number)
+
 === DETAILS-OBJEKT MUSS AUSGEFÜLLT WERDEN ===
 
 Für ZUGBUCHUNGEN (train) - extrahiere IMMER in details:
@@ -245,7 +282,8 @@ Für ZUGBUCHUNGEN (train) - extrahiere IMMER in details:
 - wagon: Wagennummer
 - seat: Sitzplatznummer(n)
 - bahncard: BahnCard-Typ (z.B. "BC 25", "BC 50", "BC 100", "BahnCard 25 1. Klasse")
-- price: Gesamtpreis als Zahl (z.B. 89.90)
+- total_amount: Gesamtpreis als Zahl (z.B. 89.90)
+- currency: Währung (EUR, USD, CHF, GBP)
 - connection_type: "direkt" oder "mit Umstieg"
 - cancellation_policy: Stornierungsbedingungen
 
@@ -258,6 +296,8 @@ Für FLUGBUCHUNGEN (flight) - extrahiere IMMER in details:
 - seat: Sitzplatz
 - baggage: Gepäckinfo (z.B. "23kg Freigepäck", "nur Handgepäck")
 - booking_class: Buchungsklasse (z.B. "Economy", "Business")
+- total_amount: Gesamtpreis als Zahl
+- currency: Währung
 
 Für HOTELBUCHUNGEN (hotel) - extrahiere IMMER in details:
 - order_number: Buchungsnummer (PFLICHT - gleicher Wert wie booking_number!)
@@ -267,7 +307,8 @@ Für HOTELBUCHUNGEN (hotel) - extrahiere IMMER in details:
 - breakfast_included: true/false
 - wifi_included: true/false
 - price_per_night: Preis pro Nacht als Zahl
-- total_price: Gesamtpreis als Zahl
+- total_amount: Gesamtpreis als Zahl
+- currency: Währung
 - cancellation_policy: Stornierungsbedingungen
 - cancellation_deadline: Stornierungsfrist (ISO 8601 Datum)
 
@@ -276,11 +317,13 @@ Für MIETWAGEN (rental_car) - extrahiere in details:
 - vehicle_type: Fahrzeugkategorie
 - pickup_location: Abholort
 - dropoff_location: Rückgabeort
-- price: Gesamtpreis
+- total_amount: Gesamtpreis
+- currency: Währung
 
 WICHTIG:
 - Extrahiere JEDES Detail das in der E-Mail steht
 - booking_number ist PFLICHT wenn irgendwo eine Nummer steht!
+- total_amount und currency IMMER extrahieren wenn Preise vorhanden sind
 - Preise als Zahlen ohne Währungssymbol
 - Boolean-Werte für ja/nein Felder
 - Bei mehreren Verbindungen: Erstelle separate Buchungen ODER nutze das erste Segment
@@ -329,25 +372,39 @@ ${existingBookingsContext}`;
                         venue_address: { type: "string" },
                         details: { 
                           type: "object",
-                          description: "Alle extrahierten Details - MUSS ausgefüllt werden mit allen verfügbaren Infos wie train_number, class, seat, wagon, price, etc.",
+                          description: "Alle extrahierten Details inkl. total_amount, currency, order_number",
                           properties: {
+                            // Financial fields (IMPORTANT)
+                            total_amount: { type: "number", description: "Gesamtbetrag als Zahl (z.B. 89.90)" },
+                            currency: { type: "string", enum: ["EUR", "USD", "CHF", "GBP"], description: "Währungscode" },
+                            order_number: { type: "string", description: "Auftrags-/Rechnungsnummer" },
+                            // Train specific
                             train_number: { type: "string", description: "Zugnummer z.B. ICE 1044" },
                             class: { type: "string", description: "Wagenklasse 1 oder 2" },
                             wagon: { type: "string", description: "Wagennummer" },
                             seat: { type: "string", description: "Sitzplatz(e)" },
                             bahncard: { type: "string", description: "BahnCard Typ" },
-                            price: { type: "number", description: "Preis in EUR" },
-                            order_number: { type: "string", description: "Auftragsnummer" },
+                            connection_type: { type: "string", description: "direkt oder mit Umstieg" },
+                            // Flight specific
                             flight_number: { type: "string" },
                             airline: { type: "string" },
                             terminal: { type: "string" },
                             gate: { type: "string" },
                             baggage: { type: "string" },
+                            booking_class: { type: "string", description: "Economy, Business, etc." },
+                            // Hotel specific
                             room_type: { type: "string" },
+                            room_number: { type: "string" },
                             breakfast_included: { type: "boolean" },
                             wifi_included: { type: "boolean" },
                             price_per_night: { type: "number" },
-                            cancellation_policy: { type: "string" }
+                            cancellation_policy: { type: "string" },
+                            cancellation_deadline: { type: "string" },
+                            hotel_url: { type: "string" },
+                            // Rental car specific
+                            vehicle_type: { type: "string" },
+                            pickup_location: { type: "string" },
+                            dropoff_location: { type: "string" }
                           }
                         },
                         confidence: { type: "number" }
