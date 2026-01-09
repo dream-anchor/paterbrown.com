@@ -89,8 +89,19 @@ function extractAttachmentInfo(attachments: unknown): AttachmentInfo[] {
   if (!Array.isArray(attachments)) return [];
   
   return attachments.map((att: unknown) => {
-    if (typeof att !== "object" || att === null) return null;
-    const a = att as Record<string, unknown>;
+    // Handle escaped JSON strings (from Make/HEY)
+    let parsedAtt = att;
+    if (typeof att === "string") {
+      try {
+        parsedAtt = JSON.parse(att);
+        console.info("Parsed attachment from JSON string:", (parsedAtt as Record<string, unknown>)?.fileName || (parsedAtt as Record<string, unknown>)?.name);
+      } catch {
+        return null; // Not valid JSON
+      }
+    }
+    
+    if (typeof parsedAtt !== "object" || parsedAtt === null) return null;
+    const a = parsedAtt as Record<string, unknown>;
     
     // Handle Buffer data format from email parsers (e.g., HEY/Make)
     let contentData: string | undefined = undefined;

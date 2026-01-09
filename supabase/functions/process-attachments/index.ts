@@ -43,6 +43,123 @@ function base64ToUint8Array(base64: string): Uint8Array {
   return bytes;
 }
 
+// Extract attachments using regex from raw payload text (handles corrupted JSON from Make/HEY)
+function extractAttachmentsFromPayloadText(payloadText: string): AttachmentInfo[] {
+  const result: AttachmentInfo[] = [];
+  
+  // Pattern to find attachment objects with their buffer data
+  // Matches: {"contentType":"application/pdf","fileName":"name.pdf","fileSize":12345,"contentId":"...","data":{"type":"Buffer","data":[...]}}
+  const attachmentPattern = /\{[^{}]*"contentType"\s*:\s*"([^"]+)"[^{}]*"fileName"\s*:\s*"([^"]+)"[^{}]*"fileSize"\s*:\s*(\d+)[^{}]*"data"\s*:\s*\{"type"\s*:\s*"Buffer"\s*,\s*"data"\s*:\s*\[([0-9,\s]+)\]\}/g;
+  
+  let match;
+  while ((match = attachmentPattern.exec(payloadText)) !== null) {
+    const contentType = match[1];
+    const fileName = match[2];
+    const fileSize = parseInt(match[3]);
+    const bufferDataStr = match[4];
+    
+    console.info("Found attachment via regex:", fileName, "type:", contentType);
+    
+    // Convert buffer data string to base64
+    try {
+      const bufferArray = bufferDataStr.split(",").map(n => parseInt(n.trim()));
+      const bytes = new Uint8Array(bufferArray);
+      let binaryStr = "";
+      for (let i = 0; i < bytes.length; i++) {
+        binaryStr += String.fromCharCode(bytes[i]);
+      }
+      const base64Content = btoa(binaryStr);
+      
+      result.push({
+        name: fileName,
+        contentType,
+        content: base64Content,
+        size: fileSize,
+      });
+      console.info("Converted to base64, length:", base64Content.length);
+    } catch (e) {
+      console.error("Failed to convert buffer for", fileName, e);
+    }
+  }
+  
+  // Also try a simpler pattern for PDFs specifically
+  if (result.filter(a => a.contentType === "application/pdf").length === 0) {
+    // Fallback: find PDF metadata without buffer (for logging)
+    const pdfMetaPattern = /"contentType"\s*:\s*"application\/pdf"\s*,\s*"fileName"\s*:\s*"([^"]+)"/g;
+    let pdfMatch;
+    while ((pdfMatch = pdfMetaPattern.exec(payloadText)) !== null) {
+      console.info("Found PDF reference (metadata only):", pdfMatch[1]);
+    }
+  }
+  
+  console.info("Extracted", result.length, "attachments via regex from payload text");
+  return result;
+}
+
+// Extract attachments from raw_payload (handles escaped JSON strings from Make/HEY)
+function extractAttachmentsFromPayload(rawPayload: unknown): AttachmentInfo[] {
+  if (!rawPayload || typeof rawPayload !== "object") return [];
+  
+  const payload = rawPayload as Record<string, unknown>;
+  const attachments = payload.attachments || payload.Attachments || payload.files;
+  
+  if (!attachments || !Array.isArray(attachments)) return [];
+  
+  const result: AttachmentInfo[] = [];
+  
+  for (const att of attachments) {
+    let parsed = att;
+    
+    // Handle escaped JSON strings (from Make/HEY)
+    if (typeof att === "string") {
+      try {
+        parsed = JSON.parse(att);
+        console.info("Parsed attachment from JSON string:", (parsed as Record<string, unknown>)?.fileName);
+      } catch {
+        continue; // Not valid JSON
+      }
+    }
+    
+    if (typeof parsed !== "object" || parsed === null) continue;
+    
+    const a = parsed as Record<string, unknown>;
+    
+    // Handle Buffer data format (inline binary data)
+    let contentData: string | undefined = undefined;
+    if (a.data && typeof a.data === "object") {
+      const dataObj = a.data as Record<string, unknown>;
+      if (dataObj.type === "Buffer" && Array.isArray(dataObj.data)) {
+        // Convert Buffer array to base64
+        const bytes = new Uint8Array(dataObj.data as number[]);
+        let binaryStr = "";
+        for (let i = 0; i < bytes.length; i++) {
+          binaryStr += String.fromCharCode(bytes[i]);
+        }
+        contentData = btoa(binaryStr);
+        console.info("Converted buffer to base64, length:", contentData.length);
+      }
+    } else if (a.Content || a.content || a.base64) {
+      contentData = String(a.Content || a.content || a.base64);
+    }
+    
+    const name = String(a.Name || a.name || a.FileName || a.fileName || a.filename || "attachment");
+    const contentType = String(a.ContentType || a.contentType || a.content_type || a.mime_type || "application/octet-stream");
+    
+    result.push({
+      name,
+      contentType,
+      url: a.url ? String(a.url) : undefined,
+      content: contentData,
+      size: a.ContentLength || a.contentLength || a.fileSize || a.size 
+        ? Number(a.ContentLength || a.contentLength || a.fileSize || a.size) 
+        : undefined,
+    });
+  }
+  
+  console.info("Extracted", result.length, "attachments from structured payload");
+  return result;
+}
+
 serve(async (req) => {
   console.info("=== PROCESS ATTACHMENTS ===");
   console.info("Timestamp:", new Date().toISOString());
@@ -106,7 +223,21 @@ serve(async (req) => {
       .update({ status: "processing" })
       .eq("id", email.id);
 
-    const attachmentInfos = (email.attachment_urls || []) as AttachmentInfo[];
+    // Get attachments - try attachment_urls first, fallback to raw_payload extraction
+    let attachmentInfos = (email.attachment_urls || []) as AttachmentInfo[];
+    
+    if (attachmentInfos.length === 0 && email.raw_payload) {
+      console.info("No attachment_urls found, extracting from raw_payload...");
+      attachmentInfos = extractAttachmentsFromPayload(email.raw_payload);
+    }
+    
+    // If still no attachments, try regex extraction from raw payload text (handles corrupted JSON)
+    if (attachmentInfos.length === 0 && email.raw_payload) {
+      console.info("Structured extraction failed, trying regex extraction...");
+      const payloadText = JSON.stringify(email.raw_payload);
+      attachmentInfos = extractAttachmentsFromPayloadText(payloadText);
+    }
+    
     console.info("Attachments to process:", attachmentInfos.length);
 
     let processedCount = 0;
