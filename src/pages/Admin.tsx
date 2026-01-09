@@ -32,6 +32,7 @@ const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -53,26 +54,56 @@ const Admin = () => {
   }, [isAuthenticated, isAdmin]);
 
   useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        setIsAuthenticated(false);
-        setIsLoading(false);
-        return;
+    // Listen for auth state changes (important for password recovery flow)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log("Auth event:", event);
+        if (event === 'PASSWORD_RECOVERY') {
+          // User clicked the password reset link - they need to set a new password
+          setIsPasswordRecovery(true);
+          setIsAuthenticated(false);
+          setIsLoading(false);
+        } else if (event === 'SIGNED_IN' && isPasswordRecovery) {
+          // Password was updated, user is now signed in
+          setIsPasswordRecovery(false);
+          setIsAuthenticated(true);
+          setTimeout(() => {
+            if (session?.user) {
+              checkAdminRole(session.user.id);
+            }
+          }, 0);
+        } else if (session) {
+          setIsAuthenticated(true);
+          // Defer role check to avoid Supabase deadlock
+          setTimeout(() => {
+            checkAdminRole(session.user.id);
+          }, 0);
+        } else {
+          setIsAuthenticated(false);
+          setIsLoading(false);
+        }
       }
+    );
 
-      setIsAuthenticated(true);
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsAuthenticated(true);
+        checkAdminRole(session.user.id);
+      } else {
+        setIsLoading(false);
+      }
+    });
 
-      // Check if user has admin role
+    return () => subscription.unsubscribe();
+  }, [isPasswordRecovery]);
+
+  const checkAdminRole = async (userId: string) => {
+    try {
       const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", session.user.id)
+        .eq("user_id", userId)
         .eq("role", "admin")
         .maybeSingle();
 
@@ -131,10 +162,28 @@ const Admin = () => {
     );
   }
 
+  const handleLoginSuccess = () => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsAuthenticated(true);
+        checkAdminRole(session.user.id);
+      }
+    });
+  };
+
+  // Show password update form if user clicked reset link
+  if (isPasswordRecovery) {
+    return (
+      <AdminLayout>
+        <PasswordUpdateForm onSuccess={handleLoginSuccess} />
+      </AdminLayout>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <AdminLayout>
-        <LoginForm onLogin={checkAuth} />
+        <LoginForm onLogin={handleLoginSuccess} />
       </AdminLayout>
     );
   }
@@ -441,6 +490,127 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
               Passwort vergessen?
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Password Update Form Component - For password recovery flow
+const PasswordUpdateForm = ({ onSuccess }: { onSuccess: () => void }) => {
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (newPassword.length < 6) {
+      toast({
+        title: "Passwort zu kurz",
+        description: "Das Passwort muss mindestens 6 Zeichen haben",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Passwörter stimmen nicht überein",
+        description: "Bitte überprüfe deine Eingaben",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Passwort geändert",
+        description: "Dein Passwort wurde erfolgreich aktualisiert",
+      });
+      
+      onSuccess();
+    } catch (error: any) {
+      toast({
+        title: "Fehler",
+        description: error.message || "Passwort konnte nicht geändert werden",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/20">
+            <Sparkles className="w-6 h-6 text-white" />
+          </div>
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+            Neues Passwort setzen
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Wähle ein sicheres Passwort
+          </p>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="new-password" className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                Neues Passwort
+              </label>
+              <input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all duration-150"
+                placeholder="••••••••"
+                required
+                minLength={6}
+              />
+            </div>
+            <div>
+              <label htmlFor="confirm-password" className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                Passwort bestätigen
+              </label>
+              <input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all duration-150"
+                placeholder="••••••••"
+                required
+                minLength={6}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Speichern...
+                </span>
+              ) : (
+                "Passwort speichern"
+              )}
+            </button>
+          </form>
         </div>
       </div>
     </div>
