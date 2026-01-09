@@ -208,38 +208,161 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const payload: FlexibleEmailPayload = await req.json();
+    const payload = await req.json();
     console.info("Payload keys:", Object.keys(payload));
+
+    // ===== CHECK IF THIS IS AN ATTACHMENT-ONLY REQUEST =====
+    // If mail_id is present but no email fields, this is an attachment upload
+    const isAttachmentOnly = payload.mail_id && 
+      !payload.from && !payload.From && !payload.sender &&
+      !payload.subject && !payload.Subject &&
+      payload.content && payload.filename;
+
+    if (isAttachmentOnly) {
+      console.info("=== ATTACHMENT-ONLY MODE ===");
+      console.info("mail_id:", payload.mail_id);
+      console.info("filename:", payload.filename);
+      console.info("content length:", payload.content?.length || 0);
+      
+      // Find the existing email by mail_id in raw_payload
+      const { data: existingEmails, error: searchError } = await supabase
+        .from("travel_emails")
+        .select("id")
+        .filter("raw_payload->mail_id", "eq", payload.mail_id);
+      
+      if (searchError) {
+        console.error("Search error:", searchError);
+        return new Response(
+          JSON.stringify({ success: false, error: "Database search failed" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
+      const existingEmail = existingEmails?.[0];
+      
+      if (!existingEmail) {
+        console.error("No email found for mail_id:", payload.mail_id);
+        return new Response(
+          JSON.stringify({ success: false, error: "Email not found for mail_id", mail_id: payload.mail_id }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
+      console.info("Found existing email:", existingEmail.id);
+      
+      // Decode and upload attachment
+      try {
+        const cleanBase64 = payload.content.includes(',') 
+          ? payload.content.split(',')[1] 
+          : payload.content;
+        const binaryString = atob(cleanBase64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        const sanitizedFilename = payload.filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const filePath = `${existingEmail.id}/${Date.now()}-${sanitizedFilename}`;
+        
+        // Upload to storage
+        const { error: uploadError } = await supabase.storage
+          .from("travel-attachments")
+          .upload(filePath, bytes, {
+            contentType: payload.contentType || "application/pdf",
+            upsert: false
+          });
+        
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          return new Response(
+            JSON.stringify({ success: false, error: uploadError.message }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        
+        // Create attachment record
+        const { error: insertError } = await supabase.from("travel_attachments").insert({
+          email_id: existingEmail.id,
+          file_name: payload.filename,
+          file_path: filePath,
+          content_type: payload.contentType,
+          file_size: bytes.length
+        });
+        
+        if (insertError) {
+          console.error("DB insert error:", insertError);
+        }
+        
+        console.info("✓ Attachment saved:", filePath, `(${bytes.length} bytes)`);
+        
+        // Trigger AI analysis
+        console.info("Triggering analyze-travel-booking for email:", existingEmail.id);
+        try {
+          const { error: invokeError } = await supabase.functions.invoke("analyze-travel-booking", {
+            body: { email_id: existingEmail.id }
+          });
+          if (invokeError) {
+            console.error("AI analysis invoke error:", invokeError);
+          } else {
+            console.info("✓ AI analysis triggered successfully");
+          }
+        } catch (err) {
+          console.error("AI analysis trigger failed:", err);
+        }
+        
+        return new Response(
+          JSON.stringify({
+            success: true,
+            mode: "attachment-only",
+            email_id: existingEmail.id,
+            file_path: filePath,
+            file_size: bytes.length,
+            message: "Attachment added to existing email and AI analysis triggered"
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+        
+      } catch (decodeError) {
+        console.error("Base64 decode error:", decodeError);
+        return new Response(
+          JSON.stringify({ success: false, error: "Failed to decode attachment" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // ===== ORIGINAL EMAIL PROCESSING =====
+    const typedPayload = payload as FlexibleEmailPayload;
 
     // Extract email metadata ONLY - no heavy processing
     const fromAddress = extractEmailAddress(
-      payload.from || payload.From || payload.fromFull || payload.FromFull || payload.sender
+      typedPayload.from || typedPayload.From || typedPayload.fromFull || typedPayload.FromFull || typedPayload.sender
     );
     
-    const toRaw = payload.to || payload.To || payload.toFull || payload.ToFull || payload.recipient;
+    const toRaw = typedPayload.to || typedPayload.To || typedPayload.toFull || typedPayload.ToFull || typedPayload.recipient;
     const toAddress = Array.isArray(toRaw) 
       ? extractEmailAddress(toRaw[0]) 
       : extractEmailAddress(toRaw);
     
     const subject = String(
-      payload.subject || payload.Subject || "No Subject"
+      typedPayload.subject || typedPayload.Subject || "No Subject"
     );
     
     const textBody = String(
-      payload.textBody || payload.TextBody || payload.text || payload.body || payload.Body || payload.plain || payload.Plain || ""
+      typedPayload.textBody || typedPayload.TextBody || typedPayload.text || typedPayload.body || typedPayload.Body || typedPayload.plain || typedPayload.Plain || ""
     );
     
     const htmlBody = String(
-      payload.htmlBody || payload.HtmlBody || payload.html || payload.Html || ""
+      typedPayload.htmlBody || typedPayload.HtmlBody || typedPayload.html || typedPayload.Html || ""
     );
     
-    const receivedAt = payload.date || payload.Date || payload.received_at
-      ? new Date(String(payload.date || payload.Date || payload.received_at)).toISOString()
+    const receivedAt = typedPayload.date || typedPayload.Date || typedPayload.received_at
+      ? new Date(String(typedPayload.date || typedPayload.Date || typedPayload.received_at)).toISOString()
       : new Date().toISOString();
 
     // Extract attachment info without downloading
     const attachmentInfo = extractAttachmentInfo(
-      payload.attachments || payload.Attachments || payload.files
+      typedPayload.attachments || typedPayload.Attachments || typedPayload.files
     );
     
     // Also extract PDF links from HTML body (for forwarded emails)
@@ -268,7 +391,7 @@ serve(async (req) => {
         received_at: receivedAt,
         status: "pending",
         attachment_urls: allAttachments,
-        raw_payload: payload,
+        raw_payload: typedPayload,
       })
       .select()
       .single();
