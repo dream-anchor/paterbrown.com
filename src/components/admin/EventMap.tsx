@@ -346,72 +346,74 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
         )}
       </div>
 
-      {/* Split View Container - Fixed height for proper scrolling */}
-      <div className="h-[calc(100vh-280px)] min-h-[500px] flex flex-col md:flex-row gap-4 overflow-hidden">
+      {/* Vertical Layout Container */}
+      <div className="flex flex-col gap-6 overflow-hidden">
         
-        {/* Map - Fixed position (does not scroll) */}
-        <div className="h-[250px] md:h-full md:flex-[2] flex-shrink-0">
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm h-full">
-            <MapContainer
-              center={germanCenter}
-              zoom={6}
-              scrollWheelZoom={true}
-              className="h-full w-full"
-            >
-              <FitBoundsToMarkers coords={routeCoords} />
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              
-              {/* Route line */}
-              {routeCoords.length > 1 && (
-                <Polyline
-                  positions={routeCoords}
-                  color="#f59e0b"
-                  weight={3}
-                  opacity={0.7}
-                  dashArray="8, 8"
+        {/* Map Container - 9:16 Portrait Aspect Ratio */}
+        <div className="w-full max-w-md mx-auto">
+          <div className="relative" style={{ paddingBottom: '177.78%' }}>
+            <div className="absolute inset-0 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+              <MapContainer
+                center={germanCenter}
+                zoom={6}
+                scrollWheelZoom={true}
+                className="h-full w-full"
+              >
+                <FitBoundsToMarkers coords={routeCoords} />
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-              )}
-              
-              {/* Numbered markers */}
-              {eventsWithCoords.map((event, index) => (
-                <Marker 
-                  key={event.id} 
-                  position={event.coords as [number, number]}
-                  icon={activeEventId === event.id 
-                    ? createHighlightedIcon(index + 1) 
-                    : createNumberedIcon(index + 1)}
-                  eventHandlers={{
-                    click: () => scrollToEvent(event.id),
-                  }}
-                >
-                  <Popup>
-                    <div className="min-w-[180px]">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                          Station {index + 1}
-                        </span>
+                
+                {/* Route line */}
+                {routeCoords.length > 1 && (
+                  <Polyline
+                    positions={routeCoords}
+                    color="#f59e0b"
+                    weight={3}
+                    opacity={0.7}
+                    dashArray="8, 8"
+                  />
+                )}
+                
+                {/* Numbered markers */}
+                {eventsWithCoords.map((event, index) => (
+                  <Marker 
+                    key={event.id} 
+                    position={event.coords as [number, number]}
+                    icon={activeEventId === event.id 
+                      ? createHighlightedIcon(index + 1) 
+                      : createNumberedIcon(index + 1)}
+                    eventHandlers={{
+                      click: () => scrollToEvent(event.id),
+                    }}
+                  >
+                    <Popup>
+                      <div className="min-w-[180px]">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            Station {index + 1}
+                          </span>
+                        </div>
+                        <p className="font-bold text-gray-900 mb-1">{event.title}</p>
+                        <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                          <Calendar className="w-3 h-3" />
+                          {formatDate(event.start_time)}
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-amber-600">
+                          <MapPin className="w-3 h-3" />
+                          {event.location}
+                        </div>
                       </div>
-                      <p className="font-bold text-gray-900 mb-1">{event.title}</p>
-                      <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                        <Calendar className="w-3 h-3" />
-                        {formatDate(event.start_time)}
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-amber-600">
-                        <MapPin className="w-3 h-3" />
-                        {event.location}
-                      </div>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
           </div>
 
-          {/* Legend - only visible on desktop */}
-          <div className="hidden md:flex items-center justify-center gap-4 text-xs text-gray-500 mt-3">
+          {/* Legend */}
+          <div className="flex items-center justify-center gap-4 text-xs text-gray-500 mt-3">
             <div className="flex items-center gap-1.5">
               <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
               <span>Station</span>
@@ -424,7 +426,7 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
         </div>
 
         {/* Stations List - Scrollable */}
-        <div className="flex-1 md:flex-[3] overflow-y-auto min-h-0 space-y-2 pr-2">
+        <div className="max-h-[400px] overflow-y-auto space-y-2 pr-2">
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sticky top-0 bg-gray-50/95 backdrop-blur-sm py-2 z-10">
             Alle Stationen · {sortedEvents.length} Termine
           </h3>
