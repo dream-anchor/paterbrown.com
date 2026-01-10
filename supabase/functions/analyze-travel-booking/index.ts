@@ -336,18 +336,30 @@ Für jede gefundene Buchung extrahiere:
 - details: Zusatzinfos als Objekt (WICHTIG - extrahiere alle verfügbaren Details!)
 - confidence: Deine Sicherheit bei der Extraktion (0.0 bis 1.0)
 
-=== DOKUMENTTYP ERKENNEN (WICHTIG!) ===
-Erkenne den Typ des Dokuments und setze details.document_type:
-- "ticket" = Echte Fahrkarte / Flugticket mit Buchungsnummer zum Reisen
-- "seat_reservation" = NUR Sitzplatzreservierung (ohne eigentliches Ticket)
-- "confirmation" = Buchungsbestätigung (z.B. Hotel-Bestätigung)
-- "invoice" = Rechnung
-- "unknown" = Typ unklar
+=== ⚠️ STRIKTE DOKUMENTTYP-ERKENNUNG (PFLICHT!) ⚠️ ===
 
-WICHTIG bei Bahntickets:
-- Wenn Betreff/Dokument "Sitzplatzreservierung" enthält und KEIN Fahrpreis → document_type: "seat_reservation"
-- Wenn "Reservierung" UND ein Fahrpreis/Ticketpreis → document_type: "ticket"
-- Setze auch is_seat_reservation: true wenn es NUR eine Reservierung ist
+PFLICHT-PRÜFUNG für Bahntickets in dieser Reihenfolge:
+
+1. IST ES EINE SITZPLATZRESERVIERUNG?
+   Prüfe ALLE 3 Kriterien:
+   ✓ Dokument enthält "Sitzplatzreservierung" oder nur "Reservierung" im Betreff/Titel
+   ✓ Preis ist 0,00 EUR ODER kein Fahrpreis angegeben
+   ✓ Es gibt Wagen-/Sitzplatznummern ABER KEINEN Ticketpreis
+   
+   → Wenn ALLE 3 erfüllt:
+     - document_type = "seat_reservation"
+     - is_seat_reservation = true
+     - ⛔ KEINE eigene Buchung erstellen! Nur als Attachment zur echten Ticket-Buchung verknüpfen!
+
+2. IST ES EIN ECHTES TICKET?
+   NUR "ticket" wenn:
+   ✓ Echter Fahrpreis vorhanden (> 0,00 EUR)
+   ✓ ODER explizit "Fahrkarte", "Online-Ticket", "Ticket" im Titel
+
+3. ANDERE TYPEN:
+   - "confirmation" = Buchungsbestätigung ohne Fahrpreis (z.B. Hotel)
+   - "invoice" = Rechnung
+   - "unknown" = Typ unklar
 
 === QR-CODES UND DIGITALE TICKETS ===
 Extrahiere wenn vorhanden:
@@ -366,29 +378,36 @@ WICHTIG: Das Wort "reserviert" ist KEINE Buchungsnummer!
 - "reserviert" bedeutet nur, dass eine Reservierung existiert
 - NIEMALS "reserviert", "pending", "ohne Nr." als booking_number speichern!
 
-=== ⚠️ BAHNCARD vs AUFTRAGSNUMMER UNTERSCHEIDEN ⚠️ ===
-KRITISCH: BahnCard-Nummern sind KEINE Buchungs-/Auftragsnummern!
+=== ⛔ HARD-BLOCK: VERBOTENE BUCHUNGSNUMMERN ⛔ ===
+NIEMALS diese Nummern als booking_number akzeptieren:
 
-BahnCard-Nummern erkennen:
-- Format: 16 Ziffern, beginnt IMMER mit "7081" (z.B. 7081419001477859)
-- Im Kontext: "mit 1 BC25", "BahnCard 25", "BahnCard 50, 1. Klasse"
-- NIEMALS als booking_number speichern!
-- Gehört in details.bahncard_number
+1. BahnCard-Nummern:
+   - Beginnen mit "7081"
+   - Haben 16 Ziffern
+   - Beispiel: 7081419001477859
+   → Diese IMMER in details.bahncard_number speichern, NIEMALS als booking_number!
 
-Auftragsnummern erkennen:
-- Format: 9-10 Ziffern (z.B. 899618184) oder 6 alphanumerische Zeichen (z.B. Q7K5M2)
-- Im Ticket: "Auftragsnummer", "Order Number", "Ihre Bestellung"
+2. Das Wort "reserviert":
+   - Ist KEINE Nummer, sondern ein Status
+   
+⛔ HARD-BLOCK VALIDIERUNG:
+   IF booking_number.startsWith("7081") → UNGÜLTIG! Nach Label "Auftragsnummer" suchen!
+   IF booking_number.length >= 16 AND booking_number ist nur Ziffern → UNGÜLTIG! Wahrscheinlich BahnCard!
+   IF booking_number === "reserviert" → UNGÜLTIG!
+
+=== ✅ RICHTIGE AUFTRAGSNUMMERN ===
+Bei Deutsche Bahn:
+- Suche EXPLIZIT nach dem Label "Auftragsnummer:" im Text
+- Format: 9-10 Ziffern (z.B. "899618184")
+- ODER 6 alphanumerische Zeichen (z.B. "Q7K5M2", "ABC123")
+- Steht NACH dem Label "Auftragsnummer:", "Ihre Bestellung", "Order Number"
 - DAS ist die echte booking_number!
 
-Beispiel:
+Beispiel Unterscheidung:
 "Auftragsnummer: 899618184, BahnCard 25: 7081419001477859"
-→ booking_number = "899618184"
-→ details.bahncard_number = "7081419001477859"
-
-Bei Deutsche Bahn:
-- "Auftragsnummer:" gefolgt von 9-10-stelligem Code (z.B. "899618184")
-- "Ihre Bestellung" + Nummer
-- Auch 6-stellig alphanumerisch (z.B. "Q7K5M2", "ABC123")
+→ booking_number = "899618184" ✅
+→ details.bahncard_number = "7081419001477859" ✅
+→ details.order_number = "899618184" ✅
 
 Bei Hotels:
 - "Bestätigungsnummer:", "Confirmation Number:", "Buchungsnummer:", "Reservierungsnummer:"

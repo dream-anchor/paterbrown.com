@@ -80,7 +80,7 @@ export default function DocumentViewer({ attachment, emailHtml, onClose }: Props
                 variant="outline" 
                 size="sm" 
                 onClick={handleDownload}
-                className="bg-gray-900 text-white hover:bg-gray-800 border-gray-900"
+                className="bg-white text-gray-900 hover:bg-gray-100 border-gray-300"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Download
