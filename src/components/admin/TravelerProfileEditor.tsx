@@ -66,6 +66,8 @@ export default function TravelerProfileEditor() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportText, setExportText] = useState("");
   const [exportProfileName, setExportProfileName] = useState("");
+  const [allExportModalOpen, setAllExportModalOpen] = useState(false);
+  const [allExportText, setAllExportText] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -183,9 +185,7 @@ export default function TravelerProfileEditor() {
 
   const generateTravelSheet = (profile: TravelerProfile): string => {
     const lines: string[] = [];
-    lines.push("━".repeat(50));
     lines.push(`REISEBLATT - ${profile.first_name} ${profile.last_name}`);
-    lines.push("━".repeat(50));
     lines.push("");
     lines.push("PERSÖNLICHE DATEN");
     lines.push(`Vorname:           ${profile.first_name}`);
@@ -222,8 +222,6 @@ export default function TravelerProfileEditor() {
     if (profile.preferred_seat) {
       lines.push(`Sitzplatz:         ${profile.preferred_seat}`);
     }
-    lines.push("");
-    lines.push("━".repeat(50));
     
     return lines.join("\n");
   };
@@ -253,30 +251,27 @@ export default function TravelerProfileEditor() {
     }
   };
 
-  const downloadAllTravelSheets = () => {
-    setIsGeneratingPdf(true);
+  const openAllExportModal = () => {
+    const allSheets = profiles.map(p => generateTravelSheet(p)).join("\n\n---\n\n");
+    setAllExportText(allSheets);
+    setAllExportModalOpen(true);
+  };
+
+  const copyAllExportText = async () => {
     try {
-      const allSheets = profiles.map(p => generateTravelSheet(p)).join("\n\n");
-      const blob = new Blob([allSheets], { type: "text/plain;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `reiseblaetter-${format(new Date(), "yyyy-MM-dd")}.txt`;
-      a.click();
-      URL.revokeObjectURL(url);
-      
+      await navigator.clipboard.writeText(allExportText);
+      setCopiedId("all-export-modal");
+      setTimeout(() => setCopiedId(null), 2000);
       toast({
-        title: "Download gestartet",
-        description: "Alle Reiseblätter wurden heruntergeladen",
+        title: "Kopiert",
+        description: "Alle Reiseblätter wurden in die Zwischenablage kopiert",
       });
     } catch (error) {
       toast({
         title: "Fehler",
-        description: "Download fehlgeschlagen",
+        description: "Kopieren fehlgeschlagen",
         variant: "destructive",
       });
-    } finally {
-      setIsGeneratingPdf(false);
     }
   };
 
@@ -300,16 +295,12 @@ export default function TravelerProfileEditor() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
-            onClick={downloadAllTravelSheets}
-            disabled={profiles.length === 0 || isGeneratingPdf}
+            variant="apple"
+            onClick={openAllExportModal}
+            disabled={profiles.length === 0}
             className="gap-2"
           >
-            {isGeneratingPdf ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <FileDown className="w-4 h-4" />
-            )}
+            <FileDown className="w-4 h-4" />
             Alle exportieren
           </Button>
           <Button onClick={addNewProfile} className="gap-2">
@@ -556,17 +547,17 @@ export default function TravelerProfileEditor() {
         </div>
       )}
 
-      {/* Export Modal */}
+      {/* Export Modal - Single Profile */}
       <Dialog open={exportModalOpen} onOpenChange={setExportModalOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg bg-white text-gray-900 border-gray-200">
           <DialogHeader>
-            <DialogTitle>Reiseblatt: {exportProfileName}</DialogTitle>
+            <DialogTitle className="text-gray-900">Reiseblatt: {exportProfileName}</DialogTitle>
           </DialogHeader>
-          <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm whitespace-pre-wrap max-h-[400px] overflow-y-auto border">
+          <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm text-gray-900 whitespace-pre-wrap max-h-[400px] overflow-y-auto border border-gray-200">
             {exportText}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setExportModalOpen(false)}>
+            <Button variant="apple" onClick={() => setExportModalOpen(false)}>
               Schließen
             </Button>
             <Button onClick={copyExportText} className="gap-2">
@@ -579,6 +570,36 @@ export default function TravelerProfileEditor() {
                 <>
                   <Copy className="w-4 h-4" />
                   In Zwischenablage kopieren
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Export Modal - All Profiles */}
+      <Dialog open={allExportModalOpen} onOpenChange={setAllExportModalOpen}>
+        <DialogContent className="sm:max-w-2xl bg-white text-gray-900 border-gray-200">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">Alle Reiseblätter</DialogTitle>
+          </DialogHeader>
+          <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm text-gray-900 whitespace-pre-wrap max-h-[500px] overflow-y-auto border border-gray-200">
+            {allExportText}
+          </div>
+          <DialogFooter>
+            <Button variant="apple" onClick={() => setAllExportModalOpen(false)}>
+              Schließen
+            </Button>
+            <Button onClick={copyAllExportText} className="gap-2">
+              {copiedId === "all-export-modal" ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  Kopiert!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  Alle kopieren
                 </>
               )}
             </Button>

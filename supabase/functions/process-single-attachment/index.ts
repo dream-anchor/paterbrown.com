@@ -189,6 +189,34 @@ serve(async (req) => {
       payload.filename.toLowerCase().endsWith('.pdf') ||
       payload.filename.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/);
 
+    // For PDFs: also trigger extract-ticket-qr to detect document type (ticket vs reservation)
+    const isPdf = payload.contentType?.includes('pdf') || payload.filename.toLowerCase().endsWith('.pdf');
+    
+    if (isPdf) {
+      console.log("Triggering document type detection for PDF:", attachment.id);
+      try {
+        const extractQrUrl = `${supabaseUrl}/functions/v1/extract-ticket-qr`;
+        const extractResponse = await fetch(extractQrUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({ attachment_id: attachment.id }),
+        });
+
+        if (extractResponse.ok) {
+          const extractResult = await extractResponse.json();
+          console.log("Document type detection result:", extractResult);
+        } else {
+          const errorText = await extractResponse.text();
+          console.error("Document type detection failed:", errorText);
+        }
+      } catch (extractError) {
+        console.error("Error triggering document type detection:", extractError);
+      }
+    }
+
     if (isAnalyzable && emailId) {
       console.log("Triggering AI analysis for email:", emailId);
       
