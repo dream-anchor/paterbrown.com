@@ -20,6 +20,7 @@ import TravelImportModal from "./TravelImportModal";
 import TravelCard from "./TravelCard";
 import TravelTimeline from "./TravelTimeline";
 import TravelerProfileEditor from "./TravelerProfileEditor";
+import QrCodeModal from "./QrCodeModal";
 
 interface TravelBooking {
   id: string;
@@ -40,6 +41,7 @@ interface TravelBooking {
   source_email_id: string | null;
   ai_confidence: number | null;
   created_at: string;
+  qr_code_url?: string | null;
 }
 
 interface GroupedBookings {
@@ -121,6 +123,7 @@ export default function TravelDashboard() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"timeline" | "cards" | "list">("timeline");
   const [selectedTravelers, setSelectedTravelers] = useState<string[]>([]);
+  const [qrModalBooking, setQrModalBooking] = useState<TravelBooking | null>(null);
   const { toast } = useToast();
 
   // Get sub-tab from URL, default to "bookings"
@@ -526,6 +529,7 @@ export default function TravelDashboard() {
                                     booking={booking}
                                     isSelected={selectedBooking?.id === booking.id}
                                     onSelect={setSelectedBooking}
+                                    onShowQrCode={() => setQrModalBooking(booking)}
                                   />
                                 ))}
                               </>
@@ -536,6 +540,7 @@ export default function TravelDashboard() {
                                 booking={booking}
                                 isSelected={selectedBooking?.id === booking.id}
                                 onSelect={setSelectedBooking}
+                                onShowQrCode={() => setQrModalBooking(booking)}
                               />
                             ))}
                           </div>
@@ -553,6 +558,7 @@ export default function TravelDashboard() {
                                     booking={booking}
                                     isSelected={selectedBooking?.id === booking.id}
                                     onSelect={setSelectedBooking}
+                                    onShowQrCode={() => setQrModalBooking(booking)}
                                   />
                                 ))}
                               </>
@@ -692,6 +698,25 @@ export default function TravelDashboard() {
           <TravelerProfileEditor />
         </TabsContent>
       </Tabs>
+
+      {/* QR Code Modal */}
+      <QrCodeModal
+        isOpen={!!qrModalBooking}
+        onClose={() => setQrModalBooking(null)}
+        bookingId={qrModalBooking?.id}
+        bookingNumber={qrModalBooking?.booking_number || undefined}
+        qrCodeImageUrl={qrModalBooking?.qr_code_url || undefined}
+        documentType={qrModalBooking?.booking_type === 'train' ? 'ticket' : undefined}
+        onQrExtracted={(url) => {
+          // Update the booking in state with the new QR URL
+          setBookings(prev => prev.map(b => 
+            b.id === qrModalBooking?.id ? { ...b, qr_code_url: url } : b
+          ));
+          if (qrModalBooking) {
+            setQrModalBooking({ ...qrModalBooking, qr_code_url: url });
+          }
+        }}
+      />
     </div>
   );
 }

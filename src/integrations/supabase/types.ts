@@ -304,6 +304,7 @@ export type Database = {
           needs_review: boolean | null
           origin_city: string | null
           provider: string | null
+          qr_code_url: string | null
           source_email_id: string | null
           start_datetime: string
           status: Database["public"]["Enums"]["booking_status"]
@@ -330,6 +331,7 @@ export type Database = {
           needs_review?: boolean | null
           origin_city?: string | null
           provider?: string | null
+          qr_code_url?: string | null
           source_email_id?: string | null
           start_datetime: string
           status?: Database["public"]["Enums"]["booking_status"]
@@ -356,6 +358,7 @@ export type Database = {
           needs_review?: boolean | null
           origin_city?: string | null
           provider?: string | null
+          qr_code_url?: string | null
           source_email_id?: string | null
           start_datetime?: string
           status?: Database["public"]["Enums"]["booking_status"]

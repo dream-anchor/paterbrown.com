@@ -32,6 +32,7 @@ interface TravelBooking {
   created_at: string;
   needs_review?: boolean;
   data_quality_score?: number;
+  qr_code_url?: string | null;
 }
 
 interface Props {
@@ -39,6 +40,7 @@ interface Props {
   isSelected?: boolean;
   onSelect: (booking: TravelBooking) => void;
   onViewTicket?: () => void;
+  onShowQrCode?: () => void;
   showTimeBadge?: boolean; // Ob das "Heute"/"Morgen" Badge angezeigt werden soll
 }
 
@@ -101,7 +103,7 @@ const checkDataQuality = (booking: TravelBooking): DataQualityIssue[] => {
   return issues;
 };
 
-export default function TravelCard({ booking, isSelected, onSelect, onViewTicket, showTimeBadge = false }: Props) {
+export default function TravelCard({ booking, isSelected, onSelect, onViewTicket, onShowQrCode, showTimeBadge = false }: Props) {
   const [copied, setCopied] = useState(false);
   
   const typeConfig = bookingTypeConfig[booking.booking_type];
@@ -242,7 +244,7 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
         )}
 
         {/* Time Badge - Top Right Corner - nur wenn explizit aktiviert */}
-        {timeLabel && timeLabel.urgent && (
+        {timeLabel && timeLabel.urgent && !booking.qr_code_url && (
           <div className={cn(
             "absolute -top-2 -right-2 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm",
             isToday(parseISO(booking.start_datetime)) 
@@ -251,6 +253,35 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
           )}>
             {timeLabel.label}
           </div>
+        )}
+
+        {/* QR Code Thumbnail - Top Right Corner */}
+        {booking.qr_code_url && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onShowQrCode?.();
+            }}
+            className={cn(
+              "absolute -top-3 -right-3 w-14 h-14 rounded-xl shadow-lg border-2 border-white",
+              "bg-white overflow-hidden flex items-center justify-center",
+              "hover:scale-110 transition-transform cursor-pointer",
+              "ring-2 ring-gray-200 hover:ring-gray-400"
+            )}
+            title="QR-Code anzeigen"
+          >
+            <img 
+              src={booking.qr_code_url} 
+              alt="QR-Code" 
+              className="w-12 h-12 object-contain"
+              onError={(e) => {
+                // Fallback to icon if image fails to load
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                target.parentElement?.classList.add('bg-gray-100');
+              }}
+            />
+          </button>
         )}
       
       {/* Main Content */}
