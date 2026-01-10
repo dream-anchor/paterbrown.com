@@ -104,6 +104,7 @@ export default function TravelImportModal({
         ));
 
         // 1. Create a travel_emails entry for manual upload
+        console.log("[TravelImport] Step 1: Creating email entry for", uploadedFile.file.name);
         const { data: emailData, error: emailError } = await supabase
           .from("travel_emails")
           .insert({
@@ -115,21 +116,31 @@ export default function TravelImportModal({
           .select()
           .single();
 
-        if (emailError) throw emailError;
+        if (emailError) {
+          console.error("[TravelImport] Email insert failed:", emailError);
+          throw emailError;
+        }
+        console.log("[TravelImport] Step 1 SUCCESS: Email created with ID", emailData.id);
 
         // 2. Upload PDF to Supabase Storage
         const filePath = `${emailData.id}/${uploadedFile.file.name}`;
-        const { error: uploadError } = await supabase.storage
+        console.log("[TravelImport] Step 2: Uploading PDF to storage:", filePath);
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from("travel-attachments")
           .upload(filePath, uploadedFile.file, {
             contentType: "application/pdf",
             upsert: true,
           });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error("[TravelImport] Storage upload failed:", uploadError);
+          throw uploadError;
+        }
+        console.log("[TravelImport] Step 2 SUCCESS: File uploaded to storage", uploadData);
 
         // 3. Create attachment record
-        const { error: attachmentError } = await supabase
+        console.log("[TravelImport] Step 3: Creating attachment record");
+        const { data: attachData, error: attachmentError } = await supabase
           .from("travel_attachments")
           .insert({
             email_id: emailData.id,
@@ -137,9 +148,15 @@ export default function TravelImportModal({
             file_path: filePath,
             content_type: "application/pdf",
             file_size: uploadedFile.file.size,
-          });
+          })
+          .select()
+          .single();
 
-        if (attachmentError) throw attachmentError;
+        if (attachmentError) {
+          console.error("[TravelImport] Attachment insert failed:", attachmentError);
+          throw attachmentError;
+        }
+        console.log("[TravelImport] Step 3 SUCCESS: Attachment record created", attachData);
 
         // Update status to processing
         setFiles(prev => prev.map((f, idx) => 
@@ -147,12 +164,17 @@ export default function TravelImportModal({
         ));
 
         // 4. Trigger AI analysis
+        console.log("[TravelImport] Step 4: Triggering AI analysis for email", emailData.id);
         const { data: analysisResult, error: analysisError } = await supabase.functions
           .invoke("analyze-travel-booking", {
             body: { email_id: emailData.id }
           });
 
-        if (analysisError) throw analysisError;
+        if (analysisError) {
+          console.error("[TravelImport] AI analysis failed:", analysisError);
+          throw analysisError;
+        }
+        console.log("[TravelImport] Step 4 SUCCESS: AI analysis complete", analysisResult);
 
         const bookingsCreated = analysisResult?.bookings_created || 0;
         totalBookingsCreated += bookingsCreated;
@@ -163,7 +185,7 @@ export default function TravelImportModal({
         ));
 
       } catch (error: any) {
-        console.error("Error processing file:", error);
+        console.error("[TravelImport] Error processing file:", uploadedFile.file.name, error);
         setFiles(prev => prev.map((f, idx) => 
           idx === i ? { ...f, status: "error", error: error.message } : f
         ));
