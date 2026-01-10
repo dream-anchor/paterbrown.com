@@ -5,10 +5,11 @@ import {
   Hotel, Train, Plane, Bus, Car, Package,
   MapPin, Clock, Copy, ExternalLink, ChevronRight,
   QrCode, FileText, Navigation, Calendar, Sparkles,
-  Coffee, Wifi, Users, Check
+  Coffee, Wifi, Users, Check, AlertTriangle
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TravelBooking {
   id: string;
@@ -29,6 +30,8 @@ interface TravelBooking {
   source_email_id: string | null;
   ai_confidence: number | null;
   created_at: string;
+  needs_review?: boolean;
+  data_quality_score?: number;
 }
 
 interface Props {
@@ -36,6 +39,7 @@ interface Props {
   isSelected?: boolean;
   onSelect: (booking: TravelBooking) => void;
   onViewTicket?: () => void;
+  showTimeBadge?: boolean; // Ob das "Heute"/"Morgen" Badge angezeigt werden soll
 }
 
 const bookingTypeConfig = {
@@ -62,7 +66,41 @@ const hasRealTime = (datetime: string): boolean => {
   return !(hours === 0 && minutes === 0);
 };
 
-export default function TravelCard({ booking, isSelected, onSelect, onViewTicket }: Props) {
+// Datenqualitäts-Prüfung
+interface DataQualityIssue {
+  field: string;
+  message: string;
+  severity: 'high' | 'medium' | 'low';
+}
+
+const checkDataQuality = (booking: TravelBooking): DataQualityIssue[] => {
+  const issues: DataQualityIssue[] = [];
+  
+  // Prüfung auf "Unknown" Werte
+  if (!booking.destination_city || booking.destination_city.toLowerCase() === 'unknown') {
+    issues.push({ field: 'destination_city', message: 'Ziel fehlt', severity: 'high' });
+  }
+  if (!booking.origin_city || booking.origin_city.toLowerCase() === 'unknown') {
+    if (['train', 'flight', 'bus'].includes(booking.booking_type)) {
+      issues.push({ field: 'origin_city', message: 'Abfahrtsort fehlt', severity: 'high' });
+    }
+  }
+  
+  // Prüfung auf Placeholder-Buchungsnummern
+  const placeholderNumbers = ['reserviert', 'ohne nr.', 'ohne nr', 'n/a', '-', ''];
+  if (booking.booking_number && placeholderNumbers.includes(booking.booking_number.toLowerCase())) {
+    issues.push({ field: 'booking_number', message: 'Buchungsnummer fehlt', severity: 'medium' });
+  }
+  
+  // Prüfung auf niedrige KI-Confidence
+  if (booking.ai_confidence && booking.ai_confidence < 0.6) {
+    issues.push({ field: 'ai_confidence', message: `KI nur ${Math.round(booking.ai_confidence * 100)}% sicher`, severity: 'low' });
+  }
+  
+  return issues;
+};
+
+export default function TravelCard({ booking, isSelected, onSelect, onViewTicket, showTimeBadge = false }: Props) {
   const [copied, setCopied] = useState(false);
   
   const typeConfig = bookingTypeConfig[booking.booking_type];
@@ -78,8 +116,13 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
   
   const bookingNumber = getBookingNumber();
   
-  // Smart time display
+  // Datenqualitäts-Issues prüfen
+  const qualityIssues = checkDataQuality(booking);
+  const hasHighSeverityIssues = qualityIssues.some(i => i.severity === 'high');
+  
+  // Smart time display - nur wenn showTimeBadge true ist
   const getTimeLabel = () => {
+    if (!showTimeBadge) return null;
     const date = parseISO(booking.start_datetime);
     if (isPast(date) && !isToday(date)) return { label: "Vergangen", urgent: false };
     if (isToday(date)) return { label: "Heute", urgent: true };
@@ -160,27 +203,54 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
   const price = getPrice();
 
   return (
-    <div
-      onClick={() => onSelect(booking)}
-      className={cn(
-        "group relative bg-white rounded-2xl border transition-all duration-200 cursor-pointer",
-        "hover:shadow-lg hover:border-gray-300 hover:-translate-y-0.5",
-        isSelected 
-          ? "border-gray-900 shadow-lg ring-1 ring-gray-900" 
-          : "border-gray-200 shadow-sm"
-      )}
-    >
-      {/* Time Badge - Top Right Corner */}
-      {timeLabel.urgent && (
-        <div className={cn(
-          "absolute -top-2 -right-2 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm",
-          isToday(parseISO(booking.start_datetime)) 
-            ? "bg-gray-900 text-white" 
-            : "bg-gray-100 text-gray-700 border border-gray-200"
-        )}>
-          {timeLabel.label}
-        </div>
-      )}
+    <TooltipProvider>
+      <div
+        onClick={() => onSelect(booking)}
+        className={cn(
+          "group relative bg-white rounded-2xl border transition-all duration-200 cursor-pointer",
+          "hover:shadow-lg hover:border-gray-300 hover:-translate-y-0.5",
+          isSelected 
+            ? "border-gray-900 shadow-lg ring-1 ring-gray-900" 
+            : hasHighSeverityIssues 
+              ? "border-amber-300 shadow-sm" 
+              : "border-gray-200 shadow-sm"
+        )}
+      >
+        {/* Datenqualitäts-Warnung - Top Left Corner */}
+        {qualityIssues.length > 0 && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className={cn(
+                "absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center shadow-sm cursor-help",
+                hasHighSeverityIssues 
+                  ? "bg-amber-500 text-white" 
+                  : "bg-gray-200 text-gray-600"
+              )}>
+                <AlertTriangle className="w-3.5 h-3.5" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-xs">
+              <div className="text-xs space-y-1">
+                <p className="font-medium">Datenqualität prüfen:</p>
+                {qualityIssues.map((issue, i) => (
+                  <p key={i} className="text-muted-foreground">• {issue.message}</p>
+                ))}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        )}
+
+        {/* Time Badge - Top Right Corner - nur wenn explizit aktiviert */}
+        {timeLabel && timeLabel.urgent && (
+          <div className={cn(
+            "absolute -top-2 -right-2 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm",
+            isToday(parseISO(booking.start_datetime)) 
+              ? "bg-gray-900 text-white" 
+              : "bg-gray-100 text-gray-700 border border-gray-200"
+          )}>
+            {timeLabel.label}
+          </div>
+        )}
       
       {/* Main Content */}
       <div className="p-4">
@@ -312,6 +382,7 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
