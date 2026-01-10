@@ -113,6 +113,45 @@ export type Database = {
           },
         ]
       }
+      cached_routes: {
+        Row: {
+          created_at: string | null
+          distance_km: number
+          duration_min: number
+          from_lat: number
+          from_lng: number
+          id: string
+          route_geometry: string | null
+          to_lat: number
+          to_lng: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          distance_km: number
+          duration_min: number
+          from_lat: number
+          from_lng: number
+          id?: string
+          route_geometry?: string | null
+          to_lat: number
+          to_lng: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          distance_km?: number
+          duration_min?: number
+          from_lat?: number
+          from_lng?: number
+          id?: string
+          route_geometry?: string | null
+          to_lat?: number
+          to_lng?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string | null
@@ -242,12 +281,15 @@ export type Database = {
           booking_number: string | null
           booking_type: Database["public"]["Enums"]["booking_type"]
           created_at: string
+          data_quality_score: number | null
           destination_city: string
           details: Json | null
           end_datetime: string | null
           id: string
           latitude: number | null
           longitude: number | null
+          merged_from: string[] | null
+          needs_review: boolean | null
           origin_city: string | null
           provider: string | null
           source_email_id: string | null
@@ -265,12 +307,15 @@ export type Database = {
           booking_number?: string | null
           booking_type: Database["public"]["Enums"]["booking_type"]
           created_at?: string
+          data_quality_score?: number | null
           destination_city: string
           details?: Json | null
           end_datetime?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
+          merged_from?: string[] | null
+          needs_review?: boolean | null
           origin_city?: string | null
           provider?: string | null
           source_email_id?: string | null
@@ -288,12 +333,15 @@ export type Database = {
           booking_number?: string | null
           booking_type?: Database["public"]["Enums"]["booking_type"]
           created_at?: string
+          data_quality_score?: number | null
           destination_city?: string
           details?: Json | null
           end_datetime?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
+          merged_from?: string[] | null
+          needs_review?: boolean | null
           origin_city?: string | null
           provider?: string | null
           source_email_id?: string | null

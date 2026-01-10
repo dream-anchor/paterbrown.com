@@ -15,6 +15,25 @@ interface DrivingDistance {
   durationMin: number;
 }
 
+// Type for cached route from database
+interface CachedRoute {
+  id: string;
+  from_lat: number;
+  from_lng: number;
+  to_lat: number;
+  to_lng: number;
+  distance_km: number;
+  duration_min: number;
+}
+
+// Round coordinates to 4 decimal places (~11m precision) for cache key
+const roundCoord = (coord: number): number => Math.round(coord * 10000) / 10000;
+
+// Generate cache key from coordinates
+const getCacheKey = (from: [number, number], to: [number, number]): string => {
+  return `${roundCoord(from[0])},${roundCoord(from[1])}-${roundCoord(to[0])},${roundCoord(to[1])}`;
+};
+
 // Function to fetch driving distance using OSRM
 const fetchDrivingDistance = async (
   from: [number, number],
@@ -261,53 +280,132 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
       .filter(event => event.coords !== null);
   }, [sortedEvents]);
 
-  // Fetch driving distances between consecutive events
+  // Fetch driving distances between consecutive events with caching
   const loadDrivingDistances = useCallback(async () => {
     if (eventsWithCoords.length < 2) return;
     
     setIsLoadingDistances(true);
     const newDistances = new Map<string, DrivingDistance>();
     
-    // Fetch distances sequentially to avoid rate limiting
-    for (let i = 0; i < eventsWithCoords.length - 1; i++) {
-      const fromEvent = eventsWithCoords[i];
-      const toEvent = eventsWithCoords[i + 1];
-      const key = `${fromEvent.id}-${toEvent.id}`;
+    try {
+      // 1. Load cached routes from database
+      const { data: cachedRoutes, error: cacheError } = await supabase
+        .from('cached_routes')
+        .select('*');
       
-      // Skip if already cached
-      if (drivingDistances.has(key)) {
-        newDistances.set(key, drivingDistances.get(key)!);
-        continue;
+      if (cacheError) {
+        console.error('Error loading cached routes:', cacheError);
       }
       
-      const result = await fetchDrivingDistance(
-        fromEvent.coords as [number, number],
-        toEvent.coords as [number, number]
-      );
+      // Build cache map from database
+      const routeCache = new Map<string, { distanceKm: number; durationMin: number }>();
+      cachedRoutes?.forEach((route: CachedRoute) => {
+        const key = getCacheKey([route.from_lat, route.from_lng], [route.to_lat, route.to_lng]);
+        routeCache.set(key, { distanceKm: route.distance_km, durationMin: route.duration_min });
+      });
       
-      if (result) {
-        newDistances.set(key, {
-          fromId: fromEvent.id,
-          toId: toEvent.id,
-          distanceKm: result.distanceKm,
-          durationMin: result.durationMin,
-        });
+      // 2. Check which routes need to be fetched
+      const missingRoutes: { from: [number, number]; to: [number, number]; fromId: string; toId: string }[] = [];
+      
+      for (let i = 0; i < eventsWithCoords.length - 1; i++) {
+        const fromEvent = eventsWithCoords[i];
+        const toEvent = eventsWithCoords[i + 1];
+        const eventKey = `${fromEvent.id}-${toEvent.id}`;
+        const cacheKey = getCacheKey(fromEvent.coords as [number, number], toEvent.coords as [number, number]);
+        
+        // Check if we have it in DB cache
+        if (routeCache.has(cacheKey)) {
+          const cached = routeCache.get(cacheKey)!;
+          newDistances.set(eventKey, {
+            fromId: fromEvent.id,
+            toId: toEvent.id,
+            distanceKm: cached.distanceKm,
+            durationMin: cached.durationMin,
+          });
+        } else {
+          // Need to fetch this route
+          missingRoutes.push({
+            from: fromEvent.coords as [number, number],
+            to: toEvent.coords as [number, number],
+            fromId: fromEvent.id,
+            toId: toEvent.id,
+          });
+        }
       }
       
-      // Small delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // 3. Fetch missing routes from OSRM and save to DB
+      if (missingRoutes.length > 0) {
+        console.log(`Fetching ${missingRoutes.length} new routes from OSRM...`);
+        
+        const routesToSave: { 
+          from_lat: number; 
+          from_lng: number; 
+          to_lat: number; 
+          to_lng: number; 
+          distance_km: number; 
+          duration_min: number; 
+        }[] = [];
+        
+        for (const route of missingRoutes) {
+          const result = await fetchDrivingDistance(route.from, route.to);
+          
+          if (result) {
+            const eventKey = `${route.fromId}-${route.toId}`;
+            newDistances.set(eventKey, {
+              fromId: route.fromId,
+              toId: route.toId,
+              distanceKm: result.distanceKm,
+              durationMin: result.durationMin,
+            });
+            
+            // Prepare for DB save (use rounded coords)
+            routesToSave.push({
+              from_lat: roundCoord(route.from[0]),
+              from_lng: roundCoord(route.from[1]),
+              to_lat: roundCoord(route.to[0]),
+              to_lng: roundCoord(route.to[1]),
+              distance_km: result.distanceKm,
+              duration_min: result.durationMin,
+            });
+          }
+          
+          // Small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        
+        // 4. Save new routes to database
+        if (routesToSave.length > 0) {
+          const { error: insertError } = await supabase
+            .from('cached_routes')
+            .upsert(routesToSave, { 
+              onConflict: 'from_lat,from_lng,to_lat,to_lng',
+              ignoreDuplicates: true 
+            });
+          
+          if (insertError) {
+            console.error('Error saving routes to cache:', insertError);
+          } else {
+            console.log(`Saved ${routesToSave.length} new routes to cache`);
+          }
+        }
+      } else {
+        console.log('All routes loaded from cache');
+      }
+      
+    } catch (error) {
+      console.error('Error in loadDrivingDistances:', error);
     }
     
     setDrivingDistances(newDistances);
     setIsLoadingDistances(false);
-  }, [eventsWithCoords, drivingDistances]);
+  }, [eventsWithCoords]);
 
   // Load distances when events change
   useEffect(() => {
     if (eventsWithCoords.length > 1) {
       loadDrivingDistances();
     }
-  }, [eventsWithCoords.length]); // Only reload when count changes
+  }, [eventsWithCoords.length, loadDrivingDistances]);
 
   // Get distance to next event
   const getDistanceToNext = (eventId: string, nextEventId: string | null): DrivingDistance | null => {

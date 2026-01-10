@@ -302,17 +302,71 @@ export default function TravelDashboard() {
 
                     {/* Bookings for this date */}
                     {viewMode === "cards" ? (
-                      /* Card View - Grid */
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                        {groupedBookings[date].map((booking) => (
-                          <TravelCard
-                            key={booking.id}
-                            booking={booking}
-                            isSelected={selectedBooking?.id === booking.id}
-                            onSelect={setSelectedBooking}
-                          />
-                        ))}
-                      </div>
+                      /* Card View - 2-Spalten: Transport links, Hotels rechts */
+                      (() => {
+                        const transportBookings = groupedBookings[date].filter(
+                          b => ['train', 'flight', 'bus', 'rental_car'].includes(b.booking_type)
+                        );
+                        const accommodationBookings = groupedBookings[date].filter(
+                          b => b.booking_type === 'hotel'
+                        );
+                        const otherBookings = groupedBookings[date].filter(
+                          b => !['train', 'flight', 'bus', 'rental_car', 'hotel'].includes(b.booking_type)
+                        );
+                        
+                        return (
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Linke Spalte: Transport */}
+                            <div className="space-y-3">
+                              {transportBookings.length > 0 && (
+                                <>
+                                  <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                                    <Train className="h-3 w-3" />
+                                    Reisen
+                                  </h4>
+                                  {transportBookings.map((booking) => (
+                                    <TravelCard
+                                      key={booking.id}
+                                      booking={booking}
+                                      isSelected={selectedBooking?.id === booking.id}
+                                      onSelect={setSelectedBooking}
+                                    />
+                                  ))}
+                                </>
+                              )}
+                              {/* "Andere" auch links */}
+                              {otherBookings.map((booking) => (
+                                <TravelCard
+                                  key={booking.id}
+                                  booking={booking}
+                                  isSelected={selectedBooking?.id === booking.id}
+                                  onSelect={setSelectedBooking}
+                                />
+                              ))}
+                            </div>
+                            
+                            {/* Rechte Spalte: Unterkünfte */}
+                            <div className="space-y-3">
+                              {accommodationBookings.length > 0 && (
+                                <>
+                                  <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                                    <Hotel className="h-3 w-3" />
+                                    Unterkünfte
+                                  </h4>
+                                  {accommodationBookings.map((booking) => (
+                                    <TravelCard
+                                      key={booking.id}
+                                      booking={booking}
+                                      isSelected={selectedBooking?.id === booking.id}
+                                      onSelect={setSelectedBooking}
+                                    />
+                                  ))}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()
                     ) : (
                       /* List View - Compact */
                       <div className="space-y-1">
