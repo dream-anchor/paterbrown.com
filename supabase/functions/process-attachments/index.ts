@@ -245,6 +245,20 @@ serve(async (req) => {
     for (const att of attachmentInfos) {
       console.info("Processing attachment:", att.name);
 
+      // ===== DUPLICATE DETECTION =====
+      const { data: existingAttachment } = await supabase
+        .from("travel_attachments")
+        .select("id")
+        .eq("email_id", email.id)
+        .eq("file_name", att.name)
+        .maybeSingle();
+
+      if (existingAttachment) {
+        console.info("⏭️ Skipping duplicate attachment:", att.name);
+        continue;
+      }
+      // ================================
+
       let fileContent: Uint8Array | null = null;
       let contentType = att.contentType;
 
