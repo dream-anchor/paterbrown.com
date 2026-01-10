@@ -9,7 +9,7 @@ import {
   Calendar, MapPin, Users, Hash, ChevronRight,
   Mail, Clock, AlertCircle, CheckCircle2, Loader2,
   Filter, Search, RefreshCw, Upload, LayoutGrid, List,
-  User
+  User, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ import TravelBookingDetail from "./TravelBookingDetail";
 import TravelEmailInbox from "./TravelEmailInbox";
 import TravelImportModal from "./TravelImportModal";
 import TravelCard from "./TravelCard";
+import TravelTimeline from "./TravelTimeline";
 
 interface TravelBooking {
   id: string;
@@ -117,7 +118,7 @@ export default function TravelDashboard() {
   const [selectedBooking, setSelectedBooking] = useState<TravelBooking | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"cards" | "list">("cards");
+  const [viewMode, setViewMode] = useState<"timeline" | "cards" | "list">("timeline");
   const [selectedTravelers, setSelectedTravelers] = useState<string[]>([]);
   const { toast } = useToast();
 
@@ -210,7 +211,46 @@ export default function TravelDashboard() {
       return groups;
     }, {} as GroupedBookings);
 
-  const sortedDates = Object.keys(groupedBookings).sort();
+  // Sort dates: upcoming first (chronological), then past at the end
+  const sortedDates = Object.keys(groupedBookings).sort((a, b) => {
+    const dateA = parseISO(a);
+    const dateB = parseISO(b);
+    const pastA = isPast(dateA) && !isToday(dateA);
+    const pastB = isPast(dateB) && !isToday(dateB);
+    
+    // Put past dates at the end
+    if (pastA && !pastB) return 1;
+    if (!pastA && pastB) return -1;
+    
+    // Within same category, sort chronologically
+    return dateA.getTime() - dateB.getTime();
+  });
+
+  // Get next upcoming trip info for Quick Summary
+  const getNextTripSummary = () => {
+    const upcomingDates = sortedDates.filter(d => !isPast(parseISO(d)) || isToday(parseISO(d)));
+    if (upcomingDates.length === 0) return null;
+    
+    const nextDate = upcomingDates[0];
+    const nextBookings = groupedBookings[nextDate];
+    
+    const trainCount = nextBookings.filter(b => b.booking_type === 'train').length;
+    const flightCount = nextBookings.filter(b => b.booking_type === 'flight').length;
+    const hotelCount = nextBookings.filter(b => b.booking_type === 'hotel').length;
+    
+    const destinations = [...new Set(nextBookings.map(b => b.destination_city))].filter(Boolean);
+    
+    return {
+      date: nextDate,
+      bookings: nextBookings,
+      trainCount,
+      flightCount,
+      hotelCount,
+      destinations
+    };
+  };
+
+  const nextTrip = getNextTripSummary();
 
   // Always use full German date format
   const getDateLabel = (dateStr: string) => {
@@ -250,8 +290,19 @@ export default function TravelDashboard() {
 
           {activeTab === "bookings" && (
             <div className="flex items-center gap-2">
-              {/* View Mode Toggle */}
+              {/* View Mode Toggle - 3 options now */}
               <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+                <button
+                  onClick={() => setViewMode("timeline")}
+                  className={`p-1.5 rounded-md transition-colors ${
+                    viewMode === "timeline" 
+                      ? "bg-white text-gray-900 shadow-sm" 
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                  title="Timeline"
+                >
+                  <Sparkles className="w-4 h-4" />
+                </button>
                 <button
                   onClick={() => setViewMode("cards")}
                   className={`p-1.5 rounded-md transition-colors ${
@@ -349,10 +400,57 @@ export default function TravelDashboard() {
         />
 
         <TabsContent value="bookings" className="mt-6">
+          {/* Quick Summary Header */}
+          {nextTrip && viewMode === "timeline" && (
+            <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-white rounded-2xl border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gray-900 text-white flex items-center justify-center">
+                    <Calendar className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Nächste Reise</p>
+                    <p className="font-semibold text-gray-900">
+                      {isToday(parseISO(nextTrip.date)) 
+                        ? "Heute" 
+                        : isTomorrow(parseISO(nextTrip.date))
+                          ? "Morgen"
+                          : format(parseISO(nextTrip.date), "EEEE, d. MMMM", { locale: de })
+                      }
+                      {nextTrip.destinations.length > 0 && (
+                        <span className="text-gray-500 font-normal"> → {nextTrip.destinations[0]}</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  {nextTrip.trainCount > 0 && (
+                    <span className="flex items-center gap-1.5">
+                      <Train className="w-4 h-4" />
+                      {nextTrip.trainCount}
+                    </span>
+                  )}
+                  {nextTrip.flightCount > 0 && (
+                    <span className="flex items-center gap-1.5">
+                      <Plane className="w-4 h-4" />
+                      {nextTrip.flightCount}
+                    </span>
+                  )}
+                  {nextTrip.hotelCount > 0 && (
+                    <span className="flex items-center gap-1.5">
+                      <Hotel className="w-4 h-4" />
+                      {nextTrip.hotelCount}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Split View Container */}
-          <div className="h-[calc(100vh-220px)] min-h-[500px] flex gap-6 overflow-hidden">
+          <div className="h-[calc(100vh-280px)] min-h-[500px] flex gap-6 overflow-hidden">
             {/* Bookings List - Scrollable */}
-            <div className="flex-1 md:flex-[2] overflow-y-auto min-h-0 space-y-6 pr-2">
+            <div className="flex-1 md:flex-[2] overflow-y-auto min-h-0 space-y-4 pr-2">
               {sortedDates.length === 0 ? (
                 <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
                   <Package className="w-10 h-10 text-gray-300 mx-auto mb-4" />
@@ -363,10 +461,22 @@ export default function TravelDashboard() {
                     Leite E-Mails an die Travel-Adresse weiter, um Buchungen zu erfassen.
                   </p>
                 </div>
-              ) : (
+              ) : viewMode === "timeline" ? (
+                /* Timeline View - New Default */
+                sortedDates.map((date) => (
+                  <TravelTimeline
+                    key={date}
+                    date={date}
+                    bookings={groupedBookings[date]}
+                    selectedBookingId={selectedBooking?.id}
+                    onSelect={setSelectedBooking}
+                  />
+                ))
+              ) : viewMode === "cards" ? (
+                /* Card View - 2-Spalten */
                 sortedDates.map((date) => (
                   <div key={date} className="space-y-3">
-                    {/* Date Header - Full German format, subtle "Heute" badge */}
+                    {/* Date Header */}
                     <div className="flex items-center gap-3">
                       <div className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
                         isPast(parseISO(date)) && !isToday(parseISO(date))
@@ -388,136 +498,154 @@ export default function TravelDashboard() {
                       <div className="h-px flex-1 bg-gray-100" />
                     </div>
 
-                    {/* Bookings for this date */}
-                    {viewMode === "cards" ? (
-                      /* Card View - 2-Spalten: Transport links, Hotels rechts */
-                      (() => {
-                        const transportBookings = groupedBookings[date].filter(
-                          b => ['train', 'flight', 'bus', 'rental_car'].includes(b.booking_type)
-                        );
-                        const accommodationBookings = groupedBookings[date].filter(
-                          b => b.booking_type === 'hotel'
-                        );
-                        const otherBookings = groupedBookings[date].filter(
-                          b => !['train', 'flight', 'bus', 'rental_car', 'hotel'].includes(b.booking_type)
-                        );
-                        
-                        return (
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {/* Linke Spalte: Transport */}
-                            <div className="space-y-3">
-                              {transportBookings.length > 0 && (
-                                <>
-                                  <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                                    <Train className="h-3 w-3" />
-                                    Reisen
-                                  </h4>
-                                  {transportBookings.map((booking) => (
-                                    <TravelCard
-                                      key={booking.id}
-                                      booking={booking}
-                                      isSelected={selectedBooking?.id === booking.id}
-                                      onSelect={setSelectedBooking}
-                                    />
-                                  ))}
-                                </>
-                              )}
-                              {/* "Andere" auch links */}
-                              {otherBookings.map((booking) => (
-                                <TravelCard
-                                  key={booking.id}
-                                  booking={booking}
-                                  isSelected={selectedBooking?.id === booking.id}
-                                  onSelect={setSelectedBooking}
-                                />
-                              ))}
-                            </div>
-                            
-                            {/* Rechte Spalte: Unterkünfte */}
-                            <div className="space-y-3">
-                              {accommodationBookings.length > 0 && (
-                                <>
-                                  <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                                    <Hotel className="h-3 w-3" />
-                                    Unterkünfte
-                                  </h4>
-                                  {accommodationBookings.map((booking) => (
-                                    <TravelCard
-                                      key={booking.id}
-                                      booking={booking}
-                                      isSelected={selectedBooking?.id === booking.id}
-                                      onSelect={setSelectedBooking}
-                                    />
-                                  ))}
-                                </>
-                              )}
-                            </div>
+                    {/* 2-Column Layout */}
+                    {(() => {
+                      const transportBookings = groupedBookings[date].filter(
+                        b => ['train', 'flight', 'bus', 'rental_car'].includes(b.booking_type)
+                      );
+                      const accommodationBookings = groupedBookings[date].filter(
+                        b => b.booking_type === 'hotel'
+                      );
+                      const otherBookings = groupedBookings[date].filter(
+                        b => !['train', 'flight', 'bus', 'rental_car', 'hotel'].includes(b.booking_type)
+                      );
+                      
+                      return (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          <div className="space-y-3">
+                            {transportBookings.length > 0 && (
+                              <>
+                                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                                  <Train className="h-3 w-3" />
+                                  Reisen
+                                </h4>
+                                {transportBookings.map((booking) => (
+                                  <TravelCard
+                                    key={booking.id}
+                                    booking={booking}
+                                    isSelected={selectedBooking?.id === booking.id}
+                                    onSelect={setSelectedBooking}
+                                  />
+                                ))}
+                              </>
+                            )}
+                            {otherBookings.map((booking) => (
+                              <TravelCard
+                                key={booking.id}
+                                booking={booking}
+                                isSelected={selectedBooking?.id === booking.id}
+                                onSelect={setSelectedBooking}
+                              />
+                            ))}
                           </div>
-                        );
-                      })()
-                    ) : (
-                      /* List View - Compact */
-                      <div className="space-y-1">
-                        {groupedBookings[date].map((booking) => {
-                          const typeConfig = bookingTypeConfig[booking.booking_type];
-                          const TypeIcon = typeConfig.icon;
+                          
+                          <div className="space-y-3">
+                            {accommodationBookings.length > 0 && (
+                              <>
+                                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                                  <Hotel className="h-3 w-3" />
+                                  Unterkünfte
+                                </h4>
+                                {accommodationBookings.map((booking) => (
+                                  <TravelCard
+                                    key={booking.id}
+                                    booking={booking}
+                                    isSelected={selectedBooking?.id === booking.id}
+                                    onSelect={setSelectedBooking}
+                                  />
+                                ))}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                ))
+              ) : (
+                /* List View - Compact */
+                sortedDates.map((date) => (
+                  <div key={date} className="space-y-1">
+                    {/* Date Header for List View */}
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                        isPast(parseISO(date)) && !isToday(parseISO(date))
+                          ? "text-gray-400"
+                          : "text-gray-700"
+                      }`}>
+                        {getDateLabel(date)}
+                      </div>
+                      {isToday(parseISO(date)) && (
+                        <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100">
+                          Heute
+                        </span>
+                      )}
+                      {isTomorrow(parseISO(date)) && (
+                        <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-600 border border-amber-100">
+                          Morgen
+                        </span>
+                      )}
+                      <div className="h-px flex-1 bg-gray-100" />
+                    </div>
 
-                          return (
-                            <button
-                              key={booking.id}
-                              onClick={() => setSelectedBooking(booking)}
-                              className={`group w-full text-left py-3 px-4 border-b border-gray-100 transition-colors ${
-                                selectedBooking?.id === booking.id
-                                  ? "bg-gray-50"
-                                  : "hover:bg-gray-50"
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                {/* Type Icon - Simple gray */}
-                                <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center">
-                                  <TypeIcon className="w-4 h-4 text-gray-500" />
+                    {/* List Items */}
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      {groupedBookings[date].map((booking) => {
+                        const typeConfig = bookingTypeConfig[booking.booking_type];
+                        const TypeIcon = typeConfig.icon;
+
+                        return (
+                          <button
+                            key={booking.id}
+                            onClick={() => setSelectedBooking(booking)}
+                            className={`group w-full text-left py-3 px-4 border-b border-gray-100 last:border-b-0 transition-colors ${
+                              selectedBooking?.id === booking.id
+                                ? "bg-gray-50"
+                                : "hover:bg-gray-50"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center">
+                                <TypeIcon className="w-4 h-4 text-gray-500" />
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="font-medium text-gray-900 truncate">
+                                    {booking.booking_type === "hotel" 
+                                      ? booking.venue_name || booking.destination_city
+                                      : booking.origin_city 
+                                        ? `${booking.origin_city} → ${booking.destination_city}`
+                                        : booking.destination_city
+                                    }
+                                  </span>
+                                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-400 flex-shrink-0" />
                                 </div>
-
-                                {/* Main Content */}
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <span className="font-medium text-gray-900 truncate">
-                                      {booking.booking_type === "hotel" 
-                                        ? booking.venue_name || booking.destination_city
-                                        : booking.origin_city 
-                                          ? `${booking.origin_city} → ${booking.destination_city}`
-                                          : booking.destination_city
-                                      }
-                                    </span>
-                                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-400 flex-shrink-0" />
-                                  </div>
-                                  
-                                  {/* Meta - Single line */}
-                                  <div className="flex items-center gap-3 mt-0.5 text-sm text-gray-500">
-                                    <span className="flex items-center gap-1">
-                                      <Clock className="w-3.5 h-3.5 text-gray-400" />
-                                      {hasRealTime(booking.start_datetime) ? (
-                                        <>
-                                          {formatTime(booking.start_datetime)}
-                                          {booking.end_datetime && hasRealTime(booking.end_datetime) && (
-                                            <> – {formatTime(booking.end_datetime)}</>
-                                          )}
-                                        </>
-                                      ) : (
-                                        <span className="text-gray-400">TBA</span>
-                                      )}
-                                    </span>
-                                    {booking.provider && (
-                                      <span className="truncate text-gray-400">{booking.provider}</span>
+                                
+                                <div className="flex items-center gap-3 mt-0.5 text-sm text-gray-500">
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                    {hasRealTime(booking.start_datetime) ? (
+                                      <>
+                                        {formatTime(booking.start_datetime)}
+                                        {booking.end_datetime && hasRealTime(booking.end_datetime) && (
+                                          <> – {formatTime(booking.end_datetime)}</>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <span className="text-gray-400">TBA</span>
                                     )}
-                                  </div>
+                                  </span>
+                                  {booking.provider && (
+                                    <span className="truncate text-gray-400">{booking.provider}</span>
+                                  )}
                                 </div>
                               </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 ))
               )}
