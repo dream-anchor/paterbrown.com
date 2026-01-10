@@ -361,6 +361,19 @@ Beispiel:
 "Am 8. Januar - Antoine Monot - 59,60 EUR" (keine Route genannt)
 → Antoine fährt AUCH Hamburg → Bremen! Übernehme die Route!
 
+=== CITY-TICKET-GÜLTIGKEIT (BAHN) ===
+Wenn in der E-Mail oder im PDF "City-Ticket-Gültigkeit" steht, extrahiere in details:
+- city_ticket_start: { validity: "10.01.26–11.01.26, 3:00 Uhr", zone: "Stadtgebiet Bremen (Tarifgebiet 1, Zone 100 + 101)" }
+- city_ticket_destination: { validity: "10.01.26–11.01.26, 3:00 Uhr", zone: "Stadtgebiet Hannover (Ticket-Zone A)" }
+
+Beispiel aus E-Mail:
+"City-Ticket-Gültigkeit
+Start: 10.01.26–11.01.26, 3:00 Uhr; Stadtgebiet Bremen (Tarifgebiet 1, Zone 100 + 101)
+Ziel: 10.01.26–11.01.26, 3:00 Uhr; Stadtgebiet Hannover (Ticket-Zone A)"
+
+→ city_ticket_start = { validity: "10.01.26–11.01.26, 3:00 Uhr", zone: "Stadtgebiet Bremen (Tarifgebiet 1, Zone 100 + 101)" }
+→ city_ticket_destination = { validity: "10.01.26–11.01.26, 3:00 Uhr", zone: "Stadtgebiet Hannover (Ticket-Zone A)" }
+
 === FINANZIELLE FELDER (IMMER EXTRAHIEREN WENN VORHANDEN) ===
 - total_amount: Gesamtbetrag als ZAHL ohne Währungssymbol (z.B. 89.90, 156.50, 320.00)
 - currency: Währungscode ISO 4217 (EUR, USD, CHF, GBP) - Standard ist EUR

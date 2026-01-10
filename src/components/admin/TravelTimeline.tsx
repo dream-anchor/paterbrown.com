@@ -3,11 +3,10 @@ import { de } from "date-fns/locale";
 import {
   Hotel, Train, Plane, Bus, Car, Package,
   MapPin, Clock, ChevronRight, Users, Coffee, QrCode,
-  AlertTriangle, Check
+  AlertTriangle, Check, Ticket
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
 interface TravelBooking {
   id: string;
   trip_id: string | null;
@@ -294,6 +293,17 @@ function TimelineItem({ booking, isSelected, isLast, onSelect }: TimelineItemPro
               </>
             )}
           </div>
+
+          {/* City-Ticket Info */}
+          {booking.booking_type === 'train' && booking.details?.city_ticket_start && (
+            <div className="flex items-center gap-1.5 mt-1 text-xs text-emerald-600">
+              <Ticket className="w-3 h-3" />
+              City: {booking.details.city_ticket_start.zone?.split('(')[0]?.trim()}
+              {booking.details.city_ticket_destination && (
+                <span> → {booking.details.city_ticket_destination.zone?.split('(')[0]?.trim()}</span>
+              )}
+            </div>
+          )}
 
           {/* Traveler name if present */}
           {booking.traveler_name && (
