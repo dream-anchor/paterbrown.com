@@ -727,6 +727,28 @@ ${existingBookingsContext}`;
           }
         }
 
+        // ===== INTELLIGENT PROPOSAL FILTERING =====
+        // Skip proposals if a confirmed booking already exists for same period
+        const bookingDate = new Date(booking.start_datetime);
+        const dateStr = bookingDate.toISOString().split('T')[0];
+        
+        if (booking.is_proposal) {
+          const { data: existingConfirmed } = await supabase
+            .from("travel_bookings")
+            .select("id, venue_name")
+            .eq("booking_type", booking.booking_type)
+            .eq("destination_city", booking.destination_city)
+            .in("status", ["confirmed", "changed"])
+            .gte("start_datetime", `${dateStr}T00:00:00`)
+            .lte("start_datetime", `${dateStr}T23:59:59`)
+            .limit(1);
+          
+          if (existingConfirmed && existingConfirmed.length > 0) {
+            console.log(`⏭️ Skipping proposal "${booking.venue_name}" - already have confirmed booking: "${existingConfirmed[0].venue_name}"`);
+            continue; // Skip this proposal entirely!
+          }
+        }
+
         if (existingBookingId) {
           // This is an update - save version history first
           const { data: currentBooking } = await supabase
@@ -893,6 +915,35 @@ ${existingBookingsContext}`;
             console.error("Error inserting booking:", insertError);
           } else {
             bookingsCreated++;
+            
+            // ===== SUPERSEDE OLD PROPOSALS WHEN CONFIRMED BOOKING IS ADDED =====
+            if (!booking.is_proposal) {
+              // This is a real confirmed booking - mark old proposals as cancelled
+              const { data: oldProposals } = await supabase
+                .from("travel_bookings")
+                .select("id, venue_name")
+                .eq("booking_type", booking.booking_type)
+                .eq("destination_city", booking.destination_city)
+                .eq("status", "proposal")
+                .gte("start_datetime", `${dateStr}T00:00:00`)
+                .lte("start_datetime", `${dateStr}T23:59:59`);
+              
+              if (oldProposals && oldProposals.length > 0) {
+                const proposalIds = oldProposals.map(p => p.id);
+                const proposalNames = oldProposals.map(p => p.venue_name).join(", ");
+                
+                await supabase
+                  .from("travel_bookings")
+                  .update({ 
+                    status: "cancelled",
+                    needs_review: false,
+                    details: { superseded_by_confirmed_booking: true }
+                  })
+                  .in("id", proposalIds);
+                
+                console.log(`✅ Marked ${oldProposals.length} old proposals as cancelled: ${proposalNames}`);
+              }
+            }
             
             // ========== PDF RENAMING BASED ON DOCUMENT TYPE ==========
             // Get the newly inserted booking ID to link attachments
