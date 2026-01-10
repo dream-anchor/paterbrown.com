@@ -26,7 +26,7 @@ interface TravelBooking {
   venue_name: string | null;
   venue_address: string | null;
   details: Record<string, any>;
-  status: "confirmed" | "changed" | "cancelled" | "pending";
+  status: "confirmed" | "changed" | "cancelled" | "pending" | "proposal";
   source_email_id: string | null;
   ai_confidence: number | null;
   created_at: string;
@@ -56,6 +56,7 @@ const statusConfig = {
   changed: { label: "Geändert", className: "bg-amber-50 text-amber-700 border-amber-200" },
   cancelled: { label: "Storniert", className: "bg-red-50 text-red-700 border-red-200" },
   pending: { label: "Ausstehend", className: "bg-gray-50 text-gray-600 border-gray-200" },
+  proposal: { label: "Angebot", className: "bg-purple-50 text-purple-700 border-purple-200 border-dashed" },
 };
 
 // Check if datetime has real time component
