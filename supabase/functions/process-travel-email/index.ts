@@ -1,6 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// Declare EdgeRuntime for Supabase Edge Functions
+declare const EdgeRuntime: {
+  waitUntil: (promise: Promise<unknown>) => void;
+};
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -358,8 +363,15 @@ function sanitizePayload(payload: unknown): unknown {
   return sanitized;
 }
 
+// Shutdown handler for debugging
+addEventListener('beforeunload', (ev: Event) => {
+  const detail = (ev as CustomEvent).detail;
+  console.log('=== FUNCTION SHUTDOWN ===');
+  console.log('Reason:', detail?.reason || 'unknown');
+});
+
 serve(async (req) => {
-  console.info("=== PROCESS TRAVEL EMAIL (ROBUST) ===");
+  console.info("=== PROCESS TRAVEL EMAIL (ASYNC) ===");
   console.info("Timestamp:", new Date().toISOString());
 
   if (req.method === "OPTIONS") {
@@ -427,8 +439,11 @@ serve(async (req) => {
       console.warn("Full payload (first 1000 chars):", JSON.stringify(payload).substring(0, 1000));
     }
 
+    // ========================================
+    // ATTACHMENT-ONLY MODE (ASYNC)
+    // ========================================
     if (isAttachmentOnly) {
-      console.info("=== ATTACHMENT-ONLY MODE ACTIVATED ===");
+      console.info("=== ATTACHMENT-ONLY MODE (ASYNC) ===");
       console.info("mail_id:", payload.mail_id);
       console.info("filename:", payload.filename);
       console.info("contentType:", payload.contentType);
@@ -462,121 +477,126 @@ serve(async (req) => {
       
       console.info("Found existing email:", existingEmail.id);
       
-      let bytes: Uint8Array;
-      
-      try {
-        // ===== MODE A: Download from OneDrive URL =====
-        if (payload.download_url) {
-          console.info("Downloading from OneDrive URL...");
-          
-          const downloadResponse = await fetch(payload.download_url);
-          
-          if (!downloadResponse.ok) {
-            console.error("Download failed:", downloadResponse.status, downloadResponse.statusText);
-            return new Response(
-              JSON.stringify({ 
-                success: false, 
-                error: `Download failed: ${downloadResponse.status} ${downloadResponse.statusText}`,
-                download_url: payload.download_url
-              }),
-              { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
-          }
-          
-          const arrayBuffer = await downloadResponse.arrayBuffer();
-          bytes = new Uint8Array(arrayBuffer);
-          console.info("✓ Downloaded from OneDrive:", bytes.length, "bytes");
-          
-        } 
-        // ===== MODE B: Decode Base64 content =====
-        else if (payload.content) {
-          console.info("Decoding Base64 content...");
-          const cleanBase64 = payload.content.includes(',') 
-            ? payload.content.split(',')[1] 
-            : payload.content;
-          const binaryString = atob(cleanBase64);
-          bytes = new Uint8Array(binaryString.length);
-          for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-          }
-          console.info("✓ Decoded Base64:", bytes.length, "bytes");
-        } else {
-          throw new Error("No content or download_url provided");
-        }
-        
-        const sanitizedFilename = payload.filename.replace(/[^a-zA-Z0-9.-]/g, '_');
-        const filePath = `${existingEmail.id}/${Date.now()}-${sanitizedFilename}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from("travel-attachments")
-          .upload(filePath, bytes, {
-            contentType: payload.contentType || "application/pdf",
-            upsert: false
-          });
-        
-        if (uploadError) {
-          console.error("Upload error:", uploadError);
-          return new Response(
-            JSON.stringify({ success: false, error: uploadError.message }),
-            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-        
-        const { error: insertError } = await supabase.from("travel_attachments").insert({
+      // ✅ SOFORTIGE ANTWORT an Make.com
+      const immediateResponse = new Response(
+        JSON.stringify({
+          success: true,
+          mode: "attachment-only",
           email_id: existingEmail.id,
-          file_name: payload.filename,
-          file_path: filePath,
-          content_type: payload.contentType || "application/pdf",
-          file_size: bytes.length
-        });
+          message: "Attachment processing started in background",
+          async_processing: true
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+
+      // 🔄 BACKGROUND PROCESSING mit EdgeRuntime.waitUntil()
+      EdgeRuntime.waitUntil((async () => {
+        console.info("=== BACKGROUND: Attachment-Only Processing Started ===");
         
-        if (insertError) {
-          console.error("DB insert error:", insertError);
-        }
-        
-        console.info("✓ Attachment saved to storage:", filePath, `(${bytes.length} bytes)`);
-        
-        // Trigger AI analysis
-        console.info("Triggering analyze-travel-booking for email:", existingEmail.id);
         try {
-          const { error: invokeError } = await supabase.functions.invoke("analyze-travel-booking", {
-            body: { email_id: existingEmail.id }
-          });
-          if (invokeError) {
-            console.error("AI analysis invoke error:", invokeError);
+          let bytes: Uint8Array;
+          
+          // ===== MODE A: Download from OneDrive URL =====
+          if (payload.download_url) {
+            console.info("BACKGROUND: Downloading from OneDrive URL...");
+            
+            const downloadResponse = await fetch(payload.download_url);
+            
+            if (!downloadResponse.ok) {
+              console.error("BACKGROUND: Download failed:", downloadResponse.status, downloadResponse.statusText);
+              await supabase.from("travel_emails")
+                .update({ status: "error", error_message: `Download failed: ${downloadResponse.status}` })
+                .eq("id", existingEmail.id);
+              return;
+            }
+            
+            const arrayBuffer = await downloadResponse.arrayBuffer();
+            bytes = new Uint8Array(arrayBuffer);
+            console.info("BACKGROUND: ✓ Downloaded from OneDrive:", bytes.length, "bytes");
+            
+          } 
+          // ===== MODE B: Decode Base64 content =====
+          else if (payload.content) {
+            console.info("BACKGROUND: Decoding Base64 content...");
+            const cleanBase64 = payload.content.includes(',') 
+              ? payload.content.split(',')[1] 
+              : payload.content;
+            const binaryString = atob(cleanBase64);
+            bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            console.info("BACKGROUND: ✓ Decoded Base64:", bytes.length, "bytes");
           } else {
-            console.info("✓ AI analysis triggered successfully");
+            throw new Error("No content or download_url provided");
           }
-        } catch (err) {
-          console.error("AI analysis trigger failed:", err);
-        }
-        
-        return new Response(
-          JSON.stringify({
-            success: true,
-            mode: "attachment-only",
-            source: payload.download_url ? "onedrive" : "base64",
+          
+          const sanitizedFilename = payload.filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+          const filePath = `${existingEmail.id}/${Date.now()}-${sanitizedFilename}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from("travel-attachments")
+            .upload(filePath, bytes, {
+              contentType: payload.contentType || "application/pdf",
+              upsert: false
+            });
+          
+          if (uploadError) {
+            console.error("BACKGROUND: Upload error:", uploadError);
+            await supabase.from("travel_emails")
+              .update({ status: "error", error_message: `Storage upload failed: ${uploadError.message}` })
+              .eq("id", existingEmail.id);
+            return;
+          }
+          
+          const { error: insertError } = await supabase.from("travel_attachments").insert({
             email_id: existingEmail.id,
+            file_name: payload.filename,
             file_path: filePath,
-            file_size: bytes.length,
-            message: "Attachment added to existing email and AI analysis triggered"
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-        
-      } catch (processError) {
-        console.error("Attachment processing error:", processError);
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: processError instanceof Error ? processError.message : "Failed to process attachment" 
-          }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+            content_type: payload.contentType || "application/pdf",
+            file_size: bytes.length
+          });
+          
+          if (insertError) {
+            console.error("BACKGROUND: DB insert error:", insertError);
+          }
+          
+          console.info("BACKGROUND: ✓ Attachment saved to storage:", filePath, `(${bytes.length} bytes)`);
+          
+          // Trigger AI analysis
+          console.info("BACKGROUND: Triggering analyze-travel-booking for email:", existingEmail.id);
+          try {
+            const { error: invokeError } = await supabase.functions.invoke("analyze-travel-booking", {
+              body: { email_id: existingEmail.id }
+            });
+            if (invokeError) {
+              console.error("BACKGROUND: AI analysis invoke error:", invokeError);
+            } else {
+              console.info("BACKGROUND: ✓ AI analysis triggered successfully");
+            }
+          } catch (err) {
+            console.error("BACKGROUND: AI analysis trigger failed:", err);
+          }
+          
+          console.info("=== BACKGROUND: Attachment-Only Processing Complete ===");
+          
+        } catch (processError) {
+          console.error("BACKGROUND: Attachment processing error:", processError);
+          await supabase.from("travel_emails")
+            .update({ 
+              status: "error", 
+              error_message: processError instanceof Error ? processError.message : "Background processing failed" 
+            })
+            .eq("id", existingEmail.id);
+        }
+      })());
+
+      return immediateResponse;
     }
 
-    // ===== ORIGINAL EMAIL PROCESSING =====
+    // ========================================
+    // ORIGINAL EMAIL PROCESSING (ASYNC)
+    // ========================================
     const typedPayload = payload as FlexibleEmailPayload;
 
     const fromAddress = extractEmailAddress(
@@ -654,111 +674,132 @@ serve(async (req) => {
 
     console.info("Email saved:", emailData.id);
 
-    // ===== UPLOAD ATTACHMENTS WITH BASE64 CONTENT TO STORAGE =====
-    let uploadedCount = 0;
-    
-    for (const attachment of attachmentsWithContent) {
-      try {
-        console.info(`Uploading attachment: ${attachment.name}`);
-        
-        const cleanBase64 = attachment.content!.includes(',') 
-          ? attachment.content!.split(',')[1] 
-          : attachment.content!;
-        const binaryString = atob(cleanBase64);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        
-        const sanitizedFilename = attachment.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-        const filePath = `${emailData.id}/${Date.now()}-${sanitizedFilename}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from("travel-attachments")
-          .upload(filePath, bytes, {
-            contentType: attachment.contentType || "application/pdf",
-            upsert: false
-          });
-        
-        if (uploadError) {
-          console.error(`Upload error for ${attachment.name}:`, uploadError);
-          continue;
-        }
-        
-        const { error: insertError } = await supabase.from("travel_attachments").insert({
-          email_id: emailData.id,
-          file_name: attachment.name,
-          file_path: filePath,
-          content_type: attachment.contentType,
-          file_size: bytes.length
-        });
-        
-        if (insertError) {
-          console.error(`DB insert error for ${attachment.name}:`, insertError);
-          continue;
-        }
-        
-        uploadedCount++;
-        console.info(`✓ Attachment saved: ${filePath} (${bytes.length} bytes)`);
-        
-      } catch (attError) {
-        console.error(`Error processing attachment ${attachment.name}:`, attError);
-      }
-    }
-    
-    console.info(`Uploaded ${uploadedCount}/${attachmentsWithContent.length} attachments to storage`);
-
-    // ===== AUTOMATIC FOLLOW-UP PROCESSING =====
-    // If we have URL-only attachments that weren't uploaded, trigger process-attachments
-    if (attachmentsWithUrl.length > 0 && uploadedCount === 0) {
-      console.info(`Triggering process-attachments for ${attachmentsWithUrl.length} URL-based attachments...`);
-      try {
-        const { error: processError } = await supabase.functions.invoke("process-attachments", {
-          body: { email_id: emailData.id }
-        });
-        if (processError) {
-          console.error("process-attachments invoke error:", processError);
-        } else {
-          console.info("✓ process-attachments triggered successfully");
-        }
-      } catch (err) {
-        console.error("process-attachments trigger failed:", err);
-      }
-    }
-    
-    // If we uploaded at least one attachment, trigger AI analysis directly
-    if (uploadedCount > 0) {
-      console.info("Triggering analyze-travel-booking for uploaded attachments...");
-      try {
-        const { error: analyzeError } = await supabase.functions.invoke("analyze-travel-booking", {
-          body: { email_id: emailData.id }
-        });
-        if (analyzeError) {
-          console.error("analyze-travel-booking invoke error:", analyzeError);
-        } else {
-          console.info("✓ analyze-travel-booking triggered successfully");
-        }
-      } catch (err) {
-        console.error("analyze-travel-booking trigger failed:", err);
-      }
-    }
-
-    return new Response(
+    // ✅ SOFORTIGE ANTWORT an Make.com
+    const immediateResponse = new Response(
       JSON.stringify({
         success: true,
         email_id: emailData.id,
-        message: "Email processed",
+        message: "Email saved, processing started in background",
+        async_processing: true,
         attachments_queued: allAttachments.length,
-        attachments_uploaded: uploadedCount,
-        attachments_pending_download: attachmentsWithUrl.length,
-        analysis_triggered: uploadedCount > 0,
-        process_attachments_triggered: attachmentsWithUrl.length > 0 && uploadedCount === 0,
+        attachments_with_content: attachmentsWithContent.length,
+        attachments_with_url: attachmentsWithUrl.length
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       }
     );
+
+    // 🔄 BACKGROUND PROCESSING mit EdgeRuntime.waitUntil()
+    EdgeRuntime.waitUntil((async () => {
+      console.info("=== BACKGROUND: Email Processing Started ===");
+      console.info("Email ID:", emailData.id);
+      
+      try {
+        // ===== UPLOAD ATTACHMENTS WITH BASE64 CONTENT TO STORAGE =====
+        let uploadedCount = 0;
+        
+        for (const attachment of attachmentsWithContent) {
+          try {
+            console.info(`BACKGROUND: Uploading attachment: ${attachment.name}`);
+            
+            const cleanBase64 = attachment.content!.includes(',') 
+              ? attachment.content!.split(',')[1] 
+              : attachment.content!;
+            const binaryString = atob(cleanBase64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            
+            const sanitizedFilename = attachment.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+            const filePath = `${emailData.id}/${Date.now()}-${sanitizedFilename}`;
+            
+            const { error: uploadError } = await supabase.storage
+              .from("travel-attachments")
+              .upload(filePath, bytes, {
+                contentType: attachment.contentType || "application/pdf",
+                upsert: false
+              });
+            
+            if (uploadError) {
+              console.error(`BACKGROUND: Upload error for ${attachment.name}:`, uploadError);
+              continue;
+            }
+            
+            const { error: insertError } = await supabase.from("travel_attachments").insert({
+              email_id: emailData.id,
+              file_name: attachment.name,
+              file_path: filePath,
+              content_type: attachment.contentType,
+              file_size: bytes.length
+            });
+            
+            if (insertError) {
+              console.error(`BACKGROUND: DB insert error for ${attachment.name}:`, insertError);
+              continue;
+            }
+            
+            uploadedCount++;
+            console.info(`BACKGROUND: ✓ Attachment saved: ${filePath} (${bytes.length} bytes)`);
+            
+          } catch (attError) {
+            console.error(`BACKGROUND: Error processing attachment ${attachment.name}:`, attError);
+          }
+        }
+        
+        console.info(`BACKGROUND: Uploaded ${uploadedCount}/${attachmentsWithContent.length} attachments to storage`);
+
+        // ===== AUTOMATIC FOLLOW-UP PROCESSING =====
+        // If we have URL-only attachments that weren't uploaded, trigger process-attachments
+        if (attachmentsWithUrl.length > 0 && uploadedCount === 0) {
+          console.info(`BACKGROUND: Triggering process-attachments for ${attachmentsWithUrl.length} URL-based attachments...`);
+          try {
+            const { error: processError } = await supabase.functions.invoke("process-attachments", {
+              body: { email_id: emailData.id }
+            });
+            if (processError) {
+              console.error("BACKGROUND: process-attachments invoke error:", processError);
+            } else {
+              console.info("BACKGROUND: ✓ process-attachments triggered successfully");
+            }
+          } catch (err) {
+            console.error("BACKGROUND: process-attachments trigger failed:", err);
+          }
+        }
+        
+        // If we uploaded at least one attachment, trigger AI analysis directly
+        if (uploadedCount > 0) {
+          console.info("BACKGROUND: Triggering analyze-travel-booking for uploaded attachments...");
+          try {
+            const { error: analyzeError } = await supabase.functions.invoke("analyze-travel-booking", {
+              body: { email_id: emailData.id }
+            });
+            if (analyzeError) {
+              console.error("BACKGROUND: analyze-travel-booking invoke error:", analyzeError);
+            } else {
+              console.info("BACKGROUND: ✓ analyze-travel-booking triggered successfully");
+            }
+          } catch (err) {
+            console.error("BACKGROUND: analyze-travel-booking trigger failed:", err);
+          }
+        }
+        
+        console.info("=== BACKGROUND: Email Processing Complete ===");
+        
+      } catch (bgError) {
+        console.error("BACKGROUND: Processing error:", bgError);
+        await supabase.from("travel_emails")
+          .update({ 
+            status: "error", 
+            error_message: bgError instanceof Error ? bgError.message : "Background processing failed" 
+          })
+          .eq("id", emailData.id);
+      }
+    })());
+
+    return immediateResponse;
 
   } catch (error) {
     console.error("Error:", error);
