@@ -687,7 +687,9 @@ END:VCALENDAR`;
               className="flex items-center justify-between w-full p-4 bg-gray-50 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors"
             >
               <div>
-                <div className="text-xs text-gray-400 uppercase tracking-wide">Buchungsnummer</div>
+                <div className="text-xs text-gray-400 uppercase tracking-wide">
+                  {booking.booking_type === 'train' ? 'Auftragsnummer' : 'Buchungsnummer'}
+                </div>
                 <div className="font-mono font-semibold text-gray-900 text-lg">{bookingNumber}</div>
               </div>
               <Copy className="w-4 h-4 text-gray-400" />

@@ -8,7 +8,7 @@ import EventMap from "@/components/admin/EventMap";
 import CalendarExport from "@/components/admin/CalendarExport";
 import TravelDashboard from "@/components/admin/TravelDashboard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Upload, Sparkles, Map, Plane } from "lucide-react";
+import { Calendar, Sparkles, Map, Plane } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AdminEvent {
@@ -233,13 +233,6 @@ const Admin = () => {
               <Plane className="w-4 h-4 mr-2 inline-block" />
               <span className="hidden sm:inline">Reisen</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="upload" 
-              className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
-            >
-              <Upload className="w-4 h-4 mr-2 inline-block" />
-              <span className="hidden sm:inline">Upload</span>
-            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -254,10 +247,6 @@ const Admin = () => {
 
           <TabsContent value="travel" className="mt-0 focus-visible:outline-none">
             <TravelDashboard />
-          </TabsContent>
-
-          <TabsContent value="upload" className="mt-0 focus-visible:outline-none">
-            <EventUploader onEventsAdded={handleEventsAdded} />
           </TabsContent>
         </div>
       </Tabs>

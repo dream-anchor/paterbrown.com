@@ -364,13 +364,31 @@ Die booking_number ist das WICHTIGSTE Feld! Suche aktiv nach:
 
 WICHTIG: Das Wort "reserviert" ist KEINE Buchungsnummer!
 - "reserviert" bedeutet nur, dass eine Reservierung existiert
-- Die echte Buchungs-/Auftragsnummer ist ein alphanumerischer Code (z.B. "7081410162726208", "Q7K5M2")
 - NIEMALS "reserviert", "pending", "ohne Nr." als booking_number speichern!
 
+=== ⚠️ BAHNCARD vs AUFTRAGSNUMMER UNTERSCHEIDEN ⚠️ ===
+KRITISCH: BahnCard-Nummern sind KEINE Buchungs-/Auftragsnummern!
+
+BahnCard-Nummern erkennen:
+- Format: 16 Ziffern, beginnt IMMER mit "7081" (z.B. 7081419001477859)
+- Im Kontext: "mit 1 BC25", "BahnCard 25", "BahnCard 50, 1. Klasse"
+- NIEMALS als booking_number speichern!
+- Gehört in details.bahncard_number
+
+Auftragsnummern erkennen:
+- Format: 9-10 Ziffern (z.B. 899618184) oder 6 alphanumerische Zeichen (z.B. Q7K5M2)
+- Im Ticket: "Auftragsnummer", "Order Number", "Ihre Bestellung"
+- DAS ist die echte booking_number!
+
+Beispiel:
+"Auftragsnummer: 899618184, BahnCard 25: 7081419001477859"
+→ booking_number = "899618184"
+→ details.bahncard_number = "7081419001477859"
+
 Bei Deutsche Bahn:
-- "Auftragsnummer:" gefolgt von 6-stelligem Code (z.B. "Q7K5M2", "ABC123")
+- "Auftragsnummer:" gefolgt von 9-10-stelligem Code (z.B. "899618184")
 - "Ihre Bestellung" + Nummer
-- Oft im Format: Großbuchstaben + Zahlen gemischt
+- Auch 6-stellig alphanumerisch (z.B. "Q7K5M2", "ABC123")
 
 Bei Hotels:
 - "Bestätigungsnummer:", "Confirmation Number:", "Buchungsnummer:", "Reservierungsnummer:"
