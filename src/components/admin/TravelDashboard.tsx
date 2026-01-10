@@ -8,7 +8,7 @@ import {
   Hotel, Train, Plane, Bus, Car, Package, 
   Calendar, MapPin, Users, Hash, ChevronRight,
   Mail, Clock, AlertCircle, CheckCircle2, Loader2,
-  Filter, Search, RefreshCw, Upload
+  Filter, Search, RefreshCw, Upload, LayoutGrid, List
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TravelBookingDetail from "./TravelBookingDetail";
 import TravelEmailInbox from "./TravelEmailInbox";
 import TravelImportModal from "./TravelImportModal";
+import TravelCard from "./TravelCard";
 
 interface TravelBooking {
   id: string;
@@ -99,6 +100,7 @@ export default function TravelDashboard() {
   const [selectedBooking, setSelectedBooking] = useState<TravelBooking | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"cards" | "list">("cards");
   const { toast } = useToast();
 
   // Get sub-tab from URL, default to "bookings"
@@ -201,6 +203,32 @@ export default function TravelDashboard() {
 
           {activeTab === "bookings" && (
             <div className="flex items-center gap-2">
+              {/* View Mode Toggle */}
+              <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+                <button
+                  onClick={() => setViewMode("cards")}
+                  className={`p-1.5 rounded-md transition-colors ${
+                    viewMode === "cards" 
+                      ? "bg-white text-gray-900 shadow-sm" 
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                  title="Kartenansicht"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-1.5 rounded-md transition-colors ${
+                    viewMode === "list" 
+                      ? "bg-white text-gray-900 shadow-sm" 
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                  title="Listenansicht"
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
+              
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
@@ -273,66 +301,81 @@ export default function TravelDashboard() {
                     </div>
 
                     {/* Bookings for this date */}
-                    <div className="space-y-1">
-                      {groupedBookings[date].map((booking) => {
-                        const typeConfig = bookingTypeConfig[booking.booking_type];
-                        const TypeIcon = typeConfig.icon;
-
-                        return (
-                          <button
+                    {viewMode === "cards" ? (
+                      /* Card View - Grid */
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                        {groupedBookings[date].map((booking) => (
+                          <TravelCard
                             key={booking.id}
-                            onClick={() => setSelectedBooking(booking)}
-                            className={`group w-full text-left py-3 px-4 border-b border-gray-100 transition-colors ${
-                              selectedBooking?.id === booking.id
-                                ? "bg-gray-50"
-                                : "hover:bg-gray-50"
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              {/* Type Icon - Simple gray */}
-                              <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center">
-                                <TypeIcon className="w-4 h-4 text-gray-500" />
-                              </div>
+                            booking={booking}
+                            isSelected={selectedBooking?.id === booking.id}
+                            onSelect={setSelectedBooking}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      /* List View - Compact */
+                      <div className="space-y-1">
+                        {groupedBookings[date].map((booking) => {
+                          const typeConfig = bookingTypeConfig[booking.booking_type];
+                          const TypeIcon = typeConfig.icon;
 
-                              {/* Main Content */}
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="font-medium text-gray-900 truncate">
-                                    {booking.booking_type === "hotel" 
-                                      ? booking.venue_name || booking.destination_city
-                                      : booking.origin_city 
-                                        ? `${booking.origin_city} → ${booking.destination_city}`
-                                        : booking.destination_city
-                                    }
-                                  </span>
-                                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-400 flex-shrink-0" />
+                          return (
+                            <button
+                              key={booking.id}
+                              onClick={() => setSelectedBooking(booking)}
+                              className={`group w-full text-left py-3 px-4 border-b border-gray-100 transition-colors ${
+                                selectedBooking?.id === booking.id
+                                  ? "bg-gray-50"
+                                  : "hover:bg-gray-50"
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                {/* Type Icon - Simple gray */}
+                                <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center">
+                                  <TypeIcon className="w-4 h-4 text-gray-500" />
                                 </div>
-                                
-                                {/* Meta - Single line */}
-                                <div className="flex items-center gap-3 mt-0.5 text-sm text-gray-500">
-                                  <span className="flex items-center gap-1">
-                                    <Clock className="w-3.5 h-3.5 text-gray-400" />
-                                    {hasRealTime(booking.start_datetime) ? (
-                                      <>
-                                        {formatTime(booking.start_datetime)}
-                                        {booking.end_datetime && hasRealTime(booking.end_datetime) && (
-                                          <> – {formatTime(booking.end_datetime)}</>
-                                        )}
-                                      </>
-                                    ) : (
-                                      <span className="text-gray-400">TBA</span>
+
+                                {/* Main Content */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="font-medium text-gray-900 truncate">
+                                      {booking.booking_type === "hotel" 
+                                        ? booking.venue_name || booking.destination_city
+                                        : booking.origin_city 
+                                          ? `${booking.origin_city} → ${booking.destination_city}`
+                                          : booking.destination_city
+                                      }
+                                    </span>
+                                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-400 flex-shrink-0" />
+                                  </div>
+                                  
+                                  {/* Meta - Single line */}
+                                  <div className="flex items-center gap-3 mt-0.5 text-sm text-gray-500">
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                      {hasRealTime(booking.start_datetime) ? (
+                                        <>
+                                          {formatTime(booking.start_datetime)}
+                                          {booking.end_datetime && hasRealTime(booking.end_datetime) && (
+                                            <> – {formatTime(booking.end_datetime)}</>
+                                          )}
+                                        </>
+                                      ) : (
+                                        <span className="text-gray-400">TBA</span>
+                                      )}
+                                    </span>
+                                    {booking.provider && (
+                                      <span className="truncate text-gray-400">{booking.provider}</span>
                                     )}
-                                  </span>
-                                  {booking.provider && (
-                                    <span className="truncate text-gray-400">{booking.provider}</span>
-                                  )}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 ))
               )}

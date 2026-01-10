@@ -70,7 +70,7 @@ serve(async (req) => {
     // ========== EXTRACT CONTENT FROM PDF AND IMAGE ATTACHMENTS ==========
     let attachmentContents = "";
     
-    const extractionPrompt = `Extrahiere ALLE Informationen aus diesem Reisedokument/Ticket. Gib die Daten strukturiert zurück:
+const extractionPrompt = `Extrahiere ALLE Informationen aus diesem Reisedokument/Ticket. Gib die Daten strukturiert zurück:
 
 Für Bahntickets:
 - Auftragsnummer / Buchungsnummer (SEHR WICHTIG!)
@@ -83,6 +83,8 @@ Für Bahntickets:
 - Preis / Gesamtbetrag
 - Währung (EUR, USD, CHF, etc.)
 - BahnCard falls vorhanden
+- QR-CODE: Falls ein QR-Code sichtbar ist, beschreibe dessen Position und möglichen Inhalt (Ticket-URL, Buchungscode, etc.)
+- BARCODE: Falls ein Barcode sichtbar ist, notiere die Zahlen/Buchstaben darunter
 
 Für Flugtickets:
 - Buchungscode / PNR
@@ -92,21 +94,33 @@ Für Flugtickets:
 - Passagier(e)
 - Preis / Gesamtbetrag
 - Währung
+- Boarding-Pass QR-Code vorhanden? (ja/nein)
+- Online Check-in URL falls vorhanden
 
 Für Hotelbestätigungen:
 - Buchungsnummer
 - Hotelname und Adresse
+- Hotel Website URL
 - Check-in / Check-out Datum und Uhrzeit
 - Zimmertyp
 - Gast(en) Name(n)
 - Preis pro Nacht und Gesamtpreis
 - Währung
+- Frühstück inklusive? (ja/nein)
+- WLAN inklusive? (ja/nein)
+- Stornierungsbedingungen
 
 Für Rechnungen:
 - Rechnungsnummer / Auftragsnummer
 - Gesamtbetrag
 - Währung
 - Zahlungsstatus
+
+WICHTIG: Achte besonders auf:
+1. QR-Codes - beschreibe Position und vermuteten Inhalt
+2. Barcodes - notiere Nummern darunter
+3. URLs im Dokument - besonders Ticket-URLs, Check-in-Links
+4. Ticket-Typ: Ist es ein digitales Ticket / Handy-Ticket?
 
 Gib alle gefundenen Informationen als lesbaren Text zurück.`;
     
@@ -250,6 +264,16 @@ Für jede gefundene Buchung extrahiere:
 - details: Zusatzinfos als Objekt (WICHTIG - extrahiere alle verfügbaren Details!)
 - confidence: Deine Sicherheit bei der Extraktion (0.0 bis 1.0)
 
+=== QR-CODES UND DIGITALE TICKETS ===
+Extrahiere wenn vorhanden:
+- qr_code_present: true/false - ob ein QR-Code sichtbar ist
+- qr_code_description: Beschreibung des QR-Codes (z.B. "Großer QR-Code mittig, enthält Ticket-Daten")
+- barcode_number: Falls Barcode vorhanden, die Nummer darunter
+- ticket_url: URL zum Online-Ticket (z.B. bahn.de Link)
+- mobile_ticket: true wenn es ein Handy-Ticket/Online-Ticket ist
+- checkin_url: Online Check-in Link (bei Flügen)
+- hotel_url: Website des Hotels
+
 === KRITISCH: BOOKING_NUMBER / AUFTRAGSNUMMER ===
 Die booking_number ist das WICHTIGSTE Feld! Suche aktiv nach:
 
@@ -372,12 +396,19 @@ ${existingBookingsContext}`;
                         venue_address: { type: "string" },
                         details: { 
                           type: "object",
-                          description: "Alle extrahierten Details inkl. total_amount, currency, order_number",
+                          description: "Alle extrahierten Details inkl. QR-Codes, URLs, Preise",
                           properties: {
                             // Financial fields (IMPORTANT)
                             total_amount: { type: "number", description: "Gesamtbetrag als Zahl (z.B. 89.90)" },
                             currency: { type: "string", enum: ["EUR", "USD", "CHF", "GBP"], description: "Währungscode" },
                             order_number: { type: "string", description: "Auftrags-/Rechnungsnummer" },
+                            // QR-Code & Digital Ticket fields (NEW 2026!)
+                            qr_code_present: { type: "boolean", description: "Ob ein QR-Code sichtbar ist" },
+                            qr_code_description: { type: "string", description: "Beschreibung/Position des QR-Codes" },
+                            barcode_number: { type: "string", description: "Barcode-Nummer falls sichtbar" },
+                            ticket_url: { type: "string", description: "URL zum Online-Ticket" },
+                            mobile_ticket: { type: "boolean", description: "Ist es ein Handy-Ticket?" },
+                            checkin_url: { type: "string", description: "Online Check-in URL" },
                             // Train specific
                             train_number: { type: "string", description: "Zugnummer z.B. ICE 1044" },
                             class: { type: "string", description: "Wagenklasse 1 oder 2" },
@@ -385,6 +416,7 @@ ${existingBookingsContext}`;
                             seat: { type: "string", description: "Sitzplatz(e)" },
                             bahncard: { type: "string", description: "BahnCard Typ" },
                             connection_type: { type: "string", description: "direkt oder mit Umstieg" },
+                            seat_type: { type: "string", description: "Fenster, Gang, Tisch, Ruhebereich, etc." },
                             // Flight specific
                             flight_number: { type: "string" },
                             airline: { type: "string" },
@@ -397,10 +429,14 @@ ${existingBookingsContext}`;
                             room_number: { type: "string" },
                             breakfast_included: { type: "boolean" },
                             wifi_included: { type: "boolean" },
+                            parking_included: { type: "boolean" },
                             price_per_night: { type: "number" },
+                            total_nights: { type: "number" },
                             cancellation_policy: { type: "string" },
                             cancellation_deadline: { type: "string" },
                             hotel_url: { type: "string" },
+                            hotel_phone: { type: "string" },
+                            hotel_email: { type: "string" },
                             // Rental car specific
                             vehicle_type: { type: "string" },
                             pickup_location: { type: "string" },
