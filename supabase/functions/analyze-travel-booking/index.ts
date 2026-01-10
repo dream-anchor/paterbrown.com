@@ -577,298 +577,72 @@ ${attachmentContents}
         ).join('\n')}`
       : '';
 
-const systemPrompt = `Du bist ein Experte für die Analyse von Reisebuchungs-E-Mails. Extrahiere ALLE Buchungsinformationen aus der E-Mail mit höchster Präzision.
+const systemPrompt = `=== ROLLE & ZIEL ===
+Du bist eine autonome KI-Engine für Reise-Analyse. Deine Aufgabe ist es, Reisedaten aus Dokumenten (PDFs, Bilder) und E-Mails zu extrahieren, zu normalisieren und intelligent zuzuordnen.
 
-=== ⛔ KRITISCH: REISENDEN-ZUORDNUNG (KEINE FEHLER ERLAUBT!) ⛔ ===
+=== DEINE SUPERKRAFT: CHAIN OF THOUGHT (Reasoning) ===
+Verlasse dich nicht auf Dateinamen oder simple Keywords. Analysiere den Inhalt visuell und logisch wie ein menschlicher Experte. Gehe dabei strikt nach dieser Strategie vor:
 
-⚠️ STRIKTE REGEL FÜR MULTI-REISENDE:
-1. Wenn im Anhang "[IDENTIFIZIERTER REISENDER: Stefanie Sick]" steht:
-   → Diese Buchung gehört NUR zu "Stefanie Sick"
-   → NIEMALS einem anderen Reisenden zuordnen!
+--- 1. QUELLE ISOLIEREN (Content First) ---
+- Fokus: Betrachte für die Datenextraktion primär den Text des jeweiligen Anhangs.
+- Warnung: Ignoriere Namen im E-Mail-Body, wenn du versuchst, den Besitzer eines Tickets im PDF zu identifizieren. Es besteht hohe Verwechslungsgefahr! Ein PDF namens "Hotel.pdf" kann ein Zugticket enthalten – schau dir den Inhalt an.
 
-2. Wenn im Anhang "[REISENDER: NICHT IDENTIFIZIERT]" steht:
-   → traveler_name = null (NICHT einem anderen Reisenden zuordnen!)
-   → needs_review = true
+--- 2. DOKUMENT-TYP BESTIMMEN (Logik-Check) ---
+Stelle dir bei jedem Dokument die entscheidenden Fragen:
 
-3. Suche NUR nach diesen Labels für Reisendenamen:
-   - "Reisender:", "Fahrgast:", "Passagier:", "Gast:", "Name des Reisenden:"
-   
-4. ⛔ VERBOTEN:
-   - Tickets von "Stefanie Sick" an "Wanja Mues" zuordnen
-   - Tickets von "Antoine Monot" an jemand anderen zuordnen
-   - Namen "raten" wenn kein Label gefunden wurde
+• TICKET: "Ist das ein Fahrschein, mit dem ich in den Zug steigen kann?"
+  Indikatoren: QR-Code, Titel 'Online-Ticket'/'Fahrkarte', Preis > 0
+  → Setze booking_type: 'train'
 
-=== ⚠️ KRITISCH: ANGEBOTE VS. ECHTE BUCHUNGEN UNTERSCHEIDEN ⚠️ ===
+• RESERVIERUNG: "Ist das nur ein Beleg für einen Sitzplatz ohne Fahrschein?"
+  Indikatoren: Titel 'Reservierungsbeleg', oft niedriger Preis, Zusatzbeleg
+  → Setze document_type: 'seat_reservation'
+  → Dies ist keine eigene Buchung, sondern nur ein Anhang!
 
-Dies ist die WICHTIGSTE Prüfung! Bei JEDER gefundenen Reiseoption:
+--- 3. REISENDEN IDENTIFIZIEREN (Deep Search / DB-Spezial) ---
+Das ist der kritischste Schritt. Bei der Deutschen Bahn steht oben oft nur "1 Person" oder "Erwachsener". Das ist ein Platzhalter!
 
-1. IST ES EIN ANGEBOT/VORSCHLAG? (is_proposal: true)
-   Indikatoren für ANGEBOTE:
-   - "nicht optioniert", "Preise können variieren", "unverbindlich"
-   - "Am besten ... buchen" (= Empfehlung, noch nicht gebucht!)
-   - "Die folgenden Sachen fehlen noch", "müssen noch gebucht werden"
-   - "möchte ich vorher bestätigen lassen", "zur Auswahl"
-   - MEHRERE Hotels/Flüge für gleichen Zeitraum ohne eindeutige Buchungsnummer
-   - E-Mail-Kontext zeigt Angebotsphase (z.B. von Reiseagentur an Kunden)
-   - KEINE Buchungsnummer / Confirmation Number vorhanden
-   - Text enthält "Optionen", "Alternativen", "Vorschläge"
+SUCHSTRATEGIE:
+• Scanne das gesamte Dokument. Der echte Name steht bei DB-Tickets oft:
+  → Klein gedruckt unten rechts neben dem quadratischen Barcode/Auftragscode
+  → Oben in der direkten Ansprache ("Guten Tag, Max Mustermann")
+• Abgleich: Vergleiche gefundene Namen mit der Liste der bekannten Reisenden.
+  Wenn "Antoine Monot" im Dokument steht, gehört es ihm – egal wer in der E-Mail erwähnt wird.
 
-2. IST ES EINE ECHTE BUCHUNG? (is_proposal: false)
-   Indikatoren für ECHTE BUCHUNGEN:
-   - Buchungsbestätigung mit Confirmation Number / Buchungsnummer
-   - "Ihre Buchung wurde bestätigt", "gebucht", "reserviert" (= abgeschlossen!)
-   - Ticket-PDF oder Voucher als Attachment
-   - E-Mail DIREKT vom Anbieter (hotel@marriott.com, buchung@bahn.de, etc.)
-   - Zahlungsbestätigung oder Rechnung mit Buchungsnummer
-   - Check-in-Informationen (= Buchung muss existieren)
+--- 4. VALIDIERUNG & KONSOLIDIERUNG ---
+• BahnCard-Falle: Eine Nummer, die mit "7081" beginnt, ist immer eine BahnCard. Ignoriere sie als Auftragsnummer. Die echte Auftragsnummer ist meist 9-stellig (Zahlen) oder ein 6-stelliger Code.
+• Isolation: Ordne Tickets strikt dem Namen zu, der auf dem Ticket steht. Rate niemals Namen aus dem E-Mail-Kontext, wenn das PDF unklar ist.
+• Keine Halluzinationen: Wenn ein Datum oder Ort fehlt, lass es leer. Erfinde nichts.
+• Wenn du unsicher bist, markiere den Eintrag mit needs_review: true.
 
-3. ENTSCHEIDUNGSLOGIK:
-   A) MEHRERE Hotels/Optionen für gleichen Zeitraum → ALLE als Angebot (is_proposal: true)
-      Beispiel: "Leonardo Hotel 89€ oder Marriott 120€" → BEIDE als proposal!
-   B) KEINE Buchungsnummer UND Angebots-Indikatoren → proposal
-   C) Buchungsnummer + Bestätigungshinweis → echte Buchung (is_proposal: false)
-   D) Im Zweifel: Als Angebot markieren mit needs_review: true
+--- 5. ANGEBOTE VS. BUCHUNGEN ---
+• is_proposal: true → Wenn "nicht optioniert", "zur Auswahl", "Optionen", KEINE Buchungsnummer
+• is_proposal: false → Wenn Buchungsbestätigung, Buchungsnummer, Ticket-PDF vorhanden
 
-4. SETZE proposal_reason WENN is_proposal = true:
-   - "Mehrere Optionen ohne finale Entscheidung"
-   - "Angebotsmail ohne Buchungsbestätigung"
-   - "Keine Buchungsnummer vorhanden"
-   - "Text enthält 'zur Auswahl' / 'Optionen'"
+=== BEKANNTE REISENDE ===
+Diese Namen sind im System bekannt. Nutze sie für den Abgleich:
+- Antoine Monot
+- Stefanie Sick
+- Wanja Mues
 
-5. ANGEBOTE KOMPLETT IGNORIEREN WENN:
-   - Später in der E-Mail eine ECHTE Buchung für denselben Zeitraum existiert
-   - Beispiel: Leonardo (Option) + Marriott (gebucht) → NUR Marriott speichern!
-
-=== KRITISCH: BOOKING_TYPE KORREKT ERKENNEN ===
-Erkenne den booking_type NICHT am Preis oder an vagen Hinweisen, sondern am ANBIETER:
-- "Deutsche Bahn", "DB", "ICE", "IC", "RE", "S-Bahn", "RB", "EC", "TGV" → booking_type: "train"
-- "Lufthansa", "Eurowings", "Ryanair", "easyJet", "Swiss", "Austrian", "KLM", "Flug" → booking_type: "flight"
-- "FlixBus", "BlaBlaBus", "Fernbus" → booking_type: "bus"
-- "Marriott", "Hilton", "Radisson", "Holiday Inn", "Booking.com", "HRS", "Hotel" → booking_type: "hotel"
-- "Sixt", "Europcar", "Enterprise", "Hertz", "Avis" → booking_type: "rental_car"
-
-NIEMALS Deutsche Bahn Tickets als "flight" klassifizieren!
-NIEMALS Flugtickets als "train" klassifizieren!
-
-=== KRITISCH: KEINE ROUTEN ERFINDEN ===
-Wenn für eine Person KEINE explizite Route (Start → Ziel) angegeben ist:
-1. NIEMALS die Route einer anderen Person übertragen
-2. NIEMALS eine Route raten oder erfinden
-3. Stattdessen: Diese Buchung NICHT erstellen
-
-Beispiel aus einer E-Mail:
-"Am 10. Januar - Stefanie Sick - 64,55 EUR Flexpreis" (KEINE Route!)
-"Am 10. Januar - Wanja Mues - Bremen → Berlin Hbf"
-→ Erstelle Buchung NUR für Wanja, NICHT für Stefanie!
-
-=== VALIDIERUNG: BUCHUNG ÜBERSPRINGEN WENN ===
-- booking_number = "reserviert" → Das ist KEINE echte Buchungsnummer!
-- origin_city = destination_city → Das ist ein Datenfehler!
-- Keine echte Uhrzeit und keine Route → Unvollständige Daten!
-- Nur Preis ohne konkrete Reisedaten → Zu wenig Information!
-
-Für jede gefundene Buchung extrahiere:
-- booking_type: "hotel", "train", "flight", "bus", "rental_car" oder "other"
-- booking_number: Buchungsnummer/Reservierungscode/Auftragsnummer (PFLICHT - siehe unten!)
-- provider: Anbieter (z.B. "Deutsche Bahn", "Lufthansa", "Marriott")
-- traveler_name: Name des Hauptreisenden
-- traveler_names: Array aller Reisenden (falls mehrere)
-- start_datetime: Check-in/Abfahrt (ISO 8601 Format, z.B. "2026-11-12T15:00:00")
-- end_datetime: Check-out/Ankunft (ISO 8601 Format)
-- origin_city: Startort (bei Transport)
-- destination_city: Zielort/Hotelstadt (PFLICHT)
-- venue_name: Hotel-/Bahnhofsname
-- venue_address: Vollständige Adresse
-- details: Zusatzinfos als Objekt (WICHTIG - extrahiere alle verfügbaren Details!)
-- confidence: Deine Sicherheit bei der Extraktion (0.0 bis 1.0)
-
-=== ⛔ STRIKTE DOKUMENTTYP-ERKENNUNG (PFLICHT!) ⛔ ===
-
-⛔ WICHTIG: NICHT AM PREIS UNTERSCHEIDEN! Reservierungen können auch Geld kosten (z.B. 5,90 EUR)!
-
-UNTERSCHEIDE STRIKT NACH DOKUMENT-TITEL/KOPFZEILE:
-
-1. IST ES EINE REINE SITZPLATZRESERVIERUNG? (is_seat_reservation = true)
-   
-   NUR "seat_reservation" WENN BEIDE Bedingungen erfüllt sind:
-   ✓ Dokument-Titel/Kopfzeile enthält EXPLIZIT "Reservierungsbeleg" oder "Sitzplatz-Reservierung" oder nur "Reservierung"
-   ✓ UND das Wort "Fahrkarte", "Online-Ticket" oder "Ticket" kommt NICHT in der Kopfzeile/Titel vor
-   
-   → document_type = "seat_reservation"
-   → is_seat_reservation = true
-   → ⛔ KEINE eigene Buchung erstellen! Nur als Attachment behandeln!
-
-2. IST ES EIN ECHTES TICKET? (document_type = "ticket")
-   
-   "ticket" WENN:
-   ✓ Dokument-Titel enthält "Online-Ticket", "Fahrkarte" oder "Reiseplan"
-   ✓ ODER es ist ein Kombi-Dokument (Fahrt + Reservierung in einem) → IMMER als "ticket" werten!
-   
-   Bei Kombi-Dokumenten (Ticket + Reservierung in einem PDF):
-   → Es gewinnt IMMER "ticket" (NICHT als seat_reservation markieren!)
-   → Die Reservierungsdetails kommen in details.wagon und details.seat
-
-3. ANDERE TYPEN:
-   - "confirmation" = Buchungsbestätigung ohne Fahrpreis (z.B. Hotel)
-   - "invoice" = Rechnung
-   - "unknown" = Typ unklar
-
-=== QR-CODES UND DIGITALE TICKETS ===
-Extrahiere wenn vorhanden:
-- qr_code_present: true/false - ob ein QR-Code sichtbar ist
-- qr_code_description: Beschreibung des QR-Codes (z.B. "Großer QR-Code mittig, enthält Ticket-Daten")
-- barcode_number: Falls Barcode vorhanden, die Nummer darunter
-- ticket_url: URL zum Online-Ticket (z.B. bahn.de Link)
-- mobile_ticket: true wenn es ein Handy-Ticket/Online-Ticket ist
-- checkin_url: Online Check-in Link (bei Flügen)
-- hotel_url: Website des Hotels
-
-=== KRITISCH: BOOKING_NUMBER / AUFTRAGSNUMMER ===
-Die booking_number ist das WICHTIGSTE Feld! Suche aktiv nach:
-
-WICHTIG: Das Wort "reserviert" ist KEINE Buchungsnummer!
-- "reserviert" bedeutet nur, dass eine Reservierung existiert
-- NIEMALS "reserviert", "pending", "ohne Nr." als booking_number speichern!
-
-=== ⛔ HARD-BLOCK: VERBOTENE BUCHUNGSNUMMERN ⛔ ===
-NIEMALS diese Nummern als booking_number akzeptieren:
-
-1. BahnCard-Nummern (IMMER IGNORIEREN für booking_number!):
-   - Beginnen IMMER mit "7081"
-   - Haben 16 Ziffern
-   - Beispiel: 7081419001477859
-   → Diese IMMER in details.bahncard_number speichern, NIEMALS als booking_number!
-
-2. Das Wort "reserviert":
-   - Ist KEINE Nummer, sondern ein Status
-   
-⛔ HARD-BLOCK VALIDIERUNG:
-   IF booking_number.startsWith("7081") → UNGÜLTIG! Nach Label "Auftragsnummer:" suchen!
-   IF booking_number.length >= 16 AND booking_number ist nur Ziffern → UNGÜLTIG! Wahrscheinlich BahnCard!
-   IF booking_number === "reserviert" → UNGÜLTIG!
-
-=== ✅ RICHTIGE AUFTRAGSNUMMERN BEI DEUTSCHER BAHN ===
-
-SUCHSTRATEGIE für DB Tickets:
-1. Suche EXPLIZIT nach dem Label "Auftragsnummer:" im Dokument
-2. Der Wert steht DIREKT HINTER diesem Label
-3. Format: 9-stellig (nur Ziffern, z.B. "899618184")
-4. ODER: 6-stelliger alphanumerischer Code (z.B. "Q7K5M2", "ABC123")
-
-⛔ Zahlen die mit "7081" beginnen sind IMMER BahnCard-Nummern, NIEMALS Auftragsnummern!
-
-Beispiel korrekte Zuordnung:
-Dokument zeigt: "Auftragsnummer: 899618184" und "BahnCard 25: 7081419001477859"
-→ booking_number = "899618184" ✅
-→ details.bahncard_number = "7081419001477859" ✅
-→ details.order_number = "899618184" ✅
-
-Bei Hotels:
-- "Bestätigungsnummer:", "Confirmation Number:", "Buchungsnummer:", "Reservierungsnummer:"
-- Manchmal auch "Booking ID:", "Reference:", "Buchungs-ID:"
-
-Bei Flügen:
-- "PNR:", "Buchungscode:", "Booking Reference:"
-- Meist 6-stellig, nur Buchstaben (z.B. "XYZABC")
-
-WICHTIG: Setze booking_number UND details.order_number auf denselben Wert!
-
-=== VALIDIERUNG: KEINE UNKNOWN STÄDTE ===
-NIEMALS eine Buchung erstellen mit:
-- destination_city = "Unknown" oder "Unbekannt"
-- origin_city = "Unknown" (bei Zügen/Flügen/Bussen)
-- Leere oder fehlende Stadt-Felder bei Transport-Buchungen
-
-Wenn die Route nicht eindeutig erkennbar ist:
-- Suche im GESAMTEN Kontext der E-Mail nach Hinweisen
-- Schaue ob andere Buchungen am gleichen Tag die Route verraten
-- Wenn das Ziel immer noch unklar: Setze confidence auf < 0.3
-
-=== WICHTIG: KONTEXT NUTZEN ===
-Wenn in der E-Mail MEHRERE PERSONEN am GLEICHEN TAG reisen:
-- Wenn bei Person A die Route "Hamburg → Bremen" steht
-- Und Person B reist am gleichen Tag ohne explizite Route
-- Dann übertrage die Route auf Person B!
-
-Beispiel:
-"Am 8. Januar - Wanja Mues - Hamburg Hbf → Bremen Hbf - 59,60 EUR"
-"Am 8. Januar - Antoine Monot - 59,60 EUR" (keine Route genannt)
-→ Antoine fährt AUCH Hamburg → Bremen! Übernehme die Route!
-
-=== CITY-TICKET-GÜLTIGKEIT (BAHN) ===
-Wenn in der E-Mail oder im PDF "City-Ticket-Gültigkeit" steht, extrahiere in details:
-- city_ticket_start: { validity: "10.01.26–11.01.26, 3:00 Uhr", zone: "Stadtgebiet Bremen (Tarifgebiet 1, Zone 100 + 101)" }
-- city_ticket_destination: { validity: "10.01.26–11.01.26, 3:00 Uhr", zone: "Stadtgebiet Hannover (Ticket-Zone A)" }
-
-Beispiel aus E-Mail:
-"City-Ticket-Gültigkeit
-Start: 10.01.26–11.01.26, 3:00 Uhr; Stadtgebiet Bremen (Tarifgebiet 1, Zone 100 + 101)
-Ziel: 10.01.26–11.01.26, 3:00 Uhr; Stadtgebiet Hannover (Ticket-Zone A)"
-
-→ city_ticket_start = { validity: "10.01.26–11.01.26, 3:00 Uhr", zone: "Stadtgebiet Bremen (Tarifgebiet 1, Zone 100 + 101)" }
-→ city_ticket_destination = { validity: "10.01.26–11.01.26, 3:00 Uhr", zone: "Stadtgebiet Hannover (Ticket-Zone A)" }
-
-=== FINANZIELLE FELDER (IMMER EXTRAHIEREN WENN VORHANDEN) ===
-- total_amount: Gesamtbetrag als ZAHL ohne Währungssymbol (z.B. 89.90, 156.50, 320.00)
-- currency: Währungscode ISO 4217 (EUR, USD, CHF, GBP) - Standard ist EUR
-- order_number: Auftrags-/Rechnungsnummer (oft identisch mit booking_number)
-
-=== DETAILS-OBJEKT MUSS AUSGEFÜLLT WERDEN ===
-
-Für ZUGBUCHUNGEN (train) - extrahiere IMMER in details:
-- order_number: Auftragsnummer (PFLICHT - gleicher Wert wie booking_number!)
-- train_number: Zugnummer (z.B. "ICE 1044", "IC 2023", "RE 5")
-- class: Wagenklasse als Zahl ("1" oder "2")
-- wagon: Wagennummer
-- seat: Sitzplatznummer(n)
-- bahncard: BahnCard-Typ (z.B. "BC 25", "BC 50", "BC 100", "BahnCard 25 1. Klasse")
-- total_amount: Gesamtpreis als Zahl (z.B. 89.90)
-- currency: Währung (EUR, USD, CHF, GBP)
-- connection_type: "direkt" oder "mit Umstieg"
-- cancellation_policy: Stornierungsbedingungen
-
-Für FLUGBUCHUNGEN (flight) - extrahiere IMMER in details:
-- order_number: Buchungscode/PNR (PFLICHT - gleicher Wert wie booking_number!)
-- flight_number: Flugnummer (z.B. "LH 123", "EW 9876")
-- airline: Fluggesellschaft
-- terminal: Terminal-Nummer
-- gate: Gate-Nummer
-- seat: Sitzplatz
-- baggage: Gepäckinfo (z.B. "23kg Freigepäck", "nur Handgepäck")
-- booking_class: Buchungsklasse (z.B. "Economy", "Business")
-- total_amount: Gesamtpreis als Zahl
-- currency: Währung
-
-Für HOTELBUCHUNGEN (hotel) - extrahiere IMMER in details:
-- order_number: Buchungsnummer (PFLICHT - gleicher Wert wie booking_number!)
-- hotel_url: Website-URL des Hotels (falls in der E-Mail enthalten)
-- room_type: Zimmerkategorie (z.B. "Superior", "Komfort Plus", "Suite")
-- room_number: Zimmernummer (falls bekannt)
-- breakfast_included: true/false
-- wifi_included: true/false
-- price_per_night: Preis pro Nacht als Zahl
-- total_amount: Gesamtpreis als Zahl
-- currency: Währung
-- cancellation_policy: Stornierungsbedingungen
-- cancellation_deadline: Stornierungsfrist (ISO 8601 Datum)
-
-Für MIETWAGEN (rental_car) - extrahiere in details:
-- order_number: Buchungsnummer (PFLICHT!)
-- vehicle_type: Fahrzeugkategorie
-- pickup_location: Abholort
-- dropoff_location: Rückgabeort
-- total_amount: Gesamtpreis
-- currency: Währung
-
-WICHTIG:
-- Extrahiere JEDES Detail das in der E-Mail steht
-- booking_number ist PFLICHT wenn irgendwo eine Nummer steht!
-- total_amount und currency IMMER extrahieren wenn Preise vorhanden sind
-- Preise als Zahlen ohne Währungssymbol
-- Boolean-Werte für ja/nein Felder
-- Bei mehreren Verbindungen: Erstelle separate Buchungen ODER nutze das erste Segment
-
-Prüfe auch, ob es sich um ein UPDATE einer bestehenden Buchung handelt (gleiche Buchungsnummer oder gleicher Reisender + Datum + Typ). Falls ja, setze is_update: true und gib die update_booking_id an.
+=== OUTPUT FORMAT ===
+Nutze die Function extract_bookings mit folgenden Feldern:
+- booking_type: "hotel", "train", "flight", "bus", "rental_car", "other"
+- booking_number: Auftragsnummer (NICHT BahnCard!)
+- provider: Anbieter (z.B. "Deutsche Bahn", "Marriott")
+- traveler_name: Name des Reisenden (aus dem Dokument, nicht raten!)
+- traveler_names: Array aller Reisenden
+- start_datetime: ISO 8601 Format
+- end_datetime: ISO 8601 Format
+- origin_city: Startort
+- destination_city: Zielort
+- venue_name: Hotel/Bahnhof
+- is_proposal: true/false
+- is_seat_reservation: true wenn Reservierungsbeleg
+- document_type: "ticket", "seat_reservation", "confirmation", etc.
+- details: { order_number, train_number, class, wagon, seat, total_amount, currency, ... }
+- confidence: 0.0 bis 1.0
+- needs_review: true wenn unsicher
 
 ${existingBookingsContext}`;
 
