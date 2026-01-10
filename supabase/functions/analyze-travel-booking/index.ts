@@ -20,6 +20,7 @@ interface ExtractedBooking {
   venue_address?: string;
   details: Record<string, any>;
   confidence: number;
+  needs_review?: boolean;
 }
 
 interface AIAnalysisResult {
@@ -309,6 +310,28 @@ Bei Flügen:
 - Meist 6-stellig, nur Buchstaben (z.B. "XYZABC")
 
 WICHTIG: Setze booking_number UND details.order_number auf denselben Wert!
+
+=== VALIDIERUNG: KEINE UNKNOWN STÄDTE ===
+NIEMALS eine Buchung erstellen mit:
+- destination_city = "Unknown" oder "Unbekannt"
+- origin_city = "Unknown" (bei Zügen/Flügen/Bussen)
+- Leere oder fehlende Stadt-Felder bei Transport-Buchungen
+
+Wenn die Route nicht eindeutig erkennbar ist:
+- Suche im GESAMTEN Kontext der E-Mail nach Hinweisen
+- Schaue ob andere Buchungen am gleichen Tag die Route verraten
+- Wenn das Ziel immer noch unklar: Setze confidence auf < 0.3
+
+=== WICHTIG: KONTEXT NUTZEN ===
+Wenn in der E-Mail MEHRERE PERSONEN am GLEICHEN TAG reisen:
+- Wenn bei Person A die Route "Hamburg → Bremen" steht
+- Und Person B reist am gleichen Tag ohne explizite Route
+- Dann übertrage die Route auf Person B!
+
+Beispiel:
+"Am 8. Januar - Wanja Mues - Hamburg Hbf → Bremen Hbf - 59,60 EUR"
+"Am 8. Januar - Antoine Monot - 59,60 EUR" (keine Route genannt)
+→ Antoine fährt AUCH Hamburg → Bremen! Übernehme die Route!
 
 === FINANZIELLE FELDER (IMMER EXTRAHIEREN WENN VORHANDEN) ===
 - total_amount: Gesamtbetrag als ZAHL ohne Währungssymbol (z.B. 89.90, 156.50, 320.00)
@@ -658,6 +681,27 @@ ${existingBookingsContext}`;
             console.log(`Corrected placeholder booking_number to: ${finalBookingNumber}`);
           }
           
+          // Validate destination_city - skip bookings with Unknown
+          const invalidCities = ['unknown', 'unbekannt', '', null, undefined];
+          const finalDestination = booking.destination_city;
+          const finalOrigin = booking.origin_city;
+          
+          if (!finalDestination || invalidCities.includes(finalDestination.toLowerCase?.().trim())) {
+            console.log(`Skipping booking with invalid destination_city: ${finalDestination}`);
+            continue;
+          }
+          
+          // Check if transport booking has valid origin
+          const isTransport = ['train', 'flight', 'bus'].includes(booking.booking_type);
+          let needsReview = booking.needs_review || false;
+          let aiConfidence = booking.confidence || 1;
+          
+          if (isTransport && (!finalOrigin || invalidCities.includes(finalOrigin.toLowerCase?.().trim()))) {
+            needsReview = true;
+            aiConfidence = Math.min(aiConfidence, 0.3);
+            console.log(`Marking transport booking as needs_review due to missing origin_city`);
+          }
+          
           // Create new booking
           const { error: insertError } = await supabase
             .from("travel_bookings")
@@ -669,14 +713,15 @@ ${existingBookingsContext}`;
               traveler_names: booking.traveler_names,
               start_datetime: booking.start_datetime,
               end_datetime: booking.end_datetime,
-              origin_city: booking.origin_city,
-              destination_city: booking.destination_city,
+              origin_city: finalOrigin,
+              destination_city: finalDestination,
               venue_name: booking.venue_name,
               venue_address: booking.venue_address,
               details: bookingDetails,
               status: "confirmed",
               source_email_id: email_id,
-              ai_confidence: booking.confidence,
+              ai_confidence: aiConfidence,
+              needs_review: needsReview,
             });
 
           if (insertError) {

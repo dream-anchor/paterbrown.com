@@ -228,9 +228,33 @@ function TimelineItem({ booking, isSelected, isLast, onSelect }: TimelineItemPro
             
             {['train', 'flight', 'bus'].includes(booking.booking_type) ? (
               /* Transport Route */
-              <span className="font-medium text-gray-900 truncate">
-                {booking.origin_city || '–'} → {booking.destination_city}
-              </span>
+              (() => {
+                const invalidCities = ['unknown', 'unbekannt', ''];
+                const hasInvalidOrigin = !booking.origin_city || invalidCities.includes(booking.origin_city.toLowerCase());
+                const hasInvalidDestination = !booking.destination_city || invalidCities.includes(booking.destination_city.toLowerCase());
+                
+                if (hasInvalidOrigin || hasInvalidDestination) {
+                  return (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="font-medium text-amber-600 truncate cursor-help">
+                          ⚠️ {hasInvalidOrigin ? '?' : booking.origin_city} → {hasInvalidDestination ? '?' : booking.destination_city}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-sm">Route unvollständig erkannt.</p>
+                        <p className="text-xs text-gray-500">Klicken zum Bearbeiten.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                }
+                
+                return (
+                  <span className="font-medium text-gray-900 truncate">
+                    {booking.origin_city} → {booking.destination_city}
+                  </span>
+                );
+              })()
             ) : (
               /* Hotel / Other */
               <span className="font-medium text-gray-900 truncate">
