@@ -38,14 +38,8 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
   const [reprocessingId, setReprocessingId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await fetchEmails();
-    setIsRefreshing(false);
-    toast({
-      title: "Aktualisiert",
-      description: `${emails.length} E-Mails geladen`,
-    });
+  const handleRefresh = () => {
+    window.location.reload();
   };
 
   useEffect(() => {
