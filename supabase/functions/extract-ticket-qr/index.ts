@@ -6,61 +6,61 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Function to extract QR/Aztec code data using AI vision
-async function extractQrCodeWithVision(
+/**
+ * Uses Vision AI to find the QR/Aztec code position and extract it as an image.
+ * Deutsche Bahn tickets have the Aztec code in the top-right area.
+ */
+async function extractQrCodeImage(
   pdfBase64: string,
   lovableApiKey: string
-): Promise<{ qr_data: string | null; description: string | null; document_type: string | null }> {
+): Promise<{ 
+  qr_data: string | null; 
+  description: string | null; 
+  document_type: string | null;
+  qr_image_base64: string | null;
+}> {
   
-const extractionPrompt = `Analysiere dieses Dokument und suche nach einem QR-Code oder Aztec-Code (typisch für Deutsche Bahn Tickets).
+  const extractionPrompt = `Analysiere dieses Deutsche Bahn Ticket-Dokument.
 
-WICHTIG: Deutsche Bahn Tickets verwenden AZTEC-Codes (quadratische Codes mit einem schwarzen Quadrat in der Mitte).
+WICHTIG: Ich brauche den Aztec/QR-Code als BILD extrahiert.
 
-=== ⚠️ STRIKTE DOKUMENTTYP-ERKENNUNG (PFLICHT!) ⚠️ ===
+Der Aztec-Code auf DB-Tickets befindet sich typischerweise:
+- Oben rechts auf der ersten Seite
+- Ca. 100-200 Pixel vom oberen Rand
+- Ca. 100-200 Pixel vom rechten Rand
+- Größe etwa 150x150 bis 200x200 Pixel
+- Es ist ein schwarzes, quadratisches Aztec-Muster auf weißem Hintergrund
 
-PFLICHT-PRÜFUNG in dieser Reihenfolge:
+AUFGABE:
+1. Finde den Aztec-Code im Dokument
+2. Wenn du ihn findest, extrahiere NUR den Code-Bereich als Bild
+3. Klassifiziere das Dokument (ticket, seat_reservation, confirmation, invoice)
 
-1. IST ES EINE SITZPLATZRESERVIERUNG?
-   Prüfe ALLE 3 Kriterien:
-   ✓ Dokument enthält das Wort "Sitzplatzreservierung" oder "Reservierung" im Titel/Betreff
-   ✓ Preis ist 0,00 EUR ODER kein Fahrpreis angegeben
-   ✓ Es gibt Wagen-/Sitzplatznummern ABER KEINEN Ticketpreis
-   
-   → Wenn ALLE 3 erfüllt: document_type = "seat_reservation" (PFLICHT!)
-   → NIEMALS als "ticket" klassifizieren!
+=== DOKUMENTTYP-ERKENNUNG ===
 
-2. IST ES EIN ECHTES TICKET?
-   NUR "ticket" wenn:
-   ✓ Echter Fahrpreis vorhanden (> 0,00 EUR)
-   ✓ ODER Buchungsbestätigung mit Reisedetails und Preis
-   ✓ ODER explizit "Fahrkarte" / "Ticket" / "Online-Ticket" im Titel
-   
-3. ANDERE TYPEN:
-   - "confirmation" = Hotel-Bestätigung, Buchungsbestätigung ohne Fahrpreis
-   - "invoice" = Rechnung mit Rechnungsnummer
+SITZPLATZRESERVIERUNG wenn:
+✓ "Sitzplatzreservierung" oder "Reservierung" im Titel
+✓ Preis ist 0,00 EUR ODER kein Fahrpreis
+✓ Wagen-/Sitzplatznummern vorhanden
 
-=== QR-CODE ANALYSE ===
-Falls ein Code gefunden wird:
-1. Beschreibe die Position des Codes im Dokument
-2. Falls Text/Zahlen UNTER oder NEBEN dem Code stehen, extrahiere diese
-3. Der Code enthält typischerweise eine URL wie "bfrn.de/..." oder einen alphanumerischen Buchungscode
+TICKET wenn:
+✓ Echter Fahrpreis vorhanden (> 0 EUR)
+✓ "Fahrkarte" / "Ticket" / "Online-Ticket" im Titel
 
 Antworte im JSON-Format:
 {
   "code_found": true/false,
-  "code_type": "aztec" | "qr" | "barcode" | null,
-  "position": "oben rechts" | "unten links" | etc.,
-  "code_text_nearby": "Text der beim Code steht",
-  "likely_content": "bfrn.de/xxx oder Buchungscode",
+  "code_type": "aztec" | "qr" | null,
+  "position": "oben rechts" | "mitte" | etc.,
+  "code_content": "bfrn.de/xxx oder alphanumerischer Code",
   "document_type": "ticket" | "seat_reservation" | "confirmation" | "invoice",
-  "is_seat_reservation_only": true/false,
-  "has_ticket_price": true/false,
-  "price_amount": "z.B. 59.60 oder 0.00",
-  "description": "Kurze Beschreibung des Dokuments"
+  "description": "Kurze Beschreibung des Dokuments",
+  "traveler_name": "Name des Reisenden falls erkennbar"
 }`;
 
   try {
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // First, analyze the document structure
+    const analysisResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -84,35 +84,96 @@ Antworte im JSON-Format:
       }),
     });
 
-    if (!response.ok) {
-      console.error("Vision API error:", response.status, await response.text());
-      return { qr_data: null, description: null, document_type: null };
+    if (!analysisResponse.ok) {
+      console.error("Vision API error:", analysisResponse.status, await analysisResponse.text());
+      return { qr_data: null, description: null, document_type: null, qr_image_base64: null };
     }
 
-    const result = await response.json();
-    const content = result.choices?.[0]?.message?.content || "";
+    const analysisResult = await analysisResponse.json();
+    const analysisContent = analysisResult.choices?.[0]?.message?.content || "";
     
-    console.log("Vision API response:", content);
+    console.log("Vision API analysis:", analysisContent);
 
-    // Try to parse JSON from response
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    // Parse the analysis
+    let parsed: any = {};
+    const jsonMatch = analysisContent.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       try {
-        const parsed = JSON.parse(jsonMatch[0]);
-        return {
-          qr_data: parsed.likely_content || parsed.code_text_nearby || null,
-          description: parsed.description || null,
-          document_type: parsed.document_type || null,
-        };
+        parsed = JSON.parse(jsonMatch[0]);
       } catch {
-        return { qr_data: null, description: content, document_type: null };
+        console.log("Could not parse JSON, using raw content");
       }
     }
 
-    return { qr_data: null, description: content, document_type: null };
+    // Now request image extraction of the QR code
+    if (parsed.code_found) {
+      console.log("Code found, attempting image extraction...");
+      
+      const imageExtractionPrompt = `Extrahiere NUR den Aztec/QR-Code aus diesem Dokument als Bild.
+
+Der Code befindet sich ${parsed.position || "oben rechts"}.
+
+Schneide genau den quadratischen Code-Bereich aus - nur das Aztec-Muster ohne Umgebung.
+Gib das Bild als Ausgabe zurück.`;
+
+      const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${lovableApiKey}`,
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-image-preview",
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: imageExtractionPrompt },
+                {
+                  type: "image_url",
+                  image_url: { url: `data:application/pdf;base64,${pdfBase64}` },
+                },
+              ],
+            },
+          ],
+          modalities: ["image", "text"],
+        }),
+      });
+
+      if (imageResponse.ok) {
+        const imageResult = await imageResponse.json();
+        const extractedImage = imageResult.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+        
+        if (extractedImage && extractedImage.startsWith("data:image")) {
+          // Extract base64 from data URL
+          const base64Match = extractedImage.match(/base64,(.+)/);
+          if (base64Match) {
+            console.log("Successfully extracted QR code image");
+            return {
+              qr_data: parsed.code_content || parsed.likely_content || null,
+              description: parsed.description || null,
+              document_type: parsed.document_type || null,
+              qr_image_base64: base64Match[1],
+            };
+          }
+        }
+        console.log("Image extraction response:", JSON.stringify(imageResult).substring(0, 500));
+      } else {
+        console.log("Image extraction failed:", imageResponse.status);
+      }
+    }
+
+    // Return analysis results even if image extraction failed
+    return {
+      qr_data: parsed.code_content || parsed.likely_content || null,
+      description: parsed.description || null,
+      document_type: parsed.document_type || null,
+      qr_image_base64: null,
+    };
+
   } catch (error) {
     console.error("Vision extraction error:", error);
-    return { qr_data: null, description: null, document_type: null };
+    return { qr_data: null, description: null, document_type: null, qr_image_base64: null };
   }
 }
 
@@ -127,13 +188,13 @@ serve(async (req) => {
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { attachment_id } = await req.json();
+    const { attachment_id, booking_id } = await req.json();
 
     if (!attachment_id) {
       throw new Error("attachment_id is required");
     }
 
-    console.log("Extracting QR code from attachment:", attachment_id);
+    console.log("Extracting QR code from attachment:", attachment_id, "for booking:", booking_id);
 
     // Fetch the attachment
     const { data: attachment, error: attachmentError } = await supabase
@@ -146,18 +207,8 @@ serve(async (req) => {
       throw new Error(`Attachment not found: ${attachmentError?.message}`);
     }
 
-    // Check if already extracted
-    if (attachment.qr_code_data) {
-      console.log("QR code already extracted for this attachment");
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          already_extracted: true,
-          qr_data: attachment.qr_code_data 
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    // Get the booking_id from attachment if not provided
+    const targetBookingId = booking_id || attachment.booking_id;
 
     // Check if it's a PDF
     const isPdf = attachment.content_type === "application/pdf" || 
@@ -187,9 +238,57 @@ serve(async (req) => {
     console.log("PDF downloaded, size:", arrayBuffer.byteLength, "bytes");
 
     // Extract QR code using vision AI
-    const { qr_data, description, document_type } = await extractQrCodeWithVision(base64, lovableApiKey);
+    const { qr_data, description, document_type, qr_image_base64 } = 
+      await extractQrCodeImage(base64, lovableApiKey);
 
-    console.log("Extraction result - QR data:", qr_data, "Description:", description, "Document type:", document_type);
+    console.log("Extraction result - QR data:", qr_data, "Document type:", document_type, "Has image:", !!qr_image_base64);
+
+    let qr_code_url: string | null = null;
+
+    // If we got an image, upload it to storage
+    if (qr_image_base64 && targetBookingId) {
+      try {
+        const imageBytes = Uint8Array.from(atob(qr_image_base64), c => c.charCodeAt(0));
+        const fileName = `qr_${targetBookingId}.png`;
+
+        // Delete existing file if any
+        await supabase.storage.from("qr-codes").remove([fileName]);
+
+        // Upload new QR code image
+        const { error: uploadError } = await supabase.storage
+          .from("qr-codes")
+          .upload(fileName, imageBytes, {
+            contentType: "image/png",
+            upsert: true,
+          });
+
+        if (uploadError) {
+          console.error("Failed to upload QR image:", uploadError);
+        } else {
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from("qr-codes")
+            .getPublicUrl(fileName);
+          
+          qr_code_url = urlData.publicUrl;
+          console.log("QR code image uploaded:", qr_code_url);
+
+          // Update the booking with the QR code URL
+          const { error: bookingUpdateError } = await supabase
+            .from("travel_bookings")
+            .update({ qr_code_url })
+            .eq("id", targetBookingId);
+
+          if (bookingUpdateError) {
+            console.error("Failed to update booking with QR URL:", bookingUpdateError);
+          } else {
+            console.log("Booking updated with QR code URL");
+          }
+        }
+      } catch (uploadErr) {
+        console.error("Error uploading QR image:", uploadErr);
+      }
+    }
 
     // Determine the best document_type
     const finalDocumentType = document_type || 
@@ -203,6 +302,7 @@ serve(async (req) => {
       .update({
         qr_code_data: qr_data || description || "No QR code found",
         document_type: finalDocumentType,
+        qr_code_image_path: qr_code_url ? `qr_${targetBookingId}.png` : null,
       })
       .eq("id", attachment_id);
 
@@ -215,7 +315,9 @@ serve(async (req) => {
         success: true, 
         qr_data: qr_data,
         description: description,
-        extracted: !!qr_data
+        document_type: finalDocumentType,
+        qr_code_url: qr_code_url,
+        extracted: !!qr_data || !!qr_image_base64
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
