@@ -1,6 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// ========== ASYNC PATTERN: EdgeRuntime Declaration ==========
+declare global {
+  interface EdgeRuntime {
+    waitUntil(promise: Promise<void>): void;
+  }
+  const EdgeRuntime: EdgeRuntime;
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -217,24 +225,18 @@ Antworte NUR mit dem gefundenen Namen oder "UNKNOWN". Keine Erklärung.`;
   }
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+// ========== MAIN BACKGROUND PROCESSING FUNCTION ==========
+async function processEmailInBackground(
+  email_id: string,
+  supabaseUrl: string,
+  supabaseServiceKey: string,
+  lovableApiKey: string
+): Promise<void> {
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { email_id } = await req.json();
-
-    if (!email_id) {
-      throw new Error("email_id is required");
-    }
-
-    console.log("Analyzing email:", email_id);
+    console.log("=== BACKGROUND: Starting heavy analysis ===");
+    console.log("Email ID:", email_id);
 
     // ========== LOAD KNOWN TRAVELERS FOR MULTI-USER SPLIT ==========
     const { data: travelerProfiles } = await supabase
@@ -829,156 +831,123 @@ ${existingBookingsContext}`;
                             connection_type: { type: "string", description: "direkt oder mit Umstieg" },
                             seat_type: { type: "string", description: "Fenster, Gang, Tisch, Ruhebereich, etc." },
                             // Flight specific
-                            flight_number: { type: "string" },
-                            airline: { type: "string" },
-                            terminal: { type: "string" },
-                            gate: { type: "string" },
-                            baggage: { type: "string" },
-                            booking_class: { type: "string", description: "Economy, Business, etc." },
+                            flight_number: { type: "string", description: "Flugnummer z.B. LH 123" },
+                            airline: { type: "string", description: "Fluggesellschaft" },
+                            terminal: { type: "string", description: "Terminal" },
+                            gate: { type: "string", description: "Gate" },
+                            baggage: { type: "string", description: "Gepäckinfo" },
+                            booking_class: { type: "string", description: "Economy, Business, First" },
                             // Hotel specific
-                            room_type: { type: "string" },
-                            room_number: { type: "string" },
+                            hotel_url: { type: "string", description: "Hotel Website URL" },
+                            room_type: { type: "string", description: "Zimmertyp" },
+                            room_number: { type: "string", description: "Zimmernummer" },
                             breakfast_included: { type: "boolean" },
                             wifi_included: { type: "boolean" },
-                            parking_included: { type: "boolean" },
                             price_per_night: { type: "number" },
-                            total_nights: { type: "number" },
                             cancellation_policy: { type: "string" },
                             cancellation_deadline: { type: "string" },
-                            hotel_url: { type: "string" },
-                            hotel_phone: { type: "string" },
-                            hotel_email: { type: "string" },
-                            // Rental car specific
-                            vehicle_type: { type: "string" },
-                            pickup_location: { type: "string" },
-                            dropoff_location: { type: "string" }
+                            // City ticket for trains
+                            city_ticket_start: { type: "object", properties: { validity: { type: "string" }, zone: { type: "string" } } },
+                            city_ticket_destination: { type: "object", properties: { validity: { type: "string" }, zone: { type: "string" } } },
                           }
                         },
                         confidence: { type: "number" },
-                        is_proposal: { type: "boolean", description: "true wenn es nur ein Angebot/Vorschlag ist, false wenn echte Buchung" },
-                        proposal_reason: { type: "string", description: "Grund warum es ein Angebot ist (z.B. 'Mehrere Optionen ohne Entscheidung')" }
+                        needs_review: { type: "boolean" },
+                        is_proposal: { type: "boolean", description: "Ist es ein Angebot/Vorschlag (noch nicht gebucht)?" },
+                        proposal_reason: { type: "string", description: "Grund warum es als Angebot gilt" },
                       },
-                      required: ["booking_type", "start_datetime", "destination_city", "details", "is_proposal"]
-                    }
+                      required: ["booking_type", "destination_city", "start_datetime"],
+                    },
                   },
                   is_update: { type: "boolean" },
                   update_booking_id: { type: "string" },
-                  change_summary: { type: "string" }
+                  change_summary: { type: "string" },
                 },
-                required: ["bookings", "is_update"]
-              }
-            }
-          }
+                required: ["bookings"],
+              },
+            },
+          },
         ],
-        tool_choice: { type: "function", function: { name: "extract_bookings" } }
+        tool_choice: { type: "function", function: { name: "extract_bookings" } },
       }),
     });
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error("AI API error:", errorText);
-      
-      if (aiResponse.status === 429) {
-        throw new Error("Rate limit exceeded. Please try again later.");
-      }
-      if (aiResponse.status === 402) {
-        throw new Error("AI credits exhausted. Please add funds.");
-      }
-      throw new Error(`AI analysis failed: ${errorText}`);
+      throw new Error(`AI API error: ${errorText}`);
     }
 
     const aiData = await aiResponse.json();
-    console.log("AI response:", JSON.stringify(aiData, null, 2));
+    console.log("AI Response received");
 
-    // Extract the tool call result
+    // Extract the function call result
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) {
-      console.log("No bookings found in email");
-      await supabase
-        .from("travel_emails")
-        .update({ status: "processed", error_message: "Keine Buchungen gefunden" })
-        .eq("id", email_id);
-      
-      return new Response(
-        JSON.stringify({ success: true, bookings_created: 0, message: "No bookings found" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (!toolCall?.function?.arguments) {
+      throw new Error("No booking extraction result from AI");
     }
 
     const analysisResult: AIAnalysisResult = JSON.parse(toolCall.function.arguments);
-    console.log("Parsed bookings:", analysisResult.bookings?.length || 0);
+    console.log("Extracted bookings:", analysisResult.bookings?.length || 0);
 
-    // Process bookings
+    // Process each booking
     let bookingsCreated = 0;
     let bookingsUpdated = 0;
     let seatReservationsSkipped = 0;
-
-    for (const booking of analysisResult.bookings) {
+    
+    for (const booking of analysisResult.bookings || []) {
       try {
-        console.log("\n=== PROCESSING BOOKING ===");
-        console.log(`Type: ${booking.booking_type}, Traveler: ${booking.traveler_name}, Destination: ${booking.destination_city}`);
-        
-        // Validate and prepare the booking data
+        // Extract details safely
         const bookingDetails = booking.details || {};
         
-        // ========== POST-PROCESSING: Reservierungs-Check ==========
+        // ========== SEAT RESERVATION CHECK ==========
         const isSeatReservation = 
           bookingDetails.is_seat_reservation === true ||
           bookingDetails.document_type === "seat_reservation" ||
           (bookingDetails.total_amount === 0 && bookingDetails.wagon && bookingDetails.seat) ||
-          booking.venue_name?.toLowerCase().includes("sitzplatzreservierung") ||
-          booking.venue_name?.toLowerCase().includes("reservierung");
+          booking.venue_name?.toLowerCase().includes("sitzplatzreservierung");
         
         if (isSeatReservation) {
-          console.log(`⚠️ SKIPPING seat reservation (not a real ticket): ${booking.booking_number || 'no number'}`);
+          console.log(`⚠️ Skipping seat reservation (not a real ticket): ${booking.booking_number || 'no booking number'}`);
           seatReservationsSkipped++;
-          continue; // Nicht als Buchung speichern
+          continue;
         }
         
-        // Post-processing: Fix booking_type based on provider if misclassified
-        if (booking.provider) {
-          const providerLower = booking.provider.toLowerCase();
-          const trainProviders = ['deutsche bahn', 'db', 'ice', 'ic ', 'ec ', 'tgv', 'sncf', 'öbb', 'sbb'];
-          const flightProviders = ['lufthansa', 'eurowings', 'ryanair', 'easyjet', 'swiss', 'austrian', 'klm', 'air france', 'british airways'];
-          
-          if (trainProviders.some(p => providerLower.includes(p)) && booking.booking_type !== 'train') {
-            console.log(`Correcting booking_type from ${booking.booking_type} to train (provider: ${booking.provider})`);
-            booking.booking_type = 'train';
-          } else if (flightProviders.some(p => providerLower.includes(p)) && booking.booking_type !== 'flight') {
-            console.log(`Correcting booking_type from ${booking.booking_type} to flight (provider: ${booking.provider})`);
-            booking.booking_type = 'flight';
-          }
-        }
-
-        // Post-processing: Validate booking_number (reject BahnCard numbers)
-        if (booking.booking_number) {
-          const numStr = booking.booking_number.trim();
-          // Reject BahnCard numbers (start with 7081, 16 digits)
-          if (numStr.startsWith('7081') || (numStr.length >= 16 && /^\d+$/.test(numStr))) {
-            console.log(`Rejecting BahnCard number as booking_number: ${numStr}`);
-            // Try to get order_number from details instead
-            if (bookingDetails.order_number && !String(bookingDetails.order_number).startsWith('7081')) {
-              booking.booking_number = bookingDetails.order_number;
-              console.log(`Using order_number instead: ${booking.booking_number}`);
+        // ========== BOOKING_NUMBER VALIDATION - Block bad values ==========
+        let validatedBookingNumber = booking.booking_number;
+        
+        // Check for BahnCard numbers (16 digits starting with 7081)
+        if (validatedBookingNumber) {
+          const onlyDigits = /^\d+$/.test(validatedBookingNumber);
+          if (validatedBookingNumber.startsWith("7081") || (onlyDigits && validatedBookingNumber.length >= 16)) {
+            console.log(`⛔ BLOCKED: "${validatedBookingNumber}" looks like a BahnCard number, not booking number!`);
+            // Try to get order_number from details as fallback
+            if (bookingDetails.order_number && !bookingDetails.order_number.startsWith("7081")) {
+              validatedBookingNumber = bookingDetails.order_number;
+              console.log(`✅ Using order_number from details instead: ${validatedBookingNumber}`);
             } else {
-              booking.booking_number = undefined;
+              validatedBookingNumber = undefined;
             }
-            // Store the BahnCard number in details
-            bookingDetails.bahncard_number = numStr;
+          }
+          // Store BahnCard in details
+          if (booking.booking_number?.startsWith("7081")) {
+            bookingDetails.bahncard_number = booking.booking_number;
           }
         }
-
-        // Check if this is an update to an existing booking
-        let existingBookingId: string | null = null;
         
-        if (analysisResult.is_update && analysisResult.update_booking_id) {
-          existingBookingId = analysisResult.update_booking_id;
-        } else if (booking.booking_number) {
-          // Check if a booking with this number already exists
+        // Ensure order_number is set in details
+        if (validatedBookingNumber && !bookingDetails.order_number) {
+          bookingDetails.order_number = validatedBookingNumber;
+        }
+        
+        // Check if update is needed
+        let existingBookingId = analysisResult.update_booking_id;
+        
+        // If AI didn't identify update, check by booking number
+        if (!existingBookingId && validatedBookingNumber) {
           const { data: existingByNumber } = await supabase
             .from("travel_bookings")
             .select("id")
-            .eq("booking_number", booking.booking_number)
+            .eq("booking_number", validatedBookingNumber)
             .single();
           
           if (existingByNumber) {
@@ -987,7 +956,7 @@ ${existingBookingsContext}`;
           }
         }
         
-        // Fallback: Check by traveler + date + destination + type
+        // Fallback: Check by traveler + date + type
         if (!existingBookingId && booking.traveler_name && booking.start_datetime) {
           const bookingDate = new Date(booking.start_datetime);
           const dateStr = bookingDate.toISOString().split('T')[0];
@@ -996,7 +965,6 @@ ${existingBookingsContext}`;
             .from("travel_bookings")
             .select("id")
             .eq("booking_type", booking.booking_type)
-            .eq("destination_city", booking.destination_city)
             .ilike("traveler_name", `%${booking.traveler_name}%`)
             .gte("start_datetime", `${dateStr}T00:00:00`)
             .lte("start_datetime", `${dateStr}T23:59:59`)
@@ -1043,7 +1011,7 @@ ${existingBookingsContext}`;
 
             // Fix placeholder booking_number on update too
             const placeholderValues = ['reserviert', 'ohne nr.', 'ohne nr', 'pending', 'n/a', 'tba', 'unknown', '-', '–'];
-            let updatedBookingNumber = booking.booking_number;
+            let updatedBookingNumber = validatedBookingNumber;
             const isPlaceholder = !updatedBookingNumber || 
               placeholderValues.includes(updatedBookingNumber.toLowerCase().trim());
             
@@ -1103,7 +1071,7 @@ ${existingBookingsContext}`;
           }
           
           // Post-processing: Ensure booking_number is set from details if missing or placeholder
-          let finalBookingNumber = booking.booking_number;
+          let finalBookingNumber = validatedBookingNumber;
           const placeholderValues = ['reserviert', 'ohne nr.', 'ohne nr', 'pending', 'n/a', 'tba', 'unknown', '-', '–'];
           const isPlaceholder = !finalBookingNumber || 
             placeholderValues.includes(finalBookingNumber.toLowerCase().trim());
@@ -1292,26 +1260,76 @@ ${existingBookingsContext}`;
       }
     }
 
-    // Update email status
+    // Update email status to processed
     await supabase
       .from("travel_emails")
       .update({ status: "processed" })
       .eq("id", email_id);
 
+    console.log(`=== BACKGROUND: Analysis complete ===`);
     console.log(`Processed: ${bookingsCreated} created, ${bookingsUpdated} updated, ${seatReservationsSkipped} seat reservations skipped`);
 
+  } catch (bgError: any) {
+    console.error("=== BACKGROUND ERROR ===", bgError);
+    
+    // Update email with error status
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    await supabase
+      .from("travel_emails")
+      .update({ 
+        status: "error", 
+        error_message: `Analysis failed: ${bgError?.message || String(bgError)}` 
+      })
+      .eq("id", email_id);
+  }
+}
+
+// ========== MAIN SERVE HANDLER ==========
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+    
+    const { email_id } = await req.json();
+
+    if (!email_id) {
+      throw new Error("email_id is required");
+    }
+
+    console.log("=== ANALYZE-TRAVEL-BOOKING: Async Processing Started ===");
+    console.log("Email ID:", email_id);
+
+    // Update email status to processing immediately
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    await supabase
+      .from("travel_emails")
+      .update({ status: "processing" })
+      .eq("id", email_id);
+
+    // ✅ START BACKGROUND PROCESSING
+    EdgeRuntime.waitUntil(
+      processEmailInBackground(email_id, supabaseUrl, supabaseServiceKey, lovableApiKey)
+    );
+
+    // ✅ SOFORTIGE RESPONSE an den Aufrufer (process-travel-email / Make)
     return new Response(
       JSON.stringify({ 
         success: true, 
-        bookings_created: bookingsCreated,
-        bookings_updated: bookingsUpdated,
-        seat_reservations_skipped: seatReservationsSkipped
+        email_id: email_id,
+        message: "Analysis started in background",
+        async_processing: true
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-
+    
   } catch (error: any) {
-    console.error("Analysis error:", error);
+    // Nur für initiale Validierungsfehler (email_id missing etc.)
+    console.error("Validation error:", error);
     return new Response(
       JSON.stringify({ error: error?.message || "Unknown error" }),
       { 
@@ -1320,4 +1338,9 @@ ${existingBookingsContext}`;
       }
     );
   }
+});
+
+// ========== SHUTDOWN HANDLER FOR DEBUGGING ==========
+addEventListener('beforeunload', (ev: any) => {
+  console.log('analyze-travel-booking: Function shutdown due to:', ev.detail?.reason);
 });
