@@ -232,31 +232,40 @@ export type Database = {
           booking_id: string | null
           content_type: string | null
           created_at: string
+          document_type: string | null
           email_id: string | null
           file_name: string
           file_path: string
           file_size: number | null
           id: string
+          qr_code_data: string | null
+          qr_code_image_path: string | null
         }
         Insert: {
           booking_id?: string | null
           content_type?: string | null
           created_at?: string
+          document_type?: string | null
           email_id?: string | null
           file_name: string
           file_path: string
           file_size?: number | null
           id?: string
+          qr_code_data?: string | null
+          qr_code_image_path?: string | null
         }
         Update: {
           booking_id?: string | null
           content_type?: string | null
           created_at?: string
+          document_type?: string | null
           email_id?: string | null
           file_name?: string
           file_path?: string
           file_size?: number | null
           id?: string
+          qr_code_data?: string | null
+          qr_code_image_path?: string | null
         }
         Relationships: [
           {

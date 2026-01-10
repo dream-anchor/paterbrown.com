@@ -212,7 +212,7 @@ export default function TravelDashboard() {
       return groups;
     }, {} as GroupedBookings);
 
-  // Sort dates: upcoming first (chronological), then past at the end
+  // Sort dates: upcoming first (DESCENDING - newest first), then past at the end
   const sortedDates = Object.keys(groupedBookings).sort((a, b) => {
     const dateA = parseISO(a);
     const dateB = parseISO(b);
@@ -223,7 +223,12 @@ export default function TravelDashboard() {
     if (pastA && !pastB) return 1;
     if (!pastA && pastB) return -1;
     
-    // Within same category, sort chronologically
+    // Upcoming dates: NEWEST first (descending) → 10.1., 9.1., 8.1.
+    if (!pastA && !pastB) {
+      return dateB.getTime() - dateA.getTime();
+    }
+    
+    // Past dates: oldest first (ascending)
     return dateA.getTime() - dateB.getTime();
   });
 
