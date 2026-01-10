@@ -655,13 +655,17 @@ END:VCALENDAR`;
               {pdfAttachments.length > 0 ? (
                 <div className="space-y-2">
                   {pdfAttachments.map(att => {
-                    // Determine document type from booking details, file name, or default
-                    const docType = booking.details?.document_type;
+                    // Determine document type from booking details, attachment, file name, or price
+                    const docType = booking.details?.document_type || att.document_type;
+                    const hasZeroPrice = !booking.details?.total_amount || booking.details?.total_amount === 0;
+                    const hasSeatInfo = booking.details?.wagon || booking.details?.seat || booking.details?.coach;
+                    
                     const isReservation = 
                       docType === 'seat_reservation' ||
                       att.file_name.toLowerCase().includes('reservierung') ||
                       att.file_name.toLowerCase().includes('reservation') ||
-                      att.file_name.toLowerCase().includes('sitzplatz');
+                      att.file_name.toLowerCase().includes('sitzplatz') ||
+                      (hasZeroPrice && hasSeatInfo); // Preis 0 + Sitzplatz = Reservierung
                     
                     const documentLabel = isReservation ? 'Sitzplatzreservierung' : 'Fahrkarte';
                     const buttonLabel = isReservation ? 'Reservierung anzeigen' : 'Ticket anzeigen';
