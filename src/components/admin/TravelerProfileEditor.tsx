@@ -11,6 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { 
   User, CreditCard, Settings, Save, Loader2, 
   FileDown, Copy, Check, Calendar, Phone, Train
@@ -56,6 +63,9 @@ export default function TravelerProfileEditor() {
   const [editedProfiles, setEditedProfiles] = useState<Map<string, Partial<TravelerProfile>>>(new Map());
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportText, setExportText] = useState("");
+  const [exportProfileName, setExportProfileName] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -218,11 +228,17 @@ export default function TravelerProfileEditor() {
     return lines.join("\n");
   };
 
-  const copyTravelSheet = async (profile: TravelerProfile) => {
+  const openExportModal = (profile: TravelerProfile) => {
     const text = generateTravelSheet(profile);
+    setExportText(text);
+    setExportProfileName(`${profile.first_name} ${profile.last_name}`);
+    setExportModalOpen(true);
+  };
+
+  const copyExportText = async () => {
     try {
-      await navigator.clipboard.writeText(text);
-      setCopiedId(profile.id);
+      await navigator.clipboard.writeText(exportText);
+      setCopiedId("export-modal");
       setTimeout(() => setCopiedId(null), 2000);
       toast({
         title: "Kopiert",
@@ -353,20 +369,11 @@ export default function TravelerProfileEditor() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyTravelSheet(profile)}
+                      onClick={() => openExportModal(profile)}
                       className="gap-2 text-gray-500 hover:text-gray-900"
                     >
-                      {copiedId === profile.id ? (
-                        <>
-                          <Check className="w-4 h-4 text-green-500" />
-                          Kopiert
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4" />
-                          Reiseblatt
-                        </>
-                      )}
+                      <FileDown className="w-4 h-4" />
+                      Export
                     </Button>
                     {hasChanges && (
                       <Button
@@ -548,6 +555,36 @@ export default function TravelerProfileEditor() {
           })}
         </div>
       )}
+
+      {/* Export Modal */}
+      <Dialog open={exportModalOpen} onOpenChange={setExportModalOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Reiseblatt: {exportProfileName}</DialogTitle>
+          </DialogHeader>
+          <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm whitespace-pre-wrap max-h-[400px] overflow-y-auto border">
+            {exportText}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExportModalOpen(false)}>
+              Schließen
+            </Button>
+            <Button onClick={copyExportText} className="gap-2">
+              {copiedId === "export-modal" ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  Kopiert!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  In Zwischenablage kopieren
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
