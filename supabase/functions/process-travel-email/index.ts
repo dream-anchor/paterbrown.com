@@ -71,96 +71,173 @@ interface AttachmentInfo {
   size?: number;
 }
 
+// Convert Buffer array to base64 in chunks (avoids stack overflow)
+function bufferArrayToBase64(bufferData: number[]): string | null {
+  try {
+    const bytes = new Uint8Array(bufferData);
+    let binary = '';
+    const chunkSize = 8192;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.slice(i, i + chunkSize);
+      binary += String.fromCharCode.apply(null, Array.from(chunk));
+    }
+    return btoa(binary);
+  } catch (err) {
+    console.error("Buffer to base64 conversion failed:", err);
+    return null;
+  }
+}
+
+// Extract attachment from regex match in corrupted JSON string
+function extractAttachmentFromString(attString: string): AttachmentInfo | null {
+  console.info(`[AttachmentParser] Trying to parse string of length ${attString.length}`);
+  
+  // First try: standard JSON parse
+  try {
+    const parsed = JSON.parse(attString);
+    if (typeof parsed === "object" && parsed !== null) {
+      return extractAttachmentFromObject(parsed);
+    }
+  } catch {
+    console.info("[AttachmentParser] JSON.parse failed, trying regex fallback");
+  }
+  
+  // Second try: URL extraction
+  const urlMatch = attString.match(/https?:\/\/[^\s"'<>,]+/);
+  if (urlMatch) {
+    const url = urlMatch[0];
+    const nameMatch = url.match(/\/([^\/\?]+\.pdf)(\?|$)/i);
+    const name = nameMatch ? decodeURIComponent(nameMatch[1]) : "attachment.pdf";
+    console.info(`[AttachmentParser] Extracted URL: ${url}, name: ${name}`);
+    return {
+      name,
+      contentType: "application/pdf",
+      url,
+    };
+  }
+  
+  // Third try: Regex extraction for Buffer format
+  const contentTypeMatch = attString.match(/"contentType"\s*:\s*"([^"]+)"/);
+  const fileNameMatch = attString.match(/"(?:fileName|filename|name|Name)"\s*:\s*"([^"]+)"/);
+  const fileSizeMatch = attString.match(/"(?:fileSize|size|contentLength)"\s*:\s*(\d+)/);
+  const bufferMatch = attString.match(/"data"\s*:\s*\{"type"\s*:\s*"Buffer"\s*,\s*"data"\s*:\s*\[([0-9,\s]+)\]\}/);
+  
+  if (fileNameMatch) {
+    const name = fileNameMatch[1];
+    const contentType = contentTypeMatch ? contentTypeMatch[1] : "application/octet-stream";
+    const size = fileSizeMatch ? parseInt(fileSizeMatch[1]) : undefined;
+    
+    let content: string | undefined;
+    if (bufferMatch) {
+      try {
+        const bufferData = bufferMatch[1].split(",").map(n => parseInt(n.trim()));
+        content = bufferArrayToBase64(bufferData) || undefined;
+        console.info(`[AttachmentParser] Extracted buffer data: ${bufferData.length} bytes -> ${content?.length || 0} base64 chars`);
+      } catch (e) {
+        console.error("[AttachmentParser] Buffer extraction failed:", e);
+      }
+    }
+    
+    console.info(`[AttachmentParser] Regex extracted: ${name}, type: ${contentType}, hasContent: ${!!content}`);
+    return { name, contentType, content, size };
+  }
+  
+  console.info("[AttachmentParser] Could not extract attachment info from string");
+  return null;
+}
+
+// Extract attachment from parsed object
+function extractAttachmentFromObject(a: Record<string, unknown>): AttachmentInfo | null {
+  // Get basic metadata
+  const name = String(a.Name || a.name || a.FileName || a.fileName || a.filename || "attachment");
+  const contentType = String(a.ContentType || a.contentType || a.content_type || a.mime_type || "application/octet-stream");
+  const size = a.ContentLength || a.contentLength || a.fileSize || a.size 
+    ? Number(a.ContentLength || a.contentLength || a.fileSize || a.size) 
+    : undefined;
+  
+  // Try to get content
+  let content: string | undefined;
+  
+  // Handle Buffer data format
+  if (a.data && typeof a.data === "object") {
+    const dataObj = a.data as Record<string, unknown>;
+    if (dataObj.type === "Buffer" && Array.isArray(dataObj.data)) {
+      const bufferData = dataObj.data as number[];
+      console.info(`[AttachmentParser] Converting Buffer: ${bufferData.length} bytes`);
+      content = bufferArrayToBase64(bufferData) || undefined;
+    }
+  } else if (a.Content || a.content || a.base64) {
+    content = String(a.Content || a.content || a.base64);
+  }
+  
+  // Get URL if available
+  const url = a.url ? String(a.url) : undefined;
+  
+  console.info(`[AttachmentParser] Object extracted: ${name}, type: ${contentType}, hasContent: ${!!content}, hasUrl: ${!!url}`);
+  
+  return { name, contentType, content, url, size };
+}
+
 function extractAttachmentInfo(attachments: unknown): AttachmentInfo[] {
   if (!attachments) return [];
   
-  console.info("extractAttachmentInfo input type:", typeof attachments);
-  console.info("extractAttachmentInfo is array:", Array.isArray(attachments));
+  console.info("[extractAttachmentInfo] Input type:", typeof attachments);
+  console.info("[extractAttachmentInfo] Is array:", Array.isArray(attachments));
   
   // Handle URL string format (Zapier S3)
   if (typeof attachments === "string") {
     if (attachments.includes("http")) {
-      return attachments.split(",").map((url) => ({
-        name: "attachment.pdf",
+      const urls = attachments.split(",").filter(u => u.trim().startsWith("http"));
+      console.info(`[extractAttachmentInfo] Found ${urls.length} URLs in string`);
+      return urls.map((url) => ({
+        name: url.split('/').pop()?.split('?')[0] || "attachment.pdf",
         contentType: "application/pdf",
         url: url.trim(),
-      })).filter((a) => a.url);
+      }));
     }
+    
+    // Try to extract as single attachment string
+    const singleAtt = extractAttachmentFromString(attachments);
+    if (singleAtt) return [singleAtt];
+    
     return [];
   }
   
   if (!Array.isArray(attachments)) {
-    console.info("Attachments is not an array, skipping");
+    // Maybe it's a single object
+    if (typeof attachments === "object" && attachments !== null) {
+      const singleAtt = extractAttachmentFromObject(attachments as Record<string, unknown>);
+      if (singleAtt) return [singleAtt];
+    }
+    console.info("[extractAttachmentInfo] Not an array, skipping");
     return [];
   }
   
-  console.info(`Processing ${attachments.length} attachments`);
+  console.info(`[extractAttachmentInfo] Processing ${attachments.length} attachments`);
   
-  return attachments.map((att: unknown, index: number) => {
-    console.info(`Attachment ${index} type:`, typeof att);
+  const result: AttachmentInfo[] = [];
+  
+  for (let i = 0; i < attachments.length; i++) {
+    const att = attachments[i];
+    console.info(`[Attachment ${i}] Type: ${typeof att}`);
     
-    // FIX: Handle objects directly (from HEY/Make) - don't try to JSON.parse objects!
-    let parsedAtt = att;
+    let attInfo: AttachmentInfo | null = null;
+    
     if (typeof att === "string") {
-      try {
-        parsedAtt = JSON.parse(att);
-        console.info(`Parsed attachment ${index} from JSON string`);
-      } catch {
-        console.info(`Attachment ${index} is not valid JSON, skipping`);
-        return null; // Not valid JSON
-      }
+      attInfo = extractAttachmentFromString(att);
+    } else if (typeof att === "object" && att !== null) {
+      attInfo = extractAttachmentFromObject(att as Record<string, unknown>);
     }
     
-    if (typeof parsedAtt !== "object" || parsedAtt === null) {
-      console.info(`Attachment ${index} is not an object, skipping`);
-      return null;
+    if (attInfo) {
+      result.push(attInfo);
+    } else {
+      console.info(`[Attachment ${i}] Could not extract info`);
     }
-    
-    const a = parsedAtt as Record<string, unknown>;
-    console.info(`Attachment ${index} keys:`, Object.keys(a).slice(0, 10));
-    
-    // Handle Buffer data format from email parsers (e.g., HEY/Make)
-    let contentData: string | undefined = undefined;
-    if (a.data && typeof a.data === "object") {
-      const dataObj = a.data as Record<string, unknown>;
-      if (dataObj.type === "Buffer" && Array.isArray(dataObj.data)) {
-        // FIX: Convert Buffer array to base64 in chunks to avoid Maximum call stack size exceeded
-        const bufferData = dataObj.data as number[];
-        console.info(`Converting Buffer to base64: ${bufferData.length} bytes`);
-        
-        try {
-          const bytes = new Uint8Array(bufferData);
-          // Process in chunks to avoid stack overflow
-          let binary = '';
-          const chunkSize = 8192;
-          for (let i = 0; i < bytes.length; i += chunkSize) {
-            const chunk = bytes.slice(i, i + chunkSize);
-            binary += String.fromCharCode.apply(null, Array.from(chunk));
-          }
-          contentData = btoa(binary);
-          console.info(`✓ Converted Buffer to base64: ${bytes.length} bytes -> ${contentData.length} chars`);
-        } catch (err) {
-          console.error(`Failed to convert Buffer to base64:`, err);
-        }
-      }
-    } else if (a.Content || a.content || a.base64) {
-      contentData = String(a.Content || a.content || a.base64);
-      console.info(`Using existing base64 content: ${contentData.length} chars`);
-    }
-    
-    const fileName = String(a.Name || a.name || a.FileName || a.fileName || a.filename || "attachment");
-    const contentType = String(a.ContentType || a.contentType || a.content_type || a.mime_type || "application/octet-stream");
-    
-    console.info(`Attachment ${index}: ${fileName} (${contentType}), has content: ${!!contentData}, content length: ${contentData?.length || 0}`);
-    
-    return {
-      name: fileName,
-      contentType: contentType,
-      url: a.url ? String(a.url) : undefined,
-      content: contentData,
-      size: a.ContentLength || a.contentLength || a.fileSize || a.size ? Number(a.ContentLength || a.contentLength || a.fileSize || a.size) : undefined,
-    };
-  }).filter(Boolean) as AttachmentInfo[];
+  }
+  
+  console.info(`[extractAttachmentInfo] Extracted ${result.length} valid attachments`);
+  return result;
 }
 
 // Extract PDF links from HTML body (for forwarded emails like HEY)
@@ -228,12 +305,61 @@ function extractPdfLinksFromBody(htmlBody: string): AttachmentInfo[] {
     }
   }
   
-  console.info(`Extracted ${pdfAttachments.length} PDF links from body`);
+  console.info(`[extractPdfLinksFromBody] Extracted ${pdfAttachments.length} PDF links`);
   return pdfAttachments;
 }
 
+// Sanitize raw_payload to remove large attachment data (don't store files in DB)
+function sanitizePayload(payload: unknown): unknown {
+  if (!payload || typeof payload !== "object") return payload;
+  
+  const sanitized = { ...(payload as Record<string, unknown>) };
+  
+  // Remove large attachment data, keep only metadata
+  if (sanitized.attachments && Array.isArray(sanitized.attachments)) {
+    sanitized.attachments = (sanitized.attachments as unknown[]).map((att) => {
+      if (typeof att === "string") {
+        // For string attachments, only keep first 200 chars for debugging
+        return att.length > 200 ? `[TRUNCATED: ${att.length} chars]` : att;
+      }
+      if (typeof att === "object" && att !== null) {
+        const a = att as Record<string, unknown>;
+        return {
+          name: a.Name || a.name || a.FileName || a.fileName,
+          contentType: a.ContentType || a.contentType,
+          size: a.ContentLength || a.contentLength || a.fileSize || a.size,
+          hasContent: !!(a.Content || a.content || a.base64 || a.data),
+          // Explicitly remove data/content fields
+        };
+      }
+      return "[UNKNOWN FORMAT]";
+    });
+  }
+  
+  // Also handle Attachments (capitalized)
+  if (sanitized.Attachments && Array.isArray(sanitized.Attachments)) {
+    sanitized.Attachments = (sanitized.Attachments as unknown[]).map((att) => {
+      if (typeof att === "string") {
+        return att.length > 200 ? `[TRUNCATED: ${att.length} chars]` : att;
+      }
+      if (typeof att === "object" && att !== null) {
+        const a = att as Record<string, unknown>;
+        return {
+          name: a.Name || a.name || a.FileName || a.fileName,
+          contentType: a.ContentType || a.contentType,
+          size: a.ContentLength || a.contentLength || a.fileSize || a.size,
+          hasContent: !!(a.Content || a.content || a.base64 || a.data),
+        };
+      }
+      return "[UNKNOWN FORMAT]";
+    });
+  }
+  
+  return sanitized;
+}
+
 serve(async (req) => {
-  console.info("=== PROCESS TRAVEL EMAIL (FAST) ===");
+  console.info("=== PROCESS TRAVEL EMAIL (ROBUST) ===");
   console.info("Timestamp:", new Date().toISOString());
 
   if (req.method === "OPTIONS") {
@@ -249,7 +375,6 @@ serve(async (req) => {
     console.info("Payload keys:", Object.keys(payload));
 
     // ===== CHECK IF THIS IS AN ATTACHMENT-ONLY REQUEST =====
-    // If mail_id is present but no email fields, this is an attachment upload
     const isAttachmentOnly = payload.mail_id && 
       !payload.from && !payload.From && !payload.sender &&
       !payload.subject && !payload.Subject &&
@@ -261,7 +386,6 @@ serve(async (req) => {
       console.info("filename:", payload.filename);
       console.info("content length:", payload.content?.length || 0);
       
-      // Find the existing email directly by ID (mail_id IS the Supabase UUID primary key)
       const { data: existingEmail, error: searchError } = await supabase
         .from("travel_emails")
         .select("id")
@@ -286,7 +410,6 @@ serve(async (req) => {
       
       console.info("Found existing email:", existingEmail.id);
       
-      // Decode and upload attachment
       try {
         const cleanBase64 = payload.content.includes(',') 
           ? payload.content.split(',')[1] 
@@ -300,7 +423,6 @@ serve(async (req) => {
         const sanitizedFilename = payload.filename.replace(/[^a-zA-Z0-9.-]/g, '_');
         const filePath = `${existingEmail.id}/${Date.now()}-${sanitizedFilename}`;
         
-        // Upload to storage
         const { error: uploadError } = await supabase.storage
           .from("travel-attachments")
           .upload(filePath, bytes, {
@@ -316,7 +438,6 @@ serve(async (req) => {
           );
         }
         
-        // Create attachment record
         const { error: insertError } = await supabase.from("travel_attachments").insert({
           email_id: existingEmail.id,
           file_name: payload.filename,
@@ -331,7 +452,6 @@ serve(async (req) => {
         
         console.info("✓ Attachment saved:", filePath, `(${bytes.length} bytes)`);
         
-        // Trigger AI analysis
         console.info("Triggering analyze-travel-booking for email:", existingEmail.id);
         try {
           const { error: invokeError } = await supabase.functions.invoke("analyze-travel-booking", {
@@ -370,7 +490,6 @@ serve(async (req) => {
     // ===== ORIGINAL EMAIL PROCESSING =====
     const typedPayload = payload as FlexibleEmailPayload;
 
-    // Extract email metadata ONLY - no heavy processing
     const fromAddress = extractEmailAddress(
       typedPayload.from || typedPayload.From || typedPayload.fromFull || typedPayload.FromFull || typedPayload.sender
     );
@@ -396,7 +515,7 @@ serve(async (req) => {
       ? new Date(String(typedPayload.date || typedPayload.Date || typedPayload.received_at)).toISOString()
       : new Date().toISOString();
 
-    // Extract attachment info without downloading
+    // Extract attachment info with robust parsing
     const attachmentInfo = extractAttachmentInfo(
       typedPayload.attachments || typedPayload.Attachments || typedPayload.files
     );
@@ -404,16 +523,23 @@ serve(async (req) => {
     // Also extract PDF links from HTML body (for forwarded emails)
     const bodyPdfLinks = extractPdfLinksFromBody(htmlBody);
     
-    // Combine both sources, body PDFs are often the actual attachments when forwarding
+    // Combine both sources
     const allAttachments = [...attachmentInfo, ...bodyPdfLinks];
+    const attachmentsWithContent = attachmentInfo.filter(a => a.content);
+    const attachmentsWithUrl = allAttachments.filter(a => a.url && !a.content);
 
+    console.info("=== ATTACHMENT SUMMARY ===");
     console.info("From:", fromAddress);
     console.info("To:", toAddress);
     console.info("Subject:", subject);
     console.info("Attachments from payload:", attachmentInfo.length);
-    console.info("Attachments with Base64 content:", attachmentInfo.filter(a => a.content).length);
+    console.info("  - With Base64 content:", attachmentsWithContent.length);
+    console.info("  - With URL only:", attachmentInfo.filter(a => a.url && !a.content).length);
     console.info("PDF links from body:", bodyPdfLinks.length);
     console.info("Total attachments queued:", allAttachments.length);
+
+    // Sanitize payload before storing (no large attachment data in DB!)
+    const sanitizedPayload = sanitizePayload(typedPayload);
 
     // Save email with attachment info for async processing
     const { data: emailData, error: emailError } = await supabase
@@ -427,7 +553,7 @@ serve(async (req) => {
         received_at: receivedAt,
         status: "pending",
         attachment_urls: allAttachments,
-        raw_payload: typedPayload,
+        raw_payload: sanitizedPayload,
       })
       .select()
       .single();
@@ -441,13 +567,11 @@ serve(async (req) => {
 
     // ===== UPLOAD ATTACHMENTS WITH BASE64 CONTENT TO STORAGE =====
     let uploadedCount = 0;
-    const attachmentsWithContent = attachmentInfo.filter(a => a.content);
     
     for (const attachment of attachmentsWithContent) {
       try {
         console.info(`Uploading attachment: ${attachment.name}`);
         
-        // Decode Base64
         const cleanBase64 = attachment.content!.includes(',') 
           ? attachment.content!.split(',')[1] 
           : attachment.content!;
@@ -457,11 +581,9 @@ serve(async (req) => {
           bytes[i] = binaryString.charCodeAt(i);
         }
         
-        // Create unique file path
         const sanitizedFilename = attachment.name.replace(/[^a-zA-Z0-9.-]/g, '_');
         const filePath = `${emailData.id}/${Date.now()}-${sanitizedFilename}`;
         
-        // Upload to storage
         const { error: uploadError } = await supabase.storage
           .from("travel-attachments")
           .upload(filePath, bytes, {
@@ -474,7 +596,6 @@ serve(async (req) => {
           continue;
         }
         
-        // Create attachment record in database
         const { error: insertError } = await supabase.from("travel_attachments").insert({
           email_id: emailData.id,
           file_name: attachment.name,
@@ -498,14 +619,51 @@ serve(async (req) => {
     
     console.info(`Uploaded ${uploadedCount}/${attachmentsWithContent.length} attachments to storage`);
 
-    // Return immediately
+    // ===== AUTOMATIC FOLLOW-UP PROCESSING =====
+    // If we have URL-only attachments that weren't uploaded, trigger process-attachments
+    if (attachmentsWithUrl.length > 0 && uploadedCount === 0) {
+      console.info(`Triggering process-attachments for ${attachmentsWithUrl.length} URL-based attachments...`);
+      try {
+        const { error: processError } = await supabase.functions.invoke("process-attachments", {
+          body: { email_id: emailData.id }
+        });
+        if (processError) {
+          console.error("process-attachments invoke error:", processError);
+        } else {
+          console.info("✓ process-attachments triggered successfully");
+        }
+      } catch (err) {
+        console.error("process-attachments trigger failed:", err);
+      }
+    }
+    
+    // If we uploaded at least one attachment, trigger AI analysis directly
+    if (uploadedCount > 0) {
+      console.info("Triggering analyze-travel-booking for uploaded attachments...");
+      try {
+        const { error: analyzeError } = await supabase.functions.invoke("analyze-travel-booking", {
+          body: { email_id: emailData.id }
+        });
+        if (analyzeError) {
+          console.error("analyze-travel-booking invoke error:", analyzeError);
+        } else {
+          console.info("✓ analyze-travel-booking triggered successfully");
+        }
+      } catch (err) {
+        console.error("analyze-travel-booking trigger failed:", err);
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         email_id: emailData.id,
-        message: "Email queued for processing",
+        message: "Email processed",
         attachments_queued: allAttachments.length,
         attachments_uploaded: uploadedCount,
+        attachments_pending_download: attachmentsWithUrl.length,
+        analysis_triggered: uploadedCount > 0,
+        process_attachments_triggered: attachmentsWithUrl.length > 0 && uploadedCount === 0,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
