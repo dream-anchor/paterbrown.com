@@ -140,23 +140,32 @@ async function identifyTravelerInDocument(
 ): Promise<TravelerIdentificationResult> {
   const emptyResult: TravelerIdentificationResult = { matchedName: null, extractedName: null };
   
-  // ⚠️ STRIKTERER PROMPT - Sucht nur nach Labels
+  // ⚠️ STRIKTERER PROMPT - Sucht nur nach Labels + DB Special Case
   const prompt = `Finde den REISENDEN-NAMEN in diesem Reisedokument/Ticket.
 
-⛔ KRITISCHE REGEL - NUR DIESE LABELS SUCHEN:
-Der Name steht DIREKT HINTER einem dieser Labels:
-1. "Reisender:" oder "Reisende:"
-2. "Fahrgast:"
-3. "Passagier:" oder "Passenger:"
-4. "Gast:" oder "Guest:"
-5. "Name:" (nur wenn direkt daneben)
-6. "Ticket für:"
-7. "Gebucht für:"
-8. "Boarding Pass für:"
+⛔ KRITISCHE REGEL - DEUTSCHE BAHN SPECIAL CASE:
+- Wenn hinter "Reisender:" nur "1 Person", "Erwachsener", "1 Erw.", "2 Personen" oder ähnliches steht → DAS IST NICHT DER NAME!
+- Bei DB Online-Tickets steht der ECHTE NAME oft:
+  → Unten rechts im Dokument, neben dem großen quadratischen Barcode
+  → Direkt ÜBER der Zeile "Auftragsnummer:"
+  → Im Block mit Buchungsdaten (Name, Auftragsnummer, Preis)
+- Suche gezielt nach bekannten Namen: Antoine Monot, Stefanie Sick, Wanja Mues
 
-⚠️ WICHTIG:
+⛔ STANDARD LABELS (trotzdem prüfen, aber "1 Person" ist KEIN Name!):
+1. "Reisender:" (NUR wenn danach ein echter Vorname+Nachname steht, NICHT "1 Person"!)
+2. "Fahrgast:", "Passagier:", "Passenger:"
+3. "Gast:", "Guest:"
+4. "Name:" (nur wenn direkt daneben ein echter Name steht)
+5. "Ticket für:", "Gebucht für:", "Boarding Pass für:"
+
+⚠️ SUCHSTRATEGIE bei DB Tickets:
+1. ERST prüfen ob hinter "Reisender:" ein echter Name steht (nicht "1 Person")
+2. DANN im Barcode-Bereich unten rechts suchen
+3. DANN nach bekannten Namen im gesamten Dokument suchen
+
+⚠️ ANTWORT FORMAT:
 - Gib den Namen EXAKT so zurück, wie er im Dokument steht
-- Format: "Vorname Nachname" 
+- Format: "Vorname Nachname"
 - Wenn kein Name gefunden: "UNKNOWN"
 - KEINE Erklärung, NUR der Name!
 
@@ -675,23 +684,29 @@ Für jede gefundene Buchung extrahiere:
 
 === ⛔ STRIKTE DOKUMENTTYP-ERKENNUNG (PFLICHT!) ⛔ ===
 
-PFLICHT-PRÜFUNG für Bahntickets in dieser Reihenfolge:
+⛔ WICHTIG: NICHT AM PREIS UNTERSCHEIDEN! Reservierungen können auch Geld kosten (z.B. 5,90 EUR)!
 
-1. IST ES EINE SITZPLATZRESERVIERUNG?
-   Prüfe ALLE 3 Kriterien:
-   ✓ Dokument enthält "Sitzplatzreservierung" oder nur "Reservierung" im Betreff/Titel
-   ✓ Preis ist 0,00 EUR ODER kein Fahrpreis angegeben
-   ✓ Es gibt Wagen-/Sitzplatznummern ABER KEINEN Ticketpreis
+UNTERSCHEIDE STRIKT NACH DOKUMENT-TITEL/KOPFZEILE:
+
+1. IST ES EINE REINE SITZPLATZRESERVIERUNG? (is_seat_reservation = true)
    
-   → Wenn ALLE 3 erfüllt:
-     - document_type = "seat_reservation"
-     - is_seat_reservation = true
-     - ⛔ KEINE eigene Buchung erstellen! Nur als Attachment zur echten Ticket-Buchung verknüpfen!
+   NUR "seat_reservation" WENN BEIDE Bedingungen erfüllt sind:
+   ✓ Dokument-Titel/Kopfzeile enthält EXPLIZIT "Reservierungsbeleg" oder "Sitzplatz-Reservierung" oder nur "Reservierung"
+   ✓ UND das Wort "Fahrkarte", "Online-Ticket" oder "Ticket" kommt NICHT in der Kopfzeile/Titel vor
+   
+   → document_type = "seat_reservation"
+   → is_seat_reservation = true
+   → ⛔ KEINE eigene Buchung erstellen! Nur als Attachment behandeln!
 
-2. IST ES EIN ECHTES TICKET?
-   NUR "ticket" wenn:
-   ✓ Echter Fahrpreis vorhanden (> 0,00 EUR)
-   ✓ ODER explizit "Fahrkarte", "Online-Ticket", "Ticket" im Titel
+2. IST ES EIN ECHTES TICKET? (document_type = "ticket")
+   
+   "ticket" WENN:
+   ✓ Dokument-Titel enthält "Online-Ticket", "Fahrkarte" oder "Reiseplan"
+   ✓ ODER es ist ein Kombi-Dokument (Fahrt + Reservierung in einem) → IMMER als "ticket" werten!
+   
+   Bei Kombi-Dokumenten (Ticket + Reservierung in einem PDF):
+   → Es gewinnt IMMER "ticket" (NICHT als seat_reservation markieren!)
+   → Die Reservierungsdetails kommen in details.wagon und details.seat
 
 3. ANDERE TYPEN:
    - "confirmation" = Buchungsbestätigung ohne Fahrpreis (z.B. Hotel)
@@ -718,8 +733,8 @@ WICHTIG: Das Wort "reserviert" ist KEINE Buchungsnummer!
 === ⛔ HARD-BLOCK: VERBOTENE BUCHUNGSNUMMERN ⛔ ===
 NIEMALS diese Nummern als booking_number akzeptieren:
 
-1. BahnCard-Nummern:
-   - Beginnen mit "7081"
+1. BahnCard-Nummern (IMMER IGNORIEREN für booking_number!):
+   - Beginnen IMMER mit "7081"
    - Haben 16 Ziffern
    - Beispiel: 7081419001477859
    → Diese IMMER in details.bahncard_number speichern, NIEMALS als booking_number!
@@ -728,20 +743,22 @@ NIEMALS diese Nummern als booking_number akzeptieren:
    - Ist KEINE Nummer, sondern ein Status
    
 ⛔ HARD-BLOCK VALIDIERUNG:
-   IF booking_number.startsWith("7081") → UNGÜLTIG! Nach Label "Auftragsnummer" suchen!
+   IF booking_number.startsWith("7081") → UNGÜLTIG! Nach Label "Auftragsnummer:" suchen!
    IF booking_number.length >= 16 AND booking_number ist nur Ziffern → UNGÜLTIG! Wahrscheinlich BahnCard!
    IF booking_number === "reserviert" → UNGÜLTIG!
 
-=== ✅ RICHTIGE AUFTRAGSNUMMERN ===
-Bei Deutsche Bahn:
-- Suche EXPLIZIT nach dem Label "Auftragsnummer:" im Text
-- Format: 9-10 Ziffern (z.B. "899618184")
-- ODER 6 alphanumerische Zeichen (z.B. "Q7K5M2", "ABC123")
-- Steht NACH dem Label "Auftragsnummer:", "Ihre Bestellung", "Order Number"
-- DAS ist die echte booking_number!
+=== ✅ RICHTIGE AUFTRAGSNUMMERN BEI DEUTSCHER BAHN ===
 
-Beispiel Unterscheidung:
-"Auftragsnummer: 899618184, BahnCard 25: 7081419001477859"
+SUCHSTRATEGIE für DB Tickets:
+1. Suche EXPLIZIT nach dem Label "Auftragsnummer:" im Dokument
+2. Der Wert steht DIREKT HINTER diesem Label
+3. Format: 9-stellig (nur Ziffern, z.B. "899618184")
+4. ODER: 6-stelliger alphanumerischer Code (z.B. "Q7K5M2", "ABC123")
+
+⛔ Zahlen die mit "7081" beginnen sind IMMER BahnCard-Nummern, NIEMALS Auftragsnummern!
+
+Beispiel korrekte Zuordnung:
+Dokument zeigt: "Auftragsnummer: 899618184" und "BahnCard 25: 7081419001477859"
 → booking_number = "899618184" ✅
 → details.bahncard_number = "7081419001477859" ✅
 → details.order_number = "899618184" ✅
@@ -993,15 +1010,16 @@ ${existingBookingsContext}`;
         // Extract details safely
         const bookingDetails = booking.details || {};
         
-        // ========== SEAT RESERVATION CHECK ==========
+        // ========== SEAT RESERVATION CHECK - Content-based, NOT price-based! ==========
+        // ⛔ REMOVED: Price-based check (total_amount === 0) - reservations can cost money (e.g. 5,90 EUR)!
         const isSeatReservation = 
           bookingDetails.is_seat_reservation === true ||
           bookingDetails.document_type === "seat_reservation" ||
-          (bookingDetails.total_amount === 0 && bookingDetails.wagon && bookingDetails.seat) ||
-          booking.venue_name?.toLowerCase().includes("sitzplatzreservierung");
+          booking.venue_name?.toLowerCase().includes("sitzplatzreservierung") ||
+          booking.venue_name?.toLowerCase().includes("reservierungsbeleg");
         
         if (isSeatReservation) {
-          console.log(`⚠️ Skipping seat reservation (not a real ticket): ${booking.booking_number || 'no booking number'}`);
+          console.log(`⚠️ Skipping seat reservation (document_type = seat_reservation): ${booking.booking_number || 'no booking number'}`);
           seatReservationsSkipped++;
           continue;
         }
