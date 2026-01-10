@@ -819,6 +819,51 @@ ${existingBookingsContext}`;
             console.error("Error inserting booking:", insertError);
           } else {
             bookingsCreated++;
+            
+            // ========== PDF RENAMING BASED ON DOCUMENT TYPE ==========
+            // Get the newly inserted booking ID to link attachments
+            const { data: insertedBooking } = await supabase
+              .from("travel_bookings")
+              .select("id")
+              .eq("source_email_id", email_id)
+              .eq("booking_number", finalBookingNumber)
+              .eq("start_datetime", booking.start_datetime)
+              .single();
+            
+            if (insertedBooking && bookingDetails.document_type) {
+              const documentType = bookingDetails.document_type;
+              const travelerShortName = travelerName?.split(' ')[1] || travelerName?.split(' ')[0] || 'Unbekannt';
+              
+              let newFileName = "";
+              
+              if (documentType === 'seat_reservation') {
+                const trainNum = bookingDetails.train_number || bookingDetails.ice_number || 'Zug';
+                newFileName = `Reservierung_${trainNum}_${travelerShortName}.pdf`;
+              } else if (documentType === 'ticket') {
+                newFileName = `Ticket_${finalBookingNumber || 'ID'}_${travelerShortName}.pdf`;
+              } else if (documentType === 'confirmation') {
+                newFileName = `Bestaetigung_${travelerShortName}.pdf`;
+              }
+              
+              if (newFileName) {
+                // Update attachments linked to this email with proper document_type and renamed file
+                const { error: attachUpdateError } = await supabase
+                  .from("travel_attachments")
+                  .update({ 
+                    document_type: documentType,
+                    file_name: newFileName,
+                    booking_id: insertedBooking.id
+                  })
+                  .eq("email_id", email_id)
+                  .is("booking_id", null); // Only update unlinked attachments
+                
+                if (attachUpdateError) {
+                  console.error("Error updating attachment:", attachUpdateError);
+                } else {
+                  console.log(`Renamed attachment to: ${newFileName}`);
+                }
+              }
+            }
           }
         }
       } catch (bookingError) {

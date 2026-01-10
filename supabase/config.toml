@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.process-single-attachment]
 verify_jwt = false
+
+[functions.extract-ticket-qr]
+verify_jwt = false
