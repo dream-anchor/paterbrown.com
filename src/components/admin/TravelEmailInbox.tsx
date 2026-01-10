@@ -4,7 +4,7 @@ import { format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import {
   Mail, CheckCircle2, Loader2, AlertCircle, Clock,
-  RefreshCw, ChevronRight, Inbox
+  RefreshCw, ChevronRight, Inbox, Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,11 +35,34 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
   const [emails, setEmails] = useState<TravelEmail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshSuccess, setRefreshSuccess] = useState(false);
   const [reprocessingId, setReprocessingId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleRefresh = () => {
-    window.location.reload();
+  // Smart refresh - no page reload!
+  const handleRefresh = async (e?: React.MouseEvent) => {
+    // Shift+Click = Force hard reload for edge cases
+    if (e?.shiftKey) {
+      window.location.reload();
+      return;
+    }
+
+    setIsRefreshing(true);
+    setRefreshSuccess(false);
+    
+    await fetchEmails();
+    
+    setIsRefreshing(false);
+    setRefreshSuccess(true);
+    
+    // Reset success state after animation
+    setTimeout(() => setRefreshSuccess(false), 2000);
+    
+    toast({
+      title: "Aktualisiert",
+      description: "Posteingang ist auf dem neuesten Stand",
+      duration: 2000,
+    });
   };
 
   useEffect(() => {
@@ -149,9 +172,16 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
           onClick={handleRefresh}
           disabled={isRefreshing}
           className="rounded-full"
+          title="Shift+Klick für Hard Reload"
         >
-          <RefreshCw className={`w-4 h-4 mr-2 text-gray-600 ${isRefreshing ? "animate-spin" : ""}`} />
-          <span className="text-gray-700">{isRefreshing ? "Lädt..." : "Aktualisieren"}</span>
+          {refreshSuccess ? (
+            <Check className="w-4 h-4 mr-2 text-emerald-600" />
+          ) : (
+            <RefreshCw className={`w-4 h-4 mr-2 text-gray-600 ${isRefreshing ? "animate-spin" : ""}`} />
+          )}
+          <span className="text-gray-700">
+            {isRefreshing ? "Lädt..." : refreshSuccess ? "Aktualisiert" : "Aktualisieren"}
+          </span>
         </Button>
       </div>
 
