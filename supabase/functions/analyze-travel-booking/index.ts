@@ -32,7 +32,92 @@ interface AIAnalysisResult {
   change_summary?: string;
 }
 
-// ========== HELPER: Identify Traveler in Document ==========
+// ========== HELPER: Score-Based Fuzzy Match (STRICT!) ==========
+function fuzzyMatchTraveler(extractedName: string, knownTravelers: string[]): string | null {
+  const normalized = extractedName.toLowerCase().trim();
+  
+  // UNKNOWN sofort abweisen
+  if (normalized === "unknown" || normalized === "" || normalized === "unbekannt") {
+    console.log(`⚠️ Fuzzy Match: Extracted name is UNKNOWN/empty - returning null`);
+    return null;
+  }
+  
+  console.log(`\n=== FUZZY MATCH START ===`);
+  console.log(`📋 Extracted Name: "${extractedName}"`);
+  console.log(`📋 Known Travelers: ${knownTravelers.join(", ")}`);
+  
+  let bestMatch: { name: string; score: number } | null = null;
+  
+  for (const known of knownTravelers) {
+    const knownLower = known.toLowerCase();
+    const parts = known.split(' ');
+    const firstName = parts[0]?.toLowerCase() || '';
+    const lastName = parts.slice(1).join(' ').toLowerCase() || parts[0]?.toLowerCase() || '';
+    
+    // Score-basiertes Matching
+    let matchScore = 0;
+    let matchReason = "";
+    
+    // Exakter Match = 100%
+    if (normalized === knownLower) {
+      matchScore = 100;
+      matchReason = "exact match";
+    }
+    // Enthält Vor- UND Nachname = 95%
+    else if (normalized.includes(firstName) && normalized.includes(lastName) && firstName.length > 1 && lastName.length > 1) {
+      matchScore = 95;
+      matchReason = "contains both first and last name";
+    }
+    // Reversed format "Nachname, Vorname" = 90%
+    else if (normalized.includes(`${lastName}, ${firstName}`) || normalized.includes(`${lastName},${firstName}`)) {
+      matchScore = 90;
+      matchReason = "reversed format";
+    }
+    // Initial + Nachname (e.g., "S. Sick") = 85%
+    else if (firstName.length > 0 && lastName.length > 1 && 
+             (normalized === `${firstName[0]}. ${lastName}` || normalized === `${firstName[0]}.${lastName}` ||
+              normalized.startsWith(`${firstName[0]}.`) && normalized.includes(lastName))) {
+      matchScore = 85;
+      matchReason = "initial + last name";
+    }
+    // Nur Nachname Match (wenn Nachname > 3 Zeichen) = 75%
+    else if (lastName.length > 3 && normalized === lastName) {
+      matchScore = 75;
+      matchReason = "last name only (exact)";
+    }
+    // Nachname enthalten (wenn Nachname > 4 Zeichen) = 65%
+    else if (lastName.length > 4 && normalized.includes(lastName)) {
+      matchScore = 65;
+      matchReason = "last name contained";
+    }
+    // UPPERCASE comparison
+    else if (extractedName.toUpperCase().includes(parts.map(p => p.toUpperCase()).join(' '))) {
+      matchScore = 80;
+      matchReason = "uppercase full name match";
+    }
+    
+    console.log(`🔍 Comparing "${extractedName}" vs "${known}" → Score: ${matchScore} (${matchReason || 'no match'})`);
+    
+    if (matchScore > (bestMatch?.score || 0)) {
+      bestMatch = { name: known, score: matchScore };
+    }
+  }
+  
+  // ⛔ MINIMUM SCORE = 70% - darunter KEINE Zuordnung!
+  const MIN_MATCH_SCORE = 70;
+  
+  if (bestMatch && bestMatch.score >= MIN_MATCH_SCORE) {
+    console.log(`✅ MATCHED: "${extractedName}" → "${bestMatch.name}" (Score: ${bestMatch.score})`);
+    console.log(`=== FUZZY MATCH END ===\n`);
+    return bestMatch.name;
+  }
+  
+  console.log(`⚠️ NO MATCH: "${extractedName}" - best score was ${bestMatch?.score || 0}, below threshold ${MIN_MATCH_SCORE}`);
+  console.log(`=== FUZZY MATCH END ===\n`);
+  return null;
+}
+
+// ========== HELPER: Identify Traveler in Document (STRICT LABELS!) ==========
 async function identifyTravelerInDocument(
   base64Content: string,
   mimeType: string,
@@ -46,31 +131,40 @@ async function identifyTravelerInDocument(
 
   const travelerListStr = knownTravelers.join(", ");
   
+  // ⚠️ STRIKTERER PROMPT - Sucht nur nach Labels
   const prompt = `Finde den REISENDEN-NAMEN in diesem Reisedokument/Ticket.
 
-WICHTIG: Der Name steht oft an folgenden Stellen:
-1. Direkt unter einem QR-Code oder Barcode
-2. Nach "Reisender:", "Passagier:", "Gast:", "Name:", "Fahrgast:"
-3. Im Ticket-Header oder in der Kopfzeile
-4. Bei Bahntickets: In der Nähe von BahnCard-Informationen
+⛔ KRITISCHE REGEL - NUR DIESE LABELS SUCHEN:
+Der Name steht DIREKT HINTER einem dieser Labels:
+1. "Reisender:" oder "Reisende:"
+2. "Fahrgast:"
+3. "Passagier:" oder "Passenger:"
+4. "Gast:" oder "Guest:"
+5. "Name:" (nur wenn direkt daneben)
+6. "Ticket für:"
+7. "Gebucht für:"
+8. "Boarding Pass für:"
 
-BEKANNTE REISENDE aus der Datenbank (genau diese Namen suchen!):
+BEKANNTE REISENDE (NUR diese Namen sind gültig!):
 ${travelerListStr}
 
-FUZZY MATCHING: Auch Variationen erkennen!
+⚠️ FUZZY MATCHING REGELN:
 - "A. Monot" = "Antoine Monot"
 - "Monot, Antoine" = "Antoine Monot"
-- "SICK, STEFANIE" = "Stefanie Sick"
+- "SICK STEFANIE" = "Stefanie Sick"
 - Initialien + Nachname = Vollständiger Name
 
-ANTWORT-FORMAT:
-- Wenn genau ein Name gefunden: Antworte NUR mit diesem Namen, z.B. "Antoine Monot"
-- Wenn mehrere Namen im Dokument (Gruppenreise): Antworte mit dem ERSTEN/HAUPTREISENDEN
-- Wenn kein Name aus der Liste erkennbar: "UNKNOWN"
+⛔ WICHTIG - KEINE RATEN!
+- Wenn der gefundene Name NICHT in der Bekannten-Liste ist → "UNKNOWN"
+- Wenn das Label unklar ist → "UNKNOWN"
+- NIEMALS einen anderen Namen aus der Liste "raten"!
 
-Antworte AUSSCHLIESSLICH mit dem gefundenen Namen oder "UNKNOWN". Keine Erklärung.`;
+Antworte NUR mit dem gefundenen Namen oder "UNKNOWN". Keine Erklärung.`;
 
   try {
+    console.log(`\n=== TRAVELER IDENTIFICATION START ===`);
+    console.log(`Known travelers: ${knownTravelers.join(", ")}`);
+    
     const visionResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -78,7 +172,8 @@ Antworte AUSSCHLIESSLICH mit dem gefundenen Namen oder "UNKNOWN". Keine Erkläru
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        // 🔥 MODEL UPGRADE: gemini-2.5-pro für bessere Genauigkeit!
+        model: "google/gemini-2.5-pro",
         messages: [{
           role: "user",
           content: [
@@ -93,76 +188,33 @@ Antworte AUSSCHLIESSLICH mit dem gefundenen Namen oder "UNKNOWN". Keine Erkläru
     });
 
     if (!visionResponse.ok) {
-      console.error("Vision API error for traveler identification");
+      const errText = await visionResponse.text();
+      console.error("Vision API error for traveler identification:", errText);
       return null;
     }
 
     const visionData = await visionResponse.json();
     const extractedName = visionData.choices?.[0]?.message?.content?.trim() || "";
     
-    console.log(`Traveler identification result: "${extractedName}"`);
+    console.log(`📋 Extracted Name from Document: "${extractedName}"`);
     
     if (extractedName === "UNKNOWN" || !extractedName) {
+      console.log(`⚠️ No traveler found in document (AI returned UNKNOWN)`);
+      console.log(`=== TRAVELER IDENTIFICATION END ===\n`);
       return null;
     }
     
-    // Fuzzy match against known travelers
+    // Score-based Fuzzy match against known travelers
     const matchedTraveler = fuzzyMatchTraveler(extractedName, knownTravelers);
-    console.log(`Fuzzy match result: "${extractedName}" → "${matchedTraveler || 'no match'}"`);
+    
+    console.log(`📋 Final Match Result: "${matchedTraveler || 'UNASSIGNED'}"`);
+    console.log(`=== TRAVELER IDENTIFICATION END ===\n`);
     
     return matchedTraveler;
   } catch (error) {
     console.error("Error identifying traveler in document:", error);
     return null;
   }
-}
-
-// ========== HELPER: Fuzzy Match Traveler Name ==========
-function fuzzyMatchTraveler(extractedName: string, knownTravelers: string[]): string | null {
-  const normalized = extractedName.toLowerCase().trim();
-  
-  for (const known of knownTravelers) {
-    const knownLower = known.toLowerCase();
-    const parts = known.split(' ');
-    const firstName = parts[0]?.toLowerCase() || '';
-    const lastName = parts.slice(1).join(' ').toLowerCase() || parts[0]?.toLowerCase() || '';
-    
-    // Exact match
-    if (normalized === knownLower) {
-      return known;
-    }
-    
-    // Last name match (e.g., "Monot" → "Antoine Monot")
-    if (normalized === lastName || normalized.includes(lastName)) {
-      return known;
-    }
-    
-    // First name + initial match (e.g., "A. Monot" → "Antoine Monot")
-    const initialPattern = `${firstName[0]}. ${lastName}`;
-    const initialPatternAlt = `${firstName[0]}.${lastName}`;
-    if (normalized === initialPattern || normalized === initialPatternAlt) {
-      return known;
-    }
-    
-    // Reversed format (e.g., "Monot, Antoine" → "Antoine Monot")
-    const reversedPattern = `${lastName}, ${firstName}`;
-    const reversedPatternAlt = `${lastName},${firstName}`;
-    if (normalized === reversedPattern || normalized === reversedPatternAlt) {
-      return known;
-    }
-    
-    // Contains both first and last name (in any order)
-    if (normalized.includes(firstName) && normalized.includes(lastName)) {
-      return known;
-    }
-    
-    // Uppercase comparison (e.g., "SICK, STEFANIE")
-    if (extractedName.toUpperCase().includes(parts.map(p => p.toUpperCase()).join(' '))) {
-      return known;
-    }
-  }
-  
-  return null;
 }
 
 serve(async (req) => {
@@ -223,12 +275,16 @@ Für Bahntickets:
 - Ankunft: Ort, Datum, Uhrzeit
 - Klasse (1 oder 2)
 - Wagen und Sitzplatz
-- Reisende(r) Name(n)
+- Reisende(r) Name(n) - Suche nach "Reisender:", "Fahrgast:"
 - Preis / Gesamtbetrag
 - Währung (EUR, USD, CHF, etc.)
 - BahnCard falls vorhanden
 - QR-CODE: Falls ein QR-Code sichtbar ist, beschreibe dessen Position und möglichen Inhalt (Ticket-URL, Buchungscode, etc.)
 - BARCODE: Falls ein Barcode sichtbar ist, notiere die Zahlen/Buchstaben darunter
+
+⚠️ SITZPLATZRESERVIERUNG ERKENNUNG:
+- Wenn "Sitzplatzreservierung" im Titel UND Preis = 0,00 EUR → document_type = "seat_reservation"
+- Wenn echter Fahrpreis > 0 EUR → document_type = "ticket"
 
 Für Flugtickets:
 - Buchungscode / PNR
@@ -336,10 +392,10 @@ if (attachments && attachments.length > 0) {
                   .update({ traveler_name: identifiedTraveler })
                   .eq("id", attachment.id);
               } else {
-                console.log(`📋 Attachment "${attachment.file_name}" - no traveler identified`);
+                console.log(`📋 Attachment "${attachment.file_name}" - NO traveler identified (will be UNASSIGNED)`);
               }
               
-              // Use Gemini Vision to extract text
+              // Use Gemini Vision to extract text - 🔥 USING PRO MODEL
               const visionResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
                 method: "POST",
                 headers: {
@@ -347,7 +403,8 @@ if (attachments && attachments.length > 0) {
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  model: "google/gemini-2.5-flash",
+                  // 🔥 MODEL UPGRADE: gemini-2.5-pro für Deep Reasoning!
+                  model: "google/gemini-2.5-pro",
                   messages: [{
                     role: "user",
                     content: [
@@ -370,7 +427,7 @@ if (attachments && attachments.length > 0) {
                   // Include identified traveler in the content for AI context
                   const travelerNote = identifiedTraveler 
                     ? `\n[IDENTIFIZIERTER REISENDER: ${identifiedTraveler}]` 
-                    : '';
+                    : '\n[REISENDER: NICHT IDENTIFIZIERT - WIRD NICHT ZUGEORDNET]';
                   attachmentContents += `\n\n=== INHALT AUS ANHANG "${attachment.file_name}" (${fileType}) ===${travelerNote}\n${extractedText}`;
                 }
               } else {
@@ -416,6 +473,25 @@ ${attachmentContents}
       : '';
 
 const systemPrompt = `Du bist ein Experte für die Analyse von Reisebuchungs-E-Mails. Extrahiere ALLE Buchungsinformationen aus der E-Mail mit höchster Präzision.
+
+=== ⛔ KRITISCH: REISENDEN-ZUORDNUNG (KEINE FEHLER ERLAUBT!) ⛔ ===
+
+⚠️ STRIKTE REGEL FÜR MULTI-REISENDE:
+1. Wenn im Anhang "[IDENTIFIZIERTER REISENDER: Stefanie Sick]" steht:
+   → Diese Buchung gehört NUR zu "Stefanie Sick"
+   → NIEMALS einem anderen Reisenden zuordnen!
+
+2. Wenn im Anhang "[REISENDER: NICHT IDENTIFIZIERT]" steht:
+   → traveler_name = null (NICHT einem anderen Reisenden zuordnen!)
+   → needs_review = true
+
+3. Suche NUR nach diesen Labels für Reisendenamen:
+   - "Reisender:", "Fahrgast:", "Passagier:", "Gast:", "Name des Reisenden:"
+   
+4. ⛔ VERBOTEN:
+   - Tickets von "Stefanie Sick" an "Wanja Mues" zuordnen
+   - Tickets von "Antoine Monot" an jemand anderen zuordnen
+   - Namen "raten" wenn kein Label gefunden wurde
 
 === ⚠️ KRITISCH: ANGEBOTE VS. ECHTE BUCHUNGEN UNTERSCHEIDEN ⚠️ ===
 
@@ -501,7 +577,7 @@ Für jede gefundene Buchung extrahiere:
 - details: Zusatzinfos als Objekt (WICHTIG - extrahiere alle verfügbaren Details!)
 - confidence: Deine Sicherheit bei der Extraktion (0.0 bis 1.0)
 
-=== ⚠️ STRIKTE DOKUMENTTYP-ERKENNUNG (PFLICHT!) ⚠️ ===
+=== ⛔ STRIKTE DOKUMENTTYP-ERKENNUNG (PFLICHT!) ⛔ ===
 
 PFLICHT-PRÜFUNG für Bahntickets in dieser Reihenfolge:
 
@@ -683,7 +759,7 @@ Prüfe auch, ob es sich um ein UPDATE einer bestehenden Buchung handelt (gleiche
 
 ${existingBookingsContext}`;
 
-    // Call Lovable AI (Gemini)
+    // Call Lovable AI (Gemini) - 🔥 USING PRO MODEL FOR MAIN ANALYSIS
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -691,7 +767,8 @@ ${existingBookingsContext}`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        // 🔥 MODEL UPGRADE: gemini-2.5-pro für Deep Reasoning bei komplexen E-Mails!
+        model: "google/gemini-2.5-pro",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: emailContent }
@@ -829,125 +906,105 @@ ${existingBookingsContext}`;
     }
 
     const analysisResult: AIAnalysisResult = JSON.parse(toolCall.function.arguments);
-    console.log("Extracted bookings:", analysisResult.bookings.length);
-    console.log("Booking details:", JSON.stringify(analysisResult.bookings.map(b => ({ type: b.booking_type, details: b.details })), null, 2));
+    console.log("Parsed bookings:", analysisResult.bookings?.length || 0);
 
-    // Post-processing: Fix obviously wrong booking_type classifications
-    for (const booking of analysisResult.bookings) {
-      const providerLower = (booking.provider || '').toLowerCase();
-      const detailsStr = JSON.stringify(booking.details || {}).toLowerCase();
-      
-      // Deutsche Bahn should always be train, never flight
-      if ((providerLower.includes('deutsche bahn') || providerLower.includes('db ') || providerLower === 'db') 
-          && booking.booking_type === 'flight') {
-        console.log(`Correcting Deutsche Bahn from flight to train for ${booking.traveler_name}`);
-        booking.booking_type = 'train';
-      }
-      
-      // Detect train keywords in details
-      if (detailsStr.includes('ice ') || detailsStr.includes('ic ') || detailsStr.includes('re ') || 
-          detailsStr.includes('rb ') || detailsStr.includes('s-bahn') || detailsStr.includes('zugnummer')) {
-        if (booking.booking_type === 'flight') {
-          console.log(`Correcting booking_type from flight to train based on train keywords`);
-          booking.booking_type = 'train';
-        }
-      }
-    }
-
+    // Process bookings
     let bookingsCreated = 0;
     let bookingsUpdated = 0;
+    let seatReservationsSkipped = 0;
 
     for (const booking of analysisResult.bookings) {
       try {
-        // Ensure details is always an object
+        console.log("\n=== PROCESSING BOOKING ===");
+        console.log(`Type: ${booking.booking_type}, Traveler: ${booking.traveler_name}, Destination: ${booking.destination_city}`);
+        
+        // Validate and prepare the booking data
         const bookingDetails = booking.details || {};
         
-        // ========== FALLBACK: document_type automatisch erkennen ==========
-        if (!bookingDetails.document_type && booking.booking_type === 'train') {
-          const totalAmount = bookingDetails.total_amount;
-          const hasSeatInfo = bookingDetails.wagon || bookingDetails.seat || bookingDetails.coach;
-          const subjectContainsReservation = email.subject?.toLowerCase().includes('sitzplatzreservierung') ||
-                                              email.subject?.toLowerCase().includes('reservierung');
-          
-          // Sitzplatzreservierung: Preis 0 (oder fehlt) UND Sitzplatz-Info ODER Betreff enthält "Reservierung"
-          const isReservation = 
-            ((totalAmount === 0 || totalAmount === null || totalAmount === undefined) && hasSeatInfo) ||
-            subjectContainsReservation;
-          
-          if (isReservation) {
-            bookingDetails.document_type = 'seat_reservation';
-            console.log('Fallback: document_type set to seat_reservation (price=0 or subject contains reservation)');
-          } else if (totalAmount && totalAmount > 0) {
-            bookingDetails.document_type = 'ticket';
-            console.log('Fallback: document_type set to ticket (has price)');
-          }
+        // ========== POST-PROCESSING: Reservierungs-Check ==========
+        const isSeatReservation = 
+          bookingDetails.is_seat_reservation === true ||
+          bookingDetails.document_type === "seat_reservation" ||
+          (bookingDetails.total_amount === 0 && bookingDetails.wagon && bookingDetails.seat) ||
+          booking.venue_name?.toLowerCase().includes("sitzplatzreservierung") ||
+          booking.venue_name?.toLowerCase().includes("reservierung");
+        
+        if (isSeatReservation) {
+          console.log(`⚠️ SKIPPING seat reservation (not a real ticket): ${booking.booking_number || 'no number'}`);
+          seatReservationsSkipped++;
+          continue; // Nicht als Buchung speichern
         }
         
-        // Check if this is an update to an existing booking
-        let existingBookingId: string | null = null;
-        
-        // First try: Match by booking_number
-        if (booking.booking_number) {
-          const { data: existing } = await supabase
-            .from("travel_bookings")
-            .select("id")
-            .eq("booking_number", booking.booking_number)
-            .maybeSingle();
+        // Post-processing: Fix booking_type based on provider if misclassified
+        if (booking.provider) {
+          const providerLower = booking.provider.toLowerCase();
+          const trainProviders = ['deutsche bahn', 'db', 'ice', 'ic ', 'ec ', 'tgv', 'sncf', 'öbb', 'sbb'];
+          const flightProviders = ['lufthansa', 'eurowings', 'ryanair', 'easyjet', 'swiss', 'austrian', 'klm', 'air france', 'british airways'];
           
-          if (existing) {
-            existingBookingId = existing.id;
-            console.log(`Matched by booking_number: ${booking.booking_number}`);
-          }
-        }
-        
-        // Fallback: Match by booking_type + traveler + destination + date (same day)
-        if (!existingBookingId) {
-          const bookingDate = new Date(booking.start_datetime);
-          const dateStr = bookingDate.toISOString().split('T')[0];
-          
-          // Build query for matching
-          let query = supabase
-            .from("travel_bookings")
-            .select("id, details")
-            .eq("booking_type", booking.booking_type)
-            .eq("destination_city", booking.destination_city)
-            .gte("start_datetime", `${dateStr}T00:00:00`)
-            .lte("start_datetime", `${dateStr}T23:59:59`);
-          
-          // Match by traveler name(s)
-          const travelerName = booking.traveler_name || (booking.traveler_names?.length ? booking.traveler_names[0] : null);
-          if (travelerName) {
-            query = query.or(`traveler_name.ilike.%${travelerName}%,traveler_names.cs.{"${travelerName}"}`);
-          }
-          
-          const { data: potentialMatches } = await query;
-          
-          if (potentialMatches && potentialMatches.length > 0) {
-            // Take the first match (oldest entry for this criteria)
-            existingBookingId = potentialMatches[0].id;
-            console.log(`Matched by fallback (type+traveler+dest+date): ${existingBookingId}`);
+          if (trainProviders.some(p => providerLower.includes(p)) && booking.booking_type !== 'train') {
+            console.log(`Correcting booking_type from ${booking.booking_type} to train (provider: ${booking.provider})`);
+            booking.booking_type = 'train';
+          } else if (flightProviders.some(p => providerLower.includes(p)) && booking.booking_type !== 'flight') {
+            console.log(`Correcting booking_type from ${booking.booking_type} to flight (provider: ${booking.provider})`);
+            booking.booking_type = 'flight';
           }
         }
 
-        // ===== INTELLIGENT PROPOSAL FILTERING =====
-        // Skip proposals if a confirmed booking already exists for same period
-        const bookingDate = new Date(booking.start_datetime);
-        const dateStr = bookingDate.toISOString().split('T')[0];
+        // Post-processing: Validate booking_number (reject BahnCard numbers)
+        if (booking.booking_number) {
+          const numStr = booking.booking_number.trim();
+          // Reject BahnCard numbers (start with 7081, 16 digits)
+          if (numStr.startsWith('7081') || (numStr.length >= 16 && /^\d+$/.test(numStr))) {
+            console.log(`Rejecting BahnCard number as booking_number: ${numStr}`);
+            // Try to get order_number from details instead
+            if (bookingDetails.order_number && !String(bookingDetails.order_number).startsWith('7081')) {
+              booking.booking_number = bookingDetails.order_number;
+              console.log(`Using order_number instead: ${booking.booking_number}`);
+            } else {
+              booking.booking_number = undefined;
+            }
+            // Store the BahnCard number in details
+            bookingDetails.bahncard_number = numStr;
+          }
+        }
+
+        // Check if this is an update to an existing booking
+        let existingBookingId: string | null = null;
         
-        if (booking.is_proposal) {
-          const { data: existingConfirmed } = await supabase
+        if (analysisResult.is_update && analysisResult.update_booking_id) {
+          existingBookingId = analysisResult.update_booking_id;
+        } else if (booking.booking_number) {
+          // Check if a booking with this number already exists
+          const { data: existingByNumber } = await supabase
             .from("travel_bookings")
-            .select("id, venue_name")
+            .select("id")
+            .eq("booking_number", booking.booking_number)
+            .single();
+          
+          if (existingByNumber) {
+            existingBookingId = existingByNumber.id;
+            console.log(`Found existing booking by number: ${existingBookingId}`);
+          }
+        }
+        
+        // Fallback: Check by traveler + date + destination + type
+        if (!existingBookingId && booking.traveler_name && booking.start_datetime) {
+          const bookingDate = new Date(booking.start_datetime);
+          const dateStr = bookingDate.toISOString().split('T')[0];
+          
+          const { data: existingByMeta } = await supabase
+            .from("travel_bookings")
+            .select("id")
             .eq("booking_type", booking.booking_type)
             .eq("destination_city", booking.destination_city)
-            .in("status", ["confirmed", "changed"])
+            .ilike("traveler_name", `%${booking.traveler_name}%`)
             .gte("start_datetime", `${dateStr}T00:00:00`)
             .lte("start_datetime", `${dateStr}T23:59:59`)
-            .limit(1);
+            .single();
           
-          if (existingConfirmed && existingConfirmed.length > 0) {
-            console.log(`⏭️ Skipping proposal "${booking.venue_name}" - already have confirmed booking: "${existingConfirmed[0].venue_name}"`);
-            continue; // Skip this proposal entirely!
+          if (existingByMeta) {
+            existingBookingId = existingByMeta.id;
+            console.log(`Found existing booking by metadata: ${existingBookingId}`);
           }
         }
 
@@ -1241,13 +1298,14 @@ ${existingBookingsContext}`;
       .update({ status: "processed" })
       .eq("id", email_id);
 
-    console.log(`Processed: ${bookingsCreated} created, ${bookingsUpdated} updated`);
+    console.log(`Processed: ${bookingsCreated} created, ${bookingsUpdated} updated, ${seatReservationsSkipped} seat reservations skipped`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         bookings_created: bookingsCreated,
-        bookings_updated: bookingsUpdated 
+        bookings_updated: bookingsUpdated,
+        seat_reservations_skipped: seatReservationsSkipped
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
