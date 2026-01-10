@@ -7,7 +7,8 @@ import {
   MapPin, Clock, Users, Hash, Building2,
   Mail, FileText, History, X, ExternalLink, Download,
   ChevronDown, ChevronUp, AlertCircle, Copy, Calendar, Navigation,
-  CreditCard, Star, Armchair, Luggage, Coffee, Wifi, Euro, Sparkles
+  CreditCard, Star, Armchair, Luggage, Coffee, Wifi, Euro, Sparkles,
+  Loader2, ScanSearch
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -94,6 +95,7 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
   const [viewingDocument, setViewingDocument] = useState<Attachment | null>(null);
   const [originalEmail, setOriginalEmail] = useState<{ subject: string; body_html: string } | null>(null);
   const [relatedEvent, setRelatedEvent] = useState<RelatedEvent | null>(null);
+  const [isDetectingDocType, setIsDetectingDocType] = useState(false);
 
   useEffect(() => {
     if (booking) {
@@ -121,6 +123,51 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
       .select("id, file_name, file_path, content_type, document_type")
       .eq("email_id", booking.source_email_id);
     setAttachments((data as Attachment[]) || []);
+  };
+
+  // Detect document types for all PDF attachments using AI vision
+  const detectDocumentTypes = async () => {
+    const pdfAtts = attachments.filter(a => 
+      a.content_type?.includes('pdf') || a.file_name.toLowerCase().endsWith('.pdf')
+    );
+    
+    if (pdfAtts.length === 0) {
+      toast.info("Keine PDFs zum Analysieren gefunden");
+      return;
+    }
+    
+    setIsDetectingDocType(true);
+    let successCount = 0;
+    let errorCount = 0;
+    
+    for (const att of pdfAtts) {
+      try {
+        const { data, error } = await supabase.functions.invoke('extract-ticket-qr', {
+          body: { attachment_id: att.id }
+        });
+        
+        if (error) {
+          console.error('Error detecting doc type for', att.file_name, error);
+          errorCount++;
+        } else if (data?.success) {
+          successCount++;
+        }
+      } catch (err) {
+        console.error('Exception detecting doc type:', err);
+        errorCount++;
+      }
+    }
+    
+    // Refresh attachments to show updated document_type
+    await fetchAttachments();
+    setIsDetectingDocType(false);
+    
+    if (successCount > 0) {
+      toast.success(`${successCount} Dokument(e) analysiert`);
+    }
+    if (errorCount > 0) {
+      toast.error(`${errorCount} Fehler bei der Analyse`);
+    }
   };
 
   const fetchOriginalEmail = async () => {
@@ -697,6 +744,24 @@ END:VCALENDAR`;
                     Kein Ticket-PDF verfügbar
                   </div>
                 </div>
+              )}
+              
+              {/* Detect document type button */}
+              {pdfAttachments.some(a => !a.document_type) && (
+                <Button
+                  variant="apple"
+                  size="sm"
+                  onClick={detectDocumentTypes}
+                  disabled={isDetectingDocType}
+                  className="gap-2 mt-2"
+                >
+                  {isDetectingDocType ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <ScanSearch className="w-4 h-4" />
+                  )}
+                  Dokumenttyp erkennen
+                </Button>
               )}
             </>
           )}

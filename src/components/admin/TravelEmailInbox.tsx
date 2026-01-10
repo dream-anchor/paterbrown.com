@@ -147,20 +147,42 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
 
   if (emails.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-100 p-12 text-center">
-        <Inbox className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-          Posteingang leer
-        </h3>
-        <p className="text-sm text-gray-500 max-w-md mx-auto">
-          Leite Reisebuchungs-E-Mails an die konfigurierte Adresse weiter, um sie automatisch zu verarbeiten.
-        </p>
+      <div className="space-y-4">
+        {/* Info Banner */}
+        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
+          <Mail className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-sm text-blue-800">
+              Reisebuchungen müssen per Mail an <strong className="font-semibold">travel@paterbrown.com</strong> geschickt werden, damit sie hier erscheinen.
+            </p>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-100 p-12 text-center">
+          <Inbox className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+            Posteingang leer
+          </h3>
+          <p className="text-sm text-gray-500 max-w-md mx-auto">
+            Leite Reisebuchungs-E-Mails an travel@paterbrown.com weiter, um sie automatisch zu verarbeiten.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
+      {/* Info Banner */}
+      <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
+        <Mail className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+        <div>
+          <p className="text-sm text-blue-800">
+            Reisebuchungen müssen per Mail an <strong className="font-semibold">travel@paterbrown.com</strong> geschickt werden, damit sie hier erscheinen.
+          </p>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-900">
