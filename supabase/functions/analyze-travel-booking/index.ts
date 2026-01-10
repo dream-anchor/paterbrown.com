@@ -615,6 +615,27 @@ ${existingBookingsContext}`;
         // Ensure details is always an object
         const bookingDetails = booking.details || {};
         
+        // ========== FALLBACK: document_type automatisch erkennen ==========
+        if (!bookingDetails.document_type && booking.booking_type === 'train') {
+          const totalAmount = bookingDetails.total_amount;
+          const hasSeatInfo = bookingDetails.wagon || bookingDetails.seat || bookingDetails.coach;
+          const subjectContainsReservation = email.subject?.toLowerCase().includes('sitzplatzreservierung') ||
+                                              email.subject?.toLowerCase().includes('reservierung');
+          
+          // Sitzplatzreservierung: Preis 0 (oder fehlt) UND Sitzplatz-Info ODER Betreff enthält "Reservierung"
+          const isReservation = 
+            ((totalAmount === 0 || totalAmount === null || totalAmount === undefined) && hasSeatInfo) ||
+            subjectContainsReservation;
+          
+          if (isReservation) {
+            bookingDetails.document_type = 'seat_reservation';
+            console.log('Fallback: document_type set to seat_reservation (price=0 or subject contains reservation)');
+          } else if (totalAmount && totalAmount > 0) {
+            bookingDetails.document_type = 'ticket';
+            console.log('Fallback: document_type set to ticket (has price)');
+          }
+        }
+        
         // Check if this is an update to an existing booking
         let existingBookingId: string | null = null;
         
@@ -830,8 +851,32 @@ ${existingBookingsContext}`;
               .eq("start_datetime", booking.start_datetime)
               .single();
             
-            if (insertedBooking && bookingDetails.document_type) {
-              const documentType = bookingDetails.document_type;
+            if (insertedBooking) {
+              // Bestimme document_type - nutze AI-Wert oder Fallback
+              let documentType = bookingDetails.document_type;
+              
+              // Sekundärer Fallback basierend auf Attachment-Namen wenn document_type fehlt
+              if (!documentType) {
+                const { data: emailAttachments } = await supabase
+                  .from("travel_attachments")
+                  .select("file_name")
+                  .eq("email_id", email_id);
+                
+                const hasReservationFile = emailAttachments?.some(a => 
+                  a.file_name.toLowerCase().includes('reservierung') ||
+                  a.file_name.toLowerCase().includes('sitzplatz') ||
+                  a.file_name.toLowerCase().includes('reservation')
+                );
+                
+                // Default: ticket für Zug wenn nichts anderes zutrifft
+                documentType = hasReservationFile ? 'seat_reservation' : 
+                               (booking.booking_type === 'train' ? 'ticket' : null);
+                
+                if (documentType) {
+                  console.log(`Attachment-Fallback: document_type set to ${documentType}`);
+                }
+              }
+              
               const travelerShortName = travelerName?.split(' ')[1] || travelerName?.split(' ')[0] || 'Unbekannt';
               
               let newFileName = "";
@@ -845,23 +890,23 @@ ${existingBookingsContext}`;
                 newFileName = `Bestaetigung_${travelerShortName}.pdf`;
               }
               
-              if (newFileName) {
-                // Update attachments linked to this email with proper document_type and renamed file
-                const { error: attachUpdateError } = await supabase
-                  .from("travel_attachments")
-                  .update({ 
-                    document_type: documentType,
-                    file_name: newFileName,
-                    booking_id: insertedBooking.id
-                  })
-                  .eq("email_id", email_id)
-                  .is("booking_id", null); // Only update unlinked attachments
-                
-                if (attachUpdateError) {
-                  console.error("Error updating attachment:", attachUpdateError);
-                } else {
-                  console.log(`Renamed attachment to: ${newFileName}`);
-                }
+              // IMMER Attachments verknüpfen, auch wenn kein Rename
+              const updateData: Record<string, any> = { booking_id: insertedBooking.id };
+              if (documentType) updateData.document_type = documentType;
+              if (newFileName) updateData.file_name = newFileName;
+              
+              const { error: attachUpdateError } = await supabase
+                .from("travel_attachments")
+                .update(updateData)
+                .eq("email_id", email_id)
+                .is("booking_id", null); // Only update unlinked attachments
+              
+              if (attachUpdateError) {
+                console.error("Error updating attachment:", attachUpdateError);
+              } else if (newFileName) {
+                console.log(`Renamed attachment to: ${newFileName}`);
+              } else {
+                console.log(`Linked attachments to booking ${insertedBooking.id}`);
               }
             }
           }
