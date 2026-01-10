@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO, isToday, isTomorrow, isPast } from "date-fns";
@@ -92,13 +93,22 @@ const deduplicateBookings = (bookings: TravelBooking[]): TravelBooking[] => {
 };
 
 export default function TravelDashboard() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [bookings, setBookings] = useState<TravelBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<TravelBooking | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("bookings");
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const { toast } = useToast();
+
+  // Get sub-tab from URL, default to "bookings"
+  const activeTab = searchParams.get("subtab") || "bookings";
+
+  const handleSubTabChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("subtab", value);
+    setSearchParams(newParams);
+  };
 
   useEffect(() => {
     fetchBookings();
@@ -170,7 +180,7 @@ export default function TravelDashboard() {
   return (
     <div className="space-y-6">
       {/* Sub-Navigation - Apple Segmented Control Style */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleSubTabChange}>
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <TabsList className="inline-flex p-1 bg-gray-100/80 rounded-xl gap-0.5">
             <TabsTrigger 
