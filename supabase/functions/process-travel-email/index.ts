@@ -74,6 +74,9 @@ interface AttachmentInfo {
 function extractAttachmentInfo(attachments: unknown): AttachmentInfo[] {
   if (!attachments) return [];
   
+  console.info("extractAttachmentInfo input type:", typeof attachments);
+  console.info("extractAttachmentInfo is array:", Array.isArray(attachments));
+  
   // Handle URL string format (Zapier S3)
   if (typeof attachments === "string") {
     if (attachments.includes("http")) {
@@ -86,39 +89,73 @@ function extractAttachmentInfo(attachments: unknown): AttachmentInfo[] {
     return [];
   }
   
-  if (!Array.isArray(attachments)) return [];
+  if (!Array.isArray(attachments)) {
+    console.info("Attachments is not an array, skipping");
+    return [];
+  }
   
-  return attachments.map((att: unknown) => {
-    // Handle escaped JSON strings (from Make/HEY)
+  console.info(`Processing ${attachments.length} attachments`);
+  
+  return attachments.map((att: unknown, index: number) => {
+    console.info(`Attachment ${index} type:`, typeof att);
+    
+    // FIX: Handle objects directly (from HEY/Make) - don't try to JSON.parse objects!
     let parsedAtt = att;
     if (typeof att === "string") {
       try {
         parsedAtt = JSON.parse(att);
-        console.info("Parsed attachment from JSON string:", (parsedAtt as Record<string, unknown>)?.fileName || (parsedAtt as Record<string, unknown>)?.name);
+        console.info(`Parsed attachment ${index} from JSON string`);
       } catch {
+        console.info(`Attachment ${index} is not valid JSON, skipping`);
         return null; // Not valid JSON
       }
     }
     
-    if (typeof parsedAtt !== "object" || parsedAtt === null) return null;
+    if (typeof parsedAtt !== "object" || parsedAtt === null) {
+      console.info(`Attachment ${index} is not an object, skipping`);
+      return null;
+    }
+    
     const a = parsedAtt as Record<string, unknown>;
+    console.info(`Attachment ${index} keys:`, Object.keys(a).slice(0, 10));
     
     // Handle Buffer data format from email parsers (e.g., HEY/Make)
     let contentData: string | undefined = undefined;
     if (a.data && typeof a.data === "object") {
       const dataObj = a.data as Record<string, unknown>;
       if (dataObj.type === "Buffer" && Array.isArray(dataObj.data)) {
-        // Convert Buffer array to base64
-        const bytes = new Uint8Array(dataObj.data as number[]);
-        contentData = btoa(String.fromCharCode(...bytes));
+        // FIX: Convert Buffer array to base64 in chunks to avoid Maximum call stack size exceeded
+        const bufferData = dataObj.data as number[];
+        console.info(`Converting Buffer to base64: ${bufferData.length} bytes`);
+        
+        try {
+          const bytes = new Uint8Array(bufferData);
+          // Process in chunks to avoid stack overflow
+          let binary = '';
+          const chunkSize = 8192;
+          for (let i = 0; i < bytes.length; i += chunkSize) {
+            const chunk = bytes.slice(i, i + chunkSize);
+            binary += String.fromCharCode.apply(null, Array.from(chunk));
+          }
+          contentData = btoa(binary);
+          console.info(`✓ Converted Buffer to base64: ${bytes.length} bytes -> ${contentData.length} chars`);
+        } catch (err) {
+          console.error(`Failed to convert Buffer to base64:`, err);
+        }
       }
     } else if (a.Content || a.content || a.base64) {
       contentData = String(a.Content || a.content || a.base64);
+      console.info(`Using existing base64 content: ${contentData.length} chars`);
     }
     
+    const fileName = String(a.Name || a.name || a.FileName || a.fileName || a.filename || "attachment");
+    const contentType = String(a.ContentType || a.contentType || a.content_type || a.mime_type || "application/octet-stream");
+    
+    console.info(`Attachment ${index}: ${fileName} (${contentType}), has content: ${!!contentData}, content length: ${contentData?.length || 0}`);
+    
     return {
-      name: String(a.Name || a.name || a.FileName || a.fileName || a.filename || "attachment"),
-      contentType: String(a.ContentType || a.contentType || a.content_type || a.mime_type || "application/octet-stream"),
+      name: fileName,
+      contentType: contentType,
       url: a.url ? String(a.url) : undefined,
       content: contentData,
       size: a.ContentLength || a.contentLength || a.fileSize || a.size ? Number(a.ContentLength || a.contentLength || a.fileSize || a.size) : undefined,
