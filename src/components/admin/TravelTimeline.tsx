@@ -203,7 +203,7 @@ function TimelineItem({ booking, isSelected, isLast, onSelect }: TimelineItemPro
           <div className={cn(
             "w-8 h-8 rounded-full flex items-center justify-center transition-all",
             isSelected 
-              ? "bg-gray-900 text-white" 
+              ? "bg-blue-600 text-white" 
               : "bg-white border-2 border-gray-200 text-gray-500 group-hover:border-gray-300"
           )}>
             <TypeIcon className="w-4 h-4" />

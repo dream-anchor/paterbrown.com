@@ -149,7 +149,6 @@ export default function QrCodeModal({
                 <Button
                   onClick={extractQrCode}
                   disabled={isExtracting || !attachmentId}
-                  className="bg-gray-900 hover:bg-gray-800"
                 >
                   {isExtracting ? (
                     <>
@@ -182,7 +181,7 @@ export default function QrCodeModal({
             {pdfUrl && (
               <Button
                 onClick={handleDownload}
-                className="flex-1 h-12 bg-gray-900 hover:bg-gray-800 text-white rounded-xl"
+                className="flex-1 h-12 rounded-xl"
               >
                 <Download className="w-4 h-4 mr-2" />
                 PDF öffnen

@@ -368,7 +368,7 @@ export default function TravelDashboard() {
               onClick={() => setSelectedTravelers([])}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 selectedTravelers.length === 0
-                  ? "bg-gray-900 text-white"
+                  ? "bg-blue-600 text-white"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
@@ -380,7 +380,7 @@ export default function TravelDashboard() {
                 onClick={() => toggleTraveler(traveler)}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   selectedTravelers.includes(traveler)
-                    ? "bg-gray-900 text-white"
+                    ? "bg-blue-600 text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
