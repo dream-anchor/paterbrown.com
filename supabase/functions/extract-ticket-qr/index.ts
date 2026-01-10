@@ -16,18 +16,30 @@ const extractionPrompt = `Analysiere dieses Dokument und suche nach einem QR-Cod
 
 WICHTIG: Deutsche Bahn Tickets verwenden AZTEC-Codes (quadratische Codes mit einem schwarzen Quadrat in der Mitte).
 
-=== DOKUMENTTYP ERKENNEN (PFLICHT!) ===
-Erkenne den Typ des Dokuments:
-- "ticket" = Echte Fahrkarte mit Buchungsnummer und Fahrpreis
-- "seat_reservation" = NUR Sitzplatzreservierung (Preis 0,00 EUR, Text enthält "Sitzplatzreservierung")
-- "confirmation" = Bestätigung (Hotel, Buchung)
-- "invoice" = Rechnung
+=== ⚠️ STRIKTE DOKUMENTTYP-ERKENNUNG (PFLICHT!) ⚠️ ===
 
-KRITERIEN für seat_reservation:
-- Betreff/Titel enthält "Sitzplatzreservierung" oder "Reservierung"
-- Preis ist 0,00 EUR oder nicht vorhanden
-- Es gibt Wagen und Sitzplatz-Nummern aber KEIN Fahrpreis
+PFLICHT-PRÜFUNG in dieser Reihenfolge:
 
+1. IST ES EINE SITZPLATZRESERVIERUNG?
+   Prüfe ALLE 3 Kriterien:
+   ✓ Dokument enthält das Wort "Sitzplatzreservierung" oder "Reservierung" im Titel/Betreff
+   ✓ Preis ist 0,00 EUR ODER kein Fahrpreis angegeben
+   ✓ Es gibt Wagen-/Sitzplatznummern ABER KEINEN Ticketpreis
+   
+   → Wenn ALLE 3 erfüllt: document_type = "seat_reservation" (PFLICHT!)
+   → NIEMALS als "ticket" klassifizieren!
+
+2. IST ES EIN ECHTES TICKET?
+   NUR "ticket" wenn:
+   ✓ Echter Fahrpreis vorhanden (> 0,00 EUR)
+   ✓ ODER Buchungsbestätigung mit Reisedetails und Preis
+   ✓ ODER explizit "Fahrkarte" / "Ticket" / "Online-Ticket" im Titel
+   
+3. ANDERE TYPEN:
+   - "confirmation" = Hotel-Bestätigung, Buchungsbestätigung ohne Fahrpreis
+   - "invoice" = Rechnung mit Rechnungsnummer
+
+=== QR-CODE ANALYSE ===
 Falls ein Code gefunden wird:
 1. Beschreibe die Position des Codes im Dokument
 2. Falls Text/Zahlen UNTER oder NEBEN dem Code stehen, extrahiere diese
@@ -41,6 +53,9 @@ Antworte im JSON-Format:
   "code_text_nearby": "Text der beim Code steht",
   "likely_content": "bfrn.de/xxx oder Buchungscode",
   "document_type": "ticket" | "seat_reservation" | "confirmation" | "invoice",
+  "is_seat_reservation_only": true/false,
+  "has_ticket_price": true/false,
+  "price_amount": "z.B. 59.60 oder 0.00",
   "description": "Kurze Beschreibung des Dokuments"
 }`;
 
