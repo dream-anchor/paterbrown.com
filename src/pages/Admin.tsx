@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/admin/AdminLayout";
 import EventUploader from "@/components/admin/EventUploader";
-import EventCalendar from "@/components/admin/EventCalendar";
+import FullCalendar from "@/components/admin/FullCalendar";
 import EventMap from "@/components/admin/EventMap";
 import CalendarExport from "@/components/admin/CalendarExport";
 import TravelDashboard from "@/components/admin/TravelDashboard";
@@ -238,7 +238,11 @@ const Admin = () => {
 
         <div className="mt-6">
           <TabsContent value="calendar" className="mt-0 focus-visible:outline-none">
-            <EventCalendar events={events} onEventUpdate={fetchEvents} />
+            <FullCalendar 
+              onNavigateToTravel={(bookingId) => {
+                setSearchParams({ tab: "travel" });
+              }}
+            />
           </TabsContent>
 
           <TabsContent value="map" className="mt-0 focus-visible:outline-none">
