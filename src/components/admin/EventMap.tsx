@@ -242,6 +242,7 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [drivingDistances, setDrivingDistances] = useState<Map<string, DrivingDistance>>(new Map());
   const [isLoadingDistances, setIsLoadingDistances] = useState(false);
+  const [routesLoaded, setRoutesLoaded] = useState(false);
   const { toast } = useToast();
   
   const sortedEvents = useMemo(() => {
@@ -400,12 +401,12 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
     setIsLoadingDistances(false);
   }, [eventsWithCoords]);
 
-  // Load distances when events change
+  // Load distances automatically on mount (only once)
   useEffect(() => {
-    if (eventsWithCoords.length > 1) {
-      loadDrivingDistances();
+    if (eventsWithCoords.length > 1 && !routesLoaded) {
+      loadDrivingDistances().then(() => setRoutesLoaded(true));
     }
-  }, [eventsWithCoords.length, loadDrivingDistances]);
+  }, [eventsWithCoords.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Get distance to next event
   const getDistanceToNext = (eventId: string, nextEventId: string | null): DrivingDistance | null => {
