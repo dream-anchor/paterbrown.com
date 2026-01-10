@@ -290,6 +290,11 @@ Extrahiere wenn vorhanden:
 === KRITISCH: BOOKING_NUMBER / AUFTRAGSNUMMER ===
 Die booking_number ist das WICHTIGSTE Feld! Suche aktiv nach:
 
+WICHTIG: Das Wort "reserviert" ist KEINE Buchungsnummer!
+- "reserviert" bedeutet nur, dass eine Reservierung existiert
+- Die echte Buchungs-/Auftragsnummer ist ein alphanumerischer Code (z.B. "7081410162726208", "Q7K5M2")
+- NIEMALS "reserviert", "pending", "ohne Nr." als booking_number speichern!
+
 Bei Deutsche Bahn:
 - "Auftragsnummer:" gefolgt von 6-stelligem Code (z.B. "Q7K5M2", "ABC123")
 - "Ihre Bestellung" + Nummer
@@ -603,12 +608,24 @@ ${existingBookingsContext}`;
               ...bookingDetails
             };
 
+            // Fix placeholder booking_number on update too
+            const placeholderValues = ['reserviert', 'ohne nr.', 'ohne nr', 'pending', 'n/a', 'tba', 'unknown', '-', '–'];
+            let updatedBookingNumber = booking.booking_number;
+            const isPlaceholder = !updatedBookingNumber || 
+              placeholderValues.includes(updatedBookingNumber.toLowerCase().trim());
+            
+            if (isPlaceholder && bookingDetails.order_number && 
+                !placeholderValues.includes(String(bookingDetails.order_number).toLowerCase().trim())) {
+              updatedBookingNumber = bookingDetails.order_number;
+              console.log(`Corrected placeholder booking_number on update to: ${updatedBookingNumber}`);
+            }
+
             // Update the booking
             await supabase
               .from("travel_bookings")
               .update({
                 booking_type: booking.booking_type,
-                booking_number: booking.booking_number,
+                booking_number: updatedBookingNumber,
                 provider: booking.provider,
                 traveler_name: booking.traveler_name,
                 traveler_names: booking.traveler_names,
@@ -628,11 +645,17 @@ ${existingBookingsContext}`;
             bookingsUpdated++;
           }
         } else {
-          // Post-processing: Ensure booking_number is set from details if missing
+          // Post-processing: Ensure booking_number is set from details if missing or placeholder
           let finalBookingNumber = booking.booking_number;
-          if (!finalBookingNumber && bookingDetails.order_number) {
+          const placeholderValues = ['reserviert', 'ohne nr.', 'ohne nr', 'pending', 'n/a', 'tba', 'unknown', '-', '–'];
+          const isPlaceholder = !finalBookingNumber || 
+            placeholderValues.includes(finalBookingNumber.toLowerCase().trim());
+          
+          // If booking_number is missing or a placeholder, try to get from details
+          if (isPlaceholder && bookingDetails.order_number && 
+              !placeholderValues.includes(String(bookingDetails.order_number).toLowerCase().trim())) {
             finalBookingNumber = bookingDetails.order_number;
-            console.log(`Set booking_number from details.order_number: ${finalBookingNumber}`);
+            console.log(`Corrected placeholder booking_number to: ${finalBookingNumber}`);
           }
           
           // Create new booking

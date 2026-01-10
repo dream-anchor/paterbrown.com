@@ -178,14 +178,29 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
   };
 
   const getBookingNumber = () => {
-    if (booking.booking_number) return booking.booking_number;
-    if (booking.details?.order_number) return booking.details.order_number;
+    // Placeholder values that are NOT real booking numbers
+    const placeholders = ['reserviert', 'ohne nr.', 'ohne nr', 'pending', 'n/a', 'tba', 'unknown', '-', '–'];
+    const isPlaceholder = (val: any) => !val || placeholders.includes(String(val).toLowerCase().trim());
+    
+    // Priority 1: booking_number if valid
+    if (booking.booking_number && !isPlaceholder(booking.booking_number)) {
+      return booking.booking_number;
+    }
+    
+    // Priority 2: details.order_number (most reliable for DB tickets)
+    if (booking.details?.order_number && !isPlaceholder(booking.details.order_number)) {
+      return booking.details.order_number;
+    }
+    
+    // Priority 3: other detail fields
     if (booking.details?.confirmation_number) return booking.details.confirmation_number;
     if (booking.details?.reference) return booking.details.reference;
     if (booking.details?.pnr) return booking.details.pnr;
     if (booking.details?.booking_code) return booking.details.booking_code;
     if (booking.details?.auftragsnummer) return booking.details.auftragsnummer;
-    return null;
+    
+    // Fallback: return original booking_number even if placeholder (shows something)
+    return booking.booking_number || null;
   };
 
   const bookingNumber = getBookingNumber();
