@@ -261,11 +261,12 @@ serve(async (req) => {
       console.info("filename:", payload.filename);
       console.info("content length:", payload.content?.length || 0);
       
-      // Find the existing email by mail_id in raw_payload
-      const { data: existingEmails, error: searchError } = await supabase
+      // Find the existing email directly by ID (mail_id IS the Supabase UUID primary key)
+      const { data: existingEmail, error: searchError } = await supabase
         .from("travel_emails")
         .select("id")
-        .filter("raw_payload->mail_id", "eq", payload.mail_id);
+        .eq("id", payload.mail_id)
+        .maybeSingle();
       
       if (searchError) {
         console.error("Search error:", searchError);
@@ -274,8 +275,6 @@ serve(async (req) => {
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      
-      const existingEmail = existingEmails?.[0];
       
       if (!existingEmail) {
         console.error("No email found for mail_id:", payload.mail_id);
