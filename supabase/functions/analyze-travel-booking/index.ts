@@ -21,6 +21,8 @@ interface ExtractedBooking {
   details: Record<string, any>;
   confidence: number;
   needs_review?: boolean;
+  is_proposal?: boolean;
+  proposal_reason?: string;
 }
 
 interface AIAnalysisResult {
@@ -248,7 +250,48 @@ ${attachmentContents}
         ).join('\n')}`
       : '';
 
-    const systemPrompt = `Du bist ein Experte für die Analyse von Reisebuchungs-E-Mails. Extrahiere ALLE Buchungsinformationen aus der E-Mail mit höchster Präzision.
+const systemPrompt = `Du bist ein Experte für die Analyse von Reisebuchungs-E-Mails. Extrahiere ALLE Buchungsinformationen aus der E-Mail mit höchster Präzision.
+
+=== ⚠️ KRITISCH: ANGEBOTE VS. ECHTE BUCHUNGEN UNTERSCHEIDEN ⚠️ ===
+
+Dies ist die WICHTIGSTE Prüfung! Bei JEDER gefundenen Reiseoption:
+
+1. IST ES EIN ANGEBOT/VORSCHLAG? (is_proposal: true)
+   Indikatoren für ANGEBOTE:
+   - "nicht optioniert", "Preise können variieren", "unverbindlich"
+   - "Am besten ... buchen" (= Empfehlung, noch nicht gebucht!)
+   - "Die folgenden Sachen fehlen noch", "müssen noch gebucht werden"
+   - "möchte ich vorher bestätigen lassen", "zur Auswahl"
+   - MEHRERE Hotels/Flüge für gleichen Zeitraum ohne eindeutige Buchungsnummer
+   - E-Mail-Kontext zeigt Angebotsphase (z.B. von Reiseagentur an Kunden)
+   - KEINE Buchungsnummer / Confirmation Number vorhanden
+   - Text enthält "Optionen", "Alternativen", "Vorschläge"
+
+2. IST ES EINE ECHTE BUCHUNG? (is_proposal: false)
+   Indikatoren für ECHTE BUCHUNGEN:
+   - Buchungsbestätigung mit Confirmation Number / Buchungsnummer
+   - "Ihre Buchung wurde bestätigt", "gebucht", "reserviert" (= abgeschlossen!)
+   - Ticket-PDF oder Voucher als Attachment
+   - E-Mail DIREKT vom Anbieter (hotel@marriott.com, buchung@bahn.de, etc.)
+   - Zahlungsbestätigung oder Rechnung mit Buchungsnummer
+   - Check-in-Informationen (= Buchung muss existieren)
+
+3. ENTSCHEIDUNGSLOGIK:
+   A) MEHRERE Hotels/Optionen für gleichen Zeitraum → ALLE als Angebot (is_proposal: true)
+      Beispiel: "Leonardo Hotel 89€ oder Marriott 120€" → BEIDE als proposal!
+   B) KEINE Buchungsnummer UND Angebots-Indikatoren → proposal
+   C) Buchungsnummer + Bestätigungshinweis → echte Buchung (is_proposal: false)
+   D) Im Zweifel: Als Angebot markieren mit needs_review: true
+
+4. SETZE proposal_reason WENN is_proposal = true:
+   - "Mehrere Optionen ohne finale Entscheidung"
+   - "Angebotsmail ohne Buchungsbestätigung"
+   - "Keine Buchungsnummer vorhanden"
+   - "Text enthält 'zur Auswahl' / 'Optionen'"
+
+5. ANGEBOTE KOMPLETT IGNORIEREN WENN:
+   - Später in der E-Mail eine ECHTE Buchung für denselben Zeitraum existiert
+   - Beispiel: Leonardo (Option) + Marriott (gebucht) → NUR Marriott speichern!
 
 === KRITISCH: BOOKING_TYPE KORREKT ERKENNEN ===
 Erkenne den booking_type NICHT am Preis oder an vagen Hinweisen, sondern am ANBIETER:
@@ -532,9 +575,11 @@ ${existingBookingsContext}`;
                             dropoff_location: { type: "string" }
                           }
                         },
-                        confidence: { type: "number" }
+                        confidence: { type: "number" },
+                        is_proposal: { type: "boolean", description: "true wenn es nur ein Angebot/Vorschlag ist, false wenn echte Buchung" },
+                        proposal_reason: { type: "string", description: "Grund warum es ein Angebot ist (z.B. 'Mehrere Optionen ohne Entscheidung')" }
                       },
-                      required: ["booking_type", "start_datetime", "destination_city", "details"]
+                      required: ["booking_type", "start_datetime", "destination_city", "details", "is_proposal"]
                     }
                   },
                   is_update: { type: "boolean" },
@@ -814,6 +859,14 @@ ${existingBookingsContext}`;
             continue;
           }
           
+          // Determine status based on is_proposal
+          const bookingStatus = booking.is_proposal ? "proposal" : "confirmed";
+          
+          // Add proposal_reason to details if applicable
+          if (booking.is_proposal && booking.proposal_reason) {
+            bookingDetails.proposal_reason = booking.proposal_reason;
+          }
+          
           // Create new booking
           const { error: insertError } = await supabase
             .from("travel_bookings")
@@ -830,10 +883,10 @@ ${existingBookingsContext}`;
               venue_name: booking.venue_name,
               venue_address: booking.venue_address,
               details: bookingDetails,
-              status: "confirmed",
+              status: bookingStatus,
               source_email_id: email_id,
               ai_confidence: booking.confidence || 1,
-              needs_review: false,
+              needs_review: booking.is_proposal ? true : false,
             });
 
           if (insertError) {

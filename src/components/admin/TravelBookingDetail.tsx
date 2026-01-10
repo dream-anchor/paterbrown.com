@@ -30,7 +30,7 @@ interface TravelBooking {
   venue_name: string | null;
   venue_address: string | null;
   details: Record<string, any>;
-  status: "confirmed" | "changed" | "cancelled" | "pending";
+  status: "confirmed" | "changed" | "cancelled" | "pending" | "proposal";
   source_email_id: string | null;
   ai_confidence: number | null;
   latitude?: number | null;

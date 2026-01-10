@@ -22,7 +22,7 @@ interface TravelBooking {
   venue_name: string | null;
   venue_address: string | null;
   details: Record<string, any>;
-  status: "confirmed" | "changed" | "cancelled" | "pending";
+  status: "confirmed" | "changed" | "cancelled" | "pending" | "proposal";
   source_email_id: string | null;
   ai_confidence: number | null;
   created_at: string;
@@ -195,7 +195,8 @@ function TimelineItem({ booking, isSelected, isLast, onSelect }: TimelineItemPro
         className={cn(
           "group relative flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all",
           "hover:bg-gray-50",
-          isSelected && "bg-gray-100 ring-1 ring-gray-200"
+          isSelected && "bg-gray-100 ring-1 ring-gray-200",
+          booking.status === 'proposal' && "opacity-70 border border-dashed border-purple-200 bg-purple-50/30"
         )}
       >
         {/* Timeline Dot */}
@@ -267,9 +268,12 @@ function TimelineItem({ booking, isSelected, isLast, onSelect }: TimelineItemPro
                 "px-1.5 py-0.5 text-[10px] font-medium rounded",
                 booking.status === 'cancelled' 
                   ? "bg-red-50 text-red-600" 
+                  : booking.status === 'proposal'
+                  ? "bg-purple-50 text-purple-600 border border-purple-200"
                   : "bg-amber-50 text-amber-600"
               )}>
-                {booking.status === 'cancelled' ? 'Storniert' : 'Geändert'}
+                {booking.status === 'cancelled' ? 'Storniert' : 
+                 booking.status === 'proposal' ? 'Angebot' : 'Geändert'}
               </span>
             )}
           </div>
