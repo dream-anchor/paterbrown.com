@@ -375,16 +375,22 @@ serve(async (req) => {
     console.info("Payload keys:", Object.keys(payload));
 
     // ===== CHECK IF THIS IS AN ATTACHMENT-ONLY REQUEST =====
+    // Supports both Base64 content AND OneDrive download_url
     const isAttachmentOnly = payload.mail_id && 
       !payload.from && !payload.From && !payload.sender &&
       !payload.subject && !payload.Subject &&
-      payload.content && payload.filename;
+      (payload.content || payload.download_url) && payload.filename;
 
     if (isAttachmentOnly) {
       console.info("=== ATTACHMENT-ONLY MODE ===");
       console.info("mail_id:", payload.mail_id);
       console.info("filename:", payload.filename);
-      console.info("content length:", payload.content?.length || 0);
+      console.info("contentType:", payload.contentType);
+      console.info("Has download_url:", !!payload.download_url);
+      console.info("Has content (base64):", !!payload.content);
+      if (payload.download_url) {
+        console.info("download_url:", payload.download_url);
+      }
       
       const { data: existingEmail, error: searchError } = await supabase
         .from("travel_emails")
@@ -410,14 +416,46 @@ serve(async (req) => {
       
       console.info("Found existing email:", existingEmail.id);
       
+      let bytes: Uint8Array;
+      
       try {
-        const cleanBase64 = payload.content.includes(',') 
-          ? payload.content.split(',')[1] 
-          : payload.content;
-        const binaryString = atob(cleanBase64);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
+        // ===== MODE A: Download from OneDrive URL =====
+        if (payload.download_url) {
+          console.info("Downloading from OneDrive URL...");
+          
+          const downloadResponse = await fetch(payload.download_url);
+          
+          if (!downloadResponse.ok) {
+            console.error("Download failed:", downloadResponse.status, downloadResponse.statusText);
+            return new Response(
+              JSON.stringify({ 
+                success: false, 
+                error: `Download failed: ${downloadResponse.status} ${downloadResponse.statusText}`,
+                download_url: payload.download_url
+              }),
+              { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+          }
+          
+          const arrayBuffer = await downloadResponse.arrayBuffer();
+          bytes = new Uint8Array(arrayBuffer);
+          console.info("✓ Downloaded from OneDrive:", bytes.length, "bytes");
+          
+        } 
+        // ===== MODE B: Decode Base64 content =====
+        else if (payload.content) {
+          console.info("Decoding Base64 content...");
+          const cleanBase64 = payload.content.includes(',') 
+            ? payload.content.split(',')[1] 
+            : payload.content;
+          const binaryString = atob(cleanBase64);
+          bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          console.info("✓ Decoded Base64:", bytes.length, "bytes");
+        } else {
+          throw new Error("No content or download_url provided");
         }
         
         const sanitizedFilename = payload.filename.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -442,7 +480,7 @@ serve(async (req) => {
           email_id: existingEmail.id,
           file_name: payload.filename,
           file_path: filePath,
-          content_type: payload.contentType,
+          content_type: payload.contentType || "application/pdf",
           file_size: bytes.length
         });
         
@@ -450,8 +488,9 @@ serve(async (req) => {
           console.error("DB insert error:", insertError);
         }
         
-        console.info("✓ Attachment saved:", filePath, `(${bytes.length} bytes)`);
+        console.info("✓ Attachment saved to storage:", filePath, `(${bytes.length} bytes)`);
         
+        // Trigger AI analysis
         console.info("Triggering analyze-travel-booking for email:", existingEmail.id);
         try {
           const { error: invokeError } = await supabase.functions.invoke("analyze-travel-booking", {
@@ -470,6 +509,7 @@ serve(async (req) => {
           JSON.stringify({
             success: true,
             mode: "attachment-only",
+            source: payload.download_url ? "onedrive" : "base64",
             email_id: existingEmail.id,
             file_path: filePath,
             file_size: bytes.length,
@@ -478,10 +518,13 @@ serve(async (req) => {
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
         
-      } catch (decodeError) {
-        console.error("Base64 decode error:", decodeError);
+      } catch (processError) {
+        console.error("Attachment processing error:", processError);
         return new Response(
-          JSON.stringify({ success: false, error: "Failed to decode attachment" }),
+          JSON.stringify({ 
+            success: false, 
+            error: processError instanceof Error ? processError.message : "Failed to process attachment" 
+          }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
