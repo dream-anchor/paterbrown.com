@@ -250,6 +250,17 @@ ${attachmentContents}
 
     const systemPrompt = `Du bist ein Experte für die Analyse von Reisebuchungs-E-Mails. Extrahiere ALLE Buchungsinformationen aus der E-Mail mit höchster Präzision.
 
+=== KRITISCH: BOOKING_TYPE KORREKT ERKENNEN ===
+Erkenne den booking_type NICHT am Preis oder an vagen Hinweisen, sondern am ANBIETER:
+- "Deutsche Bahn", "DB", "ICE", "IC", "RE", "S-Bahn", "RB", "EC", "TGV" → booking_type: "train"
+- "Lufthansa", "Eurowings", "Ryanair", "easyJet", "Swiss", "Austrian", "KLM", "Flug" → booking_type: "flight"
+- "FlixBus", "BlaBlaBus", "Fernbus" → booking_type: "bus"
+- "Marriott", "Hilton", "Radisson", "Holiday Inn", "Booking.com", "HRS", "Hotel" → booking_type: "hotel"
+- "Sixt", "Europcar", "Enterprise", "Hertz", "Avis" → booking_type: "rental_car"
+
+NIEMALS Deutsche Bahn Tickets als "flight" klassifizieren!
+NIEMALS Flugtickets als "train" klassifizieren!
+
 Für jede gefundene Buchung extrahiere:
 - booking_type: "hotel", "train", "flight", "bus", "rental_car" oder "other"
 - booking_number: Buchungsnummer/Reservierungscode/Auftragsnummer (PFLICHT - siehe unten!)
@@ -543,6 +554,28 @@ ${existingBookingsContext}`;
     const analysisResult: AIAnalysisResult = JSON.parse(toolCall.function.arguments);
     console.log("Extracted bookings:", analysisResult.bookings.length);
     console.log("Booking details:", JSON.stringify(analysisResult.bookings.map(b => ({ type: b.booking_type, details: b.details })), null, 2));
+
+    // Post-processing: Fix obviously wrong booking_type classifications
+    for (const booking of analysisResult.bookings) {
+      const providerLower = (booking.provider || '').toLowerCase();
+      const detailsStr = JSON.stringify(booking.details || {}).toLowerCase();
+      
+      // Deutsche Bahn should always be train, never flight
+      if ((providerLower.includes('deutsche bahn') || providerLower.includes('db ') || providerLower === 'db') 
+          && booking.booking_type === 'flight') {
+        console.log(`Correcting Deutsche Bahn from flight to train for ${booking.traveler_name}`);
+        booking.booking_type = 'train';
+      }
+      
+      // Detect train keywords in details
+      if (detailsStr.includes('ice ') || detailsStr.includes('ic ') || detailsStr.includes('re ') || 
+          detailsStr.includes('rb ') || detailsStr.includes('s-bahn') || detailsStr.includes('zugnummer')) {
+        if (booking.booking_type === 'flight') {
+          console.log(`Correcting booking_type from flight to train based on train keywords`);
+          booking.booking_type = 'train';
+        }
+      }
+    }
 
     let bookingsCreated = 0;
     let bookingsUpdated = 0;
