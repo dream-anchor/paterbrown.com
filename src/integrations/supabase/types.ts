@@ -240,6 +240,7 @@ export type Database = {
           id: string
           qr_code_data: string | null
           qr_code_image_path: string | null
+          traveler_name: string | null
         }
         Insert: {
           booking_id?: string | null
@@ -253,6 +254,7 @@ export type Database = {
           id?: string
           qr_code_data?: string | null
           qr_code_image_path?: string | null
+          traveler_name?: string | null
         }
         Update: {
           booking_id?: string | null
@@ -266,6 +268,7 @@ export type Database = {
           id?: string
           qr_code_data?: string | null
           qr_code_image_path?: string | null
+          traveler_name?: string | null
         }
         Relationships: [
           {

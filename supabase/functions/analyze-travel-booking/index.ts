@@ -32,6 +32,139 @@ interface AIAnalysisResult {
   change_summary?: string;
 }
 
+// ========== HELPER: Identify Traveler in Document ==========
+async function identifyTravelerInDocument(
+  base64Content: string,
+  mimeType: string,
+  knownTravelers: string[],
+  lovableApiKey: string
+): Promise<string | null> {
+  if (knownTravelers.length === 0) {
+    console.log("No known travelers for matching");
+    return null;
+  }
+
+  const travelerListStr = knownTravelers.join(", ");
+  
+  const prompt = `Finde den REISENDEN-NAMEN in diesem Reisedokument/Ticket.
+
+WICHTIG: Der Name steht oft an folgenden Stellen:
+1. Direkt unter einem QR-Code oder Barcode
+2. Nach "Reisender:", "Passagier:", "Gast:", "Name:", "Fahrgast:"
+3. Im Ticket-Header oder in der Kopfzeile
+4. Bei Bahntickets: In der Nähe von BahnCard-Informationen
+
+BEKANNTE REISENDE aus der Datenbank (genau diese Namen suchen!):
+${travelerListStr}
+
+FUZZY MATCHING: Auch Variationen erkennen!
+- "A. Monot" = "Antoine Monot"
+- "Monot, Antoine" = "Antoine Monot"
+- "SICK, STEFANIE" = "Stefanie Sick"
+- Initialien + Nachname = Vollständiger Name
+
+ANTWORT-FORMAT:
+- Wenn genau ein Name gefunden: Antworte NUR mit diesem Namen, z.B. "Antoine Monot"
+- Wenn mehrere Namen im Dokument (Gruppenreise): Antworte mit dem ERSTEN/HAUPTREISENDEN
+- Wenn kein Name aus der Liste erkennbar: "UNKNOWN"
+
+Antworte AUSSCHLIESSLICH mit dem gefundenen Namen oder "UNKNOWN". Keine Erklärung.`;
+
+  try {
+    const visionResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${lovableApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [{
+          role: "user",
+          content: [
+            { type: "text", text: prompt },
+            { 
+              type: "image_url", 
+              image_url: { url: `data:${mimeType};base64,${base64Content}` } 
+            }
+          ]
+        }]
+      }),
+    });
+
+    if (!visionResponse.ok) {
+      console.error("Vision API error for traveler identification");
+      return null;
+    }
+
+    const visionData = await visionResponse.json();
+    const extractedName = visionData.choices?.[0]?.message?.content?.trim() || "";
+    
+    console.log(`Traveler identification result: "${extractedName}"`);
+    
+    if (extractedName === "UNKNOWN" || !extractedName) {
+      return null;
+    }
+    
+    // Fuzzy match against known travelers
+    const matchedTraveler = fuzzyMatchTraveler(extractedName, knownTravelers);
+    console.log(`Fuzzy match result: "${extractedName}" → "${matchedTraveler || 'no match'}"`);
+    
+    return matchedTraveler;
+  } catch (error) {
+    console.error("Error identifying traveler in document:", error);
+    return null;
+  }
+}
+
+// ========== HELPER: Fuzzy Match Traveler Name ==========
+function fuzzyMatchTraveler(extractedName: string, knownTravelers: string[]): string | null {
+  const normalized = extractedName.toLowerCase().trim();
+  
+  for (const known of knownTravelers) {
+    const knownLower = known.toLowerCase();
+    const parts = known.split(' ');
+    const firstName = parts[0]?.toLowerCase() || '';
+    const lastName = parts.slice(1).join(' ').toLowerCase() || parts[0]?.toLowerCase() || '';
+    
+    // Exact match
+    if (normalized === knownLower) {
+      return known;
+    }
+    
+    // Last name match (e.g., "Monot" → "Antoine Monot")
+    if (normalized === lastName || normalized.includes(lastName)) {
+      return known;
+    }
+    
+    // First name + initial match (e.g., "A. Monot" → "Antoine Monot")
+    const initialPattern = `${firstName[0]}. ${lastName}`;
+    const initialPatternAlt = `${firstName[0]}.${lastName}`;
+    if (normalized === initialPattern || normalized === initialPatternAlt) {
+      return known;
+    }
+    
+    // Reversed format (e.g., "Monot, Antoine" → "Antoine Monot")
+    const reversedPattern = `${lastName}, ${firstName}`;
+    const reversedPatternAlt = `${lastName},${firstName}`;
+    if (normalized === reversedPattern || normalized === reversedPatternAlt) {
+      return known;
+    }
+    
+    // Contains both first and last name (in any order)
+    if (normalized.includes(firstName) && normalized.includes(lastName)) {
+      return known;
+    }
+    
+    // Uppercase comparison (e.g., "SICK, STEFANIE")
+    if (extractedName.toUpperCase().includes(parts.map(p => p.toUpperCase()).join(' '))) {
+      return known;
+    }
+  }
+  
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -50,6 +183,14 @@ serve(async (req) => {
     }
 
     console.log("Analyzing email:", email_id);
+
+    // ========== LOAD KNOWN TRAVELERS FOR MULTI-USER SPLIT ==========
+    const { data: travelerProfiles } = await supabase
+      .from("traveler_profiles")
+      .select("id, first_name, last_name");
+    
+    const knownTravelers = travelerProfiles?.map(p => `${p.first_name} ${p.last_name}`) || [];
+    console.log("Known travelers for matching:", knownTravelers);
 
     // Fetch the email
     const { data: email, error: emailError } = await supabase
@@ -127,7 +268,7 @@ WICHTIG: Achte besonders auf:
 
 Gib alle gefundenen Informationen als lesbaren Text zurück.`;
     
-    if (attachments && attachments.length > 0) {
+if (attachments && attachments.length > 0) {
       for (const attachment of attachments) {
         const isPdf = attachment.content_type?.includes('pdf') || attachment.file_name?.toLowerCase().endsWith('.pdf');
         const isImage = attachment.content_type?.includes('image/') || 
@@ -178,6 +319,26 @@ Gib alle gefundenen Informationen als lesbaren Text zurück.`;
                 }
               }
               
+              // ========== MULTI-USER SPLIT: Identify Traveler in Document ==========
+              const identifiedTraveler = await identifyTravelerInDocument(
+                base64Content,
+                mimeType,
+                knownTravelers,
+                lovableApiKey
+              );
+              
+              if (identifiedTraveler) {
+                console.log(`📋 Attachment "${attachment.file_name}" belongs to: ${identifiedTraveler}`);
+                
+                // Update attachment with identified traveler
+                await supabase
+                  .from("travel_attachments")
+                  .update({ traveler_name: identifiedTraveler })
+                  .eq("id", attachment.id);
+              } else {
+                console.log(`📋 Attachment "${attachment.file_name}" - no traveler identified`);
+              }
+              
               // Use Gemini Vision to extract text
               const visionResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
                 method: "POST",
@@ -206,7 +367,11 @@ Gib alle gefundenen Informationen als lesbaren Text zurück.`;
                 console.log(`Extracted from ${attachment.file_name}:`, extractedText.substring(0, 500));
                 
                 if (extractedText) {
-                  attachmentContents += `\n\n=== INHALT AUS ANHANG "${attachment.file_name}" (${fileType}) ===\n${extractedText}`;
+                  // Include identified traveler in the content for AI context
+                  const travelerNote = identifiedTraveler 
+                    ? `\n[IDENTIFIZIERTER REISENDER: ${identifiedTraveler}]` 
+                    : '';
+                  attachmentContents += `\n\n=== INHALT AUS ANHANG "${attachment.file_name}" (${fileType}) ===${travelerNote}\n${extractedText}`;
                 }
               } else {
                 const errorText = await visionResponse.text();
@@ -1031,16 +1196,29 @@ ${existingBookingsContext}`;
                 newFileName = `Bestaetigung_${travelerShortName}.pdf`;
               }
               
-              // IMMER Attachments verknüpfen, auch wenn kein Rename
+              // ========== MULTI-USER SPLIT: Attach only to matching traveler ==========
               const updateData: Record<string, any> = { booking_id: insertedBooking.id };
               if (documentType) updateData.document_type = documentType;
               if (newFileName) updateData.file_name = newFileName;
               
-              const { error: attachUpdateError } = await supabase
+              // Build attachment query - filter by traveler if booking has one
+              let attachQuery = supabase
                 .from("travel_attachments")
                 .update(updateData)
                 .eq("email_id", email_id)
                 .is("booking_id", null); // Only update unlinked attachments
+              
+              // CRITICAL: If this booking has a specific traveler, only link attachments 
+              // that were identified as belonging to this traveler (or have no traveler set)
+              if (travelerName) {
+                // Match attachments where:
+                // - traveler_name matches this booking's traveler, OR
+                // - traveler_name is null (for legacy/unidentified attachments, link to first matching booking)
+                attachQuery = attachQuery.or(`traveler_name.eq.${travelerName},traveler_name.is.null`);
+                console.log(`🔗 Linking attachments for traveler: ${travelerName}`);
+              }
+              
+              const { error: attachUpdateError, count: attachCount } = await attachQuery;
               
               if (attachUpdateError) {
                 console.error("Error updating attachment:", attachUpdateError);
