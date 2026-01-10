@@ -212,24 +212,12 @@ export default function TravelDashboard() {
       return groups;
     }, {} as GroupedBookings);
 
-  // Sort dates: upcoming first (DESCENDING - newest first), then past at the end
+  // Sort dates: ALL dates in descending order (newest first) - 10.1., 9.1., 8.1., 7.1., 6.1.
   const sortedDates = Object.keys(groupedBookings).sort((a, b) => {
     const dateA = parseISO(a);
     const dateB = parseISO(b);
-    const pastA = isPast(dateA) && !isToday(dateA);
-    const pastB = isPast(dateB) && !isToday(dateB);
-    
-    // Put past dates at the end
-    if (pastA && !pastB) return 1;
-    if (!pastA && pastB) return -1;
-    
-    // Upcoming dates: NEWEST first (descending) → 10.1., 9.1., 8.1.
-    if (!pastA && !pastB) {
-      return dateB.getTime() - dateA.getTime();
-    }
-    
-    // Past dates: oldest first (ascending)
-    return dateA.getTime() - dateB.getTime();
+    // Always descending - newest dates first
+    return dateB.getTime() - dateA.getTime();
   });
 
   // Get next upcoming trip info for Quick Summary

@@ -10,11 +10,23 @@ const corsHeaders = {
 async function extractQrCodeWithVision(
   pdfBase64: string,
   lovableApiKey: string
-): Promise<{ qr_data: string | null; description: string | null }> {
+): Promise<{ qr_data: string | null; description: string | null; document_type: string | null }> {
   
-  const extractionPrompt = `Analysiere dieses Dokument und suche nach einem QR-Code oder Aztec-Code (typisch für Deutsche Bahn Tickets).
+const extractionPrompt = `Analysiere dieses Dokument und suche nach einem QR-Code oder Aztec-Code (typisch für Deutsche Bahn Tickets).
 
 WICHTIG: Deutsche Bahn Tickets verwenden AZTEC-Codes (quadratische Codes mit einem schwarzen Quadrat in der Mitte).
+
+=== DOKUMENTTYP ERKENNEN (PFLICHT!) ===
+Erkenne den Typ des Dokuments:
+- "ticket" = Echte Fahrkarte mit Buchungsnummer und Fahrpreis
+- "seat_reservation" = NUR Sitzplatzreservierung (Preis 0,00 EUR, Text enthält "Sitzplatzreservierung")
+- "confirmation" = Bestätigung (Hotel, Buchung)
+- "invoice" = Rechnung
+
+KRITERIEN für seat_reservation:
+- Betreff/Titel enthält "Sitzplatzreservierung" oder "Reservierung"
+- Preis ist 0,00 EUR oder nicht vorhanden
+- Es gibt Wagen und Sitzplatz-Nummern aber KEIN Fahrpreis
 
 Falls ein Code gefunden wird:
 1. Beschreibe die Position des Codes im Dokument
@@ -28,11 +40,12 @@ Antworte im JSON-Format:
   "position": "oben rechts" | "unten links" | etc.,
   "code_text_nearby": "Text der beim Code steht",
   "likely_content": "bfrn.de/xxx oder Buchungscode",
+  "document_type": "ticket" | "seat_reservation" | "confirmation" | "invoice",
   "description": "Kurze Beschreibung des Dokuments"
 }`;
 
   try {
-    const response = await fetch("https://api.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -58,7 +71,7 @@ Antworte im JSON-Format:
 
     if (!response.ok) {
       console.error("Vision API error:", response.status, await response.text());
-      return { qr_data: null, description: null };
+      return { qr_data: null, description: null, document_type: null };
     }
 
     const result = await response.json();
@@ -74,16 +87,17 @@ Antworte im JSON-Format:
         return {
           qr_data: parsed.likely_content || parsed.code_text_nearby || null,
           description: parsed.description || null,
+          document_type: parsed.document_type || null,
         };
       } catch {
-        return { qr_data: null, description: content };
+        return { qr_data: null, description: content, document_type: null };
       }
     }
 
-    return { qr_data: null, description: content };
+    return { qr_data: null, description: content, document_type: null };
   } catch (error) {
     console.error("Vision extraction error:", error);
-    return { qr_data: null, description: null };
+    return { qr_data: null, description: null, document_type: null };
   }
 }
 
@@ -158,18 +172,22 @@ serve(async (req) => {
     console.log("PDF downloaded, size:", arrayBuffer.byteLength, "bytes");
 
     // Extract QR code using vision AI
-    const { qr_data, description } = await extractQrCodeWithVision(base64, lovableApiKey);
+    const { qr_data, description, document_type } = await extractQrCodeWithVision(base64, lovableApiKey);
 
-    console.log("Extraction result - QR data:", qr_data, "Description:", description);
+    console.log("Extraction result - QR data:", qr_data, "Description:", description, "Document type:", document_type);
+
+    // Determine the best document_type
+    const finalDocumentType = document_type || 
+      (description?.toLowerCase().includes("reservierung") || description?.toLowerCase().includes("sitzplatz") ? "seat_reservation" : 
+       description?.toLowerCase().includes("ticket") || description?.toLowerCase().includes("fahrkarte") ? "ticket" : 
+       attachment.document_type);
 
     // Update the attachment record
     const { error: updateError } = await supabase
       .from("travel_attachments")
       .update({
         qr_code_data: qr_data || description || "No QR code found",
-        document_type: description?.toLowerCase().includes("reservierung") ? "seat_reservation" : 
-                       description?.toLowerCase().includes("ticket") ? "ticket" : 
-                       attachment.document_type,
+        document_type: finalDocumentType,
       })
       .eq("id", attachment_id);
 
