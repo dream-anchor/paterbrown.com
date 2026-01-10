@@ -19,6 +19,7 @@ import TravelEmailInbox from "./TravelEmailInbox";
 import TravelImportModal from "./TravelImportModal";
 import TravelCard from "./TravelCard";
 import TravelTimeline from "./TravelTimeline";
+import TravelerProfileEditor from "./TravelerProfileEditor";
 
 interface TravelBooking {
   id: string;
@@ -285,6 +286,13 @@ export default function TravelDashboard() {
             >
               <Mail className="w-4 h-4 mr-2" />
               Posteingang
+            </TabsTrigger>
+            <TabsTrigger 
+              value="profiles" 
+              className="px-5 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              <User className="w-4 h-4 mr-2" />
+              Profile
             </TabsTrigger>
           </TabsList>
 
@@ -685,6 +693,10 @@ export default function TravelDashboard() {
 
         <TabsContent value="inbox" className="mt-6">
           <TravelEmailInbox onEmailProcessed={fetchBookings} />
+        </TabsContent>
+
+        <TabsContent value="profiles" className="mt-6">
+          <TravelerProfileEditor />
         </TabsContent>
       </Tabs>
     </div>
