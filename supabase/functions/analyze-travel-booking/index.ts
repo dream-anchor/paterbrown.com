@@ -264,6 +264,19 @@ Für jede gefundene Buchung extrahiere:
 - details: Zusatzinfos als Objekt (WICHTIG - extrahiere alle verfügbaren Details!)
 - confidence: Deine Sicherheit bei der Extraktion (0.0 bis 1.0)
 
+=== DOKUMENTTYP ERKENNEN (WICHTIG!) ===
+Erkenne den Typ des Dokuments und setze details.document_type:
+- "ticket" = Echte Fahrkarte / Flugticket mit Buchungsnummer zum Reisen
+- "seat_reservation" = NUR Sitzplatzreservierung (ohne eigentliches Ticket)
+- "confirmation" = Buchungsbestätigung (z.B. Hotel-Bestätigung)
+- "invoice" = Rechnung
+- "unknown" = Typ unklar
+
+WICHTIG bei Bahntickets:
+- Wenn Betreff/Dokument "Sitzplatzreservierung" enthält und KEIN Fahrpreis → document_type: "seat_reservation"
+- Wenn "Reservierung" UND ein Fahrpreis/Ticketpreis → document_type: "ticket"
+- Setze auch is_seat_reservation: true wenn es NUR eine Reservierung ist
+
 === QR-CODES UND DIGITALE TICKETS ===
 Extrahiere wenn vorhanden:
 - qr_code_present: true/false - ob ein QR-Code sichtbar ist
@@ -409,6 +422,13 @@ ${existingBookingsContext}`;
                             ticket_url: { type: "string", description: "URL zum Online-Ticket" },
                             mobile_ticket: { type: "boolean", description: "Ist es ein Handy-Ticket?" },
                             checkin_url: { type: "string", description: "Online Check-in URL" },
+                            // Document type (NEW - for proper labeling in UI)
+                            document_type: { 
+                              type: "string", 
+                              enum: ["ticket", "seat_reservation", "confirmation", "invoice", "unknown"],
+                              description: "Art des Dokuments: ticket=Fahrkarte/Flugticket, seat_reservation=Sitzplatzreservierung, confirmation=Buchungsbestätigung, invoice=Rechnung"
+                            },
+                            is_seat_reservation: { type: "boolean", description: "Ist es NUR eine Sitzplatzreservierung (ohne Fahrkarte)?" },
                             // Train specific
                             train_number: { type: "string", description: "Zugnummer z.B. ICE 1044" },
                             class: { type: "string", description: "Wagenklasse 1 oder 2" },

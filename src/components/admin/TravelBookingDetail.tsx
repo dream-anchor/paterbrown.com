@@ -635,26 +635,40 @@ END:VCALENDAR`;
           {booking.booking_type === 'train' && (
             <>
               {renderTrainRoute()}
-              {/* Ticket PDF */}
+              {/* Ticket/Reservation PDF - Dynamic label based on document type */}
               {pdfAttachments.length > 0 ? (
                 <div className="space-y-2">
-                  <div className="text-xs text-gray-400 uppercase tracking-wide">Fahrkarte</div>
-                  {pdfAttachments.map(att => (
-                    <button
-                      key={att.id}
-                      onClick={() => setViewingDocument(att)}
-                      className="flex items-center gap-4 w-full p-4 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors text-left"
-                    >
-                      <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
-                        <FileText className="w-6 h-6 text-gray-500" />
+                  {pdfAttachments.map(att => {
+                    // Determine document type from booking details, file name, or default
+                    const docType = booking.details?.document_type;
+                    const isReservation = 
+                      docType === 'seat_reservation' ||
+                      att.file_name.toLowerCase().includes('reservierung') ||
+                      att.file_name.toLowerCase().includes('reservation') ||
+                      att.file_name.toLowerCase().includes('sitzplatz');
+                    
+                    const documentLabel = isReservation ? 'Sitzplatzreservierung' : 'Fahrkarte';
+                    const buttonLabel = isReservation ? 'Reservierung anzeigen' : 'Ticket anzeigen';
+                    
+                    return (
+                      <div key={att.id}>
+                        <div className="text-xs text-gray-400 uppercase tracking-wide mb-2">{documentLabel}</div>
+                        <button
+                          onClick={() => setViewingDocument(att)}
+                          className="flex items-center gap-4 w-full p-4 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors text-left"
+                        >
+                          <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+                            <FileText className="w-6 h-6 text-gray-500" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-gray-900">{buttonLabel}</div>
+                            <div className="text-sm text-gray-500 truncate">{att.file_name}</div>
+                          </div>
+                          <ExternalLink className="w-4 h-4 text-gray-400" />
+                        </button>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900">Ticket anzeigen</div>
-                        <div className="text-sm text-gray-500 truncate">{att.file_name}</div>
-                      </div>
-                      <ExternalLink className="w-4 h-4 text-gray-400" />
-                    </button>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">

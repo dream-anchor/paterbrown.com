@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -8,7 +8,8 @@ import {
   Hotel, Train, Plane, Bus, Car, Package, 
   Calendar, MapPin, Users, Hash, ChevronRight,
   Mail, Clock, AlertCircle, CheckCircle2, Loader2,
-  Filter, Search, RefreshCw, Upload, LayoutGrid, List
+  Filter, Search, RefreshCw, Upload, LayoutGrid, List,
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,6 +94,22 @@ const deduplicateBookings = (bookings: TravelBooking[]): TravelBooking[] => {
   return Array.from(seen.values());
 };
 
+// Extract all unique traveler names from bookings
+const extractUniqueTravelers = (bookings: TravelBooking[]): string[] => {
+  const travelers = new Set<string>();
+  
+  bookings.forEach(booking => {
+    if (booking.traveler_name) {
+      travelers.add(booking.traveler_name);
+    }
+    if (booking.traveler_names) {
+      booking.traveler_names.forEach(name => travelers.add(name));
+    }
+  });
+  
+  return Array.from(travelers).sort();
+};
+
 export default function TravelDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [bookings, setBookings] = useState<TravelBooking[]>([]);
@@ -101,6 +118,7 @@ export default function TravelDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"cards" | "list">("cards");
+  const [selectedTravelers, setSelectedTravelers] = useState<string[]>([]);
   const { toast } = useToast();
 
   // Get sub-tab from URL, default to "bookings"
@@ -140,20 +158,50 @@ export default function TravelDashboard() {
     }
   };
 
-  // Group bookings by date
+  // Extract unique travelers for filter
+  const allTravelers = useMemo(() => extractUniqueTravelers(bookings), [bookings]);
+
+  // Toggle traveler selection
+  const toggleTraveler = (name: string) => {
+    setSelectedTravelers(prev => 
+      prev.includes(name) 
+        ? prev.filter(t => t !== name)
+        : [...prev, name]
+    );
+  };
+
+  // Group bookings by date with filters applied
   const groupedBookings: GroupedBookings = bookings
     .filter(b => {
-      if (!searchQuery) return true;
-      const query = searchQuery.toLowerCase();
-      return (
-        b.destination_city?.toLowerCase().includes(query) ||
-        b.origin_city?.toLowerCase().includes(query) ||
-        b.traveler_name?.toLowerCase().includes(query) ||
-        b.traveler_names?.some(n => n.toLowerCase().includes(query)) ||
-        b.booking_number?.toLowerCase().includes(query) ||
-        b.venue_name?.toLowerCase().includes(query) ||
-        b.provider?.toLowerCase().includes(query)
-      );
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesSearch = (
+          b.destination_city?.toLowerCase().includes(query) ||
+          b.origin_city?.toLowerCase().includes(query) ||
+          b.traveler_name?.toLowerCase().includes(query) ||
+          b.traveler_names?.some(n => n.toLowerCase().includes(query)) ||
+          b.booking_number?.toLowerCase().includes(query) ||
+          b.venue_name?.toLowerCase().includes(query) ||
+          b.provider?.toLowerCase().includes(query)
+        );
+        if (!matchesSearch) return false;
+      }
+      
+      // Traveler filter (if any selected)
+      if (selectedTravelers.length > 0) {
+        const bookingTravelers = [
+          b.traveler_name,
+          ...(b.traveler_names || [])
+        ].filter(Boolean) as string[];
+        
+        const matchesTraveler = bookingTravelers.some(t => 
+          selectedTravelers.includes(t)
+        );
+        if (!matchesTraveler) return false;
+      }
+      
+      return true;
     })
     .reduce((groups, booking) => {
       const date = format(parseISO(booking.start_datetime), "yyyy-MM-dd");
@@ -164,10 +212,9 @@ export default function TravelDashboard() {
 
   const sortedDates = Object.keys(groupedBookings).sort();
 
+  // Always use full German date format
   const getDateLabel = (dateStr: string) => {
     const date = parseISO(dateStr);
-    if (isToday(date)) return "Heute";
-    if (isTomorrow(date)) return "Morgen";
     return format(date, "EEEE, d. MMMM yyyy", { locale: de });
   };
 
@@ -258,6 +305,39 @@ export default function TravelDashboard() {
           )}
         </div>
 
+        {/* Person Filter - Multi-Select */}
+        {activeTab === "bookings" && allTravelers.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap mt-4">
+            <span className="text-xs text-gray-400 uppercase tracking-wide flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5" />
+              Filter:
+            </span>
+            <button
+              onClick={() => setSelectedTravelers([])}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                selectedTravelers.length === 0
+                  ? "bg-gray-900 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              Alle
+            </button>
+            {allTravelers.map(traveler => (
+              <button
+                key={traveler}
+                onClick={() => toggleTraveler(traveler)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  selectedTravelers.includes(traveler)
+                    ? "bg-gray-900 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {traveler}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Import Modal */}
         <TravelImportModal
           open={isImportModalOpen}
@@ -286,17 +366,25 @@ export default function TravelDashboard() {
               ) : (
                 sortedDates.map((date) => (
                   <div key={date} className="space-y-3">
-                    {/* Date Header */}
+                    {/* Date Header - Full German format, subtle "Heute" badge */}
                     <div className="flex items-center gap-3">
-                      <div className={`px-3 py-1 rounded-lg text-sm font-medium ${
+                      <div className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
                         isPast(parseISO(date)) && !isToday(parseISO(date))
                           ? "text-gray-400"
-                          : isToday(parseISO(date))
-                          ? "bg-gray-900 text-white"
                           : "text-gray-700"
                       }`}>
                         {getDateLabel(date)}
                       </div>
+                      {isToday(parseISO(date)) && (
+                        <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100">
+                          Heute
+                        </span>
+                      )}
+                      {isTomorrow(parseISO(date)) && (
+                        <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-600 border border-amber-100">
+                          Morgen
+                        </span>
+                      )}
                       <div className="h-px flex-1 bg-gray-100" />
                     </div>
 
