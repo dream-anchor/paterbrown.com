@@ -51,6 +51,7 @@ interface Attachment {
   file_name: string;
   file_path: string;
   content_type: string | null;
+  document_type?: string | null;
 }
 
 interface RelatedEvent {
@@ -117,7 +118,7 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
     if (!booking?.source_email_id) return;
     const { data } = await supabase
       .from("travel_attachments")
-      .select("*")
+      .select("id, file_name, file_path, content_type, document_type")
       .eq("email_id", booking.source_email_id);
     setAttachments((data as Attachment[]) || []);
   };
@@ -703,7 +704,11 @@ END:VCALENDAR`;
               {pdfAttachments.length > 0 ? (
                 <div className="space-y-2">
                   <div className="text-xs text-gray-400 uppercase tracking-wide">Flugticket</div>
-                  {pdfAttachments.map(att => (
+                {pdfAttachments.map(att => {
+                  const labelText = att.document_type === 'seat_reservation' 
+                    ? 'Reservierung anzeigen' 
+                    : 'Ticket anzeigen';
+                  return (
                     <button
                       key={att.id}
                       onClick={() => setViewingDocument(att)}
@@ -713,12 +718,13 @@ END:VCALENDAR`;
                         <FileText className="w-6 h-6 text-gray-500" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900">Ticket anzeigen</div>
+                        <div className="font-medium text-gray-900">{labelText}</div>
                         <div className="text-sm text-gray-500 truncate">{att.file_name}</div>
                       </div>
                       <ExternalLink className="w-4 h-4 text-gray-400" />
                     </button>
-                  ))}
+                  );
+                })}
                 </div>
               ) : (
                 <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
