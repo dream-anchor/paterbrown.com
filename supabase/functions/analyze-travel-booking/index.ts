@@ -125,19 +125,20 @@ function fuzzyMatchTraveler(extractedName: string, knownTravelers: string[]): st
   return null;
 }
 
+// ========== HELPER: Result Type for Traveler Identification ==========
+interface TravelerIdentificationResult {
+  matchedName: string | null;
+  extractedName: string | null;  // Der rohe Name aus dem Dokument (für Auto-Create)
+}
+
 // ========== HELPER: Identify Traveler in Document (STRICT LABELS!) ==========
 async function identifyTravelerInDocument(
   base64Content: string,
   mimeType: string,
   knownTravelers: string[],
   lovableApiKey: string
-): Promise<string | null> {
-  if (knownTravelers.length === 0) {
-    console.log("No known travelers for matching");
-    return null;
-  }
-
-  const travelerListStr = knownTravelers.join(", ");
+): Promise<TravelerIdentificationResult> {
+  const emptyResult: TravelerIdentificationResult = { matchedName: null, extractedName: null };
   
   // ⚠️ STRIKTERER PROMPT - Sucht nur nach Labels
   const prompt = `Finde den REISENDEN-NAMEN in diesem Reisedokument/Ticket.
@@ -153,21 +154,13 @@ Der Name steht DIREKT HINTER einem dieser Labels:
 7. "Gebucht für:"
 8. "Boarding Pass für:"
 
-BEKANNTE REISENDE (NUR diese Namen sind gültig!):
-${travelerListStr}
+⚠️ WICHTIG:
+- Gib den Namen EXAKT so zurück, wie er im Dokument steht
+- Format: "Vorname Nachname" 
+- Wenn kein Name gefunden: "UNKNOWN"
+- KEINE Erklärung, NUR der Name!
 
-⚠️ FUZZY MATCHING REGELN:
-- "A. Monot" = "Antoine Monot"
-- "Monot, Antoine" = "Antoine Monot"
-- "SICK STEFANIE" = "Stefanie Sick"
-- Initialien + Nachname = Vollständiger Name
-
-⛔ WICHTIG - KEINE RATEN!
-- Wenn der gefundene Name NICHT in der Bekannten-Liste ist → "UNKNOWN"
-- Wenn das Label unklar ist → "UNKNOWN"
-- NIEMALS einen anderen Namen aus der Liste "raten"!
-
-Antworte NUR mit dem gefundenen Namen oder "UNKNOWN". Keine Erklärung.`;
+Antworte NUR mit dem gefundenen Namen oder "UNKNOWN".`;
 
   try {
     console.log(`\n=== TRAVELER IDENTIFICATION START ===`);
@@ -198,7 +191,7 @@ Antworte NUR mit dem gefundenen Namen oder "UNKNOWN". Keine Erklärung.`;
     if (!visionResponse.ok) {
       const errText = await visionResponse.text();
       console.error("Vision API error for traveler identification:", errText);
-      return null;
+      return emptyResult;
     }
 
     const visionData = await visionResponse.json();
@@ -209,20 +202,100 @@ Antworte NUR mit dem gefundenen Namen oder "UNKNOWN". Keine Erklärung.`;
     if (extractedName === "UNKNOWN" || !extractedName) {
       console.log(`⚠️ No traveler found in document (AI returned UNKNOWN)`);
       console.log(`=== TRAVELER IDENTIFICATION END ===\n`);
-      return null;
+      return emptyResult;
     }
     
-    // Score-based Fuzzy match against known travelers
-    const matchedTraveler = fuzzyMatchTraveler(extractedName, knownTravelers);
+    // Speichere den extrahierten Namen für Auto-Create
+    const result: TravelerIdentificationResult = {
+      matchedName: null,
+      extractedName: extractedName
+    };
     
-    console.log(`📋 Final Match Result: "${matchedTraveler || 'UNASSIGNED'}"`);
+    // Score-based Fuzzy match against known travelers (nur wenn wir bekannte Reisende haben)
+    if (knownTravelers.length > 0) {
+      const matchedTraveler = fuzzyMatchTraveler(extractedName, knownTravelers);
+      result.matchedName = matchedTraveler;
+      console.log(`📋 Final Match Result: "${matchedTraveler || 'NO MATCH - CANDIDATE FOR AUTO-CREATE'}"`);
+    } else {
+      console.log(`📋 No known travelers to match against - will use Auto-Create`);
+    }
+    
     console.log(`=== TRAVELER IDENTIFICATION END ===\n`);
-    
-    return matchedTraveler;
+    return result;
   } catch (error) {
     console.error("Error identifying traveler in document:", error);
+    return emptyResult;
+  }
+}
+
+// ========== HELPER: Auto-Create Traveler Profile ==========
+async function autoCreateTravelerProfile(
+  extractedName: string,
+  supabase: any
+): Promise<{ fullName: string; profileId: string } | null> {
+  // Validierung: Name muss valide sein (Länge > 3, enthält Leerzeichen)
+  if (!extractedName || extractedName.length <= 3 || !extractedName.includes(' ')) {
+    console.log(`⚠️ Cannot auto-create profile: Invalid name "${extractedName}" (too short or no space)`);
     return null;
   }
+  
+  // Ignoriere ungültige/placeholder Namen
+  const invalidNames = ['unknown', 'unbekannt', 'n/a', 'nicht identifiziert', 'no name', 'kein name'];
+  if (invalidNames.includes(extractedName.toLowerCase().trim())) {
+    console.log(`⚠️ Cannot auto-create profile: Name is a placeholder "${extractedName}"`);
+    return null;
+  }
+  
+  // Split: Alles vor dem letzten Leerzeichen = Vorname, Rest = Nachname
+  const nameParts = extractedName.trim().split(/\s+/);
+  const lastName = nameParts.pop() || '';
+  const firstName = nameParts.join(' ') || '';
+  
+  if (!firstName || !lastName || firstName.length < 2 || lastName.length < 2) {
+    console.log(`⚠️ Cannot auto-create profile: Could not properly split name "${extractedName}" → first="${firstName}", last="${lastName}"`);
+    return null;
+  }
+  
+  console.log(`🔄 Auto-Create: Attempting to create profile for "${firstName} ${lastName}"`);
+  
+  // Prüfe auf Duplikate (case-insensitive)
+  const { data: existing } = await supabase
+    .from("traveler_profiles")
+    .select("id, first_name, last_name")
+    .ilike("first_name", firstName)
+    .ilike("last_name", lastName)
+    .limit(1);
+  
+  if (existing && existing.length > 0) {
+    console.log(`ℹ️ Profile already exists for "${firstName} ${lastName}" (ID: ${existing[0].id})`);
+    return { 
+      fullName: `${existing[0].first_name} ${existing[0].last_name}`,
+      profileId: existing[0].id 
+    };
+  }
+  
+  // Neues Profil erstellen
+  const { data: newProfile, error } = await supabase
+    .from("traveler_profiles")
+    .insert({
+      first_name: firstName,
+      last_name: lastName,
+      auto_created: true
+    })
+    .select("id, first_name, last_name")
+    .single();
+  
+  if (error) {
+    console.error(`❌ Failed to auto-create profile for "${extractedName}":`, error);
+    return null;
+  }
+  
+  console.log(`🆕 Auto-created new profile for: ${firstName} ${lastName} (ID: ${newProfile.id})`);
+  
+  return {
+    fullName: `${newProfile.first_name} ${newProfile.last_name}`,
+    profileId: newProfile.id
+  };
 }
 
 // ========== MAIN BACKGROUND PROCESSING FUNCTION ==========
@@ -378,20 +451,41 @@ if (attachments && attachments.length > 0) {
               }
               
               // ========== MULTI-USER SPLIT: Identify Traveler in Document ==========
-              const identifiedTraveler = await identifyTravelerInDocument(
+              const identificationResult = await identifyTravelerInDocument(
                 base64Content,
                 mimeType,
                 knownTravelers,
                 lovableApiKey
               );
               
-              if (identifiedTraveler) {
-                console.log(`📋 Attachment "${attachment.file_name}" belongs to: ${identifiedTraveler}`);
+              let finalTravelerName: string | null = identificationResult.matchedName;
+              
+              // ========== AUTO-CREATE FALLBACK ==========
+              if (!finalTravelerName && identificationResult.extractedName) {
+                console.log(`🔄 No match found for "${identificationResult.extractedName}". Attempting auto-create...`);
+                
+                const autoCreated = await autoCreateTravelerProfile(
+                  identificationResult.extractedName, 
+                  supabase
+                );
+                
+                if (autoCreated) {
+                  finalTravelerName = autoCreated.fullName;
+                  
+                  // Füge neuen Namen zur lokalen Liste hinzu für spätere Attachments in dieser Session
+                  knownTravelers.push(autoCreated.fullName);
+                  
+                  console.log(`✅ Using auto-created profile: ${finalTravelerName}`);
+                }
+              }
+              
+              if (finalTravelerName) {
+                console.log(`📋 Attachment "${attachment.file_name}" belongs to: ${finalTravelerName}`);
                 
                 // Update attachment with identified traveler
                 await supabase
                   .from("travel_attachments")
-                  .update({ traveler_name: identifiedTraveler })
+                  .update({ traveler_name: finalTravelerName })
                   .eq("id", attachment.id);
               } else {
                 console.log(`📋 Attachment "${attachment.file_name}" - NO traveler identified (will be UNASSIGNED)`);
@@ -427,8 +521,8 @@ if (attachments && attachments.length > 0) {
                 
                 if (extractedText) {
                   // Include identified traveler in the content for AI context
-                  const travelerNote = identifiedTraveler 
-                    ? `\n[IDENTIFIZIERTER REISENDER: ${identifiedTraveler}]` 
+                  const travelerNote = finalTravelerName 
+                    ? `\n[IDENTIFIZIERTER REISENDER: ${finalTravelerName}]` 
                     : '\n[REISENDER: NICHT IDENTIFIZIERT - WIRD NICHT ZUGEORDNET]';
                   attachmentContents += `\n\n=== INHALT AUS ANHANG "${attachment.file_name}" (${fileType}) ===${travelerNote}\n${extractedText}`;
                 }

@@ -511,6 +511,7 @@ export type Database = {
       }
       traveler_profiles: {
         Row: {
+          auto_created: boolean | null
           bahncard_class: number | null
           bahncard_number: string | null
           bahncard_type: string | null
@@ -527,6 +528,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          auto_created?: boolean | null
           bahncard_class?: number | null
           bahncard_number?: string | null
           bahncard_type?: string | null
@@ -543,6 +545,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          auto_created?: boolean | null
           bahncard_class?: number | null
           bahncard_number?: string | null
           bahncard_type?: string | null
