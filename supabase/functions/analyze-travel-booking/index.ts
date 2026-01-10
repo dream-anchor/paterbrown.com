@@ -261,6 +261,23 @@ Erkenne den booking_type NICHT am Preis oder an vagen Hinweisen, sondern am ANBI
 NIEMALS Deutsche Bahn Tickets als "flight" klassifizieren!
 NIEMALS Flugtickets als "train" klassifizieren!
 
+=== KRITISCH: KEINE ROUTEN ERFINDEN ===
+Wenn für eine Person KEINE explizite Route (Start → Ziel) angegeben ist:
+1. NIEMALS die Route einer anderen Person übertragen
+2. NIEMALS eine Route raten oder erfinden
+3. Stattdessen: Diese Buchung NICHT erstellen
+
+Beispiel aus einer E-Mail:
+"Am 10. Januar - Stefanie Sick - 64,55 EUR Flexpreis" (KEINE Route!)
+"Am 10. Januar - Wanja Mues - Bremen → Berlin Hbf"
+→ Erstelle Buchung NUR für Wanja, NICHT für Stefanie!
+
+=== VALIDIERUNG: BUCHUNG ÜBERSPRINGEN WENN ===
+- booking_number = "reserviert" → Das ist KEINE echte Buchungsnummer!
+- origin_city = destination_city → Das ist ein Datenfehler!
+- Keine echte Uhrzeit und keine Route → Unvollständige Daten!
+- Nur Preis ohne konkrete Reisedaten → Zu wenig Information!
+
 Für jede gefundene Buchung extrahiere:
 - booking_type: "hotel", "train", "flight", "bus", "rental_car" oder "other"
 - booking_number: Buchungsnummer/Reservierungscode/Auftragsnummer (PFLICHT - siehe unten!)
@@ -701,6 +718,30 @@ ${existingBookingsContext}`;
             bookingsUpdated++;
           }
         } else {
+          // ===== DUPLICATE CHECK BEFORE INSERT =====
+          const bookingDate = new Date(booking.start_datetime);
+          const dateStr = bookingDate.toISOString().split('T')[0];
+          const travelerName = booking.traveler_name || (booking.traveler_names?.length ? booking.traveler_names[0] : null);
+          
+          if (travelerName && booking.destination_city) {
+            let duplicateQuery = supabase
+              .from("travel_bookings")
+              .select("id")
+              .eq("booking_type", booking.booking_type)
+              .eq("destination_city", booking.destination_city)
+              .gte("start_datetime", `${dateStr}T00:00:00`)
+              .lte("start_datetime", `${dateStr}T23:59:59`);
+            
+            duplicateQuery = duplicateQuery.or(`traveler_name.ilike.%${travelerName}%,traveler_names.cs.{"${travelerName}"}`);
+            
+            const { data: duplicates } = await duplicateQuery.limit(1);
+            
+            if (duplicates && duplicates.length > 0) {
+              console.log(`Skipping duplicate: ${travelerName} → ${booking.destination_city} on ${dateStr}`);
+              continue;
+            }
+          }
+          
           // Post-processing: Ensure booking_number is set from details if missing or placeholder
           let finalBookingNumber = booking.booking_number;
           const placeholderValues = ['reserviert', 'ohne nr.', 'ohne nr', 'pending', 'n/a', 'tba', 'unknown', '-', '–'];
@@ -724,15 +765,19 @@ ${existingBookingsContext}`;
             continue;
           }
           
-          // Check if transport booking has valid origin
+          // Skip if origin = destination (data error)
+          if (finalOrigin && finalDestination && 
+              finalOrigin.toLowerCase().trim() === finalDestination.toLowerCase().trim()) {
+            console.log(`Skipping booking where origin = destination: ${finalOrigin}`);
+            continue;
+          }
+          
+          // Check if transport booking has valid origin - skip entirely if missing
           const isTransport = ['train', 'flight', 'bus'].includes(booking.booking_type);
-          let needsReview = booking.needs_review || false;
-          let aiConfidence = booking.confidence || 1;
           
           if (isTransport && (!finalOrigin || invalidCities.includes(finalOrigin.toLowerCase?.().trim()))) {
-            needsReview = true;
-            aiConfidence = Math.min(aiConfidence, 0.3);
-            console.log(`Marking transport booking as needs_review due to missing origin_city`);
+            console.log(`Skipping transport booking without valid origin_city for ${travelerName}`);
+            continue;
           }
           
           // Create new booking
@@ -753,8 +798,8 @@ ${existingBookingsContext}`;
               details: bookingDetails,
               status: "confirmed",
               source_email_id: email_id,
-              ai_confidence: aiConfidence,
-              needs_review: needsReview,
+              ai_confidence: booking.confidence || 1,
+              needs_review: false,
             });
 
           if (insertError) {

@@ -452,6 +452,57 @@ export type Database = {
         }
         Relationships: []
       }
+      traveler_profiles: {
+        Row: {
+          bahncard_class: number | null
+          bahncard_number: string | null
+          bahncard_type: string | null
+          bahncard_valid_until: string | null
+          birth_date: string | null
+          created_at: string | null
+          first_name: string
+          id: string
+          last_name: string
+          phone_number: string | null
+          preferred_class: number | null
+          preferred_seat: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          bahncard_class?: number | null
+          bahncard_number?: string | null
+          bahncard_type?: string | null
+          bahncard_valid_until?: string | null
+          birth_date?: string | null
+          created_at?: string | null
+          first_name: string
+          id?: string
+          last_name: string
+          phone_number?: string | null
+          preferred_class?: number | null
+          preferred_seat?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          bahncard_class?: number | null
+          bahncard_number?: string | null
+          bahncard_type?: string | null
+          bahncard_valid_until?: string | null
+          birth_date?: string | null
+          created_at?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone_number?: string | null
+          preferred_class?: number | null
+          preferred_seat?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
