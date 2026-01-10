@@ -372,7 +372,28 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const payload = await req.json();
+    
+    // ===== ENHANCED LOGGING: Log EVERY incoming request =====
+    console.info("=== INCOMING REQUEST ANALYSIS ===");
     console.info("Payload keys:", Object.keys(payload));
+    console.info("filename:", payload.filename || "(nicht vorhanden)");
+    console.info("contentType:", payload.contentType || "(nicht vorhanden)");
+    console.info("mail_id:", payload.mail_id || "(nicht vorhanden)");
+    console.info("Has download_url:", !!payload.download_url);
+    console.info("Has content (base64):", !!payload.content);
+    console.info("Has from/From/sender:", !!(payload.from || payload.From || payload.sender));
+    console.info("Has subject/Subject:", !!(payload.subject || payload.Subject));
+    
+    // Debug: Show PDF-specific info if detected
+    if (payload.contentType === "application/pdf" || 
+        (payload.filename && payload.filename.toLowerCase().endsWith('.pdf'))) {
+      console.info("=== PDF DETECTED ===");
+      console.info("PDF filename:", payload.filename);
+      console.info("PDF contentType:", payload.contentType);
+      if (payload.download_url) {
+        console.info("PDF download_url:", payload.download_url.substring(0, 300));
+      }
+    }
 
     // ===== CHECK IF THIS IS AN ATTACHMENT-ONLY REQUEST =====
     // Supports both Base64 content AND OneDrive download_url
@@ -381,8 +402,33 @@ serve(async (req) => {
       !payload.subject && !payload.Subject &&
       (payload.content || payload.download_url) && payload.filename;
 
+    // ===== DEBUG: Why was attachment-only not detected? =====
+    if (!isAttachmentOnly && payload.mail_id) {
+      console.warn("=== ATTACHMENT-ONLY CHECK FAILED ===");
+      console.warn("Condition breakdown:");
+      console.warn("  mail_id vorhanden:", !!payload.mail_id, "->", payload.mail_id);
+      console.warn("  from/From/sender NICHT vorhanden:", !payload.from && !payload.From && !payload.sender);
+      console.warn("    from:", payload.from);
+      console.warn("    From:", payload.From);
+      console.warn("    sender:", payload.sender);
+      console.warn("  subject/Subject NICHT vorhanden:", !payload.subject && !payload.Subject);
+      console.warn("    subject:", payload.subject);
+      console.warn("    Subject:", payload.Subject);
+      console.warn("  content ODER download_url vorhanden:", !!(payload.content || payload.download_url));
+      console.warn("    content:", !!payload.content);
+      console.warn("    download_url:", !!payload.download_url);
+      console.warn("  filename vorhanden:", !!payload.filename, "->", payload.filename);
+    }
+    
+    // Also log if request has mail_id but no content/download_url
+    if (payload.mail_id && !payload.content && !payload.download_url) {
+      console.warn("=== REQUEST HAS mail_id BUT NO CONTENT/URL ===");
+      console.warn("This request cannot be processed as attachment-only!");
+      console.warn("Full payload (first 1000 chars):", JSON.stringify(payload).substring(0, 1000));
+    }
+
     if (isAttachmentOnly) {
-      console.info("=== ATTACHMENT-ONLY MODE ===");
+      console.info("=== ATTACHMENT-ONLY MODE ACTIVATED ===");
       console.info("mail_id:", payload.mail_id);
       console.info("filename:", payload.filename);
       console.info("contentType:", payload.contentType);
