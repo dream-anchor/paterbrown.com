@@ -182,8 +182,8 @@ Antworte NUR mit dem gefundenen Namen oder "UNKNOWN".`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // 🔥 MODEL UPGRADE: GPT-5 für beste Dokumenten-Erkennung!
-        model: "openai/gpt-5",
+        // 🔥 HYBRID STRATEGY: Gemini für Vision (kann PDFs lesen!), GPT-5 für Reasoning
+        model: "google/gemini-2.5-flash",
         messages: [{
           role: "user",
           content: [
