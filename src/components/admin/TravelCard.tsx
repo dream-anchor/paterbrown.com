@@ -42,24 +42,24 @@ interface Props {
   onSelect: (booking: TravelBooking) => void;
   onViewTicket?: () => void;
   onShowQrCode?: () => void;
-  showTimeBadge?: boolean; // Ob das "Heute"/"Morgen" Badge angezeigt werden soll
+  showTimeBadge?: boolean;
 }
 
 const bookingTypeConfig = {
-  hotel: { icon: Hotel, label: "Hotel", color: "bg-amber-500" },
-  train: { icon: Train, label: "Zug", color: "bg-blue-500" },
-  flight: { icon: Plane, label: "Flug", color: "bg-purple-500" },
-  bus: { icon: Bus, label: "Bus", color: "bg-green-500" },
-  rental_car: { icon: Car, label: "Mietwagen", color: "bg-orange-500" },
-  other: { icon: Package, label: "Sonstiges", color: "bg-gray-500" },
+  hotel: { icon: Hotel, label: "Hotel", glowClass: "icon-glow-hotel", shadowClass: "shadow-hotel", dotColor: "bg-amber-500" },
+  train: { icon: Train, label: "Zug", glowClass: "icon-glow-train", shadowClass: "shadow-train", dotColor: "bg-blue-500" },
+  flight: { icon: Plane, label: "Flug", glowClass: "icon-glow-flight", shadowClass: "shadow-flight", dotColor: "bg-violet-500" },
+  bus: { icon: Bus, label: "Bus", glowClass: "icon-glow-bus", shadowClass: "shadow-bus", dotColor: "bg-emerald-500" },
+  rental_car: { icon: Car, label: "Mietwagen", glowClass: "icon-glow-car", shadowClass: "shadow-car", dotColor: "bg-orange-500" },
+  other: { icon: Package, label: "Sonstiges", glowClass: "bg-gray-100", shadowClass: "", dotColor: "bg-gray-500" },
 };
 
 const statusConfig = {
-  confirmed: { label: "Bestätigt", className: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  changed: { label: "Geändert", className: "bg-amber-50 text-amber-700 border-amber-200" },
-  cancelled: { label: "Storniert", className: "bg-red-50 text-red-700 border-red-200" },
-  pending: { label: "Ausstehend", className: "bg-gray-50 text-gray-600 border-gray-200" },
-  proposal: { label: "Angebot", className: "bg-purple-50 text-purple-700 border-purple-200 border-dashed" },
+  confirmed: { label: "Bestätigt", dotColor: "bg-emerald-500", className: "text-emerald-700" },
+  changed: { label: "Geändert", dotColor: "bg-amber-500", className: "text-amber-700" },
+  cancelled: { label: "Storniert", dotColor: "bg-red-500", className: "text-red-700" },
+  pending: { label: "Ausstehend", dotColor: "bg-gray-400", className: "text-gray-600" },
+  proposal: { label: "Angebot", dotColor: "bg-violet-500", className: "text-violet-700" },
 };
 
 // Check if datetime has real time component
@@ -80,7 +80,6 @@ interface DataQualityIssue {
 const checkDataQuality = (booking: TravelBooking): DataQualityIssue[] => {
   const issues: DataQualityIssue[] = [];
   
-  // Prüfung auf "Unknown" Werte
   if (!booking.destination_city || booking.destination_city.toLowerCase() === 'unknown') {
     issues.push({ field: 'destination_city', message: 'Ziel fehlt', severity: 'high' });
   }
@@ -90,13 +89,11 @@ const checkDataQuality = (booking: TravelBooking): DataQualityIssue[] => {
     }
   }
   
-  // Prüfung auf Placeholder-Buchungsnummern
   const placeholderNumbers = ['reserviert', 'ohne nr.', 'ohne nr', 'n/a', '-', ''];
   if (booking.booking_number && placeholderNumbers.includes(booking.booking_number.toLowerCase())) {
     issues.push({ field: 'booking_number', message: 'Buchungsnummer fehlt', severity: 'medium' });
   }
   
-  // Prüfung auf niedrige KI-Confidence
   if (booking.ai_confidence && booking.ai_confidence < 0.6) {
     issues.push({ field: 'ai_confidence', message: `KI nur ${Math.round(booking.ai_confidence * 100)}% sicher`, severity: 'low' });
   }
@@ -108,10 +105,8 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
   const [copied, setCopied] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   
-  // Load QR code URL from attachments (not from booking.qr_code_url)
   useEffect(() => {
     const loadQrCode = async () => {
-      // Only load for train bookings
       if (booking.booking_type !== 'train') {
         setQrCodeUrl(null);
         return;
@@ -139,6 +134,7 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
     
     loadQrCode();
   }, [booking.id, booking.booking_type]);
+
   const typeConfig = bookingTypeConfig[booking.booking_type];
   const TypeIcon = typeConfig.icon;
   const status = statusConfig[booking.status];
@@ -151,12 +147,9 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
   };
   
   const bookingNumber = getBookingNumber();
-  
-  // Datenqualitäts-Issues prüfen
   const qualityIssues = checkDataQuality(booking);
   const hasHighSeverityIssues = qualityIssues.some(i => i.severity === 'high');
   
-  // Smart time display - nur wenn showTimeBadge true ist
   const getTimeLabel = () => {
     if (!showTimeBadge) return null;
     const date = parseISO(booking.start_datetime);
@@ -196,11 +189,8 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
     window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
   };
   
-  // Check for QR code / digital ticket
   const hasQrCode = booking.details?.qr_code_present || booking.details?.mobile_ticket;
-  const hasTicketUrl = booking.details?.ticket_url;
   
-  // Quick info pills
   const getQuickInfo = () => {
     const pills: { icon: React.ElementType; label: string }[] = [];
     
@@ -228,7 +218,6 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
   
   const quickInfo = getQuickInfo();
   
-  // Format price
   const getPrice = () => {
     const amount = booking.details?.total_amount || booking.details?.price;
     const currency = booking.details?.currency || "EUR";
@@ -243,21 +232,32 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
       <div
         onClick={() => onSelect(booking)}
         className={cn(
-          "group relative bg-white rounded-2xl border transition-all duration-200 cursor-pointer",
-          "hover:shadow-lg hover:border-gray-300 hover:-translate-y-0.5",
+          "group relative rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden",
+          "glass-card glass-card-hover",
           isSelected 
-            ? "border-gray-900 shadow-lg ring-1 ring-gray-900" 
+            ? `border-gray-400 ring-1 ring-gray-400 ${typeConfig.shadowClass}` 
             : hasHighSeverityIssues 
-              ? "border-amber-300 shadow-sm" 
-              : "border-gray-200 shadow-sm"
+              ? "border-amber-200" 
+              : "border-white/40",
+          isSelected && typeConfig.shadowClass
         )}
       >
-        {/* Datenqualitäts-Warnung - Top Left Corner */}
+        {/* Subtle gradient overlay based on type */}
+        <div className={cn(
+          "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none",
+          booking.booking_type === 'train' && "bg-gradient-to-br from-blue-500/5 to-transparent",
+          booking.booking_type === 'hotel' && "bg-gradient-to-br from-amber-500/5 to-transparent",
+          booking.booking_type === 'flight' && "bg-gradient-to-br from-violet-500/5 to-transparent",
+          booking.booking_type === 'bus' && "bg-gradient-to-br from-emerald-500/5 to-transparent",
+          booking.booking_type === 'rental_car' && "bg-gradient-to-br from-orange-500/5 to-transparent"
+        )} />
+
+        {/* Datenqualitäts-Warnung */}
         {qualityIssues.length > 0 && (
           <Tooltip>
             <TooltipTrigger asChild>
               <div className={cn(
-                "absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center shadow-sm cursor-help",
+                "absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center shadow-lg cursor-help z-10",
                 hasHighSeverityIssues 
                   ? "bg-amber-500 text-white" 
                   : "bg-gray-200 text-gray-600"
@@ -276,19 +276,19 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
           </Tooltip>
         )}
 
-        {/* Time Badge - Top Right Corner - nur wenn explizit aktiviert und kein QR */}
+        {/* Time Badge */}
         {timeLabel && timeLabel.urgent && !qrCodeUrl && (
           <div className={cn(
-            "absolute -top-2 -right-2 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm",
+            "absolute -top-2 -right-2 px-2.5 py-1 rounded-full text-xs font-semibold shadow-lg z-10",
             isToday(parseISO(booking.start_datetime)) 
               ? "bg-gray-900 text-white" 
-              : "bg-gray-100 text-gray-700 border border-gray-200"
+              : "bg-white text-gray-700 border border-gray-200"
           )}>
             {timeLabel.label}
           </div>
         )}
 
-        {/* QR Code Thumbnail - Top Right Corner - aus Attachment geladen */}
+        {/* QR Code Thumbnail */}
         {qrCodeUrl && (
           <button
             onClick={(e) => {
@@ -296,10 +296,10 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
               onShowQrCode?.();
             }}
             className={cn(
-              "absolute -top-3 -right-3 w-14 h-14 rounded-xl shadow-lg border-2 border-white",
+              "absolute -top-3 -right-3 w-14 h-14 rounded-xl shadow-lg border-2 border-white z-10",
               "bg-white overflow-hidden flex items-center justify-center",
               "hover:scale-110 transition-transform cursor-pointer",
-              "ring-2 ring-gray-200 hover:ring-gray-400"
+              "ring-2 ring-gray-200 hover:ring-blue-400"
             )}
             title="QR-Code anzeigen"
           >
@@ -308,7 +308,6 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
               alt="QR-Code" 
               className="w-12 h-12 object-contain"
               onError={(e) => {
-                // Fallback to icon if image fails to load
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
                 target.parentElement?.classList.add('bg-gray-100');
@@ -317,136 +316,140 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
           </button>
         )}
       
-      {/* Main Content */}
-      <div className="p-4">
-        {/* Header Row */}
-        <div className="flex items-start gap-3 mb-3">
-          {/* Icon */}
-          <div className={cn(
-            "w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0",
-            "bg-gray-100 group-hover:bg-gray-200 transition-colors"
-          )}>
-            <TypeIcon className="w-5 h-5 text-gray-600" />
-          </div>
-          
-          {/* Title & Subtitle */}
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 truncate">
-              {booking.venue_name || booking.destination_city}
-            </h3>
-            <p className="text-sm text-gray-500 truncate">
-              {booking.provider || typeConfig.label}
-            </p>
-          </div>
-          
-          {/* Status Badge */}
-          {booking.status !== 'confirmed' && (
-            <span className={cn(
-              "px-2 py-0.5 text-xs font-medium rounded-full border",
-              status.className
+        {/* Main Content */}
+        <div className="relative p-4">
+          {/* Header Row */}
+          <div className="flex items-start gap-3 mb-3">
+            {/* Icon with gradient glow */}
+            <div className={cn(
+              "w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300",
+              typeConfig.glowClass,
+              "group-hover:scale-105"
             )}>
-              {status.label}
-            </span>
-          )}
-        </div>
-        
-        {/* Route or Date Display */}
-        {['train', 'flight', 'bus'].includes(booking.booking_type) ? (
-          /* Transport Route */
-          <div className="flex items-center gap-2 mb-3 pl-14">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="font-medium text-gray-900">{booking.origin_city || '–'}</span>
-              <span className="text-gray-400">→</span>
-              <span className="font-medium text-gray-900">{booking.destination_city}</span>
+              <TypeIcon className={cn(
+                "w-5 h-5 transition-colors",
+                booking.booking_type === 'train' && "text-blue-600",
+                booking.booking_type === 'hotel' && "text-amber-600",
+                booking.booking_type === 'flight' && "text-violet-600",
+                booking.booking_type === 'bus' && "text-emerald-600",
+                booking.booking_type === 'rental_car' && "text-orange-600",
+                booking.booking_type === 'other' && "text-gray-600"
+              )} />
             </div>
-            {hasRealTime(booking.start_datetime) && (
-              <span className="text-sm text-gray-500 ml-auto">
-                {formatTimeDisplay(booking.start_datetime)} Uhr
+            
+            {/* Title & Subtitle */}
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-gray-900 truncate">
+                {booking.venue_name || booking.destination_city}
+              </h3>
+              <p className="text-sm text-gray-500 truncate">
+                {booking.provider || typeConfig.label}
+              </p>
+            </div>
+            
+            {/* Status Badge with Dot */}
+            {booking.status !== 'confirmed' && (
+              <span className={cn(
+                "flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full bg-white/80 border border-gray-100",
+                status.className
+              )}>
+                <span className={cn("w-1.5 h-1.5 rounded-full", status.dotColor)} />
+                {status.label}
               </span>
             )}
           </div>
-        ) : (
-          /* Hotel/Other - Date Display */
-          <div className="flex items-center gap-2 mb-3 pl-14 text-sm text-gray-600">
-            <Calendar className="w-3.5 h-3.5 text-gray-400" />
-            <span>
-              {format(parseISO(booking.start_datetime), "d. MMM", { locale: de })}
-              {booking.end_datetime && (
-                <> – {format(parseISO(booking.end_datetime), "d. MMM", { locale: de })}</>
+          
+          {/* Route or Date Display */}
+          {['train', 'flight', 'bus'].includes(booking.booking_type) ? (
+            <div className="flex items-center gap-2 mb-3 pl-14">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-medium text-gray-900">{booking.origin_city || '–'}</span>
+                <span className="text-gray-300 route-arrow-animated font-medium">→</span>
+                <span className="font-medium text-gray-900">{booking.destination_city}</span>
+              </div>
+              {hasRealTime(booking.start_datetime) && (
+                <span className="text-sm text-gray-500 ml-auto tabular-nums">
+                  {formatTimeDisplay(booking.start_datetime)} Uhr
+                </span>
               )}
-            </span>
-            {booking.venue_address && (
-              <>
-                <span className="text-gray-300">·</span>
-                <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                <span className="truncate max-w-[150px]">{booking.venue_address}</span>
-              </>
-            )}
-          </div>
-        )}
-        
-        {/* Quick Info Pills */}
-        {quickInfo.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3 pl-14">
-            {quickInfo.map((pill, i) => (
-              <span 
-                key={i}
-                className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md text-xs"
-              >
-                <pill.icon className="w-3 h-3" />
-                {pill.label}
-              </span>
-            ))}
-            {hasQrCode && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-900 text-white rounded-md text-xs">
-                <QrCode className="w-3 h-3" />
-                Digital
-              </span>
-            )}
-          </div>
-        )}
-        
-        {/* Bottom Row - Booking Number & Actions */}
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          {/* Booking Number */}
-          {bookingNumber ? (
-            <button
-              onClick={copyBookingNumber}
-              className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <span className="font-mono">{bookingNumber}</span>
-              {copied ? (
-                <Check className="w-3.5 h-3.5 text-emerald-500" />
-              ) : (
-                <Copy className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
-              )}
-            </button>
+            </div>
           ) : (
-            <span className="text-xs text-gray-400">Keine Buchungsnr.</span>
+            <div className="flex items-center gap-2 mb-3 pl-14 text-sm text-gray-600">
+              <Calendar className="w-3.5 h-3.5 text-gray-400" />
+              <span>
+                {format(parseISO(booking.start_datetime), "d. MMM", { locale: de })}
+                {booking.end_datetime && (
+                  <> – {format(parseISO(booking.end_datetime), "d. MMM", { locale: de })}</>
+                )}
+              </span>
+              {booking.venue_address && (
+                <>
+                  <span className="text-gray-200">·</span>
+                  <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="truncate max-w-[150px]">{booking.venue_address}</span>
+                </>
+              )}
+            </div>
           )}
           
-          {/* Price & Actions */}
-          <div className="flex items-center gap-2">
-            {price && (
-              <span className="text-sm font-medium text-gray-900">{price}</span>
-            )}
-            
-            {/* Quick Action: Maps */}
-            {(booking.venue_address || booking.destination_city) && (
+          {/* Quick Info Pills */}
+          {quickInfo.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3 pl-14">
+              {quickInfo.map((pill, i) => (
+                <span 
+                  key={i}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-50/80 backdrop-blur-sm text-gray-600 rounded-md text-xs border border-gray-100/50"
+                >
+                  <pill.icon className="w-3 h-3" />
+                  {pill.label}
+                </span>
+              ))}
+              {hasQrCode && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-900 text-white rounded-md text-xs">
+                  <QrCode className="w-3 h-3" />
+                  Digital
+                </span>
+              )}
+            </div>
+          )}
+          
+          {/* Bottom Row */}
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100/50">
+            {bookingNumber ? (
               <button
-                onClick={openMaps}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors opacity-0 group-hover:opacity-100"
-                title="In Maps öffnen"
+                onClick={copyBookingNumber}
+                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors group/copy"
               >
-                <Navigation className="w-4 h-4" />
+                <span className="font-mono">{bookingNumber}</span>
+                {copied ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5 opacity-0 group-hover/copy:opacity-100 transition-opacity" />
+                )}
               </button>
+            ) : (
+              <span className="text-xs text-gray-400">Keine Buchungsnr.</span>
             )}
             
-            {/* Arrow indicator */}
-            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
+            <div className="flex items-center gap-2">
+              {price && (
+                <span className="text-sm font-medium text-gray-900">{price}</span>
+              )}
+              
+              {(booking.venue_address || booking.destination_city) && (
+                <button
+                  onClick={openMaps}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100/50 transition-colors opacity-0 group-hover:opacity-100"
+                  title="In Maps öffnen"
+                >
+                  <Navigation className="w-4 h-4" />
+                </button>
+              )}
+              
+              <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all" />
+            </div>
           </div>
         </div>
-      </div>
       </div>
     </TooltipProvider>
   );

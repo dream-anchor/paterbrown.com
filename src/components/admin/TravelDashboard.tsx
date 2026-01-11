@@ -11,6 +11,7 @@ import {
   Filter, Search, RefreshCw, Upload, LayoutGrid, List,
   User, Sparkles
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -264,12 +265,12 @@ export default function TravelDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mesh-gradient-bg min-h-screen -m-6 p-6">
       {/* Sub-Navigation - Apple Segmented Control Style */}
       <Tabs value={activeTab} onValueChange={handleSubTabChange}>
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <TabsList className="inline-flex p-1 bg-gray-100/80 rounded-xl gap-0.5">
-            <TabsTrigger 
+          <TabsList className="inline-flex p-1 glass-card rounded-xl gap-0.5 border-0">
+            <TabsTrigger
               value="bookings" 
               className="px-5 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm transition-all duration-200"
             >
@@ -404,47 +405,51 @@ export default function TravelDashboard() {
         />
 
         <TabsContent value="bookings" className="mt-6">
-          {/* Quick Summary Header */}
+          {/* Quick Summary Header - Glassmorphism 2026 */}
           {nextTrip && viewMode === "timeline" && (
-            <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-white rounded-2xl border border-gray-200">
+            <div className="mb-6 p-5 glass-card rounded-3xl animate-fade-slide-in">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gray-900 text-white flex items-center justify-center">
-                    <Calendar className="w-5 h-5" />
+                  <div className={cn(
+                    "w-14 h-14 rounded-2xl flex items-center justify-center transition-all",
+                    "bg-gradient-to-br from-gray-900 to-gray-700 text-white",
+                    "shadow-xl shadow-gray-900/20"
+                  )}>
+                    <Calendar className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Nächste Reise</p>
-                    <p className="font-semibold text-gray-900">
+                    <p className="text-sm text-gray-500 font-medium">Nächste Reise</p>
+                    <p className="font-bold text-gray-900 text-lg">
                       {isToday(parseISO(nextTrip.date)) 
-                        ? "Heute" 
+                        ? <span className="text-blue-600">Heute</span>
                         : isTomorrow(parseISO(nextTrip.date))
-                          ? "Morgen"
+                          ? <span className="text-amber-600">Morgen</span>
                           : format(parseISO(nextTrip.date), "EEEE, d. MMMM", { locale: de })
                       }
                       {nextTrip.destinations.length > 0 && (
-                        <span className="text-gray-500 font-normal"> → {nextTrip.destinations[0]}</span>
+                        <span className="text-gray-400 font-normal"> → {nextTrip.destinations[0]}</span>
                       )}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-gray-600">
+                <div className="flex items-center gap-4">
                   {nextTrip.trainCount > 0 && (
-                    <span className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-50/80 text-blue-600">
                       <Train className="w-4 h-4" />
-                      {nextTrip.trainCount}
-                    </span>
+                      <span className="font-semibold">{nextTrip.trainCount}</span>
+                    </div>
                   )}
                   {nextTrip.flightCount > 0 && (
-                    <span className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-violet-50/80 text-violet-600">
                       <Plane className="w-4 h-4" />
-                      {nextTrip.flightCount}
-                    </span>
+                      <span className="font-semibold">{nextTrip.flightCount}</span>
+                    </div>
                   )}
                   {nextTrip.hotelCount > 0 && (
-                    <span className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50/80 text-amber-600">
                       <Hotel className="w-4 h-4" />
-                      {nextTrip.hotelCount}
-                    </span>
+                      <span className="font-semibold">{nextTrip.hotelCount}</span>
+                    </div>
                   )}
                 </div>
               </div>
@@ -456,13 +461,15 @@ export default function TravelDashboard() {
             {/* Bookings List - Scrollable */}
             <div className="flex-1 md:flex-[2] overflow-y-auto min-h-0 space-y-4 pr-2">
               {sortedDates.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
-                  <Package className="w-10 h-10 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-base font-semibold text-gray-900 mb-1">
+                <div className="glass-card rounded-3xl p-12 text-center animate-fade-slide-in">
+                  <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                    <Package className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     Keine Buchungen
                   </h3>
-                  <p className="text-sm text-gray-500">
-                    Leite E-Mails an die Travel-Adresse weiter, um Buchungen zu erfassen.
+                  <p className="text-sm text-gray-500 max-w-sm mx-auto">
+                    Leite E-Mails an die Travel-Adresse weiter, um Buchungen automatisch zu erfassen.
                   </p>
                 </div>
               ) : viewMode === "timeline" ? (
@@ -596,7 +603,7 @@ export default function TravelDashboard() {
                     </div>
 
                     {/* List Items */}
-                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <div className="glass-card rounded-2xl overflow-hidden">
                       {groupedBookings[date].map((booking) => {
                         const typeConfig = bookingTypeConfig[booking.booking_type];
                         const TypeIcon = typeConfig.icon;
