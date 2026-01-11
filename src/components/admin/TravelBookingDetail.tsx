@@ -6,9 +6,10 @@ import {
   Hotel, Train, Plane, Bus, Car, Package,
   MapPin, Clock, Users, Hash, Building2,
   Mail, FileText, History, X, ExternalLink, Download,
-  ChevronDown, ChevronUp, AlertCircle, Copy, Calendar, Navigation,
+  ChevronDown, ChevronUp, ChevronRight, AlertCircle, Copy, Calendar, Navigation,
   CreditCard, Star, Armchair, Luggage, Coffee, Wifi, Euro, Sparkles,
-  Loader2, ScanSearch
+  Loader2, ScanSearch, Crown, Bed, CalendarX, DoorOpen, LogIn, LogOut,
+  Moon, Utensils, ParkingCircle, Bath, Eye, Check, Ticket
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -368,7 +369,30 @@ END:VCALENDAR`;
     return format(parseISO(datetime), "HH:mm 'Uhr'", { locale: de });
   };
 
-  // Render train-specific route card - MONOCHROME
+  // Smart Icon Detail Row Component
+  const DetailRow = ({ 
+    icon: Icon, 
+    iconColor, 
+    label, 
+    value, 
+    valueClassName 
+  }: { 
+    icon: React.ElementType; 
+    iconColor: string; 
+    label: string; 
+    value: React.ReactNode; 
+    valueClassName?: string;
+  }) => (
+    <div className="flex items-center gap-3 px-4 py-3">
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${iconColor}`}>
+        <Icon className="w-4 h-4" />
+      </div>
+      <span className="text-sm text-gray-500 flex-1">{label}</span>
+      <span className={`text-sm font-medium text-gray-900 text-right ${valueClassName || ''}`}>{value}</span>
+    </div>
+  );
+
+  // Render train-specific route card - WITH SMART ICONS
   const renderTrainRoute = () => {
     const trainNumber = getDetail('train_number', 'ice_number', 'zugnummer', 'zug');
     const trainClass = getDetail('class', 'klasse', 'wagon_class');
@@ -379,73 +403,83 @@ END:VCALENDAR`;
 
     return (
       <div className="space-y-4">
-        {/* Route Card - Monochrome */}
-        <div className="rounded-xl border border-gray-200 p-5">
+        {/* Route Card - Enhanced */}
+        <div className="rounded-xl border border-gray-200 bg-gradient-to-br from-blue-50/50 to-white p-5">
           <div className="flex items-start gap-4">
-            {/* Timeline - Gray only */}
+            {/* Timeline - Blue accent */}
             <div className="flex flex-col items-center pt-1">
-              <div className="w-2 h-2 rounded-full bg-gray-400" />
-              <div className="w-0.5 h-14 bg-gray-200" />
-              <div className="w-2 h-2 rounded-full bg-gray-400" />
+              <div className="w-3 h-3 rounded-full bg-blue-500 ring-4 ring-blue-100" />
+              <div className="w-0.5 h-14 bg-gradient-to-b from-blue-400 to-blue-200" />
+              <div className="w-3 h-3 rounded-full bg-blue-400 ring-4 ring-blue-50" />
             </div>
             
             {/* Route Info */}
             <div className="flex-1 space-y-6">
               <div>
-                <div className="text-xs text-gray-400 uppercase tracking-wide">Abfahrt</div>
-                <div className="text-base font-medium text-gray-900">{booking.origin_city || '–'}</div>
+                <div className="text-xs text-blue-600 font-medium uppercase tracking-wide">Abfahrt</div>
+                <div className="text-base font-semibold text-gray-900">{booking.origin_city || '–'}</div>
                 <div className="text-sm text-gray-500">{formatTimeDisplay(booking.start_datetime)}</div>
               </div>
               <div>
-                <div className="text-xs text-gray-400 uppercase tracking-wide">Ankunft</div>
-                <div className="text-base font-medium text-gray-900">{booking.destination_city}</div>
+                <div className="text-xs text-blue-600 font-medium uppercase tracking-wide">Ankunft</div>
+                <div className="text-base font-semibold text-gray-900">{booking.destination_city}</div>
                 {booking.end_datetime && hasRealTime(booking.end_datetime) && (
                   <div className="text-sm text-gray-500">{formatTimeDisplay(booking.end_datetime)}</div>
                 )}
               </div>
             </div>
             
-            {/* Train Number */}
+            {/* Train Number Badge */}
             {trainNumber && (
-              <div className="px-3 py-1.5 bg-gray-100 rounded-lg">
-                <span className="font-mono font-semibold text-gray-700 text-sm">{trainNumber}</span>
+              <div className="px-3 py-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-200">
+                <span className="font-mono font-bold text-white text-sm">{trainNumber}</span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Detail List - iOS Settings Style */}
+        {/* Detail List with Smart Icons */}
         {(trainClass || wagon || seat || bahncard || price) && (
-          <div className="rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
+          <div className="rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden bg-white">
             {trainClass && (
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-gray-500">Klasse</span>
-                <span className="text-sm font-medium text-gray-900">{trainClass}. Klasse</span>
-              </div>
+              <DetailRow 
+                icon={Crown} 
+                iconColor="bg-amber-100 text-amber-600" 
+                label="Klasse" 
+                value={<span className="flex items-center gap-1.5">{trainClass}. Klasse {trainClass === '1' && <Star className="w-3 h-3 text-amber-500 fill-amber-500" />}</span>}
+              />
             )}
             {wagon && (
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-gray-500">Wagen</span>
-                <span className="text-sm font-medium text-gray-900">{wagon}</span>
-              </div>
+              <DetailRow 
+                icon={Train} 
+                iconColor="bg-blue-100 text-blue-600" 
+                label="Wagen" 
+                value={wagon}
+              />
             )}
             {seat && (
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-gray-500">Sitzplatz</span>
-                <span className="text-sm font-medium text-gray-900">{seat}</span>
-              </div>
+              <DetailRow 
+                icon={Armchair} 
+                iconColor="bg-violet-100 text-violet-600" 
+                label="Sitzplatz" 
+                value={seat}
+              />
             )}
             {bahncard && (
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-gray-500">BahnCard</span>
-                <span className="text-sm font-medium text-gray-900">{bahncard}</span>
-              </div>
+              <DetailRow 
+                icon={CreditCard} 
+                iconColor="bg-red-100 text-red-600" 
+                label="BahnCard" 
+                value={bahncard}
+              />
             )}
             {price && (
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-gray-500">Preis</span>
-                <span className="text-sm font-medium text-gray-900">{typeof price === 'number' ? `${price.toFixed(2)} €` : price}</span>
-              </div>
+              <DetailRow 
+                icon={Euro} 
+                iconColor="bg-emerald-100 text-emerald-600" 
+                label="Preis" 
+                value={typeof price === 'number' ? `${price.toFixed(2)} €` : price}
+              />
             )}
           </div>
         )}
@@ -496,38 +530,48 @@ END:VCALENDAR`;
           </div>
         </div>
 
-        {/* Detail List */}
+        {/* Detail List with Smart Icons */}
         {(airline || terminal || gate || seat || baggage) && (
-          <div className="rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
+          <div className="rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden bg-white">
             {airline && (
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-gray-500">Airline</span>
-                <span className="text-sm font-medium text-gray-900">{airline}</span>
-              </div>
+              <DetailRow 
+                icon={Plane} 
+                iconColor="bg-violet-100 text-violet-600" 
+                label="Airline" 
+                value={airline}
+              />
             )}
             {terminal && (
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-gray-500">Terminal</span>
-                <span className="text-sm font-medium text-gray-900">{terminal}</span>
-              </div>
+              <DetailRow 
+                icon={Building2} 
+                iconColor="bg-gray-100 text-gray-600" 
+                label="Terminal" 
+                value={terminal}
+              />
             )}
             {gate && (
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-gray-500">Gate</span>
-                <span className="text-sm font-medium text-gray-900">{gate}</span>
-              </div>
+              <DetailRow 
+                icon={DoorOpen} 
+                iconColor="bg-blue-100 text-blue-600" 
+                label="Gate" 
+                value={gate}
+              />
             )}
             {seat && (
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-gray-500">Sitzplatz</span>
-                <span className="text-sm font-medium text-gray-900">{seat}</span>
-              </div>
+              <DetailRow 
+                icon={Armchair} 
+                iconColor="bg-amber-100 text-amber-600" 
+                label="Sitzplatz" 
+                value={seat}
+              />
             )}
             {baggage && (
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-gray-500">Gepäck</span>
-                <span className="text-sm font-medium text-gray-900">{baggage}</span>
-              </div>
+              <DetailRow 
+                icon={Luggage} 
+                iconColor="bg-emerald-100 text-emerald-600" 
+                label="Gepäck" 
+                value={baggage}
+              />
             )}
           </div>
         )}
@@ -535,7 +579,7 @@ END:VCALENDAR`;
     );
   };
 
-  // Render hotel-specific details - MONOCHROME
+  // Render hotel-specific details - WITH SMART ICONS
   const renderHotelDetails = () => {
     const roomType = getDetail('room_type', 'room_category', 'zimmer', 'zimmerkategorie');
     const roomNumber = getDetail('room_number', 'zimmernummer');
@@ -543,48 +587,80 @@ END:VCALENDAR`;
     const wifi = getDetail('wifi_included', 'wifi', 'wlan');
     const pricePerNight = getDetail('price_per_night', 'preis_pro_nacht');
     const cancellation = getDetail('cancellation_policy', 'stornierung', 'cancellation_deadline');
+    const parking = getDetail('parking', 'parkplatz');
+    const nights = booking.end_datetime && booking.start_datetime 
+      ? Math.ceil((new Date(booking.end_datetime).getTime() - new Date(booking.start_datetime).getTime()) / (1000 * 60 * 60 * 24))
+      : null;
 
-    const hasDetails = roomType || roomNumber || breakfast !== null || wifi !== null || pricePerNight || cancellation;
+    const hasDetails = roomType || roomNumber || breakfast !== null || wifi !== null || pricePerNight || cancellation || parking;
     if (!hasDetails) return null;
 
     return (
-      <div className="rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
-        {roomType && (
-          <div className="flex items-center justify-between px-4 py-3">
-            <span className="text-sm text-gray-500">Zimmer</span>
-            <span className="text-sm font-medium text-gray-900">{roomType}</span>
-          </div>
-        )}
-        {roomNumber && (
-          <div className="flex items-center justify-between px-4 py-3">
-            <span className="text-sm text-gray-500">Zimmernummer</span>
-            <span className="text-sm font-medium text-gray-900">{roomNumber}</span>
-          </div>
-        )}
-        {breakfast !== null && (
-          <div className="flex items-center justify-between px-4 py-3">
-            <span className="text-sm text-gray-500">Frühstück</span>
-            <span className="text-sm font-medium text-gray-900">{breakfast ? 'Inklusive' : 'Nicht inklusive'}</span>
-          </div>
-        )}
-        {wifi !== null && (
-          <div className="flex items-center justify-between px-4 py-3">
-            <span className="text-sm text-gray-500">WLAN</span>
-            <span className="text-sm font-medium text-gray-900">{wifi ? 'Inklusive' : 'Nicht inklusive'}</span>
-          </div>
-        )}
-        {pricePerNight && (
-          <div className="flex items-center justify-between px-4 py-3">
-            <span className="text-sm text-gray-500">Preis/Nacht</span>
-            <span className="text-sm font-medium text-gray-900">{typeof pricePerNight === 'number' ? `${pricePerNight.toFixed(2)} €` : pricePerNight}</span>
-          </div>
-        )}
-        {cancellation && (
-          <div className="flex items-center justify-between px-4 py-3">
-            <span className="text-sm text-gray-500">Stornierung</span>
-            <span className="text-sm font-medium text-gray-900 text-right max-w-[60%]">{cancellation}</span>
-          </div>
-        )}
+      <div className="space-y-4">
+        {/* Amenities Quick Pills */}
+        <div className="flex flex-wrap gap-2">
+          {breakfast && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full text-sm font-medium border border-amber-200">
+              <Coffee className="w-4 h-4" />
+              Frühstück inkl.
+            </span>
+          )}
+          {wifi && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium border border-blue-200">
+              <Wifi className="w-4 h-4" />
+              WLAN inkl.
+            </span>
+          )}
+          {parking && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm font-medium border border-gray-200">
+              <ParkingCircle className="w-4 h-4" />
+              Parkplatz
+            </span>
+          )}
+          {nights && nights > 0 && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 text-violet-700 rounded-full text-sm font-medium border border-violet-200">
+              <Moon className="w-4 h-4" />
+              {nights} {nights === 1 ? 'Nacht' : 'Nächte'}
+            </span>
+          )}
+        </div>
+
+        {/* Detail List with Icons */}
+        <div className="rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden bg-white">
+          {roomType && (
+            <DetailRow 
+              icon={Bed} 
+              iconColor="bg-violet-100 text-violet-600" 
+              label="Zimmertyp" 
+              value={roomType}
+            />
+          )}
+          {roomNumber && (
+            <DetailRow 
+              icon={DoorOpen} 
+              iconColor="bg-gray-100 text-gray-600" 
+              label="Zimmernummer" 
+              value={roomNumber}
+            />
+          )}
+          {pricePerNight && (
+            <DetailRow 
+              icon={Euro} 
+              iconColor="bg-emerald-100 text-emerald-600" 
+              label="Preis/Nacht" 
+              value={typeof pricePerNight === 'number' ? `${pricePerNight.toFixed(2)} €` : pricePerNight}
+            />
+          )}
+          {cancellation && (
+            <DetailRow 
+              icon={CalendarX} 
+              iconColor="bg-red-100 text-red-600" 
+              label="Stornierung" 
+              value={cancellation}
+              valueClassName="max-w-[55%] truncate"
+            />
+          )}
+        </div>
       </div>
     );
   };
@@ -748,21 +824,46 @@ END:VCALENDAR`;
                     const documentLabel = isReservation ? 'Sitzplatzreservierung' : 'Fahrkarte';
                     const buttonLabel = isReservation ? 'Reservierung anzeigen' : 'Ticket anzeigen';
                     
+                    // Get QR code as thumbnail preview
+                    const qrPreview = att.qr_code_image_path 
+                      ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/qr-codes/${att.qr_code_image_path}`
+                      : null;
+                    
                     return (
                       <div key={att.id}>
                         <div className="text-xs text-gray-400 uppercase tracking-wide mb-2">{documentLabel}</div>
                         <button
                           onClick={() => setViewingDocument(att)}
-                          className="flex items-center gap-4 w-full p-4 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors text-left"
+                          className="flex items-center gap-4 w-full p-4 rounded-xl border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all text-left group"
                         >
-                          <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
-                            <FileText className="w-6 h-6 text-gray-500" />
+                          {/* PDF Thumbnail Preview */}
+                          <div className="relative w-14 h-16 rounded-lg bg-gradient-to-br from-gray-100 to-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:shadow-md transition-shadow">
+                            {qrPreview ? (
+                              <img 
+                                src={qrPreview} 
+                                alt="Ticket-Vorschau" 
+                                className="w-full h-full object-cover opacity-90"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <>
+                                <FileText className="w-6 h-6 text-gray-400" />
+                                <div className="absolute bottom-0.5 right-0.5 px-1 py-0.5 bg-red-500 rounded text-[8px] font-bold text-white">
+                                  PDF
+                                </div>
+                              </>
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-gray-900">{buttonLabel}</div>
+                            <div className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors flex items-center gap-2">
+                              {buttonLabel}
+                              <Eye className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
                             <div className="text-sm text-gray-500 truncate">{att.file_name}</div>
                           </div>
-                          <ExternalLink className="w-4 h-4 text-gray-400" />
+                          <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-gray-500 transition-colors" />
                         </button>
                       </div>
                     );
