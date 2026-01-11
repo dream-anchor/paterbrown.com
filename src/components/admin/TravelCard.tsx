@@ -5,7 +5,7 @@ import {
   Hotel, Train, Plane, Bus, Car, Package,
   MapPin, Clock, Copy, ExternalLink, ChevronRight,
   QrCode, FileText, Navigation, Calendar, Sparkles,
-  Coffee, Wifi, Users, Check, AlertTriangle
+  Coffee, Wifi, Users, Check, AlertTriangle, Crown, Moon
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -192,25 +192,32 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
   const hasQrCode = booking.details?.qr_code_present || booking.details?.mobile_ticket;
   
   const getQuickInfo = () => {
-    const pills: { icon: React.ElementType; label: string }[] = [];
+    const pills: { icon: React.ElementType; label: string; colorClass: string }[] = [];
     
     if (booking.booking_type === 'train') {
       const trainNumber = booking.details?.train_number || booking.details?.ice_number;
-      if (trainNumber) pills.push({ icon: Train, label: trainNumber });
+      if (trainNumber) pills.push({ icon: Train, label: trainNumber, colorClass: "bg-blue-50 text-blue-700 border-blue-200" });
       const seat = booking.details?.seat || booking.details?.sitzplatz;
       const wagon = booking.details?.wagon || booking.details?.wagen;
-      if (wagon && seat) pills.push({ icon: Users, label: `Wg ${wagon} · Pl ${seat}` });
-      else if (seat) pills.push({ icon: Users, label: `Platz ${seat}` });
+      if (wagon && seat) pills.push({ icon: Users, label: `Wg ${wagon} · Pl ${seat}`, colorClass: "bg-violet-50 text-violet-700 border-violet-200" });
+      else if (seat) pills.push({ icon: Users, label: `Platz ${seat}`, colorClass: "bg-violet-50 text-violet-700 border-violet-200" });
+      const trainClass = booking.details?.class || booking.details?.klasse;
+      if (trainClass === 1 || trainClass === '1') pills.push({ icon: Crown, label: "1. Klasse", colorClass: "bg-amber-50 text-amber-700 border-amber-200" });
     }
     
     if (booking.booking_type === 'flight') {
       const flightNumber = booking.details?.flight_number;
-      if (flightNumber) pills.push({ icon: Plane, label: flightNumber });
+      if (flightNumber) pills.push({ icon: Plane, label: flightNumber, colorClass: "bg-violet-50 text-violet-700 border-violet-200" });
     }
     
     if (booking.booking_type === 'hotel') {
-      if (booking.details?.breakfast_included) pills.push({ icon: Coffee, label: "Frühstück" });
-      if (booking.details?.wifi_included) pills.push({ icon: Wifi, label: "WLAN" });
+      if (booking.details?.breakfast_included) pills.push({ icon: Coffee, label: "Frühstück", colorClass: "bg-amber-50 text-amber-700 border-amber-200" });
+      if (booking.details?.wifi_included) pills.push({ icon: Wifi, label: "WLAN", colorClass: "bg-blue-50 text-blue-700 border-blue-200" });
+      // Calculate nights
+      if (booking.end_datetime && booking.start_datetime) {
+        const nights = Math.ceil((new Date(booking.end_datetime).getTime() - new Date(booking.start_datetime).getTime()) / (1000 * 60 * 60 * 24));
+        if (nights > 0) pills.push({ icon: Moon, label: `${nights} ${nights === 1 ? 'Nacht' : 'Nächte'}`, colorClass: "bg-violet-50 text-violet-700 border-violet-200" });
+      }
     }
     
     return pills;
@@ -392,21 +399,24 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
             </div>
           )}
           
-          {/* Quick Info Pills */}
+          {/* Quick Info Pills - Enhanced with Colors */}
           {quickInfo.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-3 pl-14">
               {quickInfo.map((pill, i) => (
                 <span 
                   key={i}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-50/80 backdrop-blur-sm text-gray-600 rounded-md text-xs border border-gray-100/50"
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors",
+                    pill.colorClass
+                  )}
                 >
-                  <pill.icon className="w-3 h-3" />
+                  <pill.icon className="w-3.5 h-3.5" />
                   {pill.label}
                 </span>
               ))}
               {hasQrCode && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-900 text-white rounded-md text-xs">
-                  <QrCode className="w-3 h-3" />
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-900 text-white rounded-full text-xs font-medium">
+                  <QrCode className="w-3.5 h-3.5" />
                   Digital
                 </span>
               )}
