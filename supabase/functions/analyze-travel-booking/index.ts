@@ -1117,14 +1117,25 @@ ${existingBookingsContext}`;
                 .eq("email_id", email_id)
                 .is("booking_id", null); // Only update unlinked attachments
               
-              // CRITICAL: If this booking has a specific traveler, only link attachments 
-              // that were identified as belonging to this traveler (or have no traveler set)
+              // CRITICAL: Check if this is a multi-user email (multiple bookings from one email)
+              const isMultiUserEmail = (analysisResult.bookings?.length || 1) > 1;
+              
               if (travelerName) {
-                // Match attachments where:
-                // - traveler_name matches this booking's traveler, OR
-                // - traveler_name is null (for legacy/unidentified attachments, link to first matching booking)
-                attachQuery = attachQuery.or(`traveler_name.eq.${travelerName},traveler_name.is.null`);
-                console.log(`🔗 Linking attachments for traveler: ${travelerName}`);
+                if (isMultiUserEmail) {
+                  // MULTI-USER EMAIL: NUR exakte traveler_name Matches erlauben
+                  // Namenlose Attachments bleiben unlinked → erscheinen unter "Weitere Anhänge"
+                  attachQuery = attachQuery.eq("traveler_name", travelerName);
+                  console.log(`🔗 [MULTI-USER] Linking ONLY attachments for traveler: ${travelerName}`);
+                } else {
+                  // SINGLE-USER EMAIL: Alle Attachments dieser E-Mail können verknüpft werden
+                  attachQuery = attachQuery.or(`traveler_name.eq.${travelerName},traveler_name.is.null`);
+                  console.log(`🔗 [SINGLE-USER] Linking attachments for traveler: ${travelerName}`);
+                }
+              } else {
+                // Kein Reisender identifiziert → keine Attachments verknüpfen
+                console.log(`⚠️ No traveler_name for booking - leaving attachments unlinked`);
+                // Verhindere Linking durch unmöglichen Filter
+                attachQuery = attachQuery.eq("traveler_name", "___NEVER_MATCH___");
               }
               
               const { error: attachUpdateError, count: attachCount } = await attachQuery;
