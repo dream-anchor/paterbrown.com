@@ -194,6 +194,36 @@ export type Database = {
         }
         Relationships: []
       }
+      db_station_mapping: {
+        Row: {
+          city_name: string
+          created_at: string
+          ds100_code: string | null
+          eva_number: string
+          id: string
+          station_name: string
+          updated_at: string
+        }
+        Insert: {
+          city_name: string
+          created_at?: string
+          ds100_code?: string | null
+          eva_number: string
+          id?: string
+          station_name: string
+          updated_at?: string
+        }
+        Update: {
+          city_name?: string
+          created_at?: string
+          ds100_code?: string | null
+          eva_number?: string
+          id?: string
+          station_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string | null

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import DocumentViewer from "./DocumentViewer";
+import TrainLiveStatus from "./TrainLiveStatus";
 
 interface TravelBooking {
   id: string;
@@ -898,6 +899,17 @@ END:VCALENDAR`;
           {/* Type-specific route/details */}
           {booking.booking_type === 'train' && renderTrainRoute()}
           
+          {/* Live Train Status - Only for trains */}
+          {booking.booking_type === 'train' && (
+            <TrainLiveStatus
+              bookingId={booking.id}
+              originCity={booking.origin_city}
+              destinationCity={booking.destination_city}
+              trainNumber={getDetail('train_number', 'ice_number', 'zugnummer', 'zug')}
+              departureDatetime={booking.start_datetime}
+              hasTransfer={getDetail('connection_type', 'verbindung')?.toLowerCase()?.includes('umstieg')}
+            />
+          )}
           {booking.booking_type === 'flight' && (
             <>
               {renderFlightRoute()}
