@@ -182,8 +182,8 @@ Antworte NUR mit dem gefundenen Namen oder "UNKNOWN".`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // 🔥 MODEL UPGRADE: gemini-2.5-pro für bessere Genauigkeit!
-        model: "google/gemini-2.5-pro",
+        // 🔥 MODEL UPGRADE: GPT-5 für beste Dokumenten-Erkennung!
+        model: "openai/gpt-5",
         messages: [{
           role: "user",
           content: [
@@ -652,8 +652,8 @@ ${existingBookingsContext}`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // 🔥 MODEL UPGRADE: gemini-2.5-pro für Deep Reasoning bei komplexen E-Mails!
-        model: "google/gemini-2.5-pro",
+        // 🔥 MODEL UPGRADE: GPT-5 für Deep Reasoning bei komplexen E-Mails!
+        model: "openai/gpt-5",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: emailContent }
