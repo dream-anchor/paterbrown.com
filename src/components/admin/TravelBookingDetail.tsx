@@ -53,6 +53,8 @@ interface Attachment {
   file_path: string;
   content_type: string | null;
   document_type?: string | null;
+  booking_id?: string | null;
+  traveler_name?: string | null;
 }
 
 interface RelatedEvent {
@@ -91,6 +93,9 @@ const hasRealTime = (datetime: string): boolean => {
 export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobile }: Props) {
   const [versions, setVersions] = useState<BookingVersion[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [assignedAttachments, setAssignedAttachments] = useState<Attachment[]>([]);
+  const [unassignedAttachments, setUnassignedAttachments] = useState<Attachment[]>([]);
+  const [showUnassignedAttachments, setShowUnassignedAttachments] = useState(false);
   const [showVersions, setShowVersions] = useState(false);
   const [viewingDocument, setViewingDocument] = useState<Attachment | null>(null);
   const [originalEmail, setOriginalEmail] = useState<{ subject: string; body_html: string } | null>(null);
@@ -117,12 +122,33 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
   };
 
   const fetchAttachments = async () => {
-    if (!booking?.source_email_id) return;
-    const { data } = await supabase
+    if (!booking) return;
+    
+    // 1. Primär: Anhänge die DIESER Buchung zugeordnet sind (booking_id match)
+    const { data: assigned } = await supabase
       .from("travel_attachments")
-      .select("id, file_name, file_path, content_type, document_type")
-      .eq("email_id", booking.source_email_id);
-    setAttachments((data as Attachment[]) || []);
+      .select("id, file_name, file_path, content_type, document_type, booking_id, traveler_name")
+      .eq("booking_id", booking.id);
+    
+    setAssignedAttachments((assigned as Attachment[]) || []);
+    
+    // 2. Sekundär: Unzugeordnete Anhänge aus derselben E-Mail (für Legacy/Review)
+    let unassignedData: Attachment[] = [];
+    if (booking.source_email_id) {
+      const { data: unassigned } = await supabase
+        .from("travel_attachments")
+        .select("id, file_name, file_path, content_type, document_type, booking_id, traveler_name")
+        .eq("email_id", booking.source_email_id)
+        .is("booking_id", null);
+      
+      unassignedData = (unassigned as Attachment[]) || [];
+      setUnassignedAttachments(unassignedData);
+    } else {
+      setUnassignedAttachments([]);
+    }
+    
+    // Für Rückwärtskompatibilität: kombiniere für detectDocumentTypes
+    setAttachments([...(assigned || []) as Attachment[], ...unassignedData]);
   };
 
   // Detect document types for all PDF attachments using AI vision
@@ -615,8 +641,9 @@ END:VCALENDAR`;
     );
   };
 
-  // Get PDF attachments for ticket display
-  const pdfAttachments = attachments.filter(a => a.content_type?.includes('pdf'));
+  // Get PDF attachments for ticket display - NUR zugeordnete Anhänge!
+  const pdfAttachments = assignedAttachments.filter(a => a.content_type?.includes('pdf'));
+  const unassignedPdfAttachments = unassignedAttachments.filter(a => a.content_type?.includes('pdf'));
 
   return (
     <div>
@@ -918,8 +945,8 @@ END:VCALENDAR`;
             </>
           )}
 
-          {/* Attachments (non-PDF or if not train/flight) */}
-          {(attachments.filter(att => !['train', 'flight'].includes(booking.booking_type) || !att.content_type?.includes('pdf')).length > 0 || originalEmail) && (
+          {/* Attachments (non-PDF or if not train/flight) - NUR zugeordnete Anhänge */}
+          {(assignedAttachments.filter(att => !['train', 'flight'].includes(booking.booking_type) || !att.content_type?.includes('pdf')).length > 0 || originalEmail) && (
             <>
               <Separator className="bg-gray-100" />
               <div className="space-y-3">
@@ -945,7 +972,7 @@ END:VCALENDAR`;
                       <ExternalLink className="w-4 h-4 text-gray-400" />
                     </button>
                   )}
-                  {attachments
+                  {assignedAttachments
                     .filter(att => !['train', 'flight'].includes(booking.booking_type) || !att.content_type?.includes('pdf'))
                     .map((att) => (
                     <button
@@ -964,6 +991,54 @@ END:VCALENDAR`;
                     </button>
                   ))}
                 </div>
+              </div>
+            </>
+          )}
+
+          {/* Unzugeordnete Anhänge aus derselben E-Mail (Collapsible) */}
+          {unassignedAttachments.length > 0 && (
+            <>
+              <Separator className="bg-gray-100" />
+              <div className="space-y-2">
+                <button
+                  onClick={() => setShowUnassignedAttachments(!showUnassignedAttachments)}
+                  className="flex items-center gap-2 text-sm w-full group"
+                >
+                  <AlertCircle className="w-4 h-4 text-amber-500" />
+                  <span className="text-xs text-amber-600 uppercase tracking-wide group-hover:text-amber-700 transition-colors">
+                    Weitere Anhänge aus dieser E-Mail ({unassignedAttachments.length})
+                  </span>
+                  {showUnassignedAttachments ? (
+                    <ChevronUp className="w-4 h-4 ml-auto text-gray-400" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 ml-auto text-gray-400" />
+                  )}
+                </button>
+                {showUnassignedAttachments && (
+                  <div className="space-y-2 pt-2 pl-6 border-l-2 border-amber-200">
+                    <div className="text-xs text-gray-500 mb-2">
+                      Diese Anhänge wurden noch keiner Buchung zugeordnet
+                    </div>
+                    {unassignedAttachments.map((att) => (
+                      <button
+                        key={att.id}
+                        onClick={() => setViewingDocument(att)}
+                        className="flex items-center gap-3 w-full p-3 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 transition-colors"
+                      >
+                        <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center">
+                          <FileText className="w-4 h-4 text-amber-600" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <div className="font-medium text-gray-900 text-sm truncate max-w-[200px]">{att.file_name}</div>
+                          <div className="text-xs text-amber-600">
+                            {att.traveler_name ? `Reisender: ${att.traveler_name}` : 'Reisender unbekannt'}
+                          </div>
+                        </div>
+                        <ExternalLink className="w-4 h-4 text-gray-400" />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </>
           )}
