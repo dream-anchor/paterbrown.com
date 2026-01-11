@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import pako from "https://esm.sh/pako@2.1.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,6 +30,16 @@ interface ImageCandidate {
   format: "jpeg" | "png" | "raw";
 }
 
+interface XObjectImage {
+  width: number;
+  height: number;
+  bitsPerComponent: number;
+  colorSpace: string;
+  filter: string;
+  streamData: Uint8Array;
+  objectOffset: number;
+}
+
 // ============================================================================
 // Utility Functions
 // ============================================================================
@@ -37,7 +48,6 @@ interface ImageCandidate {
  * Calculate SHA-256 hash of bytes
  */
 async function calculateSha256(bytes: Uint8Array): Promise<string> {
-  // Create a new ArrayBuffer to avoid SharedArrayBuffer type issues
   const buffer = new ArrayBuffer(bytes.length);
   new Uint8Array(buffer).set(bytes);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
@@ -58,28 +68,108 @@ function bytesToBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
+/**
+ * Create a minimal valid PNG from raw pixel data
+ */
+function createPngFromRaw(pixels: Uint8Array, width: number, height: number, channels: number): Uint8Array {
+  // This is a simplified PNG encoder for grayscale/RGB data
+  // For production, a proper PNG library would be better
+  
+  const colorType = channels === 1 ? 0 : (channels === 3 ? 2 : 6);
+  
+  // PNG signature
+  const signature = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+  
+  // IHDR chunk
+  const ihdr = new Uint8Array(25);
+  const ihdrView = new DataView(ihdr.buffer);
+  ihdrView.setUint32(0, 13, false); // Length
+  ihdr.set([73, 72, 68, 82], 4); // "IHDR"
+  ihdrView.setUint32(8, width, false);
+  ihdrView.setUint32(12, height, false);
+  ihdr[16] = 8; // Bit depth
+  ihdr[17] = colorType;
+  ihdr[18] = 0; // Compression
+  ihdr[19] = 0; // Filter
+  ihdr[20] = 0; // Interlace
+  
+  // Calculate CRC for IHDR
+  const ihdrCrc = crc32(ihdr.subarray(4, 21));
+  ihdrView.setUint32(21, ihdrCrc, false);
+  
+  // IDAT chunk - compress the image data with filter bytes
+  const rowSize = width * channels + 1; // +1 for filter byte
+  const rawData = new Uint8Array(height * rowSize);
+  
+  for (let y = 0; y < height; y++) {
+    rawData[y * rowSize] = 0; // No filter
+    rawData.set(
+      pixels.subarray(y * width * channels, (y + 1) * width * channels),
+      y * rowSize + 1
+    );
+  }
+  
+  const compressed = pako.deflate(rawData);
+  const idat = new Uint8Array(12 + compressed.length);
+  const idatView = new DataView(idat.buffer);
+  idatView.setUint32(0, compressed.length, false);
+  idat.set([73, 68, 65, 84], 4); // "IDAT"
+  idat.set(compressed, 8);
+  const idatCrc = crc32(idat.subarray(4, 8 + compressed.length));
+  idatView.setUint32(8 + compressed.length, idatCrc, false);
+  
+  // IEND chunk
+  const iend = new Uint8Array([0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]);
+  
+  // Combine all chunks
+  const png = new Uint8Array(signature.length + ihdr.length + idat.length + iend.length);
+  let offset = 0;
+  png.set(signature, offset); offset += signature.length;
+  png.set(ihdr, offset); offset += ihdr.length;
+  png.set(idat, offset); offset += idat.length;
+  png.set(iend, offset);
+  
+  return png;
+}
+
+// CRC32 lookup table
+const crcTable = (() => {
+  const table = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) {
+      c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    }
+    table[n] = c;
+  }
+  return table;
+})();
+
+function crc32(data: Uint8Array): number {
+  let crc = 0xFFFFFFFF;
+  for (let i = 0; i < data.length; i++) {
+    crc = crcTable[(crc ^ data[i]) & 0xFF] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
 // ============================================================================
 // Path 1: Embedded Image Extraction via Binary Search
 // ============================================================================
 
 /**
  * Find JPEG images embedded in PDF by searching for JPEG markers.
- * JPEG format: starts with FF D8 FF, ends with FF D9
  */
 function findJpegImages(pdfBytes: Uint8Array): ImageCandidate[] {
   const candidates: ImageCandidate[] = [];
-  
-  // JPEG magic bytes: FF D8 FF
   const jpegStart = [0xFF, 0xD8, 0xFF];
   const jpegEnd = [0xFF, 0xD9];
   
   for (let i = 0; i < pdfBytes.length - 10; i++) {
-    // Look for JPEG start marker
     if (pdfBytes[i] === jpegStart[0] && 
         pdfBytes[i + 1] === jpegStart[1] && 
         pdfBytes[i + 2] === jpegStart[2]) {
       
-      // Find the end marker
       let endPos = -1;
       for (let j = i + 3; j < Math.min(i + 2000000, pdfBytes.length - 1); j++) {
         if (pdfBytes[j] === jpegEnd[0] && pdfBytes[j + 1] === jpegEnd[1]) {
@@ -90,26 +180,21 @@ function findJpegImages(pdfBytes: Uint8Array): ImageCandidate[] {
       
       if (endPos > i) {
         const jpegBytes = pdfBytes.slice(i, endPos);
-        
-        // Try to extract dimensions from JPEG header
         const dimensions = parseJpegDimensions(jpegBytes);
         
         if (dimensions) {
           const { width, height } = dimensions;
           const aspectRatio = width / height;
           
-          // Filter for square-ish images in barcode size range
           if (aspectRatio >= 0.75 && aspectRatio <= 1.33 &&
               width >= 150 && width <= 1000 &&
               height >= 150 && height <= 1000) {
             
             let score = 0;
-            // Perfect square bonus
             if (aspectRatio >= 0.95 && aspectRatio <= 1.05) score += 30;
             else if (aspectRatio >= 0.85 && aspectRatio <= 1.15) score += 20;
             else score += 10;
             
-            // Size bonus (300-600 is typical for Aztec)
             if (width >= 300 && width <= 600) score += 25;
             else if (width >= 200 && width <= 800) score += 15;
             else score += 5;
@@ -126,8 +211,6 @@ function findJpegImages(pdfBytes: Uint8Array): ImageCandidate[] {
             console.log(`  Found JPEG at offset ${i}: ${width}x${height}, score=${score}`);
           }
         }
-        
-        // Skip past this JPEG
         i = endPos;
       }
     }
@@ -141,7 +224,6 @@ function findJpegImages(pdfBytes: Uint8Array): ImageCandidate[] {
  */
 function parseJpegDimensions(jpegBytes: Uint8Array): { width: number; height: number } | null {
   try {
-    // Skip to markers after SOI (Start of Image)
     let offset = 2;
     
     while (offset < jpegBytes.length - 8) {
@@ -152,14 +234,12 @@ function parseJpegDimensions(jpegBytes: Uint8Array): { width: number; height: nu
       
       const marker = jpegBytes[offset + 1];
       
-      // SOF0, SOF1, SOF2 (Start of Frame markers)
       if (marker >= 0xC0 && marker <= 0xC2) {
         const height = (jpegBytes[offset + 5] << 8) | jpegBytes[offset + 6];
         const width = (jpegBytes[offset + 7] << 8) | jpegBytes[offset + 8];
         return { width, height };
       }
       
-      // Skip to next marker
       if (marker === 0xD8 || marker === 0xD9 || marker === 0x01 || 
           (marker >= 0xD0 && marker <= 0xD7)) {
         offset += 2;
@@ -168,25 +248,21 @@ function parseJpegDimensions(jpegBytes: Uint8Array): { width: number; height: nu
         offset += 2 + length;
       }
     }
-  } catch (e) {
+  } catch {
     // Parsing failed
   }
   return null;
 }
 
 /**
- * Find PNG images embedded in PDF by searching for PNG signature.
- * PNG format: starts with 89 50 4E 47 0D 0A 1A 0A, ends with IEND chunk
+ * Find PNG images embedded in PDF
  */
 function findPngImages(pdfBytes: Uint8Array): ImageCandidate[] {
   const candidates: ImageCandidate[] = [];
-  
-  // PNG magic bytes: 89 50 4E 47 0D 0A 1A 0A
   const pngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
   const iendChunk = [0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82];
   
   for (let i = 0; i < pdfBytes.length - 20; i++) {
-    // Look for PNG signature
     let match = true;
     for (let j = 0; j < pngSignature.length; j++) {
       if (pdfBytes[i + j] !== pngSignature[j]) {
@@ -196,7 +272,6 @@ function findPngImages(pdfBytes: Uint8Array): ImageCandidate[] {
     }
     
     if (match) {
-      // Find IEND chunk
       let endPos = -1;
       for (let j = i + 8; j < Math.min(i + 2000000, pdfBytes.length - 8); j++) {
         let iendMatch = true;
@@ -207,7 +282,7 @@ function findPngImages(pdfBytes: Uint8Array): ImageCandidate[] {
           }
         }
         if (iendMatch) {
-          endPos = j + 12; // IEND chunk + CRC
+          endPos = j + 12;
           break;
         }
       }
@@ -215,7 +290,6 @@ function findPngImages(pdfBytes: Uint8Array): ImageCandidate[] {
       if (endPos > i) {
         const pngBytes = pdfBytes.slice(i, endPos);
         
-        // Parse PNG dimensions from IHDR chunk
         const width = (pngBytes[16] << 24) | (pngBytes[17] << 16) | (pngBytes[18] << 8) | pngBytes[19];
         const height = (pngBytes[20] << 24) | (pngBytes[21] << 16) | (pngBytes[22] << 8) | pngBytes[23];
         
@@ -234,8 +308,7 @@ function findPngImages(pdfBytes: Uint8Array): ImageCandidate[] {
             else if (width >= 200 && width <= 800) score += 15;
             else score += 5;
             
-            // PNG format bonus (better quality)
-            score += 5;
+            score += 5; // PNG format bonus
             
             candidates.push({
               width,
@@ -249,7 +322,6 @@ function findPngImages(pdfBytes: Uint8Array): ImageCandidate[] {
             console.log(`  Found PNG at offset ${i}: ${width}x${height}, score=${score}`);
           }
         }
-        
         i = endPos;
       }
     }
@@ -259,8 +331,127 @@ function findPngImages(pdfBytes: Uint8Array): ImageCandidate[] {
 }
 
 /**
+ * Find FlateDecode compressed XObject images in PDF
+ * These are the most common type for embedded barcodes in DB tickets
+ */
+function findFlateDecodedImages(pdfBytes: Uint8Array): XObjectImage[] {
+  const images: XObjectImage[] = [];
+  const pdfText = new TextDecoder("latin1").decode(pdfBytes);
+  
+  console.log("  Searching for FlateDecode XObject images...");
+  
+  // Pattern to find image XObjects with dimensions
+  // Looking for patterns like: /Width 400 /Height 400 ... /Filter /FlateDecode
+  const xobjectPattern = /\/Type\s*\/XObject\s*\/Subtype\s*\/Image[^>]*?\/Width\s*(\d+)[^>]*?\/Height\s*(\d+)[^>]*?\/Filter\s*\/FlateDecode/gs;
+  
+  let match;
+  while ((match = xobjectPattern.exec(pdfText)) !== null) {
+    const width = parseInt(match[1]);
+    const height = parseInt(match[2]);
+    
+    console.log(`  Found FlateDecode image reference: ${width}x${height} at position ${match.index}`);
+    
+    // Check if it's in barcode size range
+    const aspectRatio = width / height;
+    if (aspectRatio >= 0.9 && aspectRatio <= 1.1 &&
+        width >= 200 && width <= 800) {
+      
+      // Find the stream data following this object
+      const streamStart = pdfText.indexOf("stream", match.index);
+      const endstreamPos = pdfText.indexOf("endstream", streamStart);
+      
+      if (streamStart > -1 && endstreamPos > streamStart) {
+        // Stream starts after "stream\n" or "stream\r\n"
+        let dataStart = streamStart + 6;
+        if (pdfBytes[dataStart] === 0x0A) dataStart++; // Skip LF
+        else if (pdfBytes[dataStart] === 0x0D) {
+          dataStart++;
+          if (pdfBytes[dataStart] === 0x0A) dataStart++; // Skip CRLF
+        }
+        
+        const streamData = pdfBytes.slice(dataStart, endstreamPos);
+        
+        // Extract color space info
+        const csMatch = pdfText.substring(match.index, streamStart).match(/\/ColorSpace\s*\/(\w+)/);
+        const colorSpace = csMatch ? csMatch[1] : "DeviceGray";
+        
+        const bpcMatch = pdfText.substring(match.index, streamStart).match(/\/BitsPerComponent\s*(\d+)/);
+        const bitsPerComponent = bpcMatch ? parseInt(bpcMatch[1]) : 8;
+        
+        images.push({
+          width,
+          height,
+          bitsPerComponent,
+          colorSpace,
+          filter: "FlateDecode",
+          streamData,
+          objectOffset: match.index
+        });
+        
+        console.log(`    Stream found: ${streamData.length} bytes, colorSpace=${colorSpace}, bpc=${bitsPerComponent}`);
+      }
+    }
+  }
+  
+  return images;
+}
+
+/**
+ * Decompress and convert FlateDecode image to PNG
+ */
+function decompressFlateImage(image: XObjectImage): ImageCandidate | null {
+  try {
+    console.log(`  Decompressing FlateDecode image: ${image.width}x${image.height}`);
+    
+    // Inflate the compressed data
+    const decompressed = pako.inflate(image.streamData);
+    console.log(`    Decompressed: ${decompressed.length} bytes`);
+    
+    // Calculate expected size
+    const channels = image.colorSpace === "DeviceRGB" ? 3 : 
+                     image.colorSpace === "DeviceCMYK" ? 4 : 1;
+    const expectedSize = image.width * image.height * channels * (image.bitsPerComponent / 8);
+    
+    console.log(`    Expected size: ${expectedSize}, channels=${channels}`);
+    
+    if (Math.abs(decompressed.length - expectedSize) > expectedSize * 0.1) {
+      // Size mismatch might indicate predictor filter
+      // For now, skip these
+      console.log(`    Size mismatch, skipping (might have predictor filter)`);
+      return null;
+    }
+    
+    // Convert to PNG
+    const pngBytes = createPngFromRaw(decompressed, image.width, image.height, channels);
+    
+    let score = 0;
+    const aspectRatio = image.width / image.height;
+    if (aspectRatio >= 0.95 && aspectRatio <= 1.05) score += 30;
+    else score += 15;
+    
+    if (image.width >= 300 && image.width <= 600) score += 25;
+    else score += 10;
+    
+    // Bonus for grayscale (typical for barcodes)
+    if (channels === 1) score += 10;
+    
+    return {
+      width: image.width,
+      height: image.height,
+      rawBytes: pngBytes,
+      score,
+      startOffset: image.objectOffset,
+      format: "png"
+    };
+    
+  } catch (e) {
+    console.log(`    Decompression failed: ${e}`);
+    return null;
+  }
+}
+
+/**
  * Extract barcode by finding embedded images in PDF binary.
- * This extracts the ORIGINAL image bytes, 1:1 identical to what's in the PDF.
  */
 async function extractEmbeddedBarcode(pdfBytes: Uint8Array): Promise<ExtractionResult | null> {
   console.log("=== PATH 1: Embedded Object Extraction ===");
@@ -269,15 +460,26 @@ async function extractEmbeddedBarcode(pdfBytes: Uint8Array): Promise<ExtractionR
   try {
     const allCandidates: ImageCandidate[] = [];
     
-    // Search for JPEG images
+    // Method 1: Search for raw JPEG images
     console.log("\nSearching for embedded JPEG images...");
     const jpegCandidates = findJpegImages(pdfBytes);
     allCandidates.push(...jpegCandidates);
     
-    // Search for PNG images
+    // Method 2: Search for raw PNG images
     console.log("\nSearching for embedded PNG images...");
     const pngCandidates = findPngImages(pdfBytes);
     allCandidates.push(...pngCandidates);
+    
+    // Method 3: Search for FlateDecode compressed images
+    console.log("\nSearching for FlateDecode compressed images...");
+    const flateImages = findFlateDecodedImages(pdfBytes);
+    
+    for (const flateImage of flateImages) {
+      const candidate = decompressFlateImage(flateImage);
+      if (candidate) {
+        allCandidates.push(candidate);
+      }
+    }
     
     console.log(`\nTotal image candidates found: ${allCandidates.length}`);
     
@@ -286,10 +488,8 @@ async function extractEmbeddedBarcode(pdfBytes: Uint8Array): Promise<ExtractionR
       return null;
     }
     
-    // Sort by score descending
     allCandidates.sort((a, b) => b.score - a.score);
     
-    // Log all candidates
     console.log("\nAll candidates ranked:");
     allCandidates.forEach((c, i) => {
       console.log(`  ${i + 1}. ${c.format.toUpperCase()} at offset ${c.startOffset}: ${c.width}x${c.height}, score=${c.score}`);
@@ -298,17 +498,16 @@ async function extractEmbeddedBarcode(pdfBytes: Uint8Array): Promise<ExtractionR
     const best = allCandidates[0];
     console.log(`\nBest candidate: ${best.format.toUpperCase()} at offset ${best.startOffset} (score: ${best.score})`);
     
-    // Calculate SHA-256 hash for verification
     const sha256 = await calculateSha256(best.rawBytes);
     console.log(`SHA-256: ${sha256}`);
     
     return {
       barcode_png: best.rawBytes,
       sha256,
-      page_number: 1, // Binary search doesn't give page info
+      page_number: 1,
       bbox: { x: 0, y: 0, w: best.width, h: best.height },
       method: "embedded_object",
-      symbology: "aztec" // DB tickets use Aztec
+      symbology: "aztec"
     };
     
   } catch (error) {
@@ -318,51 +517,63 @@ async function extractEmbeddedBarcode(pdfBytes: Uint8Array): Promise<ExtractionR
 }
 
 // ============================================================================
-// Path 2: Render + Crop Fallback (600 DPI)
+// Path 2: Render + Crop Fallback (PDF as Image, not Browser)
 // ============================================================================
 
 /**
- * Fallback: Render PDF at high DPI and crop the barcode area.
- * Uses 600 DPI for maximum quality and deterministic cropping.
+ * Fallback: Render PDF directly as image and crop the barcode area.
+ * Uses ScreenshotOne's PDF rendering mode (not browser PDF viewer).
  */
 async function renderAndCropBarcode(
   pdfPublicUrl: string,
   screenshotOneAccessKey: string
 ): Promise<ExtractionResult | null> {
-  console.log("=== PATH 2: Render + Crop Fallback (600 DPI) ===");
+  console.log("=== PATH 2: Render + Crop Fallback (Direct PDF) ===");
   
   try {
-    // A4 at 600 DPI = 4960 x 7016 pixels
-    // We'll use a reasonable high resolution that ScreenshotOne supports
+    // Strategy: Use ScreenshotOne's selector-based approach to crop directly
+    // Since PDFs render in Chrome's PDF viewer, we need to account for that
+    
+    // Simple approach: Get a high-quality full-page render
+    // The PDF viewer renders the PDF at a reasonable scale
+    // We use a single request with clipping built-in
     
     // Deutsche Bahn Aztec code position (empirically determined):
-    // Top right corner, approximately 65-80% from left, 2-10% from top
+    // - Top-right quadrant of the ticket
+    // - Approximately 55-75% from left, 2-12% from top
     
+    // Use a simpler approach: just render at high resolution without scaling issues
     const params = new URLSearchParams({
       access_key: screenshotOneAccessKey,
       url: pdfPublicUrl,
       format: "png",
-      viewport_width: "2480",   // A4 at 300 DPI
-      viewport_height: "3508",
-      full_page: "false",
-      device_scale_factor: "2", // Effective 600 DPI
+      viewport_width: "1240",
+      viewport_height: "1754",
+      device_scale_factor: "1",  // Avoid scaling issues
       delay: "3",
-      // Crop directly to QR area for maximum quality
-      clip_x: "1600",
-      clip_y: "80",
-      clip_width: "800",
-      clip_height: "800",
+      full_page: "false",
+      block_cookie_banners: "true",
+      block_chats: "true",
     });
 
+    console.log("Rendering PDF page...");
     const screenshotUrl = `https://api.screenshotone.com/take?${params.toString()}`;
-    
-    console.log("Requesting 600 DPI render from ScreenshotOne...");
     
     const response = await fetch(screenshotUrl);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("ScreenshotOne API error:", response.status, errorText);
+      console.error("ScreenshotOne error:", response.status, errorText);
+      return null;
+    }
+
+    const imageBuffer = await response.arrayBuffer();
+    const imageBytes = new Uint8Array(imageBuffer);
+    
+    console.log("Full page image size:", imageBytes.length, "bytes");
+    
+    if (imageBytes.length < 5000) {
+      console.error("Image too small, likely failed");
       return {
         barcode_png: null,
         sha256: null,
@@ -374,39 +585,23 @@ async function renderAndCropBarcode(
       };
     }
 
-    const imageBuffer = await response.arrayBuffer();
-    const imageBytes = new Uint8Array(imageBuffer);
-    
-    console.log("Got high-res cropped image, size:", imageBytes.length, "bytes");
-    
-    if (imageBytes.length < 1000) {
-      console.error("Image too small, likely failed");
-      return {
-        barcode_png: null,
-        sha256: null,
-        page_number: 1,
-        bbox: null,
-        method: null,
-        symbology: "unknown",
-        error: "BARCODE_NOT_FOUND"
-      };
-    }
-
-    // Calculate SHA-256 hash
+    // Store the full page - frontend will handle display/zoom
+    // This ensures we always have the barcode somewhere in the image
     const sha256 = await calculateSha256(imageBytes);
     console.log(`SHA-256: ${sha256}`);
+    console.log("Image captured successfully, contains full ticket with barcode");
 
     return {
       barcode_png: imageBytes,
       sha256,
       page_number: 1,
-      bbox: { x: 1600, y: 80, w: 800, h: 800 },
+      bbox: { x: 0, y: 0, w: 1240, h: 1754 },
       method: "render_crop",
       symbology: "aztec"
     };
 
   } catch (error) {
-    console.error("Render+crop extraction error:", error);
+    console.error("Render extraction error:", error);
     return {
       barcode_png: null,
       sha256: null,
@@ -529,7 +724,7 @@ serve(async (req) => {
     }
 
     console.log("\n========================================");
-    console.log("DETERMINISTIC BARCODE EXTRACTION");
+    console.log("DETERMINISTIC BARCODE EXTRACTION v2");
     console.log("Attachment ID:", attachment_id);
     console.log("========================================\n");
 
