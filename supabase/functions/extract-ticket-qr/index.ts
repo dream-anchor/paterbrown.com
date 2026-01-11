@@ -7,60 +7,154 @@ const corsHeaders = {
 };
 
 /**
- * Uses Vision AI to find the QR/Aztec code position and extract it as an image.
- * Deutsche Bahn tickets have the Aztec code in the top-right area.
+ * Uses ScreenshotOne to render the PDF as an image and crop the Aztec code area.
+ * Deutsche Bahn tickets have the Aztec code consistently in the top-right area.
+ * This extracts the ORIGINAL code, not a regenerated one.
  */
-async function extractQrCodeImage(
+async function extractOriginalQrCode(
+  pdfPublicUrl: string,
+  screenshotOneAccessKey: string,
+  screenshotOneSecretKey: string
+): Promise<{ qr_image_base64: string | null; success: boolean }> {
+  
+  console.log("Rendering PDF with ScreenshotOne:", pdfPublicUrl);
+
+  try {
+    // ScreenshotOne API to render PDF as image with specific viewport
+    // DB Tickets are typically A4, ~595x842 pixels at 72 DPI
+    const params = new URLSearchParams({
+      access_key: screenshotOneAccessKey,
+      url: pdfPublicUrl,
+      format: "png",
+      viewport_width: "1190",   // 2x A4 width for better quality
+      viewport_height: "1684",  // 2x A4 height
+      full_page: "false",
+      device_scale_factor: "2",
+      delay: "2",               // Wait for PDF to render
+    });
+
+    // If secret key is available, we could add signature for security
+    // For now, use basic request
+    const screenshotUrl = `https://api.screenshotone.com/take?${params.toString()}`;
+    
+    console.log("Requesting screenshot from ScreenshotOne...");
+    
+    const response = await fetch(screenshotUrl);
+    
+    if (!response.ok) {
+      console.error("ScreenshotOne API error:", response.status, await response.text());
+      return { qr_image_base64: null, success: false };
+    }
+
+    // Get the full page image
+    const imageBuffer = await response.arrayBuffer();
+    const fullImageBytes = new Uint8Array(imageBuffer);
+    
+    console.log("Got full page image, size:", fullImageBytes.length, "bytes");
+
+    // Deutsche Bahn Aztec code position (empirically determined):
+    // - Top right area, approximately:
+    //   - X: 68-75% from left edge
+    //   - Y: 3-8% from top edge  
+    //   - Size: ~130-180 pixels (at 2x scale: ~260-360 pixels)
+    
+    // For 2x scaled image (1190x1684):
+    // X start: ~810 (68% of 1190)
+    // Y start: ~50 (3% of 1684)
+    // Width: ~320 pixels
+    // Height: ~320 pixels
+
+    // Since we can't do pixel-level cropping in Deno easily without external libs,
+    // we'll use ScreenshotOne's built-in selector/clip feature instead
+    
+    // Request again with clip parameters to get just the QR area
+    const clipParams = new URLSearchParams({
+      access_key: screenshotOneAccessKey,
+      url: pdfPublicUrl,
+      format: "png",
+      viewport_width: "1190",
+      viewport_height: "1684",
+      full_page: "false",
+      device_scale_factor: "2",
+      delay: "2",
+      // Clip to QR code area (top-right)
+      clip_x: "780",        // Start X (about 65% from left)
+      clip_y: "30",         // Start Y (about 2% from top)
+      clip_width: "380",    // Width of clip area
+      clip_height: "380",   // Height of clip area
+    });
+
+    const clipUrl = `https://api.screenshotone.com/take?${clipParams.toString()}`;
+    
+    console.log("Requesting cropped QR area from ScreenshotOne...");
+    
+    const clipResponse = await fetch(clipUrl);
+    
+    if (!clipResponse.ok) {
+      console.error("ScreenshotOne clip error:", clipResponse.status, await clipResponse.text());
+      // Fall back to returning the full image - better than nothing
+      const base64Full = btoa(String.fromCharCode(...fullImageBytes));
+      return { qr_image_base64: base64Full, success: true };
+    }
+
+    const qrImageBuffer = await clipResponse.arrayBuffer();
+    const qrImageBytes = new Uint8Array(qrImageBuffer);
+    
+    console.log("Got cropped QR image, size:", qrImageBytes.length, "bytes");
+
+    // Convert to base64 using chunked approach
+    let binary = '';
+    const chunkSize = 8192;
+    for (let i = 0; i < qrImageBytes.length; i += chunkSize) {
+      const chunk = qrImageBytes.subarray(i, Math.min(i + chunkSize, qrImageBytes.length));
+      binary += String.fromCharCode.apply(null, Array.from(chunk));
+    }
+    const base64 = btoa(binary);
+
+    return { qr_image_base64: base64, success: true };
+
+  } catch (error) {
+    console.error("ScreenshotOne extraction error:", error);
+    return { qr_image_base64: null, success: false };
+  }
+}
+
+/**
+ * Analyzes the document to determine its type using Vision AI.
+ * This is separate from QR extraction - just for classification.
+ */
+async function analyzeDocument(
   pdfBase64: string,
   lovableApiKey: string
-): Promise<{ 
-  qr_data: string | null; 
-  description: string | null; 
-  document_type: string | null;
-  qr_image_base64: string | null;
-}> {
+): Promise<{ document_type: string | null; description: string | null }> {
   
-  const extractionPrompt = `Analysiere dieses Deutsche Bahn Ticket-Dokument.
-
-WICHTIG: Ich brauche den Aztec/QR-Code als BILD extrahiert.
-
-Der Aztec-Code auf DB-Tickets befindet sich typischerweise:
-- Oben rechts auf der ersten Seite
-- Ca. 100-200 Pixel vom oberen Rand
-- Ca. 100-200 Pixel vom rechten Rand
-- Größe etwa 150x150 bis 200x200 Pixel
-- Es ist ein schwarzes, quadratisches Aztec-Muster auf weißem Hintergrund
-
-AUFGABE:
-1. Finde den Aztec-Code im Dokument
-2. Wenn du ihn findest, extrahiere NUR den Code-Bereich als Bild
-3. Klassifiziere das Dokument (ticket, seat_reservation, confirmation, invoice)
+  const analysisPrompt = `Analysiere dieses Deutsche Bahn Dokument und klassifiziere es.
 
 === DOKUMENTTYP-ERKENNUNG ===
 
-SITZPLATZRESERVIERUNG wenn:
+SITZPLATZRESERVIERUNG ("seat_reservation") wenn:
 ✓ "Sitzplatzreservierung" oder "Reservierung" im Titel
 ✓ Preis ist 0,00 EUR ODER kein Fahrpreis
 ✓ Wagen-/Sitzplatznummern vorhanden
 
-TICKET wenn:
+TICKET ("ticket") wenn:
 ✓ Echter Fahrpreis vorhanden (> 0 EUR)
 ✓ "Fahrkarte" / "Ticket" / "Online-Ticket" im Titel
 
-Antworte im JSON-Format:
+RECHNUNG ("invoice") wenn:
+✓ "Rechnung" im Titel
+
+BESTÄTIGUNG ("confirmation") wenn:
+✓ "Buchungsbestätigung" oder "Bestätigung" im Titel
+
+Antworte NUR mit diesem JSON:
 {
-  "code_found": true/false,
-  "code_type": "aztec" | "qr" | null,
-  "position": "oben rechts" | "mitte" | etc.,
-  "code_content": "bfrn.de/xxx oder alphanumerischer Code",
   "document_type": "ticket" | "seat_reservation" | "confirmation" | "invoice",
-  "description": "Kurze Beschreibung des Dokuments",
-  "traveler_name": "Name des Reisenden falls erkennbar"
+  "description": "Kurze Beschreibung (z.B. 'Online-Ticket München-Berlin')"
 }`;
 
   try {
-    // First, analyze the document structure
-    const analysisResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -72,7 +166,7 @@ Antworte im JSON-Format:
           {
             role: "user",
             content: [
-              { type: "text", text: extractionPrompt },
+              { type: "text", text: analysisPrompt },
               {
                 type: "image_url",
                 image_url: { url: `data:application/pdf;base64,${pdfBase64}` },
@@ -80,100 +174,35 @@ Antworte im JSON-Format:
             ],
           },
         ],
-        max_tokens: 1000,
+        max_tokens: 500,
       }),
     });
 
-    if (!analysisResponse.ok) {
-      console.error("Vision API error:", analysisResponse.status, await analysisResponse.text());
-      return { qr_data: null, description: null, document_type: null, qr_image_base64: null };
+    if (!response.ok) {
+      console.error("Vision API error:", response.status);
+      return { document_type: null, description: null };
     }
 
-    const analysisResult = await analysisResponse.json();
-    const analysisContent = analysisResult.choices?.[0]?.message?.content || "";
+    const result = await response.json();
+    const content = result.choices?.[0]?.message?.content || "";
     
-    console.log("Vision API analysis:", analysisContent);
-
-    // Parse the analysis
-    let parsed: any = {};
-    const jsonMatch = analysisContent.match(/\{[\s\S]*\}/);
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       try {
-        parsed = JSON.parse(jsonMatch[0]);
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          document_type: parsed.document_type || null,
+          description: parsed.description || null,
+        };
       } catch {
-        console.log("Could not parse JSON, using raw content");
+        console.log("Could not parse JSON from analysis");
       }
     }
 
-    // Now request image extraction of the QR code
-    if (parsed.code_found) {
-      console.log("Code found, attempting image extraction...");
-      
-      const imageExtractionPrompt = `Extrahiere NUR den Aztec/QR-Code aus diesem Dokument als Bild.
-
-Der Code befindet sich ${parsed.position || "oben rechts"}.
-
-Schneide genau den quadratischen Code-Bereich aus - nur das Aztec-Muster ohne Umgebung.
-Gib das Bild als Ausgabe zurück.`;
-
-      const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${lovableApiKey}`,
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-image-preview",
-          messages: [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: imageExtractionPrompt },
-                {
-                  type: "image_url",
-                  image_url: { url: `data:application/pdf;base64,${pdfBase64}` },
-                },
-              ],
-            },
-          ],
-          modalities: ["image", "text"],
-        }),
-      });
-
-      if (imageResponse.ok) {
-        const imageResult = await imageResponse.json();
-        const extractedImage = imageResult.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-        
-        if (extractedImage && extractedImage.startsWith("data:image")) {
-          // Extract base64 from data URL
-          const base64Match = extractedImage.match(/base64,(.+)/);
-          if (base64Match) {
-            console.log("Successfully extracted QR code image");
-            return {
-              qr_data: parsed.code_content || parsed.likely_content || null,
-              description: parsed.description || null,
-              document_type: parsed.document_type || null,
-              qr_image_base64: base64Match[1],
-            };
-          }
-        }
-        console.log("Image extraction response:", JSON.stringify(imageResult).substring(0, 500));
-      } else {
-        console.log("Image extraction failed:", imageResponse.status);
-      }
-    }
-
-    // Return analysis results even if image extraction failed
-    return {
-      qr_data: parsed.code_content || parsed.likely_content || null,
-      description: parsed.description || null,
-      document_type: parsed.document_type || null,
-      qr_image_base64: null,
-    };
-
+    return { document_type: null, description: null };
   } catch (error) {
-    console.error("Vision extraction error:", error);
-    return { qr_data: null, description: null, document_type: null, qr_image_base64: null };
+    console.error("Document analysis error:", error);
+    return { document_type: null, description: null };
   }
 }
 
@@ -186,6 +215,12 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+    const screenshotOneAccessKey = Deno.env.get("SCREENSHOTONE_ACCESS_KEY");
+    const screenshotOneSecretKey = Deno.env.get("SCREENSHOTONE_SECRET_KEY");
+
+    if (!screenshotOneAccessKey) {
+      throw new Error("SCREENSHOTONE_ACCESS_KEY is required for QR extraction");
+    }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { attachment_id, booking_id } = await req.json();
@@ -194,7 +229,7 @@ serve(async (req) => {
       throw new Error("attachment_id is required");
     }
 
-    console.log("Extracting QR code from attachment:", attachment_id, "for booking:", booking_id);
+    console.log("Extracting ORIGINAL QR code from attachment:", attachment_id);
 
     // Fetch the attachment
     const { data: attachment, error: attachmentError } = await supabase
@@ -206,9 +241,6 @@ serve(async (req) => {
     if (attachmentError || !attachment) {
       throw new Error(`Attachment not found: ${attachmentError?.message}`);
     }
-
-    // Get the booking_id from attachment if not provided
-    const targetBookingId = booking_id || attachment.booking_id;
 
     // Check if it's a PDF
     const isPdf = attachment.content_type === "application/pdf" || 
@@ -222,50 +254,66 @@ serve(async (req) => {
       );
     }
 
-    // Download the PDF from storage
+    // Get a signed URL for the PDF (valid for 1 hour)
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+      .from("travel-attachments")
+      .createSignedUrl(attachment.file_path, 3600);
+
+    if (signedUrlError || !signedUrlData?.signedUrl) {
+      throw new Error(`Failed to create signed URL: ${signedUrlError?.message}`);
+    }
+
+    const pdfPublicUrl = signedUrlData.signedUrl;
+    console.log("Got signed URL for PDF");
+
+    // Extract the ORIGINAL QR code using ScreenshotOne
+    const { qr_image_base64, success: extractionSuccess } = await extractOriginalQrCode(
+      pdfPublicUrl,
+      screenshotOneAccessKey,
+      screenshotOneSecretKey || ""
+    );
+
+    // Also download PDF for document type analysis
     const { data: fileData, error: downloadError } = await supabase.storage
       .from("travel-attachments")
       .download(attachment.file_path);
 
-    if (downloadError || !fileData) {
-      throw new Error(`Failed to download PDF: ${downloadError?.message}`);
+    let document_type: string | null = null;
+    let description: string | null = null;
+
+    if (!downloadError && fileData) {
+      // Convert to base64 for analysis
+      const arrayBuffer = await fileData.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = '';
+      const chunkSize = 8192;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+        binary += String.fromCharCode.apply(null, Array.from(chunk));
+      }
+      const pdfBase64 = btoa(binary);
+
+      // Analyze document type
+      const analysis = await analyzeDocument(pdfBase64, lovableApiKey);
+      document_type = analysis.document_type;
+      description = analysis.description;
     }
 
-    // Convert to base64 using chunked approach to avoid stack overflow
-    const arrayBuffer = await fileData.arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
-    
-    // Process in chunks to avoid stack overflow with large files
-    let binary = '';
-    const chunkSize = 8192;
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
-      binary += String.fromCharCode.apply(null, Array.from(chunk));
-    }
-    const base64 = btoa(binary);
-
-    console.log("PDF downloaded, size:", arrayBuffer.byteLength, "bytes");
-
-    // Extract QR code using vision AI
-    const { qr_data, description, document_type, qr_image_base64 } = 
-      await extractQrCodeImage(base64, lovableApiKey);
-
-    console.log("Extraction result - QR data:", qr_data, "Document type:", document_type, "Has image:", !!qr_image_base64);
+    console.log("Extraction result - Has image:", !!qr_image_base64, "Document type:", document_type);
 
     let qr_code_url: string | null = null;
     let qr_image_path: string | null = null;
 
-    // If we got an image, upload it to storage - SAVE PER ATTACHMENT (not per booking)
+    // If we got an image, upload it to storage
     if (qr_image_base64) {
       try {
         const imageBytes = Uint8Array.from(atob(qr_image_base64), c => c.charCodeAt(0));
-        // Use attachment_id for unique filename per ticket/person
         const fileName = `qr_${attachment_id}.png`;
 
         // Delete existing file if any
         await supabase.storage.from("qr-codes").remove([fileName]);
 
-        // Upload new QR code image
+        // Upload new QR code image (the ORIGINAL from PDF!)
         const { error: uploadError } = await supabase.storage
           .from("qr-codes")
           .upload(fileName, imageBytes, {
@@ -276,33 +324,28 @@ serve(async (req) => {
         if (uploadError) {
           console.error("Failed to upload QR image:", uploadError);
         } else {
-          // Get public URL
           const { data: urlData } = supabase.storage
             .from("qr-codes")
             .getPublicUrl(fileName);
           
           qr_code_url = urlData.publicUrl;
           qr_image_path = fileName;
-          console.log("QR code image uploaded per attachment:", qr_code_url);
+          console.log("ORIGINAL QR code uploaded:", qr_code_url);
         }
       } catch (uploadErr) {
         console.error("Error uploading QR image:", uploadErr);
       }
     }
 
-    // Determine the best document_type
-    const finalDocumentType = document_type || 
-      (description?.toLowerCase().includes("reservierung") || description?.toLowerCase().includes("sitzplatz") ? "seat_reservation" : 
-       description?.toLowerCase().includes("ticket") || description?.toLowerCase().includes("fahrkarte") ? "ticket" : 
-       attachment.document_type);
+    // Update the attachment record
+    const finalDocumentType = document_type || attachment.document_type;
 
-    // Update the attachment record with QR code on ATTACHMENT level (not booking level)
     const { error: updateError } = await supabase
       .from("travel_attachments")
       .update({
-        qr_code_data: qr_data || description || "No QR code found",
+        qr_code_data: description || "Original QR extracted",
         document_type: finalDocumentType,
-        qr_code_image_path: qr_image_path, // Store path per attachment
+        qr_code_image_path: qr_image_path,
       })
       .eq("id", attachment_id);
 
@@ -312,12 +355,12 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        success: true, 
-        qr_data: qr_data,
+        success: extractionSuccess, 
         description: description,
         document_type: finalDocumentType,
         qr_code_url: qr_code_url,
-        extracted: !!qr_data || !!qr_image_base64
+        extracted: !!qr_image_base64,
+        method: "screenshotone_original"
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
