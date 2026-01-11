@@ -144,6 +144,28 @@ const DOCUMENT_TYPE_TO_BOOKING_TYPE: Record<DocumentType, string> = {
   'other': 'other'
 };
 
+// ========== HELPER: Buchungsnummer aus Dateinamen extrahieren ==========
+// Deutsche Bahn Muster: OT_XXXXXXXXX_... oder HT_XXXXXXXXX_...
+function extractBookingNumberFromFileName(fileName: string): string | null {
+  // Deutsche Bahn Pattern: OT_123456789_... oder HT_123456789_...
+  const dbPattern = /[OH]T[_-]?(\d{6,9})[_-]/i;
+  const match = fileName.match(dbPattern);
+  if (match) {
+    console.log(`📋 Extracted booking number ${match[1]} from filename: ${fileName}`);
+    return match[1];
+  }
+  
+  // Generisches Pattern: beliebige lange Zahlenfolge (6-12 Ziffern)
+  const genericPattern = /(\d{6,12})/;
+  const genericMatch = fileName.match(genericPattern);
+  if (genericMatch) {
+    console.log(`📋 Extracted generic booking number ${genericMatch[1]} from filename: ${fileName}`);
+    return genericMatch[1];
+  }
+  
+  return null;
+}
+
 // ========== HELPER: Identify Traveler AND Document Type in Document ==========
 async function identifyTravelerInDocument(
   base64Content: string,
@@ -1224,6 +1246,44 @@ ${existingBookingsContext}`;
               if (documentType) updateData.document_type = documentType;
               if (newFileName) updateData.file_name = newFileName;
               
+              // ========== PRIORITÄT 1: BUCHUNGSNUMMER-BASIERTES MATCHING ==========
+              // Zuerst nach Attachments suchen, deren Dateiname die Buchungsnummer enthält
+              if (finalBookingNumber) {
+                // Hole alle unverknüpften Attachments dieser E-Mail
+                const { data: unlinkedAttachments } = await supabase
+                  .from("travel_attachments")
+                  .select("id, file_name")
+                  .eq("email_id", email_id)
+                  .is("booking_id", null);
+                
+                if (unlinkedAttachments && unlinkedAttachments.length > 0) {
+                  // Finde Attachments, deren Dateiname die Buchungsnummer enthält
+                  const matchingByBookingNumber = unlinkedAttachments.filter(att => {
+                    const extractedNumber = extractBookingNumberFromFileName(att.file_name);
+                    return extractedNumber === finalBookingNumber;
+                  });
+                  
+                  if (matchingByBookingNumber.length > 0) {
+                    console.log(`🎯 [BOOKING-NUMBER-MATCH] Found ${matchingByBookingNumber.length} attachments matching booking number ${finalBookingNumber}`);
+                    
+                    // Verknüpfe diese Attachments direkt mit dieser Buchung
+                    for (const matchingAtt of matchingByBookingNumber) {
+                      const { error: directLinkError } = await supabase
+                        .from("travel_attachments")
+                        .update(updateData)
+                        .eq("id", matchingAtt.id);
+                      
+                      if (directLinkError) {
+                        console.error(`Error linking attachment by booking number:`, directLinkError);
+                      } else {
+                        console.log(`✅ Linked attachment ${matchingAtt.file_name} to booking ${finalBookingNumber} via booking number match`);
+                      }
+                    }
+                  }
+                }
+              }
+              
+              // ========== PRIORITÄT 2: TRAVELER + DOCUMENT_TYPE MATCHING (für restliche Attachments) ==========
               // Build attachment query - filter by traveler if booking has one
               let attachQuery = supabase
                 .from("travel_attachments")
@@ -1258,7 +1318,7 @@ ${existingBookingsContext}`;
                   console.log(`🔗 [SINGLE-USER] Linking attachments for: ${travelerName}`);
                 }
                 
-                // ========== NEU: DOCUMENT_TYPE FILTER ==========
+                // ========== DOCUMENT_TYPE FILTER ==========
                 // Verknüpfe NUR Attachments, deren document_type zum booking_type passt
                 // ODER deren document_type NULL ist (noch nicht klassifiziert)
                 const docTypeFilter = expectedDocTypes.map(dt => `document_type.eq.${dt}`).join(',');
