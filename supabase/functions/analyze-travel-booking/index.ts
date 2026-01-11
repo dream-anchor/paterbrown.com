@@ -928,6 +928,39 @@ ${existingBookingsContext}`;
               .eq("id", existingBookingId);
 
             bookingsUpdated++;
+
+            // ========== ATTACHMENT LINKING FOR UPDATES ==========
+            // Auch bei Updates müssen Attachments verknüpft werden
+            const isMultiUserEmailUpdate = (analysisResult.bookings?.length || 1) > 1;
+            const updateTravelerName = booking.traveler_name || (booking.traveler_names?.length ? booking.traveler_names[0] : null);
+
+            if (updateTravelerName) {
+              let attachQueryUpdate = supabase
+                .from("travel_attachments")
+                .update({ booking_id: existingBookingId })
+                .eq("email_id", email_id)
+                .is("booking_id", null); // Nur unverknüpfte Attachments
+
+              if (isMultiUserEmailUpdate) {
+                // MULTI-USER: NUR exakte traveler_name Matches
+                attachQueryUpdate = attachQueryUpdate.eq("traveler_name", updateTravelerName);
+                console.log(`🔗 [UPDATE][MULTI-USER] Linking attachments for: ${updateTravelerName}`);
+              } else {
+                // SINGLE-USER: Alle Attachments können verknüpft werden
+                attachQueryUpdate = attachQueryUpdate.or(`traveler_name.eq.${updateTravelerName},traveler_name.is.null`);
+                console.log(`🔗 [UPDATE][SINGLE-USER] Linking attachments for: ${updateTravelerName}`);
+              }
+
+              const { error: attachErrorUpdate, count: attachCountUpdate } = await attachQueryUpdate;
+              
+              if (attachErrorUpdate) {
+                console.error(`Error linking attachments on update: ${attachErrorUpdate.message}`);
+              } else {
+                console.log(`✅ Linked ${attachCountUpdate || 0} attachments to updated booking ${existingBookingId}`);
+              }
+            } else {
+              console.log(`⚠️ [UPDATE] No traveler_name for booking - skipping attachment linking`);
+            }
           }
         } else {
           // ===== DUPLICATE CHECK BEFORE INSERT =====
