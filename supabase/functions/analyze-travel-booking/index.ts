@@ -126,50 +126,73 @@ function fuzzyMatchTraveler(extractedName: string, knownTravelers: string[]): st
 }
 
 // ========== HELPER: Result Type for Traveler Identification ==========
+type DocumentType = 'train_ticket' | 'flight_ticket' | 'hotel_booking' | 'seat_reservation' | 'rental_car' | 'other';
+
 interface TravelerIdentificationResult {
   matchedName: string | null;
   extractedName: string | null;  // Der rohe Name aus dem Dokument (für Auto-Create)
+  documentType: DocumentType | null;  // Klassifizierter Dokumenttyp
 }
 
-// ========== HELPER: Identify Traveler in Document (STRICT LABELS!) ==========
+// Mapping: document_type → booking_type für korrektes Attachment-Linking
+const DOCUMENT_TYPE_TO_BOOKING_TYPE: Record<DocumentType, string> = {
+  'train_ticket': 'train',
+  'seat_reservation': 'train',
+  'flight_ticket': 'flight',
+  'hotel_booking': 'hotel',
+  'rental_car': 'rental_car',
+  'other': 'other'
+};
+
+// ========== HELPER: Identify Traveler AND Document Type in Document ==========
 async function identifyTravelerInDocument(
   base64Content: string,
   mimeType: string,
   knownTravelers: string[],
   lovableApiKey: string
 ): Promise<TravelerIdentificationResult> {
-  const emptyResult: TravelerIdentificationResult = { matchedName: null, extractedName: null };
+  const emptyResult: TravelerIdentificationResult = { matchedName: null, extractedName: null, documentType: null };
   
-  // ⚠️ STRIKTERER PROMPT - Sucht nur nach Labels + DB Special Case
-  const prompt = `Finde den REISENDEN-NAMEN in diesem Reisedokument/Ticket.
+  // ⚠️ ERWEITERTER PROMPT - Findet Reisenden UND klassifiziert Dokumenttyp
+  const prompt = `Analysiere dieses Reisedokument und gib ZWEI Informationen zurück:
 
+1. REISENDEN-NAME:
 ⛔ KRITISCHE REGEL - DEUTSCHE BAHN SPECIAL CASE:
-- Wenn hinter "Reisender:" nur "1 Person", "Erwachsener", "1 Erw.", "2 Personen" oder ähnliches steht → DAS IST NICHT DER NAME!
+- Wenn hinter "Reisender:" nur "1 Person", "Erwachsener", "1 Erw.", "2 Personen" steht → DAS IST NICHT DER NAME!
 - Bei DB Online-Tickets steht der ECHTE NAME oft:
   → Unten rechts im Dokument, neben dem großen quadratischen Barcode
   → Direkt ÜBER der Zeile "Auftragsnummer:"
   → Im Block mit Buchungsdaten (Name, Auftragsnummer, Preis)
 - Suche gezielt nach bekannten Namen: Antoine Monot, Stefanie Sick, Wanja Mues
+- Weitere Labels: "Fahrgast:", "Passagier:", "Gast:", "Name:", "Ticket für:"
 
-⛔ STANDARD LABELS (trotzdem prüfen, aber "1 Person" ist KEIN Name!):
-1. "Reisender:" (NUR wenn danach ein echter Vorname+Nachname steht, NICHT "1 Person"!)
-2. "Fahrgast:", "Passagier:", "Passenger:"
-3. "Gast:", "Guest:"
-4. "Name:" (nur wenn direkt daneben ein echter Name steht)
-5. "Ticket für:", "Gebucht für:", "Boarding Pass für:"
+2. DOKUMENTTYP - Klassifiziere das Dokument:
+- "train_ticket" → Zugfahrkarte/Bahnticket (Deutsche Bahn, ÖBB, etc.) mit Fahrpreis
+- "seat_reservation" → NUR Sitzplatzreservierung (Preis = 0€ oder "Reservierung")
+- "hotel_booking" → Hotelbuchung/-bestätigung (Marriott, Hilton, Booking.com, etc.)
+- "flight_ticket" → Flugticket, Boarding Pass
+- "rental_car" → Mietwagen-Buchung
+- "other" → Sonstiges (Rechnungen, etc.)
 
-⚠️ SUCHSTRATEGIE bei DB Tickets:
-1. ERST prüfen ob hinter "Reisender:" ein echter Name steht (nicht "1 Person")
-2. DANN im Barcode-Bereich unten rechts suchen
-3. DANN nach bekannten Namen im gesamten Dokument suchen
+⚠️ HOTEL ERKENNUNG - Achte auf:
+- "Hotel", "Courtyard", "Marriott", "Hilton", "Inn", "Resort"
+- "Check-in", "Check-out", "Zimmer", "Room"
+- "Übernachtung", "Nacht/Nächte", "Night(s)"
+- Booking.com, Expedia, HRS Logos
 
-⚠️ ANTWORT FORMAT:
-- Gib den Namen EXAKT so zurück, wie er im Dokument steht
-- Format: "Vorname Nachname"
-- Wenn kein Name gefunden: "UNKNOWN"
-- KEINE Erklärung, NUR der Name!
+⚠️ ANTWORT FORMAT (EXAKT SO!):
+NAME: [Vorname Nachname] oder UNKNOWN
+TYPE: [train_ticket|seat_reservation|hotel_booking|flight_ticket|rental_car|other]
 
-Antworte NUR mit dem gefundenen Namen oder "UNKNOWN".`;
+Beispiele:
+NAME: Stefanie Sick
+TYPE: hotel_booking
+
+NAME: Antoine Monot
+TYPE: train_ticket
+
+NAME: UNKNOWN
+TYPE: seat_reservation`;
 
   try {
     console.log(`\n=== TRAVELER IDENTIFICATION START ===`);
@@ -204,20 +227,49 @@ Antworte NUR mit dem gefundenen Namen oder "UNKNOWN".`;
     }
 
     const visionData = await visionResponse.json();
-    const extractedName = visionData.choices?.[0]?.message?.content?.trim() || "";
+    const rawResponse = visionData.choices?.[0]?.message?.content?.trim() || "";
     
-    console.log(`📋 Extracted Name from Document: "${extractedName}"`);
+    console.log(`📋 Raw AI Response: "${rawResponse}"`);
     
-    if (extractedName === "UNKNOWN" || !extractedName) {
-      console.log(`⚠️ No traveler found in document (AI returned UNKNOWN)`);
+    // Parse the structured response (NAME: ... TYPE: ...)
+    let extractedName: string | null = null;
+    let documentType: DocumentType | null = null;
+    
+    const nameMatch = rawResponse.match(/NAME:\s*(.+?)(?:\n|TYPE:|$)/i);
+    const typeMatch = rawResponse.match(/TYPE:\s*(\w+)/i);
+    
+    if (nameMatch) {
+      const name = nameMatch[1].trim();
+      extractedName = (name === "UNKNOWN" || name === "") ? null : name;
+    }
+    
+    if (typeMatch) {
+      const type = typeMatch[1].trim().toLowerCase();
+      const validTypes: DocumentType[] = ['train_ticket', 'flight_ticket', 'hotel_booking', 'seat_reservation', 'rental_car', 'other'];
+      documentType = validTypes.includes(type as DocumentType) ? (type as DocumentType) : null;
+    }
+    
+    console.log(`📋 Parsed - Name: "${extractedName || 'UNKNOWN'}", Type: "${documentType || 'unknown'}"`);
+    
+    if (!extractedName && !documentType) {
+      // Fallback: Alte Format-Erkennung (nur Name ohne TYPE:)
+      if (!rawResponse.includes("NAME:") && !rawResponse.includes("TYPE:")) {
+        extractedName = rawResponse === "UNKNOWN" ? null : rawResponse;
+        console.log(`📋 Fallback parsing (old format): "${extractedName}"`);
+      }
+    }
+    
+    if (!extractedName) {
+      console.log(`⚠️ No traveler found in document`);
       console.log(`=== TRAVELER IDENTIFICATION END ===\n`);
-      return emptyResult;
+      return { matchedName: null, extractedName: null, documentType };
     }
     
     // Speichere den extrahierten Namen für Auto-Create
     const result: TravelerIdentificationResult = {
       matchedName: null,
-      extractedName: extractedName
+      extractedName: extractedName,
+      documentType: documentType
     };
     
     // Score-based Fuzzy match against known travelers (nur wenn wir bekannte Reisende haben)
@@ -229,6 +281,7 @@ Antworte NUR mit dem gefundenen Namen oder "UNKNOWN".`;
       console.log(`📋 No known travelers to match against - will use Auto-Create`);
     }
     
+    console.log(`📋 Document Type: ${documentType || 'unknown'}`);
     console.log(`=== TRAVELER IDENTIFICATION END ===\n`);
     return result;
   } catch (error) {
@@ -488,16 +541,28 @@ if (attachments && attachments.length > 0) {
                 }
               }
               
+              // ========== SPEICHERE TRAVELER + DOCUMENT_TYPE ==========
+              const attachmentUpdate: Record<string, any> = {};
+              
               if (finalTravelerName) {
+                attachmentUpdate.traveler_name = finalTravelerName;
                 console.log(`📋 Attachment "${attachment.file_name}" belongs to: ${finalTravelerName}`);
-                
-                // Update attachment with identified traveler
-                await supabase
-                  .from("travel_attachments")
-                  .update({ traveler_name: finalTravelerName })
-                  .eq("id", attachment.id);
               } else {
                 console.log(`📋 Attachment "${attachment.file_name}" - NO traveler identified (will be UNASSIGNED)`);
+              }
+              
+              // Speichere document_type für intelligentes Linking
+              if (identificationResult.documentType) {
+                attachmentUpdate.document_type = identificationResult.documentType;
+                console.log(`📋 Attachment "${attachment.file_name}" classified as: ${identificationResult.documentType}`);
+              }
+              
+              // Update Attachment wenn wir etwas zu speichern haben
+              if (Object.keys(attachmentUpdate).length > 0) {
+                await supabase
+                  .from("travel_attachments")
+                  .update(attachmentUpdate)
+                  .eq("id", attachment.id);
               }
               
               // Use Gemini Vision to extract text - 🔥 USING PRO MODEL
@@ -929,10 +994,21 @@ ${existingBookingsContext}`;
 
             bookingsUpdated++;
 
-            // ========== ATTACHMENT LINKING FOR UPDATES ==========
+            // ========== ATTACHMENT LINKING FOR UPDATES (mit document_type) ==========
             // Auch bei Updates müssen Attachments verknüpft werden
             const isMultiUserEmailUpdate = (analysisResult.bookings?.length || 1) > 1;
             const updateTravelerName = booking.traveler_name || (booking.traveler_names?.length ? booking.traveler_names[0] : null);
+
+            // Map booking_type to expected document_types
+            const updateDocTypeMap: Record<string, string[]> = {
+              'train': ['train_ticket', 'seat_reservation'],
+              'flight': ['flight_ticket'],
+              'hotel': ['hotel_booking'],
+              'rental_car': ['rental_car'],
+              'bus': ['other'],
+              'other': ['other']
+            };
+            const expectedUpdateDocTypes = updateDocTypeMap[booking.booking_type] || ['other'];
 
             if (updateTravelerName) {
               let attachQueryUpdate = supabase
@@ -944,19 +1020,24 @@ ${existingBookingsContext}`;
               if (isMultiUserEmailUpdate) {
                 // MULTI-USER: NUR exakte traveler_name Matches
                 attachQueryUpdate = attachQueryUpdate.eq("traveler_name", updateTravelerName);
-                console.log(`🔗 [UPDATE][MULTI-USER] Linking attachments for: ${updateTravelerName}`);
+                console.log(`🔗 [UPDATE][MULTI-USER] Linking attachments for: ${updateTravelerName}, type: ${booking.booking_type}`);
               } else {
                 // SINGLE-USER: Alle Attachments können verknüpft werden
                 attachQueryUpdate = attachQueryUpdate.or(`traveler_name.eq.${updateTravelerName},traveler_name.is.null`);
                 console.log(`🔗 [UPDATE][SINGLE-USER] Linking attachments for: ${updateTravelerName}`);
               }
 
+              // ========== NEU: DOCUMENT_TYPE FILTER für Updates ==========
+              const docTypeFilterUpdate = expectedUpdateDocTypes.map(dt => `document_type.eq.${dt}`).join(',');
+              attachQueryUpdate = attachQueryUpdate.or(`${docTypeFilterUpdate},document_type.is.null`);
+              console.log(`🔗 [UPDATE][DOC-TYPE] Filtering for: ${expectedUpdateDocTypes.join(', ')}`);
+
               const { error: attachErrorUpdate, count: attachCountUpdate } = await attachQueryUpdate;
               
               if (attachErrorUpdate) {
                 console.error(`Error linking attachments on update: ${attachErrorUpdate.message}`);
               } else {
-                console.log(`✅ Linked ${attachCountUpdate || 0} attachments to updated booking ${existingBookingId}`);
+                console.log(`✅ Linked ${attachCountUpdate || 0} attachments to updated ${booking.booking_type} booking ${existingBookingId}`);
               }
             } else {
               console.log(`⚠️ [UPDATE] No traveler_name for booking - skipping attachment linking`);
@@ -1138,7 +1219,7 @@ ${existingBookingsContext}`;
                 newFileName = `Bestaetigung_${travelerShortName}.pdf`;
               }
               
-              // ========== MULTI-USER SPLIT: Attach only to matching traveler ==========
+              // ========== MULTI-USER SPLIT: Attach only to matching traveler AND document_type ==========
               const updateData: Record<string, any> = { booking_id: insertedBooking.id };
               if (documentType) updateData.document_type = documentType;
               if (newFileName) updateData.file_name = newFileName;
@@ -1153,17 +1234,37 @@ ${existingBookingsContext}`;
               // CRITICAL: Check if this is a multi-user email (multiple bookings from one email)
               const isMultiUserEmail = (analysisResult.bookings?.length || 1) > 1;
               
+              // ========== DOCUMENT TYPE MATCHING ==========
+              // Map booking_type to expected document_types
+              const bookingTypeToDocTypes: Record<string, string[]> = {
+                'train': ['train_ticket', 'seat_reservation'],
+                'flight': ['flight_ticket'],
+                'hotel': ['hotel_booking'],
+                'rental_car': ['rental_car'],
+                'bus': ['other'],
+                'other': ['other']
+              };
+              
+              const expectedDocTypes = bookingTypeToDocTypes[booking.booking_type] || ['other'];
+              
               if (travelerName) {
                 if (isMultiUserEmail) {
                   // MULTI-USER EMAIL: NUR exakte traveler_name Matches erlauben
-                  // Namenlose Attachments bleiben unlinked → erscheinen unter "Weitere Anhänge"
                   attachQuery = attachQuery.eq("traveler_name", travelerName);
-                  console.log(`🔗 [MULTI-USER] Linking ONLY attachments for traveler: ${travelerName}`);
+                  console.log(`🔗 [MULTI-USER] Linking attachments for: ${travelerName}, booking_type: ${booking.booking_type}`);
                 } else {
                   // SINGLE-USER EMAIL: Alle Attachments dieser E-Mail können verknüpft werden
                   attachQuery = attachQuery.or(`traveler_name.eq.${travelerName},traveler_name.is.null`);
-                  console.log(`🔗 [SINGLE-USER] Linking attachments for traveler: ${travelerName}`);
+                  console.log(`🔗 [SINGLE-USER] Linking attachments for: ${travelerName}`);
                 }
+                
+                // ========== NEU: DOCUMENT_TYPE FILTER ==========
+                // Verknüpfe NUR Attachments, deren document_type zum booking_type passt
+                // ODER deren document_type NULL ist (noch nicht klassifiziert)
+                const docTypeFilter = expectedDocTypes.map(dt => `document_type.eq.${dt}`).join(',');
+                attachQuery = attachQuery.or(`${docTypeFilter},document_type.is.null`);
+                console.log(`🔗 [DOC-TYPE] Filtering for document_types: ${expectedDocTypes.join(', ')} (or null)`);
+                
               } else {
                 // Kein Reisender identifiziert → keine Attachments verknüpfen
                 console.log(`⚠️ No traveler_name for booking - leaving attachments unlinked`);
@@ -1175,10 +1276,8 @@ ${existingBookingsContext}`;
               
               if (attachUpdateError) {
                 console.error("Error updating attachment:", attachUpdateError);
-              } else if (newFileName) {
-                console.log(`Renamed attachment to: ${newFileName}`);
               } else {
-                console.log(`Linked attachments to booking ${insertedBooking.id}`);
+                console.log(`✅ Linked ${attachCount || 0} attachments to ${booking.booking_type} booking ${insertedBooking.id}`);
               }
             }
           }
