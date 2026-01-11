@@ -1339,6 +1339,59 @@ ${existingBookingsContext}`;
               } else {
                 console.log(`✅ Linked ${attachCount || 0} attachments to ${booking.booking_type} booking ${insertedBooking.id}`);
               }
+              
+              // ========== AUTO QR-CODE EXTRACTION FOR TRAIN TICKETS ==========
+              // Nach dem Attachment-Linking: QR-Code automatisch für Zug-Tickets extrahieren
+              if (booking.booking_type === 'train') {
+                const { data: linkedAttachments } = await supabase
+                  .from("travel_attachments")
+                  .select("id, file_name, content_type, qr_code_image_path")
+                  .eq("booking_id", insertedBooking.id);
+                
+                if (linkedAttachments && linkedAttachments.length > 0) {
+                  // Filter für PDFs ohne QR-Code
+                  const pdfsNeedingQr = linkedAttachments.filter(att => 
+                    !att.qr_code_image_path && 
+                    (att.content_type?.includes('pdf') || att.file_name?.toLowerCase().endsWith('.pdf'))
+                  );
+                  
+                  if (pdfsNeedingQr.length > 0) {
+                    console.log(`🔍 [AUTO-QR] Triggering QR extraction for ${pdfsNeedingQr.length} train ticket PDFs`);
+                    
+                    // Fire QR extraction asynchronously for each PDF - don't block main flow
+                    for (const pdfAtt of pdfsNeedingQr) {
+                      const triggerQrExtraction = async () => {
+                        try {
+                          console.log(`🔍 [AUTO-QR] Extracting QR from: ${pdfAtt.file_name}`);
+                          const response = await fetch(`${supabaseUrl}/functions/v1/extract-ticket-qr`, {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${supabaseServiceKey}`,
+                            },
+                            body: JSON.stringify({
+                              attachment_id: pdfAtt.id,
+                              booking_id: insertedBooking.id
+                            })
+                          });
+                          
+                          if (response.ok) {
+                            const result = await response.json();
+                            console.log(`✅ [AUTO-QR] Extracted QR for ${pdfAtt.file_name}:`, result.qr_code_url || 'no image');
+                          } else {
+                            console.log(`⚠️ [AUTO-QR] Failed for ${pdfAtt.file_name}:`, response.status);
+                          }
+                        } catch (err) {
+                          console.error(`❌ [AUTO-QR] Error for ${pdfAtt.file_name}:`, err);
+                        }
+                      };
+                      
+                      // Execute without waiting - fire and forget
+                      triggerQrExtraction();
+                    }
+                  }
+                }
+              }
             }
           }
         }
