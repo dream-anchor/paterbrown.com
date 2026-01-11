@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format, parseISO, formatDistanceToNow, isPast, isToday, isTomorrow } from "date-fns";
 import { de } from "date-fns/locale";
 import {
@@ -10,6 +10,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TravelBooking {
   id: string;
@@ -105,7 +106,39 @@ const checkDataQuality = (booking: TravelBooking): DataQualityIssue[] => {
 
 export default function TravelCard({ booking, isSelected, onSelect, onViewTicket, onShowQrCode, showTimeBadge = false }: Props) {
   const [copied, setCopied] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   
+  // Load QR code URL from attachments (not from booking.qr_code_url)
+  useEffect(() => {
+    const loadQrCode = async () => {
+      // Only load for train bookings
+      if (booking.booking_type !== 'train') {
+        setQrCodeUrl(null);
+        return;
+      }
+      
+      try {
+        const { data: attachments } = await supabase
+          .from('travel_attachments')
+          .select('qr_code_image_path')
+          .eq('booking_id', booking.id)
+          .not('qr_code_image_path', 'is', null)
+          .limit(1);
+        
+        if (attachments && attachments.length > 0 && attachments[0].qr_code_image_path) {
+          const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/qr-codes/${attachments[0].qr_code_image_path}`;
+          setQrCodeUrl(url);
+        } else {
+          setQrCodeUrl(null);
+        }
+      } catch (err) {
+        console.error('Error loading QR code:', err);
+        setQrCodeUrl(null);
+      }
+    };
+    
+    loadQrCode();
+  }, [booking.id, booking.booking_type]);
   const typeConfig = bookingTypeConfig[booking.booking_type];
   const TypeIcon = typeConfig.icon;
   const status = statusConfig[booking.status];
@@ -243,8 +276,8 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
           </Tooltip>
         )}
 
-        {/* Time Badge - Top Right Corner - nur wenn explizit aktiviert */}
-        {timeLabel && timeLabel.urgent && !booking.qr_code_url && (
+        {/* Time Badge - Top Right Corner - nur wenn explizit aktiviert und kein QR */}
+        {timeLabel && timeLabel.urgent && !qrCodeUrl && (
           <div className={cn(
             "absolute -top-2 -right-2 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm",
             isToday(parseISO(booking.start_datetime)) 
@@ -255,8 +288,8 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
           </div>
         )}
 
-        {/* QR Code Thumbnail - Top Right Corner */}
-        {booking.qr_code_url && (
+        {/* QR Code Thumbnail - Top Right Corner - aus Attachment geladen */}
+        {qrCodeUrl && (
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -271,7 +304,7 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
             title="QR-Code anzeigen"
           >
             <img 
-              src={booking.qr_code_url} 
+              src={qrCodeUrl} 
               alt="QR-Code" 
               className="w-12 h-12 object-contain"
               onError={(e) => {

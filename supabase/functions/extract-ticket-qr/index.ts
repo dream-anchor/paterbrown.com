@@ -244,12 +244,14 @@ serve(async (req) => {
     console.log("Extraction result - QR data:", qr_data, "Document type:", document_type, "Has image:", !!qr_image_base64);
 
     let qr_code_url: string | null = null;
+    let qr_image_path: string | null = null;
 
-    // If we got an image, upload it to storage
-    if (qr_image_base64 && targetBookingId) {
+    // If we got an image, upload it to storage - SAVE PER ATTACHMENT (not per booking)
+    if (qr_image_base64) {
       try {
         const imageBytes = Uint8Array.from(atob(qr_image_base64), c => c.charCodeAt(0));
-        const fileName = `qr_${targetBookingId}.png`;
+        // Use attachment_id for unique filename per ticket/person
+        const fileName = `qr_${attachment_id}.png`;
 
         // Delete existing file if any
         await supabase.storage.from("qr-codes").remove([fileName]);
@@ -271,19 +273,8 @@ serve(async (req) => {
             .getPublicUrl(fileName);
           
           qr_code_url = urlData.publicUrl;
-          console.log("QR code image uploaded:", qr_code_url);
-
-          // Update the booking with the QR code URL
-          const { error: bookingUpdateError } = await supabase
-            .from("travel_bookings")
-            .update({ qr_code_url })
-            .eq("id", targetBookingId);
-
-          if (bookingUpdateError) {
-            console.error("Failed to update booking with QR URL:", bookingUpdateError);
-          } else {
-            console.log("Booking updated with QR code URL");
-          }
+          qr_image_path = fileName;
+          console.log("QR code image uploaded per attachment:", qr_code_url);
         }
       } catch (uploadErr) {
         console.error("Error uploading QR image:", uploadErr);
@@ -296,13 +287,13 @@ serve(async (req) => {
        description?.toLowerCase().includes("ticket") || description?.toLowerCase().includes("fahrkarte") ? "ticket" : 
        attachment.document_type);
 
-    // Update the attachment record
+    // Update the attachment record with QR code on ATTACHMENT level (not booking level)
     const { error: updateError } = await supabase
       .from("travel_attachments")
       .update({
         qr_code_data: qr_data || description || "No QR code found",
         document_type: finalDocumentType,
-        qr_code_image_path: qr_code_url ? `qr_${targetBookingId}.png` : null,
+        qr_code_image_path: qr_image_path, // Store path per attachment
       })
       .eq("id", attachment_id);
 

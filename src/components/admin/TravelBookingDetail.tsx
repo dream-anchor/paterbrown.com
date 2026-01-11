@@ -55,6 +55,8 @@ interface Attachment {
   document_type?: string | null;
   booking_id?: string | null;
   traveler_name?: string | null;
+  qr_code_image_path?: string | null;
+  qr_code_data?: string | null;
 }
 
 interface RelatedEvent {
@@ -127,7 +129,7 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
     // 1. Primär: Anhänge die DIESER Buchung zugeordnet sind (booking_id match)
     const { data: assigned } = await supabase
       .from("travel_attachments")
-      .select("id, file_name, file_path, content_type, document_type, booking_id, traveler_name")
+      .select("id, file_name, file_path, content_type, document_type, booking_id, traveler_name, qr_code_image_path, qr_code_data")
       .eq("booking_id", booking.id);
     
     setAssignedAttachments((assigned as Attachment[]) || []);
@@ -137,7 +139,7 @@ export default function TravelBookingDetail({ booking, onClose, onUpdate, isMobi
     if (booking.source_email_id) {
       const { data: unassigned } = await supabase
         .from("travel_attachments")
-        .select("id, file_name, file_path, content_type, document_type, booking_id, traveler_name")
+        .select("id, file_name, file_path, content_type, document_type, booking_id, traveler_name, qr_code_image_path, qr_code_data")
         .eq("email_id", booking.source_email_id)
         .is("booking_id", null);
       
@@ -721,6 +723,50 @@ END:VCALENDAR`;
               </div>
               <Copy className="w-4 h-4 text-gray-400" />
             </button>
+          )}
+
+          {/* QR-Code Anzeige aus Attachments - pro Person/Ticket */}
+          {assignedAttachments.filter(att => att.qr_code_image_path).length > 0 && (
+            <div className="space-y-3">
+              <div className="text-xs text-gray-400 uppercase tracking-wide">Digitales Ticket</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {assignedAttachments
+                  .filter(att => att.qr_code_image_path)
+                  .map(att => {
+                    // Build public URL for QR code
+                    const qrUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/qr-codes/${att.qr_code_image_path}`;
+                    
+                    // Extract traveler name from filename or attachment
+                    const travelerName = att.traveler_name || 
+                      att.file_name.match(/_([A-Za-zÄÖÜäöüß]+_[A-Za-zÄÖÜäöüß]+)\./)?.[1]?.replace('_', ' ') ||
+                      'Ticket';
+                    
+                    return (
+                      <div 
+                        key={att.id}
+                        className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col items-center"
+                      >
+                        <img 
+                          src={qrUrl} 
+                          alt={`QR-Code ${travelerName}`}
+                          className="w-32 h-32 object-contain mb-2"
+                          onError={(e) => {
+                            // Hide if image fails to load
+                            (e.target as HTMLImageElement).parentElement!.style.display = 'none';
+                          }}
+                        />
+                        <div className="text-sm font-medium text-gray-900 text-center">{travelerName}</div>
+                        {att.qr_code_data && att.qr_code_data !== 'No QR code found' && (
+                          <div className="text-xs text-gray-400 font-mono mt-1 truncate max-w-full">
+                            {att.qr_code_data.substring(0, 30)}...
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                }
+              </div>
+            </div>
           )}
 
           {/* Type-specific route/details */}
