@@ -9,7 +9,7 @@ import {
   ChevronDown, ChevronUp, ChevronRight, AlertCircle, Copy, Calendar, Navigation,
   CreditCard, Star, Armchair, Luggage, Coffee, Wifi, Euro, Sparkles,
   Loader2, ScanSearch, Crown, Bed, CalendarX, DoorOpen, LogIn, LogOut,
-  Moon, Utensils, ParkingCircle, Bath, Eye, Check, Ticket
+  Moon, Utensils, ParkingCircle, Bath, Eye, Check, Ticket, RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -400,6 +400,8 @@ END:VCALENDAR`;
     const seat = getDetail('seat', 'sitzplatz', 'seats', 'platz');
     const bahncard = getDetail('bahncard', 'bahncard_type', 'bc');
     const price = getDetail('price', 'preis', 'total_price');
+    const connectionType = getDetail('connection_type', 'verbindung', 'verbindungsart');
+    const hasTransfer = connectionType?.toLowerCase().includes('umstieg') || connectionType?.toLowerCase().includes('umsteigen');
 
     return (
       <div className="space-y-4">
@@ -409,7 +411,15 @@ END:VCALENDAR`;
             {/* Timeline - Blue accent */}
             <div className="flex flex-col items-center pt-1">
               <div className="w-3 h-3 rounded-full bg-blue-500 ring-4 ring-blue-100" />
-              <div className="w-0.5 h-14 bg-gradient-to-b from-blue-400 to-blue-200" />
+              <div className={`w-0.5 ${hasTransfer ? 'h-8' : 'h-14'} bg-gradient-to-b from-blue-400 to-blue-200`} />
+              {hasTransfer && (
+                <>
+                  <div className="w-4 h-4 rounded-full bg-amber-100 border-2 border-amber-400 flex items-center justify-center my-1">
+                    <RefreshCw className="w-2.5 h-2.5 text-amber-600" />
+                  </div>
+                  <div className="w-0.5 h-8 bg-gradient-to-b from-blue-200 to-blue-400" />
+                </>
+              )}
               <div className="w-3 h-3 rounded-full bg-blue-400 ring-4 ring-blue-50" />
             </div>
             
@@ -420,6 +430,12 @@ END:VCALENDAR`;
                 <div className="text-base font-semibold text-gray-900">{booking.origin_city || '–'}</div>
                 <div className="text-sm text-gray-500">{formatTimeDisplay(booking.start_datetime)}</div>
               </div>
+              {hasTransfer && (
+                <div className="flex items-center gap-2 -my-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg w-fit">
+                  <RefreshCw className="w-3.5 h-3.5 text-amber-600" />
+                  <span className="text-xs font-medium text-amber-700">Mit Umstieg</span>
+                </div>
+              )}
               <div>
                 <div className="text-xs text-blue-600 font-medium uppercase tracking-wide">Ankunft</div>
                 <div className="text-base font-semibold text-gray-900">{booking.destination_city}</div>
@@ -785,26 +801,9 @@ END:VCALENDAR`;
 
         {/* Content */}
         <div className="p-5 space-y-5 max-h-[60vh] lg:max-h-none overflow-y-auto">
-          {/* Booking Number - Simple */}
-          {bookingNumber && (
-            <button 
-              onClick={copyBookingNumber}
-              className="flex items-center justify-between w-full p-4 bg-gray-50 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors"
-            >
-              <div>
-                <div className="text-xs text-gray-400 uppercase tracking-wide">
-                  {booking.booking_type === 'train' ? 'Auftragsnummer' : 'Buchungsnummer'}
-                </div>
-                <div className="font-mono font-semibold text-gray-900 text-lg">{bookingNumber}</div>
-              </div>
-              <Copy className="w-4 h-4 text-gray-400" />
-            </button>
-          )}
-          {/* Fahrkarte section is rendered below in booking type specific sections */}
-          {/* Type-specific route/details */}
+          {/* TICKET FIRST - Most important for travelers! */}
           {booking.booking_type === 'train' && (
             <>
-              {renderTrainRoute()}
               {/* Ticket/Reservation PDF - Dynamic label based on document type */}
               {pdfAttachments.length > 0 ? (
                 <div className="space-y-2">
@@ -834,10 +833,10 @@ END:VCALENDAR`;
                         <div className="text-xs text-gray-400 uppercase tracking-wide mb-2">{documentLabel}</div>
                         <button
                           onClick={() => setViewingDocument(att)}
-                          className="flex items-center gap-4 w-full p-4 rounded-xl border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all text-left group"
+                          className="flex items-center gap-4 w-full p-4 rounded-xl border-2 border-blue-200 bg-blue-50/50 hover:bg-blue-100/50 hover:border-blue-300 transition-all text-left group"
                         >
                           {/* PDF Thumbnail Preview */}
-                          <div className="relative w-14 h-16 rounded-lg bg-gradient-to-br from-gray-100 to-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:shadow-md transition-shadow">
+                          <div className="relative w-14 h-16 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 border border-blue-200 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:shadow-md transition-shadow">
                             {qrPreview ? (
                               <img 
                                 src={qrPreview} 
@@ -849,8 +848,8 @@ END:VCALENDAR`;
                               />
                             ) : (
                               <>
-                                <FileText className="w-6 h-6 text-gray-400" />
-                                <div className="absolute bottom-0.5 right-0.5 px-1 py-0.5 bg-red-500 rounded text-[8px] font-bold text-white">
+                                <Ticket className="w-6 h-6 text-blue-500" />
+                                <div className="absolute bottom-0.5 right-0.5 px-1 py-0.5 bg-blue-500 rounded text-[8px] font-bold text-white">
                                   PDF
                                 </div>
                               </>
@@ -863,40 +862,41 @@ END:VCALENDAR`;
                             </div>
                             <div className="text-sm text-gray-500 truncate">{att.file_name}</div>
                           </div>
-                          <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-gray-500 transition-colors" />
+                          <ChevronRight className="w-5 h-5 text-blue-300 group-hover:text-blue-500 transition-colors" />
                         </button>
                       </div>
                     );
                   })}
                 </div>
               ) : (
-                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                  <AlertCircle className="w-5 h-5 text-gray-400" />
-                  <div className="text-sm text-gray-600">
+                <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">
+                  <AlertCircle className="w-5 h-5 text-amber-500" />
+                  <div className="text-sm text-amber-700">
                     Kein Ticket-PDF verfügbar
                   </div>
                 </div>
               )}
-              
-              {/* Detect document type button */}
-              {pdfAttachments.some(a => !a.document_type) && (
-                <Button
-                  variant="apple"
-                  size="sm"
-                  onClick={detectDocumentTypes}
-                  disabled={isDetectingDocType}
-                  className="gap-2 mt-2"
-                >
-                  {isDetectingDocType ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <ScanSearch className="w-4 h-4" />
-                  )}
-                  Dokumenttyp erkennen
-                </Button>
-              )}
             </>
           )}
+
+          {/* Booking Number */}
+          {bookingNumber && (
+            <button 
+              onClick={copyBookingNumber}
+              className="flex items-center justify-between w-full p-4 bg-gray-50 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors"
+            >
+              <div>
+                <div className="text-xs text-gray-400 uppercase tracking-wide">
+                  {booking.booking_type === 'train' ? 'Auftragsnummer' : 'Buchungsnummer'}
+                </div>
+                <div className="font-mono font-semibold text-gray-900 text-lg">{bookingNumber}</div>
+              </div>
+              <Copy className="w-4 h-4 text-gray-400" />
+            </button>
+          )}
+
+          {/* Type-specific route/details */}
+          {booking.booking_type === 'train' && renderTrainRoute()}
           
           {booking.booking_type === 'flight' && (
             <>
