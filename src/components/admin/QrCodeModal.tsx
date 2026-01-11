@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { X, Download, ExternalLink, Loader2, QrCode, AlertCircle, ZoomIn } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { X, Download, ExternalLink, Loader2, QrCode, AlertCircle, ZoomIn, ZoomOut, Move } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -17,6 +17,15 @@ interface Props {
   qrCodeImageUrl?: string;
   documentType?: string;
   onQrExtracted?: (qrCodeUrl: string) => void;
+}
+
+interface QrMetadata {
+  sha256?: string;
+  method?: string;
+  page?: number;
+  bbox?: { x: number; y: number; w: number; h: number };
+  symbology?: string;
+  extracted_at?: string;
 }
 
 export default function QrCodeModal({ 
@@ -37,6 +46,37 @@ export default function QrCodeModal({
   const [qrImageUrl, setQrImageUrl] = useState(qrCodeImageUrl);
   const [extractionError, setExtractionError] = useState<string | null>(null);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [metadata, setMetadata] = useState<QrMetadata | null>(null);
+  
+  // Zoom and pan state for barcode area
+  const [zoomLevel, setZoomLevel] = useState(2.5); // Start zoomed into barcode area
+  const [panOffset, setPanOffset] = useState({ x: -55, y: 0 }); // Pan to top-right where barcode is
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Parse metadata from qrCodeData if it's JSON
+  useEffect(() => {
+    if (initialQrData) {
+      try {
+        const parsed = JSON.parse(initialQrData);
+        if (parsed.sha256 || parsed.method) {
+          setMetadata(parsed);
+        }
+      } catch {
+        // Not JSON, just string data
+      }
+    }
+  }, [initialQrData]);
+
+  // Reset zoom when modal opens
+  useEffect(() => {
+    if (isOpen && qrImageUrl) {
+      // Auto-zoom to barcode area (top-right of DB ticket)
+      setZoomLevel(2.5);
+      setPanOffset({ x: -55, y: 0 }); // Shift view to right side
+    }
+  }, [isOpen, qrImageUrl]);
 
   if (!isOpen) return null;
 
@@ -73,6 +113,14 @@ export default function QrCodeModal({
 
       if (data?.qr_code_url) {
         setQrImageUrl(data.qr_code_url);
+        if (data.sha256 || data.method) {
+          setMetadata({
+            sha256: data.sha256,
+            method: data.method,
+            bbox: data.bbox,
+            symbology: data.symbology
+          });
+        }
         onQrExtracted?.(data.qr_code_url);
         toast.success("QR-Code erfolgreich extrahiert!");
       } else if (data?.qr_data) {
@@ -84,14 +132,77 @@ export default function QrCodeModal({
       } else {
         setExtractionError("Kein QR-Code im Dokument gefunden");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Fehler bei der Extraktion";
       console.error("QR extraction error:", err);
-      setExtractionError(err.message || "Fehler bei der Extraktion");
+      setExtractionError(errorMessage);
       toast.error("Fehler bei der QR-Code-Extraktion");
     } finally {
       setIsExtracting(false);
     }
   };
+
+  // Zoom controls
+  const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.5, 5));
+  const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.5, 1));
+  const handleResetView = () => {
+    setZoomLevel(1);
+    setPanOffset({ x: 0, y: 0 });
+  };
+  const handleFocusBarcode = () => {
+    // Focus on top-right area where DB Aztec code typically is
+    setZoomLevel(2.5);
+    setPanOffset({ x: -55, y: 0 });
+  };
+
+  // Drag handlers for panning
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoomLevel > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && zoomLevel > 1) {
+      const newX = e.clientX - dragStart.x;
+      const newY = e.clientY - dragStart.y;
+      // Limit pan range based on zoom level
+      const maxPan = (zoomLevel - 1) * 50;
+      setPanOffset({
+        x: Math.max(-maxPan, Math.min(maxPan, newX)),
+        y: Math.max(-maxPan, Math.min(maxPan, newY))
+      });
+    }
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+  const handleMouseLeave = () => setIsDragging(false);
+
+  // Touch handlers for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (zoomLevel > 1 && e.touches.length === 1) {
+      setIsDragging(true);
+      setDragStart({ 
+        x: e.touches[0].clientX - panOffset.x, 
+        y: e.touches[0].clientY - panOffset.y 
+      });
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (isDragging && zoomLevel > 1 && e.touches.length === 1) {
+      const newX = e.touches[0].clientX - dragStart.x;
+      const newY = e.touches[0].clientY - dragStart.y;
+      const maxPan = (zoomLevel - 1) * 50;
+      setPanOffset({
+        x: Math.max(-maxPan, Math.min(maxPan, newX)),
+        y: Math.max(-maxPan, Math.min(maxPan, newY))
+      });
+    }
+  };
+
+  const handleTouchEnd = () => setIsDragging(false);
 
   // Determine document label
   const getDocumentLabel = () => {
@@ -100,7 +211,7 @@ export default function QrCodeModal({
     return bookingNumber ? `Ticket ${bookingNumber}` : 'Ticket anzeigen';
   };
 
-  // If we have a QR image and it's zoomed, show fullscreen
+  // If we have a QR image and it's zoomed fullscreen
   if (isZoomed && qrImageUrl) {
     return (
       <div 
@@ -117,7 +228,7 @@ export default function QrCodeModal({
           src={qrImageUrl} 
           alt="QR-Code" 
           className="max-w-full max-h-full object-contain"
-          style={{ imageRendering: 'pixelated' }}
+          style={{ imageRendering: 'crisp-edges' }}
         />
         <p className="absolute bottom-8 text-white/60 text-sm">
           Tippen zum Schließen
@@ -155,28 +266,89 @@ export default function QrCodeModal({
           {/* QR Code Display Area */}
           <div className={cn(
             "aspect-square bg-gray-50 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-200 relative overflow-hidden",
-            qrImageUrl && "border-solid border-gray-300 cursor-pointer hover:bg-gray-100 transition-colors"
+            qrImageUrl && "border-solid border-gray-300"
           )}>
             {qrImageUrl ? (
-              /* Real QR Code Image */
-              <button
-                onClick={() => setIsZoomed(true)}
-                className="w-full h-full flex flex-col items-center justify-center p-4 group"
+              /* Zoomable QR Code Image */
+              <div 
+                ref={containerRef}
+                className="w-full h-full overflow-hidden relative"
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseLeave}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                style={{ cursor: isDragging ? 'grabbing' : (zoomLevel > 1 ? 'grab' : 'default') }}
               >
                 <img 
                   src={qrImageUrl} 
                   alt="QR-Code für Zugkontrolle"
-                  className="w-full h-full object-contain"
-                  style={{ imageRendering: 'pixelated' }}
+                  className="w-full h-full object-contain transition-transform duration-200"
+                  style={{ 
+                    transform: `scale(${zoomLevel}) translate(${panOffset.x / zoomLevel}%, ${panOffset.y / zoomLevel}%)`,
+                    imageRendering: 'crisp-edges',
+                    transformOrigin: 'center center'
+                  }}
+                  draggable={false}
                 />
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="bg-black/70 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                    <ZoomIn className="w-3.5 h-3.5" />
-                    Zum Vergrößern tippen
+                
+                {/* Zoom Controls Overlay */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/70 rounded-full px-2 py-1.5">
+                  <button
+                    onClick={handleZoomOut}
+                    disabled={zoomLevel <= 1}
+                    className="p-1.5 rounded-full hover:bg-white/20 disabled:opacity-30 transition-colors"
+                    title="Herauszoomen"
+                  >
+                    <ZoomOut className="w-4 h-4 text-white" />
+                  </button>
+                  <span className="text-white text-xs font-medium min-w-[3rem] text-center">
+                    {Math.round(zoomLevel * 100)}%
                   </span>
+                  <button
+                    onClick={handleZoomIn}
+                    disabled={zoomLevel >= 5}
+                    className="p-1.5 rounded-full hover:bg-white/20 disabled:opacity-30 transition-colors"
+                    title="Hineinzoomen"
+                  >
+                    <ZoomIn className="w-4 h-4 text-white" />
+                  </button>
+                  <div className="w-px h-4 bg-white/30 mx-1" />
+                  <button
+                    onClick={handleResetView}
+                    className="p-1.5 rounded-full hover:bg-white/20 transition-colors"
+                    title="Ansicht zurücksetzen"
+                  >
+                    <Move className="w-4 h-4 text-white" />
+                  </button>
+                  <button
+                    onClick={handleFocusBarcode}
+                    className="p-1.5 rounded-full hover:bg-white/20 transition-colors"
+                    title="Auf Barcode fokussieren"
+                  >
+                    <QrCode className="w-4 h-4 text-white" />
+                  </button>
                 </div>
-              </button>
-            ) : qrCodeData ? (
+
+                {/* Fullscreen button */}
+                <button
+                  onClick={() => setIsZoomed(true)}
+                  className="absolute top-3 right-3 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                  title="Vollbild"
+                >
+                  <ZoomIn className="w-4 h-4 text-white" />
+                </button>
+
+                {/* Method badge */}
+                {metadata?.method && (
+                  <div className="absolute top-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                    {metadata.method === 'embedded_object' ? '1:1 Original' : 'HD Render'}
+                  </div>
+                )}
+              </div>
+            ) : qrCodeData && !metadata ? (
               <div className="p-6 text-center space-y-4 w-full">
                 {/* QR Code visualization placeholder */}
                 <div className="w-32 h-32 mx-auto bg-gray-900 rounded-xl flex items-center justify-center">
@@ -229,6 +401,24 @@ export default function QrCodeModal({
               </div>
             )}
           </div>
+          
+          {/* Metadata Display */}
+          {metadata?.sha256 && (
+            <div className="bg-gray-50 rounded-xl p-3 space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500">SHA-256</span>
+                <span className="font-mono text-gray-700 truncate max-w-[200px]" title={metadata.sha256}>
+                  {metadata.sha256.substring(0, 16)}...
+                </span>
+              </div>
+              {metadata.symbology && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-500">Format</span>
+                  <span className="text-gray-700 capitalize">{metadata.symbology}</span>
+                </div>
+              )}
+            </div>
+          )}
           
           {/* Booking Number Display */}
           {bookingNumber && (
