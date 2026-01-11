@@ -224,7 +224,7 @@ const Admin = () => {
               className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
             >
               <Map className="w-4 h-4 mr-2 inline-block" />
-              <span className="hidden sm:inline">Karte</span>
+              <span className="hidden sm:inline">Tour</span>
             </TabsTrigger>
             <TabsTrigger 
               value="travel" 
