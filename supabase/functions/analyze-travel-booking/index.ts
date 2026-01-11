@@ -621,9 +621,7 @@ SUCHSTRATEGIE:
 
 === BEKANNTE REISENDE ===
 Diese Namen sind im System bekannt. Nutze sie für den Abgleich:
-- Antoine Monot
-- Stefanie Sick
-- Wanja Mues
+${knownTravelers.length > 0 ? knownTravelers.map(name => `- ${name}`).join('\n') : '(keine bekannten Reisenden - erstelle neue Profile bei Bedarf)'}
 
 === OUTPUT FORMAT ===
 Nutze die Function extract_bookings mit folgenden Feldern:
