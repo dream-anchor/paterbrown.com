@@ -96,6 +96,25 @@ export default function TrainLiveStatus({
     }
   }, [fetchStatus, originCity, trainNumber]);
 
+  // Auto-refresh every 2 minutes for trains in relevant time window
+  useEffect(() => {
+    if (!originCity || !trainNumber) return;
+    
+    const departureDate = parseISO(departureDatetime);
+    const now = new Date();
+    const hoursDiff = (departureDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+    
+    // Only auto-refresh for trains departing within -2 to +12 hours
+    if (hoursDiff < -2 || hoursDiff > 12) return;
+
+    // Refresh every 2 minutes (120,000 ms)
+    const intervalId = setInterval(() => {
+      fetchStatus();
+    }, 2 * 60 * 1000);
+
+    return () => clearInterval(intervalId);
+  }, [originCity, trainNumber, departureDatetime, fetchStatus]);
+
   // Status display helpers
   const getStatusColor = () => {
     if (!status || !status.train_found) return 'bg-gray-100 border-gray-200';
@@ -155,6 +174,10 @@ export default function TrainLiveStatus({
           </span>
         </div>
         <div className="flex items-center gap-2">
+          <span className="flex items-center gap-1 text-xs text-gray-400">
+            <RefreshCw className="w-3 h-3" />
+            Auto
+          </span>
           {lastFetch && (
             <span className="text-xs text-gray-400">
               {format(lastFetch, "HH:mm", { locale: de })} Uhr
