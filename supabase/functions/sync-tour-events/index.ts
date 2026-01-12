@@ -15,6 +15,100 @@ interface EventData {
   ticket_url: string;
 }
 
+// Required affiliate parameters
+const AFFILIATE_PARAMS = {
+  affiliate: 'KZB',
+  utm_campaign: 'KBA',
+  utm_source: 'KZB',
+  utm_medium: 'dp',
+};
+
+/**
+ * Ensures URL has correct affiliate parameters
+ * Handles existing parameters gracefully
+ */
+function ensureAffiliateParams(url: string): string {
+  const fallbackUrl = 'https://www.eventim.de/noapp/artist/antoine-monot/';
+  
+  if (!url || !url.startsWith('http')) {
+    const baseUrl = new URL(fallbackUrl);
+    for (const [key, value] of Object.entries(AFFILIATE_PARAMS)) {
+      baseUrl.searchParams.set(key, value);
+    }
+    return baseUrl.toString();
+  }
+  
+  try {
+    const urlObj = new URL(url);
+    
+    // Add or update affiliate parameters
+    for (const [key, value] of Object.entries(AFFILIATE_PARAMS)) {
+      urlObj.searchParams.set(key, value);
+    }
+    
+    return urlObj.toString();
+  } catch {
+    // Invalid URL, return fallback with params
+    const baseUrl = new URL(fallbackUrl);
+    for (const [key, value] of Object.entries(AFFILIATE_PARAMS)) {
+      baseUrl.searchParams.set(key, value);
+    }
+    return baseUrl.toString();
+  }
+}
+
+/**
+ * Check if URL is a specific event link (contains /event/)
+ */
+function isSpecificEventUrl(url: string | null | undefined): boolean {
+  return !!url && url.includes('/event/');
+}
+
+/**
+ * Search Eventim via Google Custom Search API
+ * Returns first result containing /event/
+ */
+async function searchEventimLink(
+  city: string, 
+  date: string, 
+  apiKey: string, 
+  engineId: string
+): Promise<string | null> {
+  try {
+    const query = `site:eventim.de "Antoine Monot" "${city}" Tickets`;
+    console.log(`🔍 Google search for ${city}: "${query}"`);
+    
+    const searchUrl = new URL('https://www.googleapis.com/customsearch/v1');
+    searchUrl.searchParams.set('key', apiKey);
+    searchUrl.searchParams.set('cx', engineId);
+    searchUrl.searchParams.set('q', query);
+    searchUrl.searchParams.set('num', '5');
+    
+    const response = await fetch(searchUrl.toString());
+    
+    if (!response.ok) {
+      console.error(`Google API error: ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    // Search for link with /event/
+    for (const item of data.items || []) {
+      if (item.link?.includes('/event/')) {
+        console.log(`✨ Google found specific URL for ${city}: ${item.link}`);
+        return item.link;
+      }
+    }
+    
+    console.log(`⚠️ No /event/ URL found in Google results for ${city}`);
+    return null;
+  } catch (error) {
+    console.error(`Google search error for ${city}:`, error);
+    return null;
+  }
+}
+
 async function sendErrorEmail(error: string, step: string) {
   const resendApiKey = Deno.env.get('RESEND_API_KEY');
   if (!resendApiKey) {
@@ -83,11 +177,14 @@ Deno.serve(async (req) => {
   }
 
   console.log('=== Starting Tour Events Sync with Screenshot ===');
+  console.log('🛡️ Protection First + Smart Discovery Mode');
 
   try {
     const screenshotoneAccessKey = Deno.env.get('SCREENSHOTONE_ACCESS_KEY');
     const screenshotoneSecretKey = Deno.env.get('SCREENSHOTONE_SECRET_KEY');
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const googleSearchApiKey = Deno.env.get('GOOGLE_SEARCH_API_KEY');
+    const googleSearchEngineId = Deno.env.get('GOOGLE_SEARCH_ENGINE_ID');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -97,6 +194,13 @@ Deno.serve(async (req) => {
 
     if (!lovableApiKey) {
       throw new Error('Lovable API key not configured');
+    }
+
+    const googleSearchEnabled = !!(googleSearchApiKey && googleSearchEngineId);
+    if (!googleSearchEnabled) {
+      console.log('⚠️ Google Search API not configured - Smart Discovery disabled');
+    } else {
+      console.log('✅ Google Search API configured - Smart Discovery enabled');
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -172,7 +276,9 @@ Für jedes Event:
 - city: NUR Hauptstadt (siehe oben)
 - venue: Vollständiger Venue-Name
 - note: "Premiere", "ausverkauft" oder null
-- ticket_url: URL falls sichtbar, sonst "https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp"
+- ticket_url: URL falls sichtbar, sonst null (NICHT raten!)
+
+WICHTIG: Wenn du keine spezifische URL siehst, setze ticket_url auf null!
 
 Antworte NUR mit JSON-Array!`
           },
@@ -236,11 +342,6 @@ Antworte NUR mit JSON-Array!`
       // Clean the city name
       event.city = cleanCityName(event.city);
       
-      // Ensure valid ticket URL with affiliate tracking
-      if (!event.ticket_url || !event.ticket_url.startsWith('http')) {
-        event.ticket_url = 'https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp';
-      }
-      
       console.log(`Valid event: ${event.date} - ${event.city} - ${event.venue}`);
       validEvents.push(event);
     }
@@ -255,8 +356,8 @@ Antworte NUR mit JSON-Array!`
       console.log(`${i + 1}. ${event.date} - ${event.city} - ${event.venue}`);
     });
 
-    // Step 3: Update database
-    console.log('Step 3: Updating database...');
+    // Step 3: Update database with PROTECTION FIRST logic
+    console.log('Step 3: Updating database with Protection First...');
 
     // Helper to convert DD.MM.YYYY to YYYY-MM-DD
     const convertDateToISO = (dateStr: string): string => {
@@ -277,29 +378,71 @@ Antworte NUR mit JSON-Array!`
 
     let insertedCount = 0;
     let updatedCount = 0;
+    let protectedCount = 0;
+    let googleFoundCount = 0;
 
     for (const event of validEvents) {
       const eventDate = convertDateToISO(event.date);
       
+      // PROTECTION FIRST: Check for existing event with its ticket_url
+      const { data: existing } = await supabase
+        .from('tour_events')
+        .select('id, ticket_url')
+        .eq('event_date', eventDate)
+        .eq('city', event.city)
+        .maybeSingle();
+
+      let finalTicketUrl: string;
+
+      // === PROTECTION FIRST ===
+      if (existing && isSpecificEventUrl(existing.ticket_url)) {
+        // 🔒 Protected link - NEVER overwrite
+        console.log(`🔒 Keeping existing specific URL for ${event.city}`);
+        finalTicketUrl = existing.ticket_url;
+        protectedCount++;
+        
+      } else if (isSpecificEventUrl(event.ticket_url)) {
+        // AI found a specific link
+        console.log(`✨ AI found specific URL for ${event.city}`);
+        finalTicketUrl = event.ticket_url;
+        
+      } else if (googleSearchEnabled) {
+        // === SMART DISCOVERY ===
+        console.log(`🔍 Searching Google for ${event.city}...`);
+        const googleUrl = await searchEventimLink(
+          event.city, 
+          event.date, 
+          googleSearchApiKey!, 
+          googleSearchEngineId!
+        );
+        
+        if (googleUrl) {
+          finalTicketUrl = googleUrl;
+          googleFoundCount++;
+        } else {
+          // Fallback to generic link
+          console.log(`⚠️ No specific URL found for ${event.city}, using generic`);
+          finalTicketUrl = 'https://www.eventim.de/noapp/artist/antoine-monot/';
+        }
+      } else {
+        // No Google Search, use generic fallback
+        finalTicketUrl = 'https://www.eventim.de/noapp/artist/antoine-monot/';
+      }
+
+      // === AFFILIATE PARAMS ERZWINGEN ===
+      finalTicketUrl = ensureAffiliateParams(finalTicketUrl);
+
       const eventData = {
         date: event.date,
         day: event.day,
         city: event.city,
         venue: event.venue,
         note: event.note || null,
-        ticket_url: event.ticket_url,
+        ticket_url: finalTicketUrl,
         event_date: eventDate,
         is_active: true,
         last_synced_at: new Date().toISOString(),
       };
-
-      // Check for existing event
-      const { data: existing } = await supabase
-        .from('tour_events')
-        .select('id')
-        .eq('event_date', eventDate)
-        .eq('city', event.city)
-        .maybeSingle();
 
       if (existing) {
         const { error: updateError } = await supabase
@@ -310,7 +453,7 @@ Antworte NUR mit JSON-Array!`
         if (updateError) {
           console.error(`Error updating ${event.city}:`, updateError);
         } else {
-          console.log(`Updated: ${event.city} - ${event.date}`);
+          console.log(`Updated: ${event.city} - ${event.date} → ${finalTicketUrl.substring(0, 60)}...`);
           updatedCount++;
         }
       } else {
@@ -328,15 +471,21 @@ Antworte NUR mit JSON-Array!`
     }
 
     console.log('=== Sync Complete ===');
-    console.log(`Total: ${validEvents.length}, Inserted: ${insertedCount}, Updated: ${updatedCount}`);
+    console.log(`Total: ${validEvents.length}`);
+    console.log(`🔒 Protected: ${protectedCount}`);
+    console.log(`🔍 Google Found: ${googleFoundCount}`);
+    console.log(`📝 Inserted: ${insertedCount}`);
+    console.log(`🔄 Updated: ${updatedCount}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Synced ${validEvents.length} events (${insertedCount} new, ${updatedCount} updated)`,
+        message: `Synced ${validEvents.length} events (${insertedCount} new, ${updatedCount} updated, ${protectedCount} protected)`,
         eventsFound: validEvents.length,
         inserted: insertedCount,
         updated: updatedCount,
+        protected: protectedCount,
+        googleFound: googleFoundCount,
         events: validEvents,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
