@@ -101,8 +101,8 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Use the main pater brown artist page
-    const eventimUrl = 'https://www.eventim.de/noapp/artist/antoine-monot/';
+    // Use the main pater brown artist page with affiliate tracking
+    const eventimUrl = 'https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp';
     console.log('Fetching events from:', eventimUrl);
 
     // Step 1: Capture full page screenshot
@@ -172,7 +172,7 @@ Für jedes Event:
 - city: NUR Hauptstadt (siehe oben)
 - venue: Vollständiger Venue-Name
 - note: "Premiere", "ausverkauft" oder null
-- ticket_url: URL falls sichtbar, sonst "https://www.eventim.de/artist/pater-brown/"
+- ticket_url: URL falls sichtbar, sonst "https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp"
 
 Antworte NUR mit JSON-Array!`
           },
@@ -236,9 +236,9 @@ Antworte NUR mit JSON-Array!`
       // Clean the city name
       event.city = cleanCityName(event.city);
       
-      // Ensure valid ticket URL
+      // Ensure valid ticket URL with affiliate tracking
       if (!event.ticket_url || !event.ticket_url.startsWith('http')) {
-        event.ticket_url = 'https://www.eventim.de/noapp/artist/antoine-monot/';
+        event.ticket_url = 'https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp';
       }
       
       console.log(`Valid event: ${event.date} - ${event.city} - ${event.venue}`);
