@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import logoImage from "@/assets/pater-brown-logo.png";
 import ticketButton from "@/assets/tickets-sichern-button.png";
+import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 const StickyHeader = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -60,7 +61,7 @@ const StickyHeader = () => {
 
         {/* Ticket Button */}
         <a 
-          href="https://www.eventim.de/noapp/artist/antoine-monot/?affiliate=KZB&utm_campaign=KBA&utm_source=KZB&utm_medium=dp"
+          href={EVENTIM_AFFILIATE_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="hover:scale-105 transition-transform"
