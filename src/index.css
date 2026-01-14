@@ -677,3 +677,10 @@ All colors MUST be HSL.
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   background: rgba(249, 250, 251, 0.85);
 }
+
+/* Team Member Card - Reset mobile image position on larger screens */
+@media (min-width: 768px) {
+  .team-member-image {
+    object-position: center !important;
+  }
+}
