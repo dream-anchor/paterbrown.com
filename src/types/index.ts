@@ -29,6 +29,7 @@ export interface TeamMember {
   role: string;
   image: string;
   description: string;
+  mobileImagePosition?: string;
 }
 
 export interface ShowCase {

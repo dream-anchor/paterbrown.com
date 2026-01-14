@@ -16,11 +16,12 @@ const TeamMemberCard = memo(({ member, reverse = false }: TeamMemberCardProps) =
           <ResponsiveImage 
             src={member.image}
             alt={`${member.name} - ${member.role}`}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover team-member-image"
             loading="lazy"
             width={800}
             height={1067}
             sizes="(max-width: 768px) 100vw, 50vw"
+            style={member.mobileImagePosition ? { objectPosition: member.mobileImagePosition } : undefined}
           />
         </div>
         
