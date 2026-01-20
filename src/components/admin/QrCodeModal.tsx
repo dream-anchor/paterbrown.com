@@ -215,14 +215,14 @@ export default function QrCodeModal({
   if (isZoomed && qrImageUrl) {
     return (
       <div 
-        className="fixed inset-0 z-[100] bg-black flex items-center justify-center p-4"
+        className="fixed inset-0 z-[100] bg-gray-100 flex items-center justify-center p-4"
         onClick={() => setIsZoomed(false)}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
         >
-          <X className="w-6 h-6 text-white" />
+          <X className="w-6 h-6 text-gray-700" />
         </button>
         <img 
           src={qrImageUrl} 
@@ -351,8 +351,8 @@ export default function QrCodeModal({
             ) : qrCodeData && !metadata ? (
               <div className="p-6 text-center space-y-4 w-full">
                 {/* QR Code visualization placeholder */}
-                <div className="w-32 h-32 mx-auto bg-gray-900 rounded-xl flex items-center justify-center">
-                  <QrCode className="w-20 h-20 text-white" />
+                <div className="w-32 h-32 mx-auto bg-gray-200 rounded-xl flex items-center justify-center border border-gray-300">
+                  <QrCode className="w-20 h-20 text-gray-600" />
                 </div>
                 <div className="bg-gray-100 rounded-xl p-4 max-h-32 overflow-y-auto">
                   <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide">Code-Daten</p>
