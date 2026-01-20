@@ -315,13 +315,10 @@ const Admin = () => {
       />
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        {/* Search + Premium Pill-Style Tabs */}
+        {/* Premium Pill-Style Tabs + Search */}
         <div className="sticky top-16 z-30 -mx-4 px-4 py-3 bg-gray-50/80 backdrop-blur-md border-b border-gray-100">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            {/* Search Bar */}
-            <AdminSearchBar items={searchableItems} onSelect={handleSearchSelect} />
-            
-            {/* Tabs */}
+            {/* Tabs - Now first */}
             <TabsList className="inline-flex p-1 bg-white rounded-full shadow-sm border border-gray-200 gap-1">
               <TabsTrigger 
                 value="calendar" 
@@ -345,6 +342,9 @@ const Admin = () => {
                 <span className="hidden sm:inline">Reisen</span>
               </TabsTrigger>
             </TabsList>
+            
+            {/* Search Bar - Now second */}
+            <AdminSearchBar items={searchableItems} onSelect={handleSearchSelect} />
           </div>
         </div>
 
