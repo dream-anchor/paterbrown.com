@@ -37,7 +37,6 @@ import QuickAddEventModal from "./QuickAddEventModal";
 import CalendarEventDetail from "./CalendarEventDetail";
 import EventTimeline from "./EventTimeline";
 import EventFilterPanel from "./EventFilterPanel";
-import AdminSearchBar from "./AdminSearchBar";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -580,10 +579,6 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
 
   return (
     <div className="space-y-4">
-      {/* Search Bar */}
-      <div className="sticky top-0 z-30 bg-gray-50/80 backdrop-blur-sm -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 -mt-4">
-        <AdminSearchBar items={searchableItems} onSelect={handleSearchSelect} />
-      </div>
 
       {/* Filter Panel */}
       <EventFilterPanel

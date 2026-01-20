@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -8,6 +8,8 @@ import EventMap from "@/components/admin/EventMap";
 import CalendarExport from "@/components/admin/CalendarExport";
 import TravelDashboard from "@/components/admin/TravelDashboard";
 import AdminCommandPalette from "@/components/admin/AdminCommandPalette";
+import AdminSearchBar from "@/components/admin/AdminSearchBar";
+import CalendarEventDetail from "@/components/admin/CalendarEventDetail";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Sparkles, Map, Plane } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -35,7 +37,10 @@ const Admin = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [events, setEvents] = useState<AdminEvent[]>([]);
+  const [travelBookings, setTravelBookings] = useState<any[]>([]);
+  const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [selectedSearchEvent, setSelectedSearchEvent] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -141,20 +146,92 @@ const Admin = () => {
 
   const fetchEvents = async () => {
     try {
-      const { data, error } = await supabase
-        .from("admin_events")
-        .select("*")
-        .order("start_time", { ascending: true });
+      const [eventsRes, bookingsRes, calEventsRes] = await Promise.all([
+        supabase.from("admin_events").select("*").order("start_time", { ascending: true }),
+        supabase.from("travel_bookings").select("*").order("start_datetime"),
+        supabase.from("calendar_events").select("*").order("start_datetime"),
+      ]);
 
-      if (error) throw error;
-      setEvents(data || []);
+      if (eventsRes.error) throw eventsRes.error;
+      if (bookingsRes.error) throw bookingsRes.error;
+      if (calEventsRes.error) throw calEventsRes.error;
+      
+      setEvents(eventsRes.data || []);
+      setTravelBookings(bookingsRes.data || []);
+      setCalendarEvents(calEventsRes.data || []);
     } catch (error) {
       console.error("Error fetching events:", error);
       toast({
         title: "Fehler",
-        description: "Events konnten nicht geladen werden",
+        description: "Daten konnten nicht geladen werden",
         variant: "destructive",
       });
+    }
+  };
+
+  // Combine all data for search
+  const searchableItems = useMemo(() => {
+    const items: any[] = [];
+    
+    // Admin events (tour dates)
+    events.forEach((event, index) => {
+      items.push({
+        id: event.id,
+        title: `#${index + 1} ${event.location}`,
+        type: "tour" as const,
+        location: event.state ? `${event.location} (${event.state})` : event.location,
+        venueName: event.venue_name,
+        date: new Date(event.start_time),
+        source: event.source,
+      });
+    });
+    
+    // Travel bookings
+    travelBookings.forEach((booking) => {
+      let title = "";
+      if (booking.booking_type === "train" || booking.booking_type === "flight") {
+        title = `${booking.origin_city || "?"} → ${booking.destination_city}`;
+      } else if (booking.booking_type === "hotel") {
+        title = booking.venue_name || booking.destination_city;
+      } else {
+        title = booking.destination_city;
+      }
+      
+      items.push({
+        id: booking.id,
+        title,
+        type: "travel" as const,
+        location: booking.destination_city,
+        venueName: booking.venue_name,
+        provider: booking.provider,
+        bookingType: booking.booking_type,
+        date: new Date(booking.start_datetime),
+      });
+    });
+    
+    // Calendar events
+    calendarEvents.forEach((event) => {
+      items.push({
+        id: event.id,
+        title: event.title,
+        type: "calendar" as const,
+        location: event.location,
+        date: new Date(event.start_datetime),
+      });
+    });
+    
+    return items.sort((a, b) => a.date.getTime() - b.date.getTime());
+  }, [events, travelBookings, calendarEvents]);
+
+  const handleSearchSelect = (item: { id: string; type: string }) => {
+    // Navigate to appropriate tab and highlight the item
+    if (item.type === "tour") {
+      setSearchParams({ tab: "map", activeEventId: item.id });
+    } else if (item.type === "travel") {
+      setSearchParams({ tab: "travel" });
+      // Could add a query param to highlight specific booking
+    } else {
+      setSearchParams({ tab: "calendar" });
     }
   };
 
@@ -238,31 +315,37 @@ const Admin = () => {
       />
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        {/* Premium Pill-Style Tabs - Reordered: Kalender → Karte → Reisen → Upload */}
+        {/* Search + Premium Pill-Style Tabs */}
         <div className="sticky top-16 z-30 -mx-4 px-4 py-3 bg-gray-50/80 backdrop-blur-md border-b border-gray-100">
-          <TabsList className="inline-flex p-1 bg-white rounded-full shadow-sm border border-gray-200 gap-1">
-            <TabsTrigger 
-              value="calendar" 
-              className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
-            >
-              <Calendar className="w-4 h-4 mr-2 inline-block" />
-              <span className="hidden sm:inline">Kalender</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="map" 
-              className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
-            >
-              <Map className="w-4 h-4 mr-2 inline-block" />
-              <span className="hidden sm:inline">Tour</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="travel" 
-              className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
-            >
-              <Plane className="w-4 h-4 mr-2 inline-block" />
-              <span className="hidden sm:inline">Reisen</span>
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {/* Search Bar */}
+            <AdminSearchBar items={searchableItems} onSelect={handleSearchSelect} />
+            
+            {/* Tabs */}
+            <TabsList className="inline-flex p-1 bg-white rounded-full shadow-sm border border-gray-200 gap-1">
+              <TabsTrigger 
+                value="calendar" 
+                className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
+              >
+                <Calendar className="w-4 h-4 mr-2 inline-block" />
+                <span className="hidden sm:inline">Kalender</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="map" 
+                className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
+              >
+                <Map className="w-4 h-4 mr-2 inline-block" />
+                <span className="hidden sm:inline">Tour</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="travel" 
+                className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
+              >
+                <Plane className="w-4 h-4 mr-2 inline-block" />
+                <span className="hidden sm:inline">Reisen</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
         </div>
 
         <div className="mt-6">
