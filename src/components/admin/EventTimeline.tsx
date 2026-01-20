@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { format, formatDistanceToNow, isToday, isTomorrow, differenceInDays } from "date-fns";
+import { useMemo, useState, useEffect, useRef } from "react";
+import { format, formatDistanceToNow, isToday, isTomorrow, differenceInDays, startOfDay } from "date-fns";
 import { de } from "date-fns/locale";
 import { Calendar, MapPin, Train, Plane, Hotel, Car, Theater, Film, User } from "lucide-react";
 import {
@@ -17,6 +17,21 @@ interface EventTimelineProps {
 
 const EventTimeline = ({ entries, onEventClick }: EventTimelineProps) => {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const todayRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to today on mount
+  useEffect(() => {
+    if (todayRef.current) {
+      todayRef.current.scrollIntoView({ behavior: "instant", block: "start" });
+    }
+  }, []);
+
+  // Find the first upcoming event index for scroll target
+  const firstUpcomingIndex = useMemo(() => {
+    const now = startOfDay(new Date());
+    return entries.findIndex(e => startOfDay(e.start) >= now);
+  }, [entries]);
 
   // Group entries by month
   const groupedEntries = useMemo(() => {
@@ -39,6 +54,12 @@ const EventTimeline = ({ entries, onEventClick }: EventTimelineProps) => {
         entries: monthEntries.sort((a, b) => a.start.getTime() - b.start.getTime()),
       }));
   }, [entries]);
+
+  // Track which entry is the first upcoming one
+  const isFirstUpcoming = (entryId: string) => {
+    if (firstUpcomingIndex === -1) return false;
+    return entries[firstUpcomingIndex]?.id === entryId;
+  };
 
   // Get relative time label
   const getRelativeTime = (date: Date): string => {
@@ -121,6 +142,7 @@ const EventTimeline = ({ entries, onEventClick }: EventTimelineProps) => {
                 return (
                   <div
                     key={entry.id}
+                    ref={isFirstUpcoming(entry.id) ? todayRef : null}
                     className="relative mb-6 last:mb-0"
                     onMouseEnter={() => setHoveredId(entry.id)}
                     onMouseLeave={() => setHoveredId(null)}
