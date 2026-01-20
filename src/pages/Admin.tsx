@@ -10,8 +10,9 @@ import TravelDashboard from "@/components/admin/TravelDashboard";
 import AdminCommandPalette from "@/components/admin/AdminCommandPalette";
 import AdminSearchBar from "@/components/admin/AdminSearchBar";
 import CalendarEventDetail from "@/components/admin/CalendarEventDetail";
+import BottomNav from "@/components/admin/BottomNav";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Sparkles, Map, Plane } from "lucide-react";
+import { Calendar, Sparkles, Map, Plane, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AdminEvent {
@@ -316,9 +317,9 @@ const Admin = () => {
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         {/* Premium Pill-Style Tabs + Search */}
-        <div className="sticky top-16 z-30 -mx-4 px-4 py-3 bg-gray-50/80 backdrop-blur-md border-b border-gray-100">
+        <div className="sticky top-16 z-30 -mx-4 px-4 py-3 bg-gray-50/80 backdrop-blur-md border-b border-gray-100 hidden md:block">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            {/* Tabs - Now first */}
+            {/* Tabs - Desktop only */}
             <TabsList className="inline-flex p-1 bg-white rounded-full shadow-sm border border-gray-200 gap-1">
               <TabsTrigger 
                 value="calendar" 
@@ -340,6 +341,13 @@ const Admin = () => {
               >
                 <Plane className="w-4 h-4 mr-2 inline-block" />
                 <span className="hidden sm:inline">Reisen</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="upload" 
+                className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
+              >
+                <Upload className="w-4 h-4 mr-2 inline-block" />
+                <span className="hidden sm:inline">Upload</span>
               </TabsTrigger>
             </TabsList>
             
@@ -368,11 +376,20 @@ const Admin = () => {
             />
           </TabsContent>
 
-          <TabsContent value="travel" className="mt-0 focus-visible:outline-none">
+          <TabsContent value="travel" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
             <TravelDashboard />
+          </TabsContent>
+
+          <TabsContent value="upload" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
+            <EventUploader onEventsAdded={() => {
+              fetchEvents();
+            }} />
           </TabsContent>
         </div>
       </Tabs>
+
+      {/* Mobile Bottom Navigation */}
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
     </AdminLayout>
   );
 };
