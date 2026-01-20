@@ -1,11 +1,31 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
-import { Calendar, Clock, MapPin, Navigation, RefreshCw, CheckCircle, AlertCircle, Car } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, Tooltip } from "react-leaflet";
+import MarkerClusterGroup from "react-leaflet-cluster";
+import { 
+  Calendar, Clock, MapPin, Navigation, RefreshCw, CheckCircle, 
+  AlertCircle, Car, ExternalLink, Eye, Filter, ChevronDown,
+  Sparkles
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 // Type for driving distance between events
 interface DrivingDistance {
@@ -84,84 +104,138 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-// Create numbered marker icon with source-based colors
-const createNumberedIcon = (num: number, source?: "KL" | "KBA" | "unknown") => {
-  // KL = Yellow, KBA = Green, unknown = Gray
-  const gradient = source === "KL" 
-    ? "linear-gradient(135deg, #eab308 0%, #ca8a04 100%)"
-    : source === "KBA"
-    ? "linear-gradient(135deg, #10b981 0%, #059669 100%)"
-    : "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)";
+// Get event status based on date
+type EventStatus = "upcoming" | "today" | "past";
+const getEventStatus = (startTime: string): EventStatus => {
+  const eventDate = new Date(startTime);
+  const today = new Date();
+  const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+  const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   
-  // Use dark text for yellow (better contrast)
-  const textColor = source === "KL" ? "#1f2937" : "white";
+  if (eventDateOnly.getTime() === todayOnly.getTime()) return "today";
+  if (eventDateOnly > todayOnly) return "upcoming";
+  return "past";
+};
+
+// Status-based colors
+const statusColors = {
+  upcoming: {
+    gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+    bg: "bg-amber-500",
+    bgLight: "bg-amber-100",
+    text: "text-amber-700",
+    border: "border-amber-500",
+    ring: "ring-amber-200",
+    shadow: "rgba(245, 158, 11, 0.6)",
+  },
+  today: {
+    gradient: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+    bg: "bg-red-500",
+    bgLight: "bg-red-100",
+    text: "text-red-700",
+    border: "border-red-500",
+    ring: "ring-red-200",
+    shadow: "rgba(239, 68, 68, 0.6)",
+  },
+  past: {
+    gradient: "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)",
+    bg: "bg-gray-400",
+    bgLight: "bg-gray-100",
+    text: "text-gray-600",
+    border: "border-gray-400",
+    ring: "ring-gray-200",
+    shadow: "rgba(107, 114, 128, 0.4)",
+  },
+};
+
+// Create status-based marker icon
+const createStatusIcon = (num: number, status: EventStatus) => {
+  const colors = statusColors[status];
+  const isPulsing = status === "today";
   
   return L.divIcon({
-    className: 'custom-numbered-marker',
+    className: 'custom-status-marker',
     html: `<div style="
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      background: ${gradient};
-      color: ${textColor};
+      background: ${colors.gradient};
+      color: white;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 12px;
+      font-size: 13px;
       border: 3px solid white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    ">${num}</div>`,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-    popupAnchor: [0, -14],
+      box-shadow: 0 2px 8px ${colors.shadow};
+      ${isPulsing ? 'animation: marker-pulse 1s infinite;' : ''}
+    ">${num}</div>
+    ${isPulsing ? `<style>
+      @keyframes marker-pulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 2px 8px ${colors.shadow}; }
+        50% { transform: scale(1.1); box-shadow: 0 4px 20px ${colors.shadow}; }
+      }
+    </style>` : ''}`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -16],
   });
 };
 
-// Create highlighted marker icon (larger, pulsating) with source-based colors
-const createHighlightedIcon = (num: number, source?: "KL" | "KBA" | "unknown") => {
-  // KL = Yellow, KBA = Green
-  const gradient = source === "KL" 
-    ? "linear-gradient(135deg, #facc15 0%, #eab308 100%)"
-    : source === "KBA"
-    ? "linear-gradient(135deg, #34d399 0%, #10b981 100%)"
-    : "linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)";
-  
-  const shadowColor = source === "KL" 
-    ? "rgba(234, 179, 8, 0.6)"
-    : source === "KBA"
-    ? "rgba(5, 150, 105, 0.6)"
-    : "rgba(107, 114, 128, 0.6)";
-  
-  // Use dark text for yellow (better contrast)
-  const textColor = source === "KL" ? "#1f2937" : "white";
+// Create highlighted marker icon
+const createHighlightedStatusIcon = (num: number, status: EventStatus) => {
+  const colors = statusColors[status];
   
   return L.divIcon({
     className: 'custom-highlighted-marker',
     html: `<div style="
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      background: ${gradient};
-      color: ${textColor};
+      background: ${colors.gradient};
+      color: white;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 16px;
+      font-size: 18px;
       border: 4px solid white;
-      box-shadow: 0 0 20px ${shadowColor}, 0 4px 12px rgba(0,0,0,0.3);
-      animation: marker-pulse 1.5s infinite;
+      box-shadow: 0 0 24px ${colors.shadow}, 0 4px 16px rgba(0,0,0,0.3);
+      animation: marker-glow 1.5s infinite;
     ">${num}</div>
     <style>
-      @keyframes marker-pulse {
+      @keyframes marker-glow {
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.15); }
       }
     </style>`,
-    iconSize: [40, 40],
-    iconAnchor: [20, 20],
-    popupAnchor: [0, -20],
+    iconSize: [44, 44],
+    iconAnchor: [22, 22],
+    popupAnchor: [0, -22],
+  });
+};
+
+// Create cluster icon
+const createClusterCustomIcon = (cluster: any) => {
+  const count = cluster.getChildCount();
+  
+  return L.divIcon({
+    html: `<div style="
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+      border: 3px solid white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
+    ">${count}</div>`,
+    className: 'custom-cluster-icon',
+    iconSize: L.point(40, 40, true),
   });
 };
 
@@ -272,6 +346,11 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
   const [routesLoaded, setRoutesLoaded] = useState(false);
   const [selectedYear, setSelectedYear] = useState<string>("all");
   const [selectedSource, setSelectedSource] = useState<string>("all");
+  const [showUpcomingOnly, setShowUpcomingOnly] = useState(false);
+  const [enableClustering, setEnableClustering] = useState(true);
+  const [dateRangeValue, setDateRangeValue] = useState<number[]>([0, 100]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [selectedEventDetail, setSelectedEventDetail] = useState<AdminEvent | null>(null);
   const { toast } = useToast();
   
   // Get available years from events
@@ -283,11 +362,26 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
     });
     return Array.from(years).sort();
   }, [events]);
+
+  // Date range calculation
+  const dateRange = useMemo(() => {
+    if (events.length === 0) return { min: new Date(), max: new Date() };
+    const dates = events.map(e => new Date(e.start_time).getTime());
+    return {
+      min: new Date(Math.min(...dates)),
+      max: new Date(Math.max(...dates)),
+    };
+  }, [events]);
+
+  // Calculate date from slider value
+  const getDateFromSliderValue = (value: number) => {
+    const range = dateRange.max.getTime() - dateRange.min.getTime();
+    return new Date(dateRange.min.getTime() + (range * value / 100));
+  };
   
   // Handle initial active event on mount or when it changes
   useEffect(() => {
     if (initialActiveEventId) {
-      // Small delay to ensure DOM is ready
       const timer = setTimeout(() => {
         const element = document.getElementById(`station-${initialActiveEventId}`);
         if (element) {
@@ -301,27 +395,31 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
   
   // Filter and sort events
   const sortedEvents = useMemo(() => {
+    const minDate = getDateFromSliderValue(dateRangeValue[0]);
+    const maxDate = getDateFromSliderValue(dateRangeValue[1]);
+    
     return [...events]
       .filter(event => {
-        const eventYear = new Date(event.start_time).getFullYear().toString();
+        const eventDate = new Date(event.start_time);
+        const eventYear = eventDate.getFullYear().toString();
         const yearMatch = selectedYear === "all" || eventYear === selectedYear;
         const sourceMatch = selectedSource === "all" || event.source === selectedSource;
-        return yearMatch && sourceMatch;
+        const upcomingMatch = !showUpcomingOnly || getEventStatus(event.start_time) !== "past";
+        const dateRangeMatch = eventDate >= minDate && eventDate <= maxDate;
+        return yearMatch && sourceMatch && upcomingMatch && dateRangeMatch;
       })
       .sort((a, b) => 
         new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
       );
-  }, [events, selectedYear, selectedSource]);
+  }, [events, selectedYear, selectedSource, showUpcomingOnly, dateRangeValue]);
 
 
   // Get coordinates for an event
   const getCoordinates = (event: AdminEvent): [number, number] | null => {
-    // First try stored coordinates
     if (event.latitude && event.longitude) {
       return [event.latitude, event.longitude];
     }
     
-    // Then try to match city name
     const cityName = event.location.split(",")[0].trim();
     for (const [city, coords] of Object.entries(CITY_COORDINATES)) {
       if (cityName.toLowerCase().includes(city.toLowerCase()) || 
@@ -336,9 +434,11 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
   // Events with valid coordinates
   const eventsWithCoords = useMemo(() => {
     return sortedEvents
-      .map(event => ({
+      .map((event, index) => ({
         ...event,
         coords: getCoordinates(event),
+        stationNumber: index + 1,
+        status: getEventStatus(event.start_time),
       }))
       .filter(event => event.coords !== null);
   }, [sortedEvents]);
@@ -351,7 +451,6 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
     const newDistances = new Map<string, DrivingDistance>();
     
     try {
-      // 1. Load cached routes from database
       const { data: cachedRoutes, error: cacheError } = await supabase
         .from('cached_routes')
         .select('*');
@@ -360,14 +459,12 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         console.error('Error loading cached routes:', cacheError);
       }
       
-      // Build cache map from database
       const routeCache = new Map<string, { distanceKm: number; durationMin: number }>();
       cachedRoutes?.forEach((route: CachedRoute) => {
         const key = getCacheKey([route.from_lat, route.from_lng], [route.to_lat, route.to_lng]);
         routeCache.set(key, { distanceKm: route.distance_km, durationMin: route.duration_min });
       });
       
-      // 2. Check which routes need to be fetched
       const missingRoutes: { from: [number, number]; to: [number, number]; fromId: string; toId: string }[] = [];
       
       for (let i = 0; i < eventsWithCoords.length - 1; i++) {
@@ -376,7 +473,6 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         const eventKey = `${fromEvent.id}-${toEvent.id}`;
         const cacheKey = getCacheKey(fromEvent.coords as [number, number], toEvent.coords as [number, number]);
         
-        // Check if we have it in DB cache
         if (routeCache.has(cacheKey)) {
           const cached = routeCache.get(cacheKey)!;
           newDistances.set(eventKey, {
@@ -386,7 +482,6 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
             durationMin: cached.durationMin,
           });
         } else {
-          // Need to fetch this route
           missingRoutes.push({
             from: fromEvent.coords as [number, number],
             to: toEvent.coords as [number, number],
@@ -396,7 +491,6 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         }
       }
       
-      // 3. Fetch missing routes from OSRM and save to DB
       if (missingRoutes.length > 0) {
         console.log(`Fetching ${missingRoutes.length} new routes from OSRM...`);
         
@@ -421,7 +515,6 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
               durationMin: result.durationMin,
             });
             
-            // Prepare for DB save (use rounded coords)
             routesToSave.push({
               from_lat: roundCoord(route.from[0]),
               from_lng: roundCoord(route.from[1]),
@@ -432,11 +525,9 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
             });
           }
           
-          // Small delay to avoid rate limiting
           await new Promise(resolve => setTimeout(resolve, 200));
         }
         
-        // 4. Save new routes to database
         if (routesToSave.length > 0) {
           const { error: insertError } = await supabase
             .from('cached_routes')
@@ -529,7 +620,6 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         description: `${data.updated} von ${data.total} Events wurden aktualisiert.`,
       });
 
-      // Refresh events
       if (onEventsUpdated) {
         onEventsUpdated();
       }
@@ -553,6 +643,23 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
       setActiveEventId(eventId);
     }
   };
+
+  // Open Google Maps directions
+  const openDirections = (event: AdminEvent) => {
+    const coords = getCoordinates(event);
+    if (coords) {
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${coords[0]},${coords[1]}`, '_blank');
+    }
+  };
+
+  // Count stats
+  const statusCounts = useMemo(() => {
+    return {
+      upcoming: sortedEvents.filter(e => getEventStatus(e.start_time) === "upcoming").length,
+      today: sortedEvents.filter(e => getEventStatus(e.start_time) === "today").length,
+      past: sortedEvents.filter(e => getEventStatus(e.start_time) === "past").length,
+    };
+  }, [sortedEvents]);
 
   return (
     <div className="h-screen overflow-hidden flex flex-col">
@@ -584,7 +691,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                 </>
               ) : (
                 <>
-                  <CheckCircle className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4" />
                   Geodaten ergänzen
                 </>
               )}
@@ -593,44 +700,134 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         )}
 
         {/* Title & Filters */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-gray-900">Tour-Karte</h2>
             <p className="text-gray-600 text-sm">
               {eventsWithCoords.length} von {sortedEvents.length} Termine auf der Karte
             </p>
+            {/* Status Summary */}
+            <div className="flex items-center gap-3 mt-2">
+              {statusCounts.today > 0 && (
+                <span className="flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  {statusCounts.today} Heute
+                </span>
+              )}
+              <span className="flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                {statusCounts.upcoming} Anstehend
+              </span>
+              <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                {statusCounts.past} Vergangen
+              </span>
+            </div>
           </div>
           
           {/* Filters */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Jahr:</span>
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
-              >
-                <option value="all">Alle Jahre</option>
-                {availableYears.map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
+            {/* Quick Filters */}
+            <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="upcoming-only"
+                  checked={showUpcomingOnly}
+                  onCheckedChange={setShowUpcomingOnly}
+                />
+                <Label htmlFor="upcoming-only" className="text-sm text-gray-600 cursor-pointer">
+                  Nur anstehende
+                </Label>
+              </div>
+              <div className="w-px h-4 bg-gray-300" />
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="clustering"
+                  checked={enableClustering}
+                  onCheckedChange={setEnableClustering}
+                />
+                <Label htmlFor="clustering" className="text-sm text-gray-600 cursor-pointer">
+                  Clustering
+                </Label>
+              </div>
             </div>
+
+            {/* Advanced Filters */}
+            <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+              <CollapsibleTrigger asChild>
+                <button className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <Filter className="w-4 h-4" />
+                  Filter
+                  <ChevronDown className={cn("w-4 h-4 transition-transform", isFilterOpen && "rotate-180")} />
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="absolute z-20 right-4 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-xl p-4 space-y-4">
+                {/* Year Filter */}
+                <div>
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Jahr</label>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                    className="mt-1 w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  >
+                    <option value="all">Alle Jahre</option>
+                    {availableYears.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Source Filter */}
+                <div>
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Quelle</label>
+                  <select
+                    value={selectedSource}
+                    onChange={(e) => setSelectedSource(e.target.value)}
+                    className="mt-1 w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  >
+                    <option value="all">Alle</option>
+                    <option value="KL">Landgraf</option>
+                    <option value="KBA">KBA</option>
+                  </select>
+                </div>
+
+                {/* Date Range Slider */}
+                <div>
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Zeitraum</label>
+                  <div className="mt-3 px-2">
+                    <Slider
+                      value={dateRangeValue}
+                      onValueChange={setDateRangeValue}
+                      min={0}
+                      max={100}
+                      step={1}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-gray-500 mt-2">
+                      <span>{getDateFromSliderValue(dateRangeValue[0]).toLocaleDateString("de-DE", { month: "short", year: "2-digit" })}</span>
+                      <span>{getDateFromSliderValue(dateRangeValue[1]).toLocaleDateString("de-DE", { month: "short", year: "2-digit" })}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Filter Badge */}
+                {(selectedYear !== "all" || selectedSource !== "all" || showUpcomingOnly || dateRangeValue[0] > 0 || dateRangeValue[1] < 100) && (
+                  <div className="pt-2 border-t border-gray-100">
+                    <button
+                      onClick={() => {
+                        setSelectedYear("all");
+                        setSelectedSource("all");
+                        setShowUpcomingOnly(false);
+                        setDateRangeValue([0, 100]);
+                      }}
+                      className="text-xs text-amber-600 hover:text-amber-700 font-medium"
+                    >
+                      Alle Filter zurücksetzen
+                    </button>
+                  </div>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
             
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Quelle:</span>
-              <select
-                value={selectedSource}
-                onChange={(e) => setSelectedSource(e.target.value)}
-                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
-              >
-                <option value="all">Alle</option>
-                <option value="KL">Landgraf</option>
-                <option value="KBA">KBA</option>
-              </select>
-            </div>
-            
-            {(selectedYear !== "all" || selectedSource !== "all") && (
+            {(selectedYear !== "all" || selectedSource !== "all" || showUpcomingOnly) && (
               <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">
                 {sortedEvents.length} Termine gefiltert
               </span>
@@ -658,80 +855,223 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               
-              {/* Route line */}
+              {/* Route line - dashed journey visualization */}
               {routeCoords.length > 1 && (
                 <Polyline
                   positions={routeCoords}
-                  color="#f59e0b"
+                  color="#6366f1"
                   weight={3}
                   opacity={0.7}
-                  dashArray="8, 8"
+                  dashArray="10, 6"
                 />
               )}
               
-              {/* Numbered markers */}
-              {eventsWithCoords.map((event, index) => (
-                <Marker 
-                  key={event.id} 
-                  position={event.coords as [number, number]}
-                  icon={activeEventId === event.id 
-                    ? createHighlightedIcon(index + 1, event.source) 
-                    : createNumberedIcon(index + 1, event.source)}
-                  eventHandlers={{
-                    click: () => scrollToEvent(event.id),
-                  }}
+              {/* Markers with optional clustering */}
+              {enableClustering ? (
+                <MarkerClusterGroup
+                  chunkedLoading
+                  iconCreateFunction={createClusterCustomIcon}
+                  maxClusterRadius={50}
+                  spiderfyOnMaxZoom={true}
+                  showCoverageOnHover={false}
                 >
-                  <Popup>
-                    <div className="min-w-[180px]">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className={`text-xs font-bold px-2 py-1 rounded-full
-                          ${event.source === "KL" ? "bg-yellow-500 text-yellow-900" : 
-                            event.source === "KBA" ? "bg-emerald-500 text-white" : "bg-gray-500 text-white"}`}>
-                          Station {index + 1}
-                        </span>
-                        <span className={`text-xs font-medium
-                          ${event.source === "KL" ? "text-yellow-600" : 
-                            event.source === "KBA" ? "text-emerald-600" : "text-gray-600"}`}>
-                          {event.source === "KL" ? "Landgraf" : 
-                           event.source === "KBA" ? "KBA" : ""}
-                        </span>
+                  {eventsWithCoords.map((event) => (
+                    <Marker 
+                      key={event.id} 
+                      position={event.coords as [number, number]}
+                      icon={activeEventId === event.id 
+                        ? createHighlightedStatusIcon(event.stationNumber, event.status) 
+                        : createStatusIcon(event.stationNumber, event.status)}
+                      eventHandlers={{
+                        click: () => scrollToEvent(event.id),
+                      }}
+                    >
+                      <Tooltip direction="top" offset={[0, -16]} opacity={1}>
+                        <div className="text-xs font-medium">
+                          <p className="font-bold">{event.location}</p>
+                          <p className="text-gray-500">{formatDate(event.start_time)}</p>
+                        </div>
+                      </Tooltip>
+                      <Popup className="custom-popup">
+                        <div className="min-w-[220px] p-1">
+                          {/* Header */}
+                          <div className={cn(
+                            "flex items-center gap-2 mb-3 p-2 -m-1 rounded-lg",
+                            statusColors[event.status].bgLight
+                          )}>
+                            <span className={cn(
+                              "text-xs font-bold px-2 py-1 rounded-full text-white",
+                              statusColors[event.status].bg
+                            )}>
+                              Station {event.stationNumber}
+                            </span>
+                            <span className={cn(
+                              "text-xs font-medium capitalize",
+                              statusColors[event.status].text
+                            )}>
+                              {event.status === "upcoming" ? "Anstehend" : 
+                               event.status === "today" ? "Heute!" : "Vergangen"}
+                            </span>
+                          </div>
+                          
+                          {/* Content */}
+                          <p className="font-bold text-gray-900 mb-2">{event.title}</p>
+                          <div className="space-y-1.5 mb-3">
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                              <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                              {formatDate(event.start_time)}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                              <Clock className="w-3.5 h-3.5 text-gray-400" />
+                              {formatTime(event.start_time)} Uhr
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                              <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                              {event.location}
+                            </div>
+                            {event.venue_name && (
+                              <p className="text-xs text-gray-500 pl-5">{event.venue_name}</p>
+                            )}
+                          </div>
+                          
+                          {/* Quick Actions */}
+                          <div className="flex gap-2 pt-2 border-t border-gray-100">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 text-xs h-8"
+                              onClick={() => setSelectedEventDetail(event)}
+                            >
+                              <Eye className="w-3 h-3 mr-1" />
+                              Details
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 text-xs h-8"
+                              onClick={() => openDirections(event)}
+                            >
+                              <ExternalLink className="w-3 h-3 mr-1" />
+                              Route
+                            </Button>
+                          </div>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  ))}
+                </MarkerClusterGroup>
+              ) : (
+                // Without clustering
+                eventsWithCoords.map((event) => (
+                  <Marker 
+                    key={event.id} 
+                    position={event.coords as [number, number]}
+                    icon={activeEventId === event.id 
+                      ? createHighlightedStatusIcon(event.stationNumber, event.status) 
+                      : createStatusIcon(event.stationNumber, event.status)}
+                    eventHandlers={{
+                      click: () => scrollToEvent(event.id),
+                    }}
+                  >
+                    <Tooltip direction="top" offset={[0, -16]} opacity={1}>
+                      <div className="text-xs font-medium">
+                        <p className="font-bold">{event.location}</p>
+                        <p className="text-gray-500">{formatDate(event.start_time)}</p>
                       </div>
-                      <p className="font-bold text-gray-900 mb-1">{event.title}</p>
-                      <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                        <Calendar className="w-3 h-3" />
-                        {formatDate(event.start_time)}
+                    </Tooltip>
+                    <Popup className="custom-popup">
+                      <div className="min-w-[220px] p-1">
+                        {/* Header */}
+                        <div className={cn(
+                          "flex items-center gap-2 mb-3 p-2 -m-1 rounded-lg",
+                          statusColors[event.status].bgLight
+                        )}>
+                          <span className={cn(
+                            "text-xs font-bold px-2 py-1 rounded-full text-white",
+                            statusColors[event.status].bg
+                          )}>
+                            Station {event.stationNumber}
+                          </span>
+                          <span className={cn(
+                            "text-xs font-medium capitalize",
+                            statusColors[event.status].text
+                          )}>
+                            {event.status === "upcoming" ? "Anstehend" : 
+                             event.status === "today" ? "Heute!" : "Vergangen"}
+                          </span>
+                        </div>
+                        
+                        {/* Content */}
+                        <p className="font-bold text-gray-900 mb-2">{event.title}</p>
+                        <div className="space-y-1.5 mb-3">
+                          <div className="flex items-center gap-2 text-xs text-gray-600">
+                            <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                            {formatDate(event.start_time)}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-gray-600">
+                            <Clock className="w-3.5 h-3.5 text-gray-400" />
+                            {formatTime(event.start_time)} Uhr
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-gray-600">
+                            <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                            {event.location}
+                          </div>
+                          {event.venue_name && (
+                            <p className="text-xs text-gray-500 pl-5">{event.venue_name}</p>
+                          )}
+                        </div>
+                        
+                        {/* Quick Actions */}
+                        <div className="flex gap-2 pt-2 border-t border-gray-100">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 text-xs h-8"
+                            onClick={() => setSelectedEventDetail(event)}
+                          >
+                            <Eye className="w-3 h-3 mr-1" />
+                            Details
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 text-xs h-8"
+                            onClick={() => openDirections(event)}
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            Route
+                          </Button>
+                        </div>
                       </div>
-                      <div className={`flex items-center gap-1 text-xs
-                        ${event.source === "KL" ? "text-yellow-600" : 
-                          event.source === "KBA" ? "text-emerald-600" : "text-gray-600"}`}>
-                        <MapPin className="w-3 h-3" />
-                        {event.location}
-                      </div>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
+                    </Popup>
+                  </Marker>
+                ))
+              )}
             </MapContainer>
           </div>
 
           {/* Legend - below map */}
           <div className="flex-shrink-0 flex items-center justify-center gap-4 text-xs text-gray-500 py-3 bg-gray-50 border-t border-gray-200">
             <div className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 text-yellow-900 text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
-              <span>Landgraf</span>
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
+              <span>Anstehend</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
-              <span>KBA</span>
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-red-400 to-red-500 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow animate-pulse">1</div>
+              <span>Heute</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-6 h-0.5 bg-amber-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #f59e0b 0px, #f59e0b 4px, transparent 4px, transparent 8px)' }}></div>
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-gray-400 to-gray-500 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
+              <span>Vergangen</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-6 h-0.5 bg-indigo-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #6366f1 0px, #6366f1 6px, transparent 6px, transparent 12px)' }}></div>
               <span>Route</span>
             </div>
             {eventsWithCoords.length > 1 && (
               <>
                 <span className="text-gray-300">|</span>
-                <div className="flex items-center gap-1.5 text-amber-600">
+                <div className="flex items-center gap-1.5 text-indigo-600">
                   <Navigation className="w-4 h-4" />
                   <span>{eventsWithCoords.length} Stationen</span>
                 </div>
@@ -757,6 +1097,8 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           {sortedEvents.map((event, index) => {
             const nextEvent = sortedEvents[index + 1];
             const distanceInfo = nextEvent ? getDistanceToNext(event.id, nextEvent.id) : null;
+            const status = getEventStatus(event.start_time);
+            const colors = statusColors[status];
             
             return (
               <div key={event.id}>
@@ -766,38 +1108,36 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                   className={cn(
                     "flex items-center gap-3 p-3 bg-white rounded-lg border transition-all cursor-pointer",
                     activeEventId === event.id 
-                      ? event.source === "KL" 
-                        ? "border-yellow-500 ring-2 ring-yellow-200 shadow-md"
-                        : event.source === "KBA"
-                        ? "border-emerald-500 ring-2 ring-emerald-200 shadow-md"
-                        : "border-gray-500 ring-2 ring-gray-200 shadow-md"
-                      : event.source === "KL"
-                        ? "border-gray-200 hover:border-yellow-300 hover:shadow-sm"
-                        : event.source === "KBA"
-                        ? "border-gray-200 hover:border-emerald-300 hover:shadow-sm"
-                        : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
+                      ? `${colors.border} ring-2 ${colors.ring} shadow-md`
+                      : `border-gray-200 hover:${colors.border} hover:shadow-sm`
                   )}
                   onMouseEnter={() => setActiveEventId(event.id)}
                   onMouseLeave={() => setActiveEventId(null)}
-                  onClick={() => setActiveEventId(activeEventId === event.id ? null : event.id)}
+                  onClick={() => setSelectedEventDetail(event)}
                 >
-                  {/* Number - colored by source */}
+                  {/* Number - colored by status */}
                   <div className={cn(
-                    "w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center flex-shrink-0 shadow-sm",
-                    event.source === "KL" 
-                      ? "bg-gradient-to-br from-yellow-400 to-yellow-500 text-yellow-900"
-                      : event.source === "KBA"
-                      ? "bg-gradient-to-br from-emerald-400 to-emerald-500 text-white"
-                      : "bg-gradient-to-br from-gray-400 to-gray-500 text-white"
+                    "w-9 h-9 rounded-full text-sm font-bold flex items-center justify-center flex-shrink-0 shadow-sm text-white relative",
+                    colors.bg
                   )}>
                     {index + 1}
+                    {status === "today" && (
+                      <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-red-500 rounded-full animate-ping" />
+                    )}
                   </div>
                   
                   {/* Event Details */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 truncate">
-                      {event.location}{event.state ? ` (${event.state})` : ''}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-gray-900 truncate">
+                        {event.location}{event.state ? ` (${event.state})` : ''}
+                      </p>
+                      {status === "today" && (
+                        <span className="text-[10px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full animate-pulse">
+                          HEUTE
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
                       <span>{formatDate(event.start_time)}</span>
                       <span>·</span>
@@ -808,14 +1148,13 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                     )}
                   </div>
 
-                  {/* Source Badge */}
+                  {/* Status Badge */}
                   <span className={cn(
                     "text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0",
-                    event.source === "KL" ? "bg-yellow-100 text-yellow-700" : 
-                    event.source === "KBA" ? "bg-emerald-100 text-emerald-600" : "bg-gray-100 text-gray-600"
+                    colors.bgLight, colors.text
                   )}>
-                    {event.source === "KL" ? "Landgraf" : 
-                     event.source === "KBA" ? "KBA" : event.source}
+                    {status === "upcoming" ? "Anstehend" : 
+                     status === "today" ? "Heute" : "Vergangen"}
                   </span>
                 </div>
 
@@ -824,7 +1163,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                   <div className="flex items-center justify-center py-2 px-4">
                     <div className="flex items-center gap-2 text-xs text-gray-400">
                       <div className="h-4 w-px bg-gray-300"></div>
-                      <Car className="w-3.5 h-3.5 text-amber-500" />
+                      <Car className="w-3.5 h-3.5 text-indigo-500" />
                       {distanceInfo ? (
                         <span className="font-medium text-gray-600">
                           {distanceInfo.distanceKm} km · {formatDuration(distanceInfo.durationMin)}
@@ -851,6 +1190,81 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           </div>
         </div>
       </div>
+
+      {/* Event Detail Modal */}
+      <Dialog open={!!selectedEventDetail} onOpenChange={() => setSelectedEventDetail(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-indigo-500" />
+              {selectedEventDetail?.location}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedEventDetail && (
+            <div className="space-y-4">
+              {/* Status Badge */}
+              <div className={cn(
+                "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium",
+                statusColors[getEventStatus(selectedEventDetail.start_time)].bgLight,
+                statusColors[getEventStatus(selectedEventDetail.start_time)].text
+              )}>
+                {getEventStatus(selectedEventDetail.start_time) === "today" && (
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                )}
+                {getEventStatus(selectedEventDetail.start_time) === "upcoming" ? "Anstehender Termin" : 
+                 getEventStatus(selectedEventDetail.start_time) === "today" ? "Heute!" : "Vergangener Termin"}
+              </div>
+
+              {/* Event Info */}
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-gray-900">{formatDate(selectedEventDetail.start_time)}</p>
+                    <p className="text-sm text-gray-500">{formatTime(selectedEventDetail.start_time)} Uhr</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {selectedEventDetail.location}
+                      {selectedEventDetail.state && ` (${selectedEventDetail.state})`}
+                    </p>
+                    {selectedEventDetail.venue_name && (
+                      <p className="text-sm text-gray-500">{selectedEventDetail.venue_name}</p>
+                    )}
+                  </div>
+                </div>
+
+                {selectedEventDetail.note && (
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-sm text-gray-600">{selectedEventDetail.note}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-4 border-t border-gray-100">
+                <Button
+                  className="flex-1"
+                  onClick={() => openDirections(selectedEventDetail)}
+                >
+                  <Navigation className="w-4 h-4 mr-2" />
+                  Route planen
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedEventDetail(null)}
+                >
+                  Schließen
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
