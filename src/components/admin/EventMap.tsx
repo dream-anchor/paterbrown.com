@@ -86,12 +86,15 @@ L.Icon.Default.mergeOptions({
 
 // Create numbered marker icon with source-based colors
 const createNumberedIcon = (num: number, source?: "KL" | "KBA" | "unknown") => {
-  // KL = Blue, KBA = Green, unknown = Gray
+  // KL = Yellow, KBA = Green, unknown = Gray
   const gradient = source === "KL" 
-    ? "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)"
+    ? "linear-gradient(135deg, #eab308 0%, #ca8a04 100%)"
     : source === "KBA"
-    ? "linear-gradient(135deg, #059669 0%, #047857 100%)"
+    ? "linear-gradient(135deg, #10b981 0%, #059669 100%)"
     : "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)";
+  
+  // Use dark text for yellow (better contrast)
+  const textColor = source === "KL" ? "#1f2937" : "white";
   
   return L.divIcon({
     className: 'custom-numbered-marker',
@@ -100,7 +103,7 @@ const createNumberedIcon = (num: number, source?: "KL" | "KBA" | "unknown") => {
       height: 28px;
       border-radius: 50%;
       background: ${gradient};
-      color: white;
+      color: ${textColor};
       display: flex;
       align-items: center;
       justify-content: center;
@@ -117,18 +120,21 @@ const createNumberedIcon = (num: number, source?: "KL" | "KBA" | "unknown") => {
 
 // Create highlighted marker icon (larger, pulsating) with source-based colors
 const createHighlightedIcon = (num: number, source?: "KL" | "KBA" | "unknown") => {
-  // Use slightly brighter colors for highlighted state
+  // KL = Yellow, KBA = Green
   const gradient = source === "KL" 
-    ? "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
+    ? "linear-gradient(135deg, #facc15 0%, #eab308 100%)"
     : source === "KBA"
-    ? "linear-gradient(135deg, #10b981 0%, #059669 100%)"
+    ? "linear-gradient(135deg, #34d399 0%, #10b981 100%)"
     : "linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)";
   
   const shadowColor = source === "KL" 
-    ? "rgba(37, 99, 235, 0.6)"
+    ? "rgba(234, 179, 8, 0.6)"
     : source === "KBA"
     ? "rgba(5, 150, 105, 0.6)"
     : "rgba(107, 114, 128, 0.6)";
+  
+  // Use dark text for yellow (better contrast)
+  const textColor = source === "KL" ? "#1f2937" : "white";
   
   return L.divIcon({
     className: 'custom-highlighted-marker',
@@ -137,7 +143,7 @@ const createHighlightedIcon = (num: number, source?: "KL" | "KBA" | "unknown") =
       height: 40px;
       border-radius: 50%;
       background: ${gradient};
-      color: white;
+      color: ${textColor};
       display: flex;
       align-items: center;
       justify-content: center;
@@ -725,7 +731,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                   {/* Source Badge */}
                   <span className={cn(
                     "text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0",
-                    event.source === "KL" ? "bg-blue-100 text-blue-600" : 
+                    event.source === "KL" ? "bg-yellow-100 text-yellow-700" : 
                     event.source === "KBA" ? "bg-emerald-100 text-emerald-600" : "bg-gray-100 text-gray-600"
                   )}>
                     {event.source === "KL" ? "Landgraf" : 

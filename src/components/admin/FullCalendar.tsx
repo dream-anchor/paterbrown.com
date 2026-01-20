@@ -101,15 +101,19 @@ interface FullCalendarProps {
 
 // Color schemes for different event types
 const eventColors: Record<string, { bg: string; text: string; border: string }> = {
+  // Reisen = Blau
   travel: { bg: "bg-blue-500", text: "text-blue-700", border: "border-blue-200" },
   train: { bg: "bg-blue-500", text: "text-blue-700", border: "border-blue-200" },
-  flight: { bg: "bg-sky-500", text: "text-sky-700", border: "border-sky-200" },
-  hotel: { bg: "bg-slate-500", text: "text-slate-700", border: "border-slate-200" },
-  rental_car: { bg: "bg-gray-500", text: "text-gray-700", border: "border-gray-200" },
-  // Tour events with source-based colors
-  tour_KL: { bg: "bg-blue-600", text: "text-blue-700", border: "border-blue-200" },
-  tour_KBA: { bg: "bg-emerald-600", text: "text-emerald-700", border: "border-emerald-200" },
+  flight: { bg: "bg-blue-400", text: "text-blue-700", border: "border-blue-200" },
+  hotel: { bg: "bg-blue-600", text: "text-blue-700", border: "border-blue-200" },
+  rental_car: { bg: "bg-blue-300", text: "text-blue-700", border: "border-blue-200" },
+  // Tour Landgraf (KL) = Gelb
+  tour_KL: { bg: "bg-yellow-500", text: "text-yellow-700", border: "border-yellow-200" },
+  // Tour KBA = Grün
+  tour_KBA: { bg: "bg-emerald-500", text: "text-emerald-700", border: "border-emerald-200" },
   tour: { bg: "bg-gray-500", text: "text-gray-700", border: "border-gray-200" }, // unknown source
+  // Optioniert = Orange
+  optioniert: { bg: "bg-orange-500", text: "text-orange-700", border: "border-orange-200" },
   theater: { bg: "bg-red-600", text: "text-red-700", border: "border-red-200" },
   filming: { bg: "bg-purple-500", text: "text-purple-700", border: "border-purple-200" },
   meeting: { bg: "bg-amber-500", text: "text-amber-700", border: "border-amber-200" },
@@ -548,12 +552,16 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
           <span>Reisen</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-blue-600" />
+          <span className="w-3 h-3 rounded bg-yellow-500" />
           <span>Tour (Landgraf)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-emerald-600" />
+          <span className="w-3 h-3 rounded bg-emerald-500" />
           <span>Tour (KBA)</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded bg-orange-500" />
+          <span>Optioniert</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded bg-red-600" />

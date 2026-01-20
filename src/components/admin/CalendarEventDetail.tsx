@@ -210,9 +210,9 @@ const CalendarEventDetail = ({
               <div className="flex items-center justify-between">
                 <h4 className="font-medium text-gray-900 text-sm">Tour-Details</h4>
                 {event.tourIndex && (
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold text-white
-                    ${event.metadata.source === "KL" ? "bg-blue-600" : 
-                      event.metadata.source === "KBA" ? "bg-emerald-600" : "bg-gray-500"}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold
+                    ${event.metadata.source === "KL" ? "bg-yellow-500 text-yellow-900" : 
+                      event.metadata.source === "KBA" ? "bg-emerald-500 text-white" : "bg-gray-500 text-white"}`}>
                     Station {event.tourIndex}
                   </span>
                 )}
@@ -229,7 +229,7 @@ const CalendarEventDetail = ({
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-500">Quelle</span>
                   <span className={`font-medium ${
-                    event.metadata.source === "KL" ? "text-blue-600" : 
+                    event.metadata.source === "KL" ? "text-yellow-600" : 
                     event.metadata.source === "KBA" ? "text-emerald-600" : "text-gray-600"
                   }`}>
                     {event.metadata.source === "KL" ? "Konzertdirektion Landgraf" :
