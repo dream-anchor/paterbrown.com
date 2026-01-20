@@ -3,9 +3,10 @@ import { format, parseISO, formatDistanceToNow, isPast, isToday, isTomorrow } fr
 import { de } from "date-fns/locale";
 import {
   Hotel, Train, Plane, Bus, Car, Package,
-  MapPin, Clock, Copy, ExternalLink, ChevronRight,
+  MapPin, Clock, Copy, ExternalLink, ChevronRight, ChevronDown,
   QrCode, FileText, Navigation, Calendar, Sparkles,
-  Coffee, Wifi, Users, Check, AlertTriangle, Crown, Moon
+  Coffee, Wifi, Users, Check, AlertTriangle, Crown, Moon,
+  X, Info, Mail
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -45,21 +46,83 @@ interface Props {
   showTimeBadge?: boolean;
 }
 
+// Icon-based config with gradient backgrounds
 const bookingTypeConfig = {
-  hotel: { icon: Hotel, label: "Hotel", glowClass: "icon-glow-hotel", shadowClass: "shadow-hotel", dotColor: "bg-amber-500" },
-  train: { icon: Train, label: "Zug", glowClass: "icon-glow-train", shadowClass: "shadow-train", dotColor: "bg-blue-500" },
-  flight: { icon: Plane, label: "Flug", glowClass: "icon-glow-flight", shadowClass: "shadow-flight", dotColor: "bg-violet-500" },
-  bus: { icon: Bus, label: "Bus", glowClass: "icon-glow-bus", shadowClass: "shadow-bus", dotColor: "bg-emerald-500" },
-  rental_car: { icon: Car, label: "Mietwagen", glowClass: "icon-glow-car", shadowClass: "shadow-car", dotColor: "bg-orange-500" },
-  other: { icon: Package, label: "Sonstiges", glowClass: "bg-gray-100", shadowClass: "", dotColor: "bg-gray-500" },
+  hotel: { 
+    icon: Hotel, 
+    label: "Hotel", 
+    gradient: "from-blue-500 to-blue-600",
+    lightGradient: "from-blue-50 to-blue-100",
+    iconColor: "text-white",
+    glowClass: "icon-glow-hotel", 
+    shadowClass: "shadow-hotel", 
+    dotColor: "bg-amber-500",
+    accentColor: "blue"
+  },
+  train: { 
+    icon: Train, 
+    label: "Zug", 
+    gradient: "from-emerald-500 to-emerald-600",
+    lightGradient: "from-emerald-50 to-emerald-100",
+    iconColor: "text-white",
+    glowClass: "icon-glow-train", 
+    shadowClass: "shadow-train", 
+    dotColor: "bg-blue-500",
+    accentColor: "emerald"
+  },
+  flight: { 
+    icon: Plane, 
+    label: "Flug", 
+    gradient: "from-violet-500 to-violet-600",
+    lightGradient: "from-violet-50 to-violet-100",
+    iconColor: "text-white",
+    glowClass: "icon-glow-flight", 
+    shadowClass: "shadow-flight", 
+    dotColor: "bg-violet-500",
+    accentColor: "violet"
+  },
+  bus: { 
+    icon: Bus, 
+    label: "Bus", 
+    gradient: "from-orange-500 to-orange-600",
+    lightGradient: "from-orange-50 to-orange-100",
+    iconColor: "text-white",
+    glowClass: "icon-glow-bus", 
+    shadowClass: "shadow-bus", 
+    dotColor: "bg-emerald-500",
+    accentColor: "orange"
+  },
+  rental_car: { 
+    icon: Car, 
+    label: "Mietwagen", 
+    gradient: "from-amber-500 to-amber-600",
+    lightGradient: "from-amber-50 to-amber-100",
+    iconColor: "text-white",
+    glowClass: "icon-glow-car", 
+    shadowClass: "shadow-car", 
+    dotColor: "bg-orange-500",
+    accentColor: "amber"
+  },
+  other: { 
+    icon: Package, 
+    label: "Sonstiges", 
+    gradient: "from-gray-400 to-gray-500",
+    lightGradient: "from-gray-50 to-gray-100",
+    iconColor: "text-white",
+    glowClass: "bg-gray-100", 
+    shadowClass: "", 
+    dotColor: "bg-gray-500",
+    accentColor: "gray"
+  },
 };
 
+// Status with icons
 const statusConfig = {
-  confirmed: { label: "Bestätigt", dotColor: "bg-emerald-500", className: "text-emerald-700" },
-  changed: { label: "Geändert", dotColor: "bg-amber-500", className: "text-amber-700" },
-  cancelled: { label: "Storniert", dotColor: "bg-red-500", className: "text-red-700" },
-  pending: { label: "Ausstehend", dotColor: "bg-gray-400", className: "text-gray-600" },
-  proposal: { label: "Angebot", dotColor: "bg-violet-500", className: "text-violet-700" },
+  confirmed: { label: "Bestätigt", icon: Check, dotColor: "bg-emerald-500", bgColor: "bg-emerald-50", textColor: "text-emerald-700", borderColor: "border-emerald-200" },
+  changed: { label: "Geändert", icon: Info, dotColor: "bg-blue-500", bgColor: "bg-blue-50", textColor: "text-blue-700", borderColor: "border-blue-200" },
+  cancelled: { label: "Storniert", icon: X, dotColor: "bg-red-500", bgColor: "bg-red-50", textColor: "text-red-700", borderColor: "border-red-200" },
+  pending: { label: "Ausstehend", icon: Clock, dotColor: "bg-amber-500", bgColor: "bg-amber-50", textColor: "text-amber-700", borderColor: "border-amber-200" },
+  proposal: { label: "Angebot", icon: Sparkles, dotColor: "bg-violet-500", bgColor: "bg-violet-50", textColor: "text-violet-700", borderColor: "border-violet-200" },
 };
 
 // Check if datetime has real time component
@@ -101,9 +164,24 @@ const checkDataQuality = (booking: TravelBooking): DataQualityIssue[] => {
   return issues;
 };
 
+// Calculate duration between two datetimes
+const calculateDuration = (start: string, end: string | null): string | null => {
+  if (!end) return null;
+  const startDate = parseISO(start);
+  const endDate = parseISO(end);
+  const diffMs = endDate.getTime() - startDate.getTime();
+  const diffMins = Math.round(diffMs / 60000);
+  
+  if (diffMins < 60) return `${diffMins} Min`;
+  const hours = Math.floor(diffMins / 60);
+  const mins = diffMins % 60;
+  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+};
+
 export default function TravelCard({ booking, isSelected, onSelect, onViewTicket, onShowQrCode, showTimeBadge = false }: Props) {
   const [copied, setCopied] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   
   useEffect(() => {
     const loadQrCode = async () => {
@@ -138,6 +216,7 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
   const typeConfig = bookingTypeConfig[booking.booking_type];
   const TypeIcon = typeConfig.icon;
   const status = statusConfig[booking.status];
+  const StatusIcon = status.icon;
   
   const getBookingNumber = () => {
     if (booking.booking_number) return booking.booking_number;
@@ -149,6 +228,9 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
   const bookingNumber = getBookingNumber();
   const qualityIssues = checkDataQuality(booking);
   const hasHighSeverityIssues = qualityIssues.some(i => i.severity === 'high');
+  const duration = ['train', 'flight', 'bus'].includes(booking.booking_type) 
+    ? calculateDuration(booking.start_datetime, booking.end_datetime) 
+    : null;
   
   const getTimeLabel = () => {
     if (!showTimeBadge) return null;
@@ -189,14 +271,32 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
     window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
   };
   
+  const toggleExpanded = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
+  };
+  
   const hasQrCode = booking.details?.qr_code_present || booking.details?.mobile_ticket;
+  
+  // Get travelers display
+  const getTravelers = () => {
+    if (booking.traveler_names && booking.traveler_names.length > 0) {
+      return booking.traveler_names;
+    }
+    if (booking.traveler_name) {
+      return [booking.traveler_name];
+    }
+    return [];
+  };
+  
+  const travelers = getTravelers();
   
   const getQuickInfo = () => {
     const pills: { icon: React.ElementType; label: string; colorClass: string }[] = [];
     
     if (booking.booking_type === 'train') {
       const trainNumber = booking.details?.train_number || booking.details?.ice_number;
-      if (trainNumber) pills.push({ icon: Train, label: trainNumber, colorClass: "bg-blue-50 text-blue-700 border-blue-200" });
+      if (trainNumber) pills.push({ icon: Train, label: trainNumber, colorClass: "bg-emerald-50 text-emerald-700 border-emerald-200" });
       const seat = booking.details?.seat || booking.details?.sitzplatz;
       const wagon = booking.details?.wagon || booking.details?.wagen;
       if (wagon && seat) pills.push({ icon: Users, label: `Wg ${wagon} · Pl ${seat}`, colorClass: "bg-violet-50 text-violet-700 border-violet-200" });
@@ -240,168 +340,197 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
         onClick={() => onSelect(booking)}
         className={cn(
           "group relative rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden",
-          "glass-card glass-card-hover",
+          "bg-white hover:scale-[1.02] hover:shadow-lg",
           isSelected 
-            ? `border-gray-400 ring-1 ring-gray-400 ${typeConfig.shadowClass}` 
+            ? `border-gray-400 ring-2 ring-gray-200 shadow-lg` 
             : hasHighSeverityIssues 
-              ? "border-amber-200" 
-              : "border-white/40",
-          isSelected && typeConfig.shadowClass
+              ? "border-amber-200 shadow-sm" 
+              : "border-gray-100 shadow-sm hover:border-gray-200"
         )}
       >
-        {/* Subtle gradient overlay based on type */}
+        {/* Gradient Header based on booking type */}
         <div className={cn(
-          "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none",
-          booking.booking_type === 'train' && "bg-gradient-to-br from-blue-500/5 to-transparent",
-          booking.booking_type === 'hotel' && "bg-gradient-to-br from-amber-500/5 to-transparent",
-          booking.booking_type === 'flight' && "bg-gradient-to-br from-violet-500/5 to-transparent",
-          booking.booking_type === 'bus' && "bg-gradient-to-br from-emerald-500/5 to-transparent",
-          booking.booking_type === 'rental_car' && "bg-gradient-to-br from-orange-500/5 to-transparent"
-        )} />
-
-        {/* Datenqualitäts-Warnung */}
-        {qualityIssues.length > 0 && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className={cn(
-                "absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center shadow-lg cursor-help z-10",
-                hasHighSeverityIssues 
-                  ? "bg-amber-500 text-white" 
-                  : "bg-gray-200 text-gray-600"
-              )}>
-                <AlertTriangle className="w-3.5 h-3.5" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="max-w-xs">
-              <div className="text-xs space-y-1">
-                <p className="font-medium">Datenqualität prüfen:</p>
-                {qualityIssues.map((issue, i) => (
-                  <p key={i} className="text-muted-foreground">• {issue.message}</p>
-                ))}
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        )}
-
-        {/* Time Badge */}
-        {timeLabel && timeLabel.urgent && !qrCodeUrl && (
-          <div className={cn(
-            "absolute -top-2 -right-2 px-2.5 py-1 rounded-full text-xs font-semibold shadow-lg z-10",
-            isToday(parseISO(booking.start_datetime)) 
-              ? "bg-gray-900 text-white" 
-              : "bg-white text-gray-700 border border-gray-200"
-          )}>
-            {timeLabel.label}
-          </div>
-        )}
-
-        {/* QR Code Thumbnail */}
-        {qrCodeUrl && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onShowQrCode?.();
-            }}
-            className={cn(
-              "absolute -top-3 -right-3 w-14 h-14 rounded-xl shadow-lg border-2 border-white z-10",
-              "bg-white overflow-hidden flex items-center justify-center",
-              "hover:scale-110 transition-transform cursor-pointer",
-              "ring-2 ring-gray-200 hover:ring-blue-400"
-            )}
-            title="QR-Code anzeigen"
-          >
-            <img 
-              src={qrCodeUrl} 
-              alt="QR-Code" 
-              className="w-12 h-12 object-contain"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                target.parentElement?.classList.add('bg-gray-100');
-              }}
-            />
-          </button>
-        )}
-      
-        {/* Main Content */}
-        <div className="relative p-4">
-          {/* Header Row */}
-          <div className="flex items-start gap-3 mb-3">
-            {/* Icon with gradient glow */}
-            <div className={cn(
-              "w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300",
-              typeConfig.glowClass,
-              "group-hover:scale-105"
-            )}>
-              <TypeIcon className={cn(
-                "w-5 h-5 transition-colors",
-                booking.booking_type === 'train' && "text-blue-600",
-                booking.booking_type === 'hotel' && "text-amber-600",
-                booking.booking_type === 'flight' && "text-violet-600",
-                booking.booking_type === 'bus' && "text-emerald-600",
-                booking.booking_type === 'rental_car' && "text-orange-600",
-                booking.booking_type === 'other' && "text-gray-600"
-              )} />
-            </div>
-            
-            {/* Title & Subtitle */}
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 truncate">
-                {booking.venue_name || booking.destination_city}
-              </h3>
-              <p className="text-sm text-gray-500 truncate">
-                {booking.provider || typeConfig.label}
-              </p>
-            </div>
-            
-            {/* Status Badge with Dot */}
-            {booking.status !== 'confirmed' && (
-              <span className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full bg-white/80 border border-gray-100",
-                status.className
-              )}>
-                <span className={cn("w-1.5 h-1.5 rounded-full", status.dotColor)} />
-                {status.label}
-              </span>
-            )}
-          </div>
+          "relative px-4 py-3 bg-gradient-to-r",
+          typeConfig.gradient
+        )}>
+          {/* Subtle pattern overlay */}
+          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.8),transparent_50%)]" />
           
-          {/* Route or Date Display */}
-          {['train', 'flight', 'bus'].includes(booking.booking_type) ? (
-            <div className="flex items-center gap-2 mb-3 pl-14">
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-medium text-gray-900">{booking.origin_city || '–'}</span>
-                <span className="text-gray-300 route-arrow-animated font-medium">→</span>
-                <span className="font-medium text-gray-900">{booking.destination_city}</span>
+          <div className="relative flex items-center justify-between">
+            {/* Icon + Booking Type */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <TypeIcon className="w-5 h-5 text-white" />
               </div>
-              {hasRealTime(booking.start_datetime) && (
-                <span className="text-sm text-gray-500 ml-auto tabular-nums">
-                  {formatTimeDisplay(booking.start_datetime)} Uhr
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-white/80 text-xs font-medium uppercase tracking-wider">
+                    {typeConfig.label}
+                  </span>
+                  {/* Status Badge with Icon */}
+                  <span className={cn(
+                    "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold",
+                    booking.status === 'confirmed' 
+                      ? "bg-white/20 text-white" 
+                      : "bg-white/90 " + status.textColor
+                  )}>
+                    <StatusIcon className="w-3 h-3" />
+                    {status.label}
+                  </span>
+                </div>
+                {bookingNumber && (
+                  <button
+                    onClick={copyBookingNumber}
+                    className="flex items-center gap-1.5 text-white font-mono text-sm mt-0.5 hover:bg-white/10 -ml-1 px-1 rounded transition-colors group/copy"
+                  >
+                    {bookingNumber}
+                    {copied ? (
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5 opacity-0 group-hover/copy:opacity-100 transition-opacity" />
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {/* QR Code or Time Badge */}
+            <div className="flex items-center gap-2">
+              {timeLabel && timeLabel.urgent && (
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-white/20 text-white backdrop-blur-sm">
+                  {timeLabel.label}
                 </span>
               )}
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 mb-3 pl-14 text-sm text-gray-600">
-              <Calendar className="w-3.5 h-3.5 text-gray-400" />
-              <span>
-                {format(parseISO(booking.start_datetime), "d. MMM", { locale: de })}
-                {booking.end_datetime && (
-                  <> – {format(parseISO(booking.end_datetime), "d. MMM", { locale: de })}</>
-                )}
-              </span>
-              {booking.venue_address && (
-                <>
-                  <span className="text-gray-200">·</span>
-                  <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                  <span className="truncate max-w-[150px]">{booking.venue_address}</span>
-                </>
+              {qrCodeUrl && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onShowQrCode?.();
+                  }}
+                  className="w-12 h-12 rounded-xl bg-white shadow-lg overflow-hidden hover:scale-105 transition-transform"
+                  title="QR-Code anzeigen"
+                >
+                  <img 
+                    src={qrCodeUrl} 
+                    alt="QR-Code" 
+                    className="w-full h-full object-contain p-1"
+                  />
+                </button>
               )}
+            </div>
+          </div>
+          
+          {/* Data Quality Warning Badge */}
+          {qualityIssues.length > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={cn(
+                  "absolute -bottom-3 left-4 w-6 h-6 rounded-full flex items-center justify-center shadow-lg cursor-help z-10",
+                  hasHighSeverityIssues 
+                    ? "bg-amber-500 text-white" 
+                    : "bg-gray-200 text-gray-600"
+                )}>
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs">
+                <div className="text-xs space-y-1">
+                  <p className="font-medium">Datenqualität prüfen:</p>
+                  {qualityIssues.map((issue, i) => (
+                    <p key={i} className="text-muted-foreground">• {issue.message}</p>
+                  ))}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      
+        {/* Main Content */}
+        <div className="p-4 pt-5">
+          {/* Title */}
+          <h3 className="font-semibold text-gray-900 text-lg leading-tight mb-1">
+            {booking.venue_name || booking.destination_city}
+          </h3>
+          {booking.provider && (
+            <p className="text-sm text-gray-500 mb-3">{booking.provider}</p>
+          )}
+          
+          {/* Journey Visualization for Transport */}
+          {['train', 'flight', 'bus'].includes(booking.booking_type) && (
+            <div className="bg-gray-50 rounded-xl p-3 mb-3">
+              <div className="flex items-center gap-3">
+                {/* Origin */}
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-gray-500 mb-0.5">Von</div>
+                  <div className="font-semibold text-gray-900 truncate">
+                    {booking.origin_city || '–'}
+                  </div>
+                  {hasRealTime(booking.start_datetime) && (
+                    <div className="text-sm text-gray-600 tabular-nums">
+                      {formatTimeDisplay(booking.start_datetime)}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Arrow + Duration */}
+                <div className="flex flex-col items-center px-2">
+                  <div className="flex items-center gap-1 text-gray-400">
+                    <div className="w-6 h-px bg-gray-300" />
+                    <TypeIcon className="w-4 h-4" />
+                    <div className="w-6 h-px bg-gray-300" />
+                  </div>
+                  {duration && (
+                    <span className="text-xs text-gray-500 mt-1">{duration}</span>
+                  )}
+                </div>
+                
+                {/* Destination */}
+                <div className="flex-1 min-w-0 text-right">
+                  <div className="text-xs text-gray-500 mb-0.5">Nach</div>
+                  <div className="font-semibold text-gray-900 truncate">
+                    {booking.destination_city}
+                  </div>
+                  {booking.end_datetime && hasRealTime(booking.end_datetime) && (
+                    <div className="text-sm text-gray-600 tabular-nums">
+                      {formatTimeDisplay(booking.end_datetime)}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
           
-          {/* Quick Info Pills - Enhanced with Colors */}
+          {/* Hotel/Other: Date display */}
+          {!['train', 'flight', 'bus'].includes(booking.booking_type) && (
+            <div className="flex items-center gap-2 mb-3 text-sm text-gray-600">
+              <Calendar className="w-4 h-4 text-gray-400" />
+              <span>
+                {format(parseISO(booking.start_datetime), "d. MMM yyyy", { locale: de })}
+                {booking.end_datetime && (
+                  <> – {format(parseISO(booking.end_datetime), "d. MMM yyyy", { locale: de })}</>
+                )}
+              </span>
+            </div>
+          )}
+          
+          {/* Travelers Pills */}
+          {travelers.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {travelers.map((traveler, i) => (
+                <span 
+                  key={i}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
+                >
+                  <Users className="w-3 h-3" />
+                  {traveler}
+                </span>
+              ))}
+            </div>
+          )}
+          
+          {/* Quick Info Pills */}
           {quickInfo.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-3 pl-14">
+            <div className="flex flex-wrap gap-1.5 mb-3">
               {quickInfo.map((pill, i) => (
                 <span 
                   key={i}
@@ -423,40 +552,84 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
             </div>
           )}
           
+          {/* Expandable Details */}
+          {isExpanded && (
+            <div className="mt-3 pt-3 border-t border-gray-100 space-y-2 text-sm animate-fade-in">
+              {booking.venue_address && (
+                <div className="flex items-start gap-2 text-gray-600">
+                  <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <span>{booking.venue_address}</span>
+                </div>
+              )}
+              {booking.details?.notes && (
+                <div className="flex items-start gap-2 text-gray-600">
+                  <FileText className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <span>{booking.details.notes}</span>
+                </div>
+              )}
+              {booking.source_email_id && (
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Mail className="w-4 h-4 text-gray-400" />
+                  <span className="text-xs">Aus E-Mail importiert</span>
+                </div>
+              )}
+            </div>
+          )}
+          
           {/* Bottom Row */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100/50">
-            {bookingNumber ? (
-              <button
-                onClick={copyBookingNumber}
-                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors group/copy"
-              >
-                <span className="font-mono">{bookingNumber}</span>
-                {copied ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5 opacity-0 group-hover/copy:opacity-100 transition-opacity" />
-                )}
-              </button>
-            ) : (
-              <span className="text-xs text-gray-400">Keine Buchungsnr.</span>
-            )}
-            
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-3">
             <div className="flex items-center gap-2">
               {price && (
-                <span className="text-sm font-medium text-gray-900">{price}</span>
+                <span className="text-base font-semibold text-gray-900">{price}</span>
+              )}
+              {!price && !bookingNumber && (
+                <span className="text-xs text-gray-400">Keine Details</span>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-1">
+              {/* Expand Button */}
+              <button
+                onClick={toggleExpanded}
+                className={cn(
+                  "p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all",
+                  isExpanded && "bg-gray-100 text-gray-700"
+                )}
+                title={isExpanded ? "Weniger anzeigen" : "Mehr anzeigen"}
+              >
+                <ChevronDown className={cn(
+                  "w-4 h-4 transition-transform duration-200",
+                  isExpanded && "rotate-180"
+                )} />
+              </button>
+              
+              {/* QR Code Button (if available but no thumbnail) */}
+              {hasQrCode && !qrCodeUrl && onShowQrCode && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onShowQrCode();
+                  }}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  title="QR-Code anzeigen"
+                >
+                  <QrCode className="w-4 h-4" />
+                </button>
               )}
               
+              {/* Maps Button */}
               {(booking.venue_address || booking.destination_city) && (
                 <button
                   onClick={openMaps}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100/50 transition-colors opacity-0 group-hover:opacity-100"
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
                   title="In Maps öffnen"
                 >
                   <Navigation className="w-4 h-4" />
                 </button>
               )}
               
-              <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all" />
+              {/* View Details Arrow */}
+              <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5 transition-all ml-1" />
             </div>
           </div>
         </div>
