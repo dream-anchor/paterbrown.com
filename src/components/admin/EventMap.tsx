@@ -84,15 +84,22 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-// Create numbered marker icon
-const createNumberedIcon = (num: number) => {
+// Create numbered marker icon with source-based colors
+const createNumberedIcon = (num: number, source?: "KL" | "KBA" | "unknown") => {
+  // KL = Blue, KBA = Green, unknown = Gray
+  const gradient = source === "KL" 
+    ? "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)"
+    : source === "KBA"
+    ? "linear-gradient(135deg, #059669 0%, #047857 100%)"
+    : "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)";
+  
   return L.divIcon({
     className: 'custom-numbered-marker',
     html: `<div style="
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      background: ${gradient};
       color: white;
       display: flex;
       align-items: center;
@@ -108,15 +115,28 @@ const createNumberedIcon = (num: number) => {
   });
 };
 
-// Create highlighted marker icon (red, larger, pulsating)
-const createHighlightedIcon = (num: number) => {
+// Create highlighted marker icon (larger, pulsating) with source-based colors
+const createHighlightedIcon = (num: number, source?: "KL" | "KBA" | "unknown") => {
+  // Use slightly brighter colors for highlighted state
+  const gradient = source === "KL" 
+    ? "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
+    : source === "KBA"
+    ? "linear-gradient(135deg, #10b981 0%, #059669 100%)"
+    : "linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)";
+  
+  const shadowColor = source === "KL" 
+    ? "rgba(37, 99, 235, 0.6)"
+    : source === "KBA"
+    ? "rgba(5, 150, 105, 0.6)"
+    : "rgba(107, 114, 128, 0.6)";
+  
   return L.divIcon({
     className: 'custom-highlighted-marker',
     html: `<div style="
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      background: ${gradient};
       color: white;
       display: flex;
       align-items: center;
@@ -124,7 +144,7 @@ const createHighlightedIcon = (num: number) => {
       font-weight: bold;
       font-size: 16px;
       border: 4px solid white;
-      box-shadow: 0 0 20px rgba(239, 68, 68, 0.6), 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 0 20px ${shadowColor}, 0 4px 12px rgba(0,0,0,0.3);
       animation: marker-pulse 1.5s infinite;
     ">${num}</div>
     <style>
@@ -235,15 +255,31 @@ interface AdminEvent {
 interface EventMapProps {
   events: AdminEvent[];
   onEventsUpdated?: () => void;
+  initialActiveEventId?: string;
 }
 
-const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
+const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapProps) => {
   const [isGeocoding, setIsGeocoding] = useState(false);
-  const [activeEventId, setActiveEventId] = useState<string | null>(null);
+  const [activeEventId, setActiveEventId] = useState<string | null>(initialActiveEventId || null);
   const [drivingDistances, setDrivingDistances] = useState<Map<string, DrivingDistance>>(new Map());
   const [isLoadingDistances, setIsLoadingDistances] = useState(false);
   const [routesLoaded, setRoutesLoaded] = useState(false);
   const { toast } = useToast();
+  
+  // Handle initial active event on mount or when it changes
+  useEffect(() => {
+    if (initialActiveEventId) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        const element = document.getElementById(`station-${initialActiveEventId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setActiveEventId(initialActiveEventId);
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [initialActiveEventId]);
   
   const sortedEvents = useMemo(() => {
     return [...events].sort((a, b) => 
@@ -578,8 +614,8 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
                     key={event.id} 
                     position={event.coords as [number, number]}
                     icon={activeEventId === event.id 
-                      ? createHighlightedIcon(index + 1) 
-                      : createNumberedIcon(index + 1)}
+                      ? createHighlightedIcon(index + 1, event.source) 
+                      : createNumberedIcon(index + 1, event.source)}
                     eventHandlers={{
                       click: () => scrollToEvent(event.id),
                     }}
@@ -587,8 +623,16 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
                     <Popup>
                       <div className="min-w-[180px]">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                          <span className={`text-white text-xs font-bold px-2 py-1 rounded-full
+                            ${event.source === "KL" ? "bg-blue-600" : 
+                              event.source === "KBA" ? "bg-emerald-600" : "bg-gray-500"}`}>
                             Station {index + 1}
+                          </span>
+                          <span className={`text-xs font-medium
+                            ${event.source === "KL" ? "text-blue-600" : 
+                              event.source === "KBA" ? "text-emerald-600" : "text-gray-600"}`}>
+                            {event.source === "KL" ? "Landgraf" : 
+                             event.source === "KBA" ? "KBA" : ""}
                           </span>
                         </div>
                         <p className="font-bold text-gray-900 mb-1">{event.title}</p>
@@ -596,7 +640,9 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
                           <Calendar className="w-3 h-3" />
                           {formatDate(event.start_time)}
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-amber-600">
+                        <div className={`flex items-center gap-1 text-xs
+                          ${event.source === "KL" ? "text-blue-600" : 
+                            event.source === "KBA" ? "text-emerald-600" : "text-gray-600"}`}>
                           <MapPin className="w-3 h-3" />
                           {event.location}
                         </div>
@@ -611,8 +657,12 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
           {/* Legend */}
           <div className="flex items-center justify-center gap-4 text-xs text-gray-500 mt-3">
             <div className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
-              <span>Station</span>
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
+              <span>Landgraf</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-700 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
+              <span>KBA</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-6 h-0.5 bg-amber-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #f59e0b 0px, #f59e0b 4px, transparent 4px, transparent 8px)' }}></div>
@@ -675,9 +725,11 @@ const EventMap = ({ events, onEventsUpdated }: EventMapProps) => {
                   {/* Source Badge */}
                   <span className={cn(
                     "text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0",
-                    event.source === "KL" ? "bg-blue-100 text-blue-600" : "bg-purple-100 text-purple-600"
+                    event.source === "KL" ? "bg-blue-100 text-blue-600" : 
+                    event.source === "KBA" ? "bg-emerald-100 text-emerald-600" : "bg-gray-100 text-gray-600"
                   )}>
-                    {event.source}
+                    {event.source === "KL" ? "Landgraf" : 
+                     event.source === "KBA" ? "KBA" : event.source}
                   </span>
                 </div>
 

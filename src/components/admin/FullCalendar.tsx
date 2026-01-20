@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
@@ -42,6 +43,7 @@ export interface CalendarEntry {
   textColor: string;
   icon: typeof Train;
   location?: string;
+  tourIndex?: number; // For tour events: their chronological position
   metadata?: {
     booking_type?: string;
     origin_city?: string;
@@ -94,6 +96,7 @@ interface CalendarEvent {
 
 interface FullCalendarProps {
   onNavigateToTravel?: (bookingId: string) => void;
+  onNavigateToTour?: (eventId: string) => void;
 }
 
 // Color schemes for different event types
@@ -103,10 +106,13 @@ const eventColors: Record<string, { bg: string; text: string; border: string }> 
   flight: { bg: "bg-sky-500", text: "text-sky-700", border: "border-sky-200" },
   hotel: { bg: "bg-slate-500", text: "text-slate-700", border: "border-slate-200" },
   rental_car: { bg: "bg-gray-500", text: "text-gray-700", border: "border-gray-200" },
-  tour: { bg: "bg-amber-500", text: "text-amber-700", border: "border-amber-200" },
+  // Tour events with source-based colors
+  tour_KL: { bg: "bg-blue-600", text: "text-blue-700", border: "border-blue-200" },
+  tour_KBA: { bg: "bg-emerald-600", text: "text-emerald-700", border: "border-emerald-200" },
+  tour: { bg: "bg-gray-500", text: "text-gray-700", border: "border-gray-200" }, // unknown source
   theater: { bg: "bg-red-600", text: "text-red-700", border: "border-red-200" },
   filming: { bg: "bg-purple-500", text: "text-purple-700", border: "border-purple-200" },
-  meeting: { bg: "bg-emerald-500", text: "text-emerald-700", border: "border-emerald-200" },
+  meeting: { bg: "bg-amber-500", text: "text-amber-700", border: "border-amber-200" },
   private: { bg: "bg-green-500", text: "text-green-700", border: "border-green-200" },
   other: { bg: "bg-gray-400", text: "text-gray-600", border: "border-gray-200" },
 };
@@ -131,8 +137,22 @@ const getEventIcon = (type: string, bookingType?: string): typeof Train => {
   }
 };
 
-const FullCalendar = ({ onNavigateToTravel }: FullCalendarProps) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProps) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Initialize currentDate from URL parameter or today
+  const getInitialDate = () => {
+    const monthParam = searchParams.get("month");
+    if (monthParam) {
+      const [year, month] = monthParam.split("-").map(Number);
+      if (year && month) {
+        return new Date(year, month - 1, 1);
+      }
+    }
+    return new Date();
+  };
+  
+  const [currentDate, setCurrentDate] = useState(getInitialDate);
   const [copied, setCopied] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddDate, setQuickAddDate] = useState<Date | null>(null);
@@ -149,6 +169,18 @@ const FullCalendar = ({ onNavigateToTravel }: FullCalendarProps) => {
 
   // Calendar feed URL
   const calendarFeedUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/calendar-feed`;
+
+  // Sync currentDate to URL when it changes
+  useEffect(() => {
+    const monthStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}`;
+    const currentTab = searchParams.get("tab") || "calendar";
+    // Only update if we're on calendar tab and month changed
+    if (currentTab === "calendar") {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("month", monthStr);
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [currentDate]);
 
   // Load all data
   const loadData = async () => {
@@ -176,9 +208,9 @@ const FullCalendar = ({ onNavigateToTravel }: FullCalendarProps) => {
   };
 
   // Load data on mount
-  useState(() => {
+  useEffect(() => {
     loadData();
-  });
+  }, []);
 
   // Combine all events into unified CalendarEntry format
   const allEntries = useMemo((): CalendarEntry[] => {
@@ -221,12 +253,21 @@ const FullCalendar = ({ onNavigateToTravel }: FullCalendarProps) => {
       });
     });
 
-    // Admin events (tour dates)
-    adminEvents.forEach((event) => {
-      const colors = eventColors.tour;
+    // Admin events (tour dates) - sorted by date to calculate tour index
+    const sortedAdminEvents = [...adminEvents].sort(
+      (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+    );
+    
+    sortedAdminEvents.forEach((event, index) => {
+      // Get color based on source
+      const colorKey = event.source === "KL" ? "tour_KL" : 
+                       event.source === "KBA" ? "tour_KBA" : "tour";
+      const colors = eventColors[colorKey];
+      const tourIndex = index + 1; // 1-based tour station number
+      
       entries.push({
         id: event.id,
-        title: `TOUR PB (${event.source === "unknown" ? "?" : event.source})`,
+        title: `#${tourIndex} ${event.location}`,
         type: "tour",
         category: "tour",
         start: new Date(event.start_time),
@@ -235,6 +276,7 @@ const FullCalendar = ({ onNavigateToTravel }: FullCalendarProps) => {
         textColor: colors.text,
         icon: MapPin,
         location: event.state ? `${event.location} (${event.state})` : event.location,
+        tourIndex,
         metadata: {
           venue_name: event.venue_name,
           source: event.source,
@@ -506,8 +548,12 @@ const FullCalendar = ({ onNavigateToTravel }: FullCalendarProps) => {
           <span>Reisen</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-amber-500" />
-          <span>Tour</span>
+          <span className="w-3 h-3 rounded bg-blue-600" />
+          <span>Tour (Landgraf)</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded bg-emerald-600" />
+          <span>Tour (KBA)</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded bg-red-600" />
@@ -518,7 +564,7 @@ const FullCalendar = ({ onNavigateToTravel }: FullCalendarProps) => {
           <span>Dreh</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-emerald-500" />
+          <span className="w-3 h-3 rounded bg-amber-500" />
           <span>Meeting</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -541,6 +587,7 @@ const FullCalendar = ({ onNavigateToTravel }: FullCalendarProps) => {
         onClose={() => setSelectedEvent(null)}
         onDelete={loadData}
         onNavigateToTravel={onNavigateToTravel}
+        onNavigateToTour={onNavigateToTour}
       />
     </div>
   );

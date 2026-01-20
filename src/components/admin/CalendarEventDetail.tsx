@@ -18,6 +18,7 @@ import {
   Hotel,
   QrCode,
   FileText,
+  Map,
 } from "lucide-react";
 import type { CalendarEntry } from "./FullCalendar";
 
@@ -26,6 +27,7 @@ interface CalendarEventDetailProps {
   onClose: () => void;
   onDelete: () => void;
   onNavigateToTravel?: (bookingId: string) => void;
+  onNavigateToTour?: (eventId: string) => void;
 }
 
 const CalendarEventDetail = ({
@@ -33,6 +35,7 @@ const CalendarEventDetail = ({
   onClose,
   onDelete,
   onNavigateToTravel,
+  onNavigateToTour,
 }: CalendarEventDetailProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
@@ -203,20 +206,32 @@ const CalendarEventDetail = ({
 
           {/* Tour-specific details */}
           {isTour && event.metadata && (
-            <div className="bg-amber-50 rounded-lg p-4 space-y-3">
-              <h4 className="font-medium text-amber-900 text-sm">Tour-Details</h4>
+            <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium text-gray-900 text-sm">Tour-Details</h4>
+                {event.tourIndex && (
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold text-white
+                    ${event.metadata.source === "KL" ? "bg-blue-600" : 
+                      event.metadata.source === "KBA" ? "bg-emerald-600" : "bg-gray-500"}`}>
+                    Station {event.tourIndex}
+                  </span>
+                )}
+              </div>
               
               {event.metadata.venue_name && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-amber-700">Venue</span>
-                  <span className="text-amber-900">{event.metadata.venue_name}</span>
+                  <span className="text-gray-500">Venue</span>
+                  <span className="text-gray-900">{event.metadata.venue_name}</span>
                 </div>
               )}
               
               {event.metadata.source && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-amber-700">Quelle</span>
-                  <span className="text-amber-900">
+                  <span className="text-gray-500">Quelle</span>
+                  <span className={`font-medium ${
+                    event.metadata.source === "KL" ? "text-blue-600" : 
+                    event.metadata.source === "KBA" ? "text-emerald-600" : "text-gray-600"
+                  }`}>
                     {event.metadata.source === "KL" ? "Konzertdirektion Landgraf" :
                      event.metadata.source === "KBA" ? "Konzertbüro Augsburg" : "Unbekannt"}
                   </span>
@@ -225,8 +240,8 @@ const CalendarEventDetail = ({
               
               {event.metadata.description && (
                 <div className="text-sm">
-                  <span className="text-amber-700 block mb-1">Notiz</span>
-                  <span className="text-amber-900 italic">{event.metadata.description}</span>
+                  <span className="text-gray-500 block mb-1">Notiz</span>
+                  <span className="text-gray-700 italic">{event.metadata.description}</span>
                 </div>
               )}
             </div>
@@ -258,6 +273,12 @@ const CalendarEventDetail = ({
           </Button>
 
           <div className="flex gap-2">
+            {isTour && onNavigateToTour && (
+              <Button variant="outline" size="sm" onClick={() => onNavigateToTour(event.id)}>
+                <Map className="w-4 h-4 mr-1" />
+                Auf Karte zeigen
+              </Button>
+            )}
             {isTravel && onNavigateToTravel && (
               <Button variant="outline" size="sm" onClick={() => onNavigateToTravel(event.id)}>
                 <ExternalLink className="w-4 h-4 mr-1" />
