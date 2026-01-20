@@ -117,7 +117,7 @@ const CalendarEventDetail = ({
 
   return (
     <Dialog open={!!event} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg bg-white text-gray-900 border-gray-200">
         <DialogHeader>
           <div className="flex items-start gap-3">
             <div className={`w-10 h-10 rounded-xl ${event.color} flex items-center justify-center flex-shrink-0`}>
@@ -274,18 +274,18 @@ const CalendarEventDetail = ({
 
           <div className="flex gap-2">
             {isTour && onNavigateToTour && (
-              <Button variant="outline" size="sm" onClick={() => onNavigateToTour(event.id)}>
+              <Button variant="apple" size="sm" onClick={() => onNavigateToTour(event.id)}>
                 <Map className="w-4 h-4 mr-1" />
                 Auf Karte zeigen
               </Button>
             )}
             {isTravel && onNavigateToTravel && (
-              <Button variant="outline" size="sm" onClick={() => onNavigateToTravel(event.id)}>
+              <Button variant="apple" size="sm" onClick={() => onNavigateToTravel(event.id)}>
                 <ExternalLink className="w-4 h-4 mr-1" />
                 In Reisen öffnen
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={onClose}>
+            <Button variant="apple" size="sm" onClick={onClose}>
               Schließen
             </Button>
           </div>
