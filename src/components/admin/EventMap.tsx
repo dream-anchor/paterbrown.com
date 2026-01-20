@@ -701,15 +701,30 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                   className={cn(
                     "flex items-center gap-3 p-3 bg-white rounded-lg border transition-all cursor-pointer",
                     activeEventId === event.id 
-                      ? "border-amber-500 ring-2 ring-amber-200 shadow-md" 
-                      : "border-gray-200 hover:border-amber-300 hover:shadow-sm"
+                      ? event.source === "KL" 
+                        ? "border-yellow-500 ring-2 ring-yellow-200 shadow-md"
+                        : event.source === "KBA"
+                        ? "border-emerald-500 ring-2 ring-emerald-200 shadow-md"
+                        : "border-gray-500 ring-2 ring-gray-200 shadow-md"
+                      : event.source === "KL"
+                        ? "border-gray-200 hover:border-yellow-300 hover:shadow-sm"
+                        : event.source === "KBA"
+                        ? "border-gray-200 hover:border-emerald-300 hover:shadow-sm"
+                        : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
                   )}
                   onMouseEnter={() => setActiveEventId(event.id)}
                   onMouseLeave={() => setActiveEventId(null)}
                   onClick={() => setActiveEventId(activeEventId === event.id ? null : event.id)}
                 >
-                  {/* Number */}
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-sm font-bold flex items-center justify-center flex-shrink-0 shadow-sm">
+                  {/* Number - colored by source */}
+                  <div className={cn(
+                    "w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center flex-shrink-0 shadow-sm",
+                    event.source === "KL" 
+                      ? "bg-gradient-to-br from-yellow-400 to-yellow-500 text-yellow-900"
+                      : event.source === "KBA"
+                      ? "bg-gradient-to-br from-emerald-400 to-emerald-500 text-white"
+                      : "bg-gradient-to-br from-gray-400 to-gray-500 text-white"
+                  )}>
                     {index + 1}
                   </div>
                   
