@@ -22,6 +22,7 @@ import TravelCard from "./TravelCard";
 import TravelTimeline from "./TravelTimeline";
 import TravelerProfileEditor from "./TravelerProfileEditor";
 import QrCodeModal from "./QrCodeModal";
+import TravelStats from "./TravelStats";
 
 interface TravelBooking {
   id: string;
@@ -426,6 +427,9 @@ export default function TravelDashboard() {
         />
 
         <TabsContent value="bookings" className="mt-6">
+          {/* Stats Dashboard */}
+          <TravelStats bookings={bookings} />
+          
           {/* Quick Summary Header - Glassmorphism 2026 */}
           {nextTrip && viewMode === "timeline" && (
             <div className="mb-6 p-5 glass-card rounded-3xl animate-fade-slide-in">
