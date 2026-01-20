@@ -587,9 +587,9 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
       {/* Responsive Layout: side-by-side on desktop/tablet, stacked on mobile */}
       <div className="flex flex-col lg:flex-row gap-6 overflow-hidden">
         
-        {/* Map Container - Responsive sizing */}
-        <div className="w-full lg:w-1/2 lg:flex-shrink-0">
-          <div className="relative" style={{ paddingBottom: 'min(100%, 600px)' }}>
+        {/* Map Container - 9:16 Portrait Aspect Ratio */}
+        <div className="w-full lg:w-1/2 lg:flex-shrink-0 max-w-md lg:max-w-none mx-auto lg:mx-0">
+          <div className="relative" style={{ paddingBottom: '177.78%' }}>
             <div className="absolute inset-0 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
               <MapContainer
                 center={germanCenter}
