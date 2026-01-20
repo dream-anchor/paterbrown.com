@@ -270,7 +270,19 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
   const [drivingDistances, setDrivingDistances] = useState<Map<string, DrivingDistance>>(new Map());
   const [isLoadingDistances, setIsLoadingDistances] = useState(false);
   const [routesLoaded, setRoutesLoaded] = useState(false);
+  const [selectedYear, setSelectedYear] = useState<string>("all");
+  const [selectedSource, setSelectedSource] = useState<string>("all");
   const { toast } = useToast();
+  
+  // Get available years from events
+  const availableYears = useMemo(() => {
+    const years = new Set<string>();
+    events.forEach(event => {
+      const year = new Date(event.start_time).getFullYear().toString();
+      years.add(year);
+    });
+    return Array.from(years).sort();
+  }, [events]);
   
   // Handle initial active event on mount or when it changes
   useEffect(() => {
@@ -287,11 +299,19 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
     }
   }, [initialActiveEventId]);
   
+  // Filter and sort events
   const sortedEvents = useMemo(() => {
-    return [...events].sort((a, b) => 
-      new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
-    );
-  }, [events]);
+    return [...events]
+      .filter(event => {
+        const eventYear = new Date(event.start_time).getFullYear().toString();
+        const yearMatch = selectedYear === "all" || eventYear === selectedYear;
+        const sourceMatch = selectedSource === "all" || event.source === selectedSource;
+        return yearMatch && sourceMatch;
+      })
+      .sort((a, b) => 
+        new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+      );
+  }, [events, selectedYear, selectedSource]);
 
 
   // Get coordinates for an event
@@ -570,14 +590,56 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         </div>
       )}
 
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Tour-Karte</h2>
-        <p className="text-gray-600 text-sm">
-          {eventsWithCoords.length} von {sortedEvents.length} Termine auf der Karte
-        </p>
+      {/* Header with Filters */}
+      <div className="space-y-4">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Tour-Karte</h2>
+          <p className="text-gray-600 text-sm">
+            {eventsWithCoords.length} von {sortedEvents.length} Termine auf der Karte
+          </p>
+        </div>
+        
+        {/* Filters */}
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          {/* Year Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">Jahr:</span>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              <option value="all">Alle Jahre</option>
+              {availableYears.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+          
+          {/* Source Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">Quelle:</span>
+            <select
+              value={selectedSource}
+              onChange={(e) => setSelectedSource(e.target.value)}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              <option value="all">Alle</option>
+              <option value="KL">Landgraf</option>
+              <option value="KBA">KBA</option>
+            </select>
+          </div>
+          
+          {/* Count Badge */}
+          {(selectedYear !== "all" || selectedSource !== "all") && (
+            <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">
+              {sortedEvents.length} Termine gefiltert
+            </span>
+          )}
+        </div>
+        
         {eventsWithCoords.length > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-2 text-amber-600 text-sm">
+          <div className="flex items-center justify-center gap-2 text-amber-600 text-sm">
             <Navigation className="w-4 h-4" />
             <span>Tourverlauf: {eventsWithCoords.length} Stationen</span>
           </div>
@@ -585,7 +647,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
       </div>
 
       {/* Responsive Layout: side-by-side on desktop/tablet, stacked on mobile */}
-      <div className="flex flex-col lg:flex-row gap-6 overflow-hidden">
+      <div className="flex flex-col lg:flex-row lg:items-stretch gap-6 overflow-hidden">
         
         {/* Map Container - 9:16 Portrait Aspect Ratio */}
         <div className="w-full lg:w-1/2 lg:flex-shrink-0 max-w-md lg:max-w-none mx-auto lg:mx-0">
@@ -677,8 +739,8 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           </div>
         </div>
 
-        {/* Stations List - Scrollable, right side on desktop */}
-        <div className="w-full lg:w-1/2 lg:max-h-[600px] max-h-[400px] overflow-y-auto space-y-2 pr-2">
+        {/* Stations List - Scrollable, same height as map on desktop */}
+        <div className="w-full lg:w-1/2 lg:self-stretch overflow-y-auto space-y-2 pr-2 max-h-[500px] lg:max-h-none">
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sticky top-0 bg-gray-50/95 backdrop-blur-sm py-2 z-10 flex items-center justify-between">
             <span>Alle Stationen · {sortedEvents.length} Termine</span>
             {isLoadingDistances && (
