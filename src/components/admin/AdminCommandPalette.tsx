@@ -319,20 +319,20 @@ export const AdminCommandPalette = ({
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <Command className="rounded-xl border-0">
-        <div className="flex items-center border-b border-gray-100 px-4">
+      <Command className="rounded-xl border-0 bg-white text-gray-900 [&_[cmdk-root]]:bg-white">
+        <div className="flex items-center border-b border-gray-200 px-4 bg-white">
           <Search className="mr-2 h-4 w-4 shrink-0 text-gray-400" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Suche nach Events, Reisen oder Aktionen..."
-            className="flex h-12 w-full bg-transparent py-3 text-sm outline-none placeholder:text-gray-400"
+            className="flex h-12 w-full bg-transparent py-3 text-sm text-gray-900 outline-none placeholder:text-gray-400"
           />
-          <kbd className="ml-2 pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-gray-200 bg-gray-50 px-1.5 font-mono text-[10px] font-medium text-gray-400 sm:flex">
+          <kbd className="ml-2 pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-gray-200 bg-gray-100 px-1.5 font-mono text-[10px] font-medium text-gray-500 sm:flex">
             ESC
           </kbd>
         </div>
-        <CommandList className="max-h-[400px] overflow-y-auto p-2">
+        <CommandList className="max-h-[400px] overflow-y-auto p-2 bg-white">
           {!hasResults && (
             <CommandEmpty className="py-8 text-center text-sm text-gray-500">
               Keine Ergebnisse für "{query}" gefunden
@@ -341,7 +341,7 @@ export const AdminCommandPalette = ({
 
           {/* Recent Items */}
           {!query && recentItems.length > 0 && (
-            <CommandGroup heading="Zuletzt verwendet" className="px-2">
+            <CommandGroup heading="Zuletzt verwendet" className="px-2 [&_[cmdk-group-heading]]:text-gray-500 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium">
               {recentItems.map((item) => (
                 <CommandItem
                   key={item.id}
@@ -354,7 +354,7 @@ export const AdminCommandPalette = ({
                     }
                     onOpenChange(false);
                   }}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-gray-50"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-gray-700 hover:bg-gray-100 data-[selected=true]:bg-amber-50 data-[selected=true]:text-gray-900"
                 >
                   <Clock className="h-4 w-4 text-gray-400" />
                   <span className="text-sm">{item.label}</span>
@@ -366,18 +366,18 @@ export const AdminCommandPalette = ({
           {/* Quick Actions */}
           {filteredQuickActions.length > 0 && (
             <>
-              <CommandGroup heading="Schnellaktionen" className="px-2">
+              <CommandGroup heading="Schnellaktionen" className="px-2 [&_[cmdk-group-heading]]:text-gray-500 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium">
                 {filteredQuickActions.map((action) => (
                   <CommandItem
                     key={action.id}
                     value={action.id}
                     onSelect={() => handleSelect(action.action)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-gray-50"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-gray-700 hover:bg-gray-100 data-[selected=true]:bg-amber-50 data-[selected=true]:text-gray-900"
                   >
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
                       <action.icon className="h-4 w-4" />
                     </div>
-                    <span className="flex-1 text-sm">
+                    <span className="flex-1 text-sm text-gray-700">
                       <HighlightedText text={action.label} query={query} />
                     </span>
                     <CommandShortcut className="text-xs text-gray-400">
@@ -386,25 +386,25 @@ export const AdminCommandPalette = ({
                   </CommandItem>
                 ))}
               </CommandGroup>
-              <CommandSeparator className="my-2" />
+              <CommandSeparator className="my-2 bg-gray-100" />
             </>
           )}
 
           {/* Navigation */}
           {filteredNavigation.length > 0 && (
             <>
-              <CommandGroup heading="Navigation" className="px-2">
+              <CommandGroup heading="Navigation" className="px-2 [&_[cmdk-group-heading]]:text-gray-500 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium">
                 {filteredNavigation.map((nav) => (
                   <CommandItem
                     key={nav.id}
                     value={nav.id}
                     onSelect={() => handleSelect(nav.action)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-gray-50"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-gray-700 hover:bg-gray-100 data-[selected=true]:bg-amber-50 data-[selected=true]:text-gray-900"
                   >
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
                       <nav.icon className="h-4 w-4" />
                     </div>
-                    <span className="flex-1 text-sm">
+                    <span className="flex-1 text-sm text-gray-700">
                       <HighlightedText text={nav.label} query={query} />
                     </span>
                     <CommandShortcut className="text-xs text-gray-400">
@@ -414,7 +414,7 @@ export const AdminCommandPalette = ({
                 ))}
               </CommandGroup>
               {(filteredEvents.length > 0 || filteredBookings.length > 0) && (
-                <CommandSeparator className="my-2" />
+                <CommandSeparator className="my-2 bg-gray-100" />
               )}
             </>
           )}
@@ -422,13 +422,13 @@ export const AdminCommandPalette = ({
           {/* Events */}
           {filteredEvents.length > 0 && (
             <>
-              <CommandGroup heading="Events" className="px-2">
+              <CommandGroup heading="Events" className="px-2 [&_[cmdk-group-heading]]:text-gray-500 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium">
                 {filteredEvents.map((event) => (
                   <CommandItem
                     key={event.id}
                     value={`event-${event.id}`}
                     onSelect={() => handleEventSelect(event)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-gray-50"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-gray-700 hover:bg-gray-100 data-[selected=true]:bg-amber-50 data-[selected=true]:text-gray-900"
                   >
                     <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${
                       event.source === "KL" 
@@ -438,7 +438,7 @@ export const AdminCommandPalette = ({
                       <MapPin className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">
+                      <div className="text-sm font-medium text-gray-900 truncate">
                         <HighlightedText text={event.title} query={query} />
                       </div>
                       <div className="text-xs text-gray-500 truncate">
@@ -449,13 +449,13 @@ export const AdminCommandPalette = ({
                   </CommandItem>
                 ))}
               </CommandGroup>
-              {filteredBookings.length > 0 && <CommandSeparator className="my-2" />}
+              {filteredBookings.length > 0 && <CommandSeparator className="my-2 bg-gray-100" />}
             </>
           )}
 
           {/* Travel Bookings */}
           {filteredBookings.length > 0 && (
-            <CommandGroup heading="Reisen" className="px-2">
+            <CommandGroup heading="Reisen" className="px-2 [&_[cmdk-group-heading]]:text-gray-500 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium">
               {filteredBookings.map((booking) => {
                 const Icon = getBookingIcon(booking.booking_type);
                 return (
@@ -463,13 +463,13 @@ export const AdminCommandPalette = ({
                     key={booking.id}
                     value={`booking-${booking.id}`}
                     onSelect={() => handleBookingSelect(booking)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-gray-50"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer text-gray-700 hover:bg-gray-100 data-[selected=true]:bg-amber-50 data-[selected=true]:text-gray-900"
                   >
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">
+                      <div className="text-sm font-medium text-gray-900 truncate">
                         {booking.origin_city && (
                           <>
                             <HighlightedText text={booking.origin_city} query={query} />
@@ -493,19 +493,19 @@ export const AdminCommandPalette = ({
         </CommandList>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-gray-100 px-4 py-2 text-xs text-gray-400">
+        <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-4 py-2 text-xs text-gray-500">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-gray-100 font-mono">↑↓</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 font-mono">↑↓</kbd>
               Navigieren
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-gray-100 font-mono">↵</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 font-mono">↵</kbd>
               Auswählen
             </span>
           </div>
           <span className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 rounded bg-gray-100 font-mono">⌘K</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 font-mono">⌘K</kbd>
             Öffnen
           </span>
         </div>
