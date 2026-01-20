@@ -22,6 +22,7 @@ import {
   Pencil,
   Trash2,
   Link2,
+  List,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import QuickAddEventModal from "./QuickAddEventModal";
 import CalendarEventDetail from "./CalendarEventDetail";
+import EventTimeline from "./EventTimeline";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -169,7 +171,7 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
   const [quickAddDate, setQuickAddDate] = useState<Date | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEntry | null>(null);
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<"calendar" | "cards">("calendar");
+  const [viewMode, setViewMode] = useState<"calendar" | "cards" | "timeline">("calendar");
   
   // Data states
   const [travelBookings, setTravelBookings] = useState<TravelBooking[]>([]);
@@ -572,20 +574,30 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
 
         <div className="flex items-center gap-3">
           {/* View Toggle */}
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-1">
             <button 
               onClick={() => setViewMode("calendar")}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5
+              className={`p-2 rounded-md transition-colors
                 ${viewMode === "calendar" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
+              title="Kalender-Ansicht"
             >
-              <Grid3X3 className="w-4 h-4" /> Kalender
+              <Grid3X3 className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode("cards")}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5
+              className={`p-2 rounded-md transition-colors
                 ${viewMode === "cards" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
+              title="Karten-Ansicht"
             >
-              <LayoutList className="w-4 h-4" /> Karten
+              <LayoutList className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("timeline")}
+              className={`p-2 rounded-md transition-colors
+                ${viewMode === "timeline" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
+              title="Timeline-Ansicht"
+            >
+              <List className="w-4 h-4" />
             </button>
           </div>
           
@@ -725,6 +737,14 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
             </div>
           )}
         </div>
+      )}
+
+      {/* Timeline View */}
+      {viewMode === "timeline" && (
+        <EventTimeline 
+          entries={sortedEntries} 
+          onEventClick={handleEventClick} 
+        />
       )}
 
       {/* Legend */}
