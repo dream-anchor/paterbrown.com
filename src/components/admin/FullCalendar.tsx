@@ -23,6 +23,7 @@ import {
   Trash2,
   Link2,
   List,
+  Download,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -33,10 +34,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import QuickAddEventModal from "./QuickAddEventModal";
 import CalendarEventDetail from "./CalendarEventDetail";
 import EventTimeline from "./EventTimeline";
 import EventFilterPanel from "./EventFilterPanel";
+import CalendarExport from "./CalendarExport";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -174,6 +182,7 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<"calendar" | "cards" | "timeline">("calendar");
   const [filteredEntries, setFilteredEntries] = useState<CalendarEntry[]>([]);
+  const [showExportModal, setShowExportModal] = useState(false);
   
   // Data states
   const [travelBookings, setTravelBookings] = useState<TravelBooking[]>([]);
@@ -651,6 +660,13 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-72">
+              <DropdownMenuItem onClick={() => setShowExportModal(true)} className="cursor-pointer">
+                <Download className="w-4 h-4 mr-2" />
+                <div className="flex flex-col">
+                  <span className="font-medium">Exportieren</span>
+                  <span className="text-xs text-gray-500">iCal, CSV, PDF oder Google</span>
+                </div>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => copyToClipboard(calendarFeedUrl)} className="cursor-pointer">
                 {copied ? <Check className="w-4 h-4 mr-2 text-green-500" /> : <Copy className="w-4 h-4 mr-2" />}
                 <div className="flex flex-col">
@@ -667,6 +683,27 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          
+          {/* Export Modal */}
+          <Dialog open={showExportModal} onOpenChange={setShowExportModal}>
+            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Kalender exportieren</DialogTitle>
+              </DialogHeader>
+              <CalendarExport 
+                events={adminEvents.map(e => ({
+                  id: e.id,
+                  title: e.title,
+                  location: e.location,
+                  venue_name: e.venue_name,
+                  start_time: e.start_time,
+                  end_time: e.end_time,
+                  note: e.note,
+                  source: e.source,
+                }))}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
