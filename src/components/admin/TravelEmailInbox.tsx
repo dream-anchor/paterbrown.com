@@ -537,12 +537,12 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
   return (
     <div className="h-[calc(100vh-220px)] flex flex-col">
       {/* Info Banner */}
-      <div className="bg-primary/5 border border-primary/10 rounded-xl p-3 mb-4 flex items-center gap-3">
-        <Mail className="w-4 h-4 text-primary flex-shrink-0" />
-        <p className="text-sm text-foreground flex-1">
-          E-Mails an <strong>travel@paterbrown.com</strong> weiterleiten
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 flex items-center gap-3">
+        <Mail className="w-4 h-4 text-amber-600 flex-shrink-0" />
+        <p className="text-sm text-gray-700 flex-1">
+          E-Mails an <strong className="text-gray-900">travel@paterbrown.com</strong> weiterleiten
         </p>
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs text-gray-500">
           j/k navigieren • Enter öffnen • r aktualisieren
         </div>
       </div>
@@ -551,12 +551,12 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
       <div className="flex items-center gap-3 mb-4">
         {/* Search */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
             placeholder="E-Mails durchsuchen..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 bg-card border-border"
+            className="pl-9 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
           />
           {searchQuery && (
             <button
