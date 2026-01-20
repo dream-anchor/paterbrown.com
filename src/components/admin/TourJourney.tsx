@@ -108,7 +108,7 @@ const TourJourney = ({ events }: TourJourneyProps) => {
     <div className="max-w-2xl mx-auto pb-12">
       {/* Header with Tour Statistics */}
       <div className="text-center mb-8 pb-8 border-b border-gray-200">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-900 text-white text-xs font-medium rounded-full mb-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500 text-white text-xs font-medium rounded-full mb-4">
           <Calendar className="w-3 h-3" />
           TOUR {tourYearRange}
         </div>
@@ -170,7 +170,7 @@ const TourJourney = ({ events }: TourJourneyProps) => {
                     className="flex gap-4 items-start group"
                   >
                     {/* Number Badge */}
-                    <div className="w-10 h-10 rounded-full bg-gray-900 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-md group-hover:bg-amber-500 transition-colors">
+                    <div className="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-md group-hover:bg-amber-600 transition-colors">
                       {globalIndex}
                     </div>
                     

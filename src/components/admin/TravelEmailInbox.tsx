@@ -515,7 +515,7 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
           <div className="p-6">
             {email.body_html ? (
               <div 
-                className="prose prose-sm max-w-none dark:prose-invert"
+                className="prose prose-sm max-w-none prose-gray"
                 dangerouslySetInnerHTML={{ __html: email.body_html }}
               />
             ) : email.body_text ? (

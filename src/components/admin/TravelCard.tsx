@@ -544,7 +544,7 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
                 </span>
               ))}
               {hasQrCode && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-900 text-white rounded-full text-xs font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-500 text-white rounded-full text-xs font-medium">
                   <QrCode className="w-3.5 h-3.5" />
                   Digital
                 </span>
