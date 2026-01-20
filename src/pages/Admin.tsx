@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -7,6 +7,7 @@ import FullCalendar from "@/components/admin/FullCalendar";
 import EventMap from "@/components/admin/EventMap";
 import CalendarExport from "@/components/admin/CalendarExport";
 import TravelDashboard from "@/components/admin/TravelDashboard";
+import AdminCommandPalette from "@/components/admin/AdminCommandPalette";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Sparkles, Map, Plane } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -34,8 +35,22 @@ const Admin = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [events, setEvents] = useState<AdminEvent[]>([]);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Command Palette keyboard shortcut (⌘K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setCommandPaletteOpen(true);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Get active tab from URL or default to "calendar"
   const activeTab = searchParams.get("tab") || "calendar";
@@ -208,6 +223,20 @@ const Admin = () => {
 
   return (
     <AdminLayout>
+      {/* Command Palette */}
+      <AdminCommandPalette
+        open={commandPaletteOpen}
+        onOpenChange={setCommandPaletteOpen}
+        onQuickAdd={() => {
+          // Navigate to calendar and trigger quick add
+          setSearchParams({ tab: "calendar" });
+        }}
+        onExportCalendar={() => {
+          // This would open export modal - for now navigate to calendar
+          setSearchParams({ tab: "calendar" });
+        }}
+      />
+
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         {/* Premium Pill-Style Tabs - Reordered: Kalender → Karte → Reisen → Upload */}
         <div className="sticky top-16 z-30 -mx-4 px-4 py-3 bg-gray-50/80 backdrop-blur-md border-b border-gray-100">
