@@ -584,12 +584,12 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         )}
       </div>
 
-      {/* Vertical Layout Container */}
-      <div className="flex flex-col gap-6 overflow-hidden">
+      {/* Responsive Layout: side-by-side on desktop/tablet, stacked on mobile */}
+      <div className="flex flex-col lg:flex-row gap-6 overflow-hidden">
         
-        {/* Map Container - 9:16 Portrait Aspect Ratio */}
-        <div className="w-full max-w-md mx-auto">
-          <div className="relative" style={{ paddingBottom: '177.78%' }}>
+        {/* Map Container - Responsive sizing */}
+        <div className="w-full lg:w-1/2 lg:flex-shrink-0">
+          <div className="relative" style={{ paddingBottom: 'min(100%, 600px)' }}>
             <div className="absolute inset-0 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
               <MapContainer
                 center={germanCenter}
@@ -629,13 +629,13 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                     <Popup>
                       <div className="min-w-[180px]">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className={`text-white text-xs font-bold px-2 py-1 rounded-full
-                            ${event.source === "KL" ? "bg-blue-600" : 
-                              event.source === "KBA" ? "bg-emerald-600" : "bg-gray-500"}`}>
+                          <span className={`text-xs font-bold px-2 py-1 rounded-full
+                            ${event.source === "KL" ? "bg-yellow-500 text-yellow-900" : 
+                              event.source === "KBA" ? "bg-emerald-500 text-white" : "bg-gray-500 text-white"}`}>
                             Station {index + 1}
                           </span>
                           <span className={`text-xs font-medium
-                            ${event.source === "KL" ? "text-blue-600" : 
+                            ${event.source === "KL" ? "text-yellow-600" : 
                               event.source === "KBA" ? "text-emerald-600" : "text-gray-600"}`}>
                             {event.source === "KL" ? "Landgraf" : 
                              event.source === "KBA" ? "KBA" : ""}
@@ -647,7 +647,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                           {formatDate(event.start_time)}
                         </div>
                         <div className={`flex items-center gap-1 text-xs
-                          ${event.source === "KL" ? "text-blue-600" : 
+                          ${event.source === "KL" ? "text-yellow-600" : 
                             event.source === "KBA" ? "text-emerald-600" : "text-gray-600"}`}>
                           <MapPin className="w-3 h-3" />
                           {event.location}
@@ -663,11 +663,11 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           {/* Legend */}
           <div className="flex items-center justify-center gap-4 text-xs text-gray-500 mt-3">
             <div className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 text-yellow-900 text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
               <span>Landgraf</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-700 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
               <span>KBA</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -677,8 +677,8 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           </div>
         </div>
 
-        {/* Stations List - Scrollable */}
-        <div className="max-h-[400px] overflow-y-auto space-y-2 pr-2">
+        {/* Stations List - Scrollable, right side on desktop */}
+        <div className="w-full lg:w-1/2 lg:max-h-[600px] max-h-[400px] overflow-y-auto space-y-2 pr-2">
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sticky top-0 bg-gray-50/95 backdrop-blur-sm py-2 z-10 flex items-center justify-between">
             <span>Alle Stationen · {sortedEvents.length} Termine</span>
             {isLoadingDistances && (
