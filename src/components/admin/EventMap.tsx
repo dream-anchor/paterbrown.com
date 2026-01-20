@@ -215,16 +215,51 @@ const createHighlightedStatusIcon = (num: number, status: EventStatus) => {
   });
 };
 
-// Create cluster icon
+// Cluster colors by source - darker versions
+const clusterColors = {
+  KL: {
+    gradient: "linear-gradient(135deg, #b45309 0%, #92400e 100%)",
+    shadow: "rgba(180, 83, 9, 0.5)",
+  },
+  KBA: {
+    gradient: "linear-gradient(135deg, #047857 0%, #065f46 100%)",
+    shadow: "rgba(4, 120, 87, 0.5)",
+  },
+  mixed: {
+    gradient: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+    shadow: "rgba(99, 102, 241, 0.5)",
+  },
+};
+
+// Create cluster icon with source-based coloring
 const createClusterCustomIcon = (cluster: any) => {
   const count = cluster.getChildCount();
+  const markers = cluster.getAllChildMarkers();
+  
+  // Determine dominant source in cluster
+  let klCount = 0;
+  let kbaCount = 0;
+  
+  markers.forEach((marker: any) => {
+    const source = marker.options?.eventSource;
+    if (source === "KL") klCount++;
+    else if (source === "KBA") kbaCount++;
+  });
+  
+  // Choose color based on majority
+  let colorScheme = clusterColors.mixed;
+  if (klCount > 0 && kbaCount === 0) {
+    colorScheme = clusterColors.KL;
+  } else if (kbaCount > 0 && klCount === 0) {
+    colorScheme = clusterColors.KBA;
+  }
   
   return L.divIcon({
     html: `<div style="
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      background: ${colorScheme.gradient};
       color: white;
       display: flex;
       align-items: center;
@@ -232,7 +267,7 @@ const createClusterCustomIcon = (cluster: any) => {
       font-weight: bold;
       font-size: 14px;
       border: 3px solid white;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
+      box-shadow: 0 4px 12px ${colorScheme.shadow};
     ">${count}</div>`,
     className: 'custom-cluster-icon',
     iconSize: L.point(40, 40, true),
@@ -882,6 +917,8 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                       icon={activeEventId === event.id 
                         ? createHighlightedStatusIcon(event.stationNumber, event.status) 
                         : createStatusIcon(event.stationNumber, event.status)}
+                      // @ts-ignore - custom property for cluster grouping
+                      eventSource={event.source}
                       eventHandlers={{
                         click: () => scrollToEvent(event.id),
                       }}
