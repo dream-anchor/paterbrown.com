@@ -242,11 +242,18 @@ const Admin = () => {
               onNavigateToTravel={(bookingId) => {
                 setSearchParams({ tab: "travel" });
               }}
+              onNavigateToTour={(eventId) => {
+                setSearchParams({ tab: "map", activeEventId: eventId });
+              }}
             />
           </TabsContent>
 
           <TabsContent value="map" className="mt-0 focus-visible:outline-none">
-            <EventMap events={events} onEventsUpdated={fetchEvents} />
+            <EventMap 
+              events={events} 
+              onEventsUpdated={fetchEvents}
+              initialActiveEventId={searchParams.get("activeEventId") || undefined}
+            />
           </TabsContent>
 
           <TabsContent value="travel" className="mt-0 focus-visible:outline-none">
