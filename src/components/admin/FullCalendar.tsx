@@ -17,6 +17,11 @@ import {
   MapPin,
   User,
   MoreHorizontal,
+  Grid3X3,
+  LayoutList,
+  Pencil,
+  Trash2,
+  Link2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +34,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import QuickAddEventModal from "./QuickAddEventModal";
 import CalendarEventDetail from "./CalendarEventDetail";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 // Types
 export interface CalendarEntry {
@@ -162,6 +169,7 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
   const [quickAddDate, setQuickAddDate] = useState<Date | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEntry | null>(null);
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<"calendar" | "cards">("calendar");
   
   // Data states
   const [travelBookings, setTravelBookings] = useState<TravelBooking[]>([]);
@@ -170,6 +178,21 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
   const [isLoading, setIsLoading] = useState(true);
   
   const { toast } = useToast();
+
+  // Status badge helper
+  const getEventStatus = (date: Date) => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const eventDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffTime = eventDay.getTime() - today.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return { label: "Vergangen", color: "bg-gray-200 text-gray-500", pulse: false, isPast: true };
+    if (diffDays === 0) return { label: "Heute", color: "bg-yellow-400 text-yellow-900", pulse: true, isPast: false };
+    if (diffDays === 1) return { label: "Morgen", color: "bg-blue-100 text-blue-700", pulse: false, isPast: false };
+    if (diffDays <= 7) return { label: "Diese Woche", color: "bg-green-100 text-green-700", pulse: false, isPast: false };
+    return null;
+  };
 
   // Calendar feed URL
   const calendarFeedUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/calendar-feed`;
@@ -314,6 +337,16 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
     return entries.sort((a, b) => a.start.getTime() - b.start.getTime());
   }, [travelBookings, adminEvents, calendarEvents]);
 
+  // Sorted entries for card view
+  const sortedEntries = useMemo(() => {
+    const now = new Date();
+    const upcoming = allEntries.filter(e => e.start >= now)
+      .sort((a, b) => a.start.getTime() - b.start.getTime());
+    const past = allEntries.filter(e => e.start < now)
+      .sort((a, b) => b.start.getTime() - a.start.getTime());
+    return [...upcoming, ...past];
+  }, [allEntries]);
+
   const copyToClipboard = async (url: string) => {
     try {
       await navigator.clipboard.writeText(url);
@@ -400,10 +433,126 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
     );
   }
 
+  // Event Card Component for card view
+  const EventCard = ({ entry }: { entry: CalendarEntry }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    const status = getEventStatus(entry.start);
+    const isPast = status?.isPast || false;
+    const Icon = entry.icon;
+
+    const handleCopyLink = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const link = `${window.location.origin}/admin?tab=map&activeEventId=${entry.id}`;
+      navigator.clipboard.writeText(link);
+      toast({ title: "Link kopiert" });
+    };
+
+    const handleDelete = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      // For now just show a toast - actual delete would need confirmation
+      toast({ title: "Löschen wird noch implementiert", variant: "destructive" });
+    };
+
+    const handleEdit = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setSelectedEvent(entry);
+    };
+
+    return (
+      <div
+        onClick={() => handleEventClick(entry)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={`
+          relative p-4 rounded-xl border transition-all duration-200 cursor-pointer
+          ${isPast 
+            ? "bg-gray-50 border-gray-200" 
+            : "bg-white border-gray-200 hover:shadow-md hover:scale-[1.01]"
+          }
+        `}
+      >
+        {/* Source Icon - links oben */}
+        <div className="absolute top-3 left-3">
+          <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-white text-[10px] font-bold ${entry.color}`}>
+            {entry.metadata?.source === "KL" ? "KL" : entry.metadata?.source === "KBA" ? "KBA" : <Icon className="w-3.5 h-3.5" />}
+          </div>
+        </div>
+        
+        {/* Status Badge - rechts oben (hide when hovered for quick actions) */}
+        {status && !isHovered && (
+          <div className={`absolute top-3 right-3 px-2 py-0.5 text-[10px] font-medium rounded-full
+            ${status.color} ${status.pulse ? "animate-pulse" : ""}`}>
+            {status.label}
+          </div>
+        )}
+        
+        {/* Quick Actions - bei Hover rechts oben */}
+        {isHovered && !isPast && (
+          <div className="absolute top-3 right-3 flex gap-1">
+            <button 
+              onClick={handleEdit}
+              className="p-1.5 rounded-md bg-white shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              <Pencil className="w-3.5 h-3.5 text-gray-500" />
+            </button>
+            <button 
+              onClick={handleCopyLink}
+              className="p-1.5 rounded-md bg-white shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              <Link2 className="w-3.5 h-3.5 text-gray-500" />
+            </button>
+            <button 
+              onClick={handleDelete}
+              className="p-1.5 rounded-md bg-white shadow-sm border border-gray-200 hover:bg-red-50 transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-gray-500 hover:text-red-500" />
+            </button>
+          </div>
+        )}
+        
+        {/* Content */}
+        <div className={`mt-8 ${isPast ? "opacity-60" : ""}`}>
+          {/* Titel */}
+          <h3 className={`font-semibold text-gray-900 text-base mb-1 truncate ${isPast ? "line-through" : ""}`}>
+            {entry.title}
+          </h3>
+          
+          {/* Datum + Zeit */}
+          <div className="flex items-center gap-2 text-sm text-gray-700 mb-2">
+            <Calendar className="w-4 h-4 text-gray-400" />
+            <span className="font-medium">
+              {format(entry.start, "EEEE, d. MMMM yyyy", { locale: de })}
+            </span>
+            {!entry.allDay && (
+              <span className="text-amber-600 font-semibold">
+                {format(entry.start, "HH:mm", { locale: de })} Uhr
+              </span>
+            )}
+          </div>
+          
+          {/* Location */}
+          {entry.location && (
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <MapPin className="w-4 h-4" />
+              <span className="truncate">{entry.location}</span>
+            </div>
+          )}
+          
+          {/* Venue */}
+          {entry.metadata?.venue_name && (
+            <p className="text-xs text-gray-400 mt-1 ml-6 truncate">
+              {entry.metadata.venue_name}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4">
       {/* Calendar Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <Button variant="apple" size="sm" onClick={goToToday} className="rounded-lg">
             Heute
@@ -422,6 +571,24 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
         </div>
 
         <div className="flex items-center gap-3">
+          {/* View Toggle */}
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            <button 
+              onClick={() => setViewMode("calendar")}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5
+                ${viewMode === "calendar" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              <Grid3X3 className="w-4 h-4" /> Kalender
+            </button>
+            <button
+              onClick={() => setViewMode("cards")}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5
+                ${viewMode === "cards" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              <LayoutList className="w-4 h-4" /> Karten
+            </button>
+          </div>
+          
           <span className="text-sm text-gray-500">{eventsThisMonth} Termine</span>
           
           <Button variant="apple" size="sm" onClick={() => { setQuickAddDate(new Date()); setShowQuickAdd(true); }}>
@@ -456,94 +623,109 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
         </div>
       </div>
 
-      {/* Calendar Grid */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-        {/* Day Names Header */}
-        <div className="grid grid-cols-7 border-b border-gray-100">
-          {dayNames.map((day) => (
-            <div key={day} className="text-center text-xs font-medium text-gray-500 uppercase tracking-wider py-3 bg-gray-50/50">
-              {day}
-            </div>
-          ))}
-        </div>
-
-        {/* Days Grid */}
-        <div className="grid grid-cols-7">
-          {/* Empty cells */}
-          {Array.from({ length: startDayOfWeek }).map((_, i) => (
-            <div key={`empty-${i}`} className="min-h-[140px] border-r border-b border-gray-100 bg-gray-50/30" />
-          ))}
-
-          {/* Day cells */}
-          {Array.from({ length: daysInMonth }).map((_, i) => {
-            const day = i + 1;
-            const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-            const dayEntries = entriesByDate[dateStr] || [];
-            const isToday = today.toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
-            const isWeekend = (startDayOfWeek + i) % 7 >= 5;
-            const isHovered = hoveredDay === day;
-
-            return (
-              <div
-                key={day}
-                className={`min-h-[140px] border-r border-b border-gray-100 p-1 relative group ${isWeekend ? "bg-gray-50/50" : ""}`}
-                onMouseEnter={() => setHoveredDay(day)}
-                onMouseLeave={() => setHoveredDay(null)}
-              >
-                {/* Day Header */}
-                <div className="flex items-center justify-between mb-1 px-1">
-                  <span className={`w-7 h-7 flex items-center justify-center text-sm font-medium rounded-full
-                    ${isToday ? "bg-amber-500 text-white" : "text-gray-700"}`}>
-                    {day}
-                  </span>
-                  
-                  {/* Quick Add Button */}
-                  <button
-                    onClick={() => handleQuickAdd(day)}
-                    className={`w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all
-                      ${isHovered ? "opacity-100" : "opacity-0"}`}
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Event Badges */}
-                <div className="space-y-0.5 overflow-hidden">
-                  {dayEntries.slice(0, 4).map((entry) => {
-                    const Icon = entry.icon;
-                    return (
-                      <button
-                        key={entry.id}
-                        onClick={() => handleEventClick(entry)}
-                        className={`w-full px-1.5 py-0.5 rounded text-[10px] font-medium text-white truncate flex items-center gap-1
-                          ${entry.color} hover:opacity-90 transition-opacity text-left`}
-                        title={`${formatTime(entry.start)} ${entry.title}`}
-                      >
-                        <Icon className="w-3 h-3 flex-shrink-0" />
-                        <span className="truncate">
-                          {entry.allDay ? "" : `${formatTime(entry.start)} `}
-                          {entry.title}
-                        </span>
-                      </button>
-                    );
-                  })}
-                  {dayEntries.length > 4 && (
-                    <button
-                      onClick={() => {
-                        // Show all events for this day
-                        setSelectedEvent(dayEntries[0]);
-                      }}
-                      className="text-[10px] text-gray-500 font-medium pl-1.5 hover:text-gray-700"
-                    >
-                      +{dayEntries.length - 4} weitere
-                    </button>
-                  )}
-                </div>
+      {/* Calendar Grid View */}
+      {viewMode === "calendar" && (
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+          {/* Day Names Header */}
+          <div className="grid grid-cols-7 border-b border-gray-100">
+            {dayNames.map((day) => (
+              <div key={day} className="text-center text-xs font-medium text-gray-500 uppercase tracking-wider py-3 bg-gray-50/50">
+                {day}
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          {/* Days Grid */}
+          <div className="grid grid-cols-7">
+            {/* Empty cells */}
+            {Array.from({ length: startDayOfWeek }).map((_, i) => (
+              <div key={`empty-${i}`} className="min-h-[140px] border-r border-b border-gray-100 bg-gray-50/30" />
+            ))}
+
+            {/* Day cells */}
+            {Array.from({ length: daysInMonth }).map((_, i) => {
+              const day = i + 1;
+              const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+              const dayEntries = entriesByDate[dateStr] || [];
+              const isToday = today.toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
+              const isWeekend = (startDayOfWeek + i) % 7 >= 5;
+              const isHovered = hoveredDay === day;
+
+              return (
+                <div
+                  key={day}
+                  className={`min-h-[140px] border-r border-b border-gray-100 p-1 relative group ${isWeekend ? "bg-gray-50/50" : ""}`}
+                  onMouseEnter={() => setHoveredDay(day)}
+                  onMouseLeave={() => setHoveredDay(null)}
+                >
+                  {/* Day Header */}
+                  <div className="flex items-center justify-between mb-1 px-1">
+                    <span className={`w-7 h-7 flex items-center justify-center text-sm font-medium rounded-full
+                      ${isToday ? "bg-amber-500 text-white" : "text-gray-700"}`}>
+                      {day}
+                    </span>
+                    
+                    {/* Quick Add Button */}
+                    <button
+                      onClick={() => handleQuickAdd(day)}
+                      className={`w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all
+                        ${isHovered ? "opacity-100" : "opacity-0"}`}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Event Badges */}
+                  <div className="space-y-0.5 overflow-hidden">
+                    {dayEntries.slice(0, 4).map((entry) => {
+                      const EntryIcon = entry.icon;
+                      return (
+                        <button
+                          key={entry.id}
+                          onClick={() => handleEventClick(entry)}
+                          className={`w-full px-1.5 py-0.5 rounded text-[10px] font-medium text-white truncate flex items-center gap-1
+                            ${entry.color} hover:opacity-90 transition-opacity text-left`}
+                          title={`${formatTime(entry.start)} ${entry.title}`}
+                        >
+                          <EntryIcon className="w-3 h-3 flex-shrink-0" />
+                          <span className="truncate">
+                            {entry.allDay ? "" : `${formatTime(entry.start)} `}
+                            {entry.title}
+                          </span>
+                        </button>
+                      );
+                    })}
+                    {dayEntries.length > 4 && (
+                      <button
+                        onClick={() => {
+                          setSelectedEvent(dayEntries[0]);
+                        }}
+                        className="text-[10px] text-gray-500 font-medium pl-1.5 hover:text-gray-700"
+                      >
+                        +{dayEntries.length - 4} weitere
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Cards View */}
+      {viewMode === "cards" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sortedEntries.map((entry) => (
+            <EventCard key={entry.id} entry={entry} />
+          ))}
+          {sortedEntries.length === 0 && (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              Keine Termine gefunden
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Legend */}
       <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500">
