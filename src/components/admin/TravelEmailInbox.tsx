@@ -355,9 +355,9 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
         onClick={() => handleSelectEmail(email)}
         className={`
           relative px-4 py-3 cursor-pointer transition-all duration-150
-          ${isSelected ? "bg-primary/10 border-l-2 border-l-primary" : "border-l-2 border-l-transparent"}
-          ${isHighlighted && !isSelected ? "bg-muted/50" : ""}
-          ${!isSelected && !isHighlighted ? "hover:bg-muted/30" : ""}
+          ${isSelected ? "bg-amber-50 border-l-2 border-l-amber-500" : "border-l-2 border-l-transparent"}
+          ${isHighlighted && !isSelected ? "bg-gray-50" : ""}
+          ${!isSelected && !isHighlighted ? "hover:bg-gray-50" : ""}
         `}
       >
         <div className="flex items-start gap-3">
@@ -365,7 +365,7 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
           <div className="relative flex-shrink-0">
             <div className={`
               w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
-              ${isUnread ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}
+              ${isUnread ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-500"}
             `}>
               {ProviderIcon ? (
                 <ProviderIcon className="w-5 h-5" />
@@ -374,26 +374,26 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
               )}
             </div>
             {isUnread && (
-              <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-primary rounded-full border-2 border-background" />
+              <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-amber-500 rounded-full border-2 border-white" />
             )}
           </div>
 
           {/* Content */}
           <div className="flex-1 min-w-0 overflow-hidden">
             <div className="flex items-center justify-between gap-2 mb-0.5">
-              <span className={`text-sm truncate ${isUnread ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
+              <span className={`text-sm truncate ${isUnread ? "font-semibold text-gray-900" : "text-gray-500"}`}>
                 {email.from_address.split("@")[0]}
               </span>
-              <span className="text-xs text-muted-foreground flex-shrink-0">
+              <span className="text-xs text-gray-500 flex-shrink-0">
                 {formatSmartDate(email.received_at)}
               </span>
             </div>
             
-            <div className={`text-sm truncate mb-1 ${isUnread ? "font-medium text-foreground" : "text-foreground"}`}>
+            <div className={`text-sm truncate mb-1 ${isUnread ? "font-medium text-gray-900" : "text-gray-700"}`}>
               {email.subject || "(kein Betreff)"}
             </div>
             
-            <div className="text-xs text-muted-foreground truncate">
+            <div className="text-xs text-gray-500 truncate">
               {getPreviewText(email)}
             </div>
 
@@ -407,7 +407,7 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
               
               {/* Attachment indicator */}
               {hasAttachments(email) && (
-                <div className="inline-flex items-center gap-1 text-muted-foreground">
+                <div className="inline-flex items-center gap-1 text-gray-400">
                   <Paperclip className="w-3 h-3" />
                 </div>
               )}
@@ -433,16 +433,16 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
     const provider = detectProvider(email);
 
     return (
-      <div className="h-full flex flex-col">
+      <div className="h-full flex flex-col bg-white">
         {/* Header */}
-        <div className="p-6 border-b bg-card">
+        <div className="p-6 border-b border-gray-200 bg-white">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
-              <h2 className="text-xl font-semibold text-foreground mb-2">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
                 {email.subject || "(kein Betreff)"}
               </h2>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">{email.from_address}</span>
+              <div className="flex items-center gap-3 text-sm text-gray-500">
+                <span className="font-medium text-gray-900">{email.from_address}</span>
                 <span>•</span>
                 <span>{format(parseISO(email.received_at), "d. MMMM yyyy, HH:mm 'Uhr'", { locale: de })}</span>
               </div>
@@ -688,12 +688,12 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
       </div>
 
       {/* Split View */}
-      <div className="flex-1 bg-card rounded-2xl border shadow-lg overflow-hidden">
+      <div className="flex-1 bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
         <ResizablePanelGroup direction="horizontal">
           {/* Email List Panel */}
           <ResizablePanel defaultSize={selectedEmail ? 40 : 100} minSize={30}>
             <ScrollArea className="h-full" ref={listRef}>
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-gray-100">
                 {filteredEmails.map((email, index) => (
                   <EmailListItem key={email.id} email={email} index={index} />
                 ))}
