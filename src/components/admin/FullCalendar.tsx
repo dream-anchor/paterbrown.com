@@ -501,7 +501,6 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
       e?.stopPropagation();
       setSelectedEvent(entry);
     };
-    };
 
     return (
       <div
