@@ -37,6 +37,7 @@ import QuickAddEventModal from "./QuickAddEventModal";
 import CalendarEventDetail from "./CalendarEventDetail";
 import EventTimeline from "./EventTimeline";
 import EventFilterPanel from "./EventFilterPanel";
+import AdminSearchBar from "./AdminSearchBar";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -431,6 +432,28 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
   const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
   const eventsThisMonth = allEntries.filter(e => e.start >= monthStart && e.start <= monthEnd).length;
 
+  // Convert entries to searchable items (must be before early return)
+  const searchableItems = useMemo(() => {
+    return allEntries.map((entry) => ({
+      id: entry.id,
+      title: entry.title,
+      type: entry.category as "tour" | "travel" | "calendar",
+      location: entry.location,
+      venueName: entry.metadata?.venue_name,
+      provider: entry.metadata?.provider,
+      bookingType: entry.metadata?.booking_type,
+      date: entry.start,
+      source: entry.metadata?.source,
+    }));
+  }, [allEntries]);
+
+  const handleSearchSelect = (item: { id: string; type: string }) => {
+    const entry = allEntries.find((e) => e.id === item.id);
+    if (entry) {
+      setSelectedEvent(entry);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -557,6 +580,11 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
 
   return (
     <div className="space-y-4">
+      {/* Search Bar */}
+      <div className="sticky top-0 z-30 bg-gray-50/80 backdrop-blur-sm -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 -mt-4">
+        <AdminSearchBar items={searchableItems} onSelect={handleSearchSelect} />
+      </div>
+
       {/* Filter Panel */}
       <EventFilterPanel
         entries={allEntries}

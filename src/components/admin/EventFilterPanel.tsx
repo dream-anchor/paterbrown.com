@@ -251,8 +251,8 @@ const EventFilterPanel = ({
 
   const sourceOptions = [
     { value: "all", label: "Alle Sources" },
-    { value: "KL", label: "Kulturleben (KL)" },
-    { value: "KBA", label: "Kulturbanause (KBA)" },
+    { value: "KL", label: "Konzertdirektion Landgraf (KL)" },
+    { value: "KBA", label: "Konzertdirektion Augsburg (KBA)" },
   ];
 
   return (
