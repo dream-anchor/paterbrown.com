@@ -555,194 +555,194 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
   };
 
   return (
-    <div className="space-y-4">
-      {/* Missing Geodata Warning */}
-      {eventsWithMissingGeodata.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-600" />
-            <div>
-              <p className="font-medium text-amber-800">
-                {eventsWithMissingGeodata.length} Termine ohne vollständige Geodaten
-              </p>
-              <p className="text-sm text-amber-600">
-                KI kann fehlende Koordinaten und Bundesländer recherchieren
-              </p>
+    <div className="h-screen overflow-hidden flex flex-col">
+      {/* Header Section - Fixed at top */}
+      <div className="flex-shrink-0 p-4 border-b border-gray-200 bg-white">
+        {/* Missing Geodata Warning */}
+        {eventsWithMissingGeodata.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600" />
+              <div>
+                <p className="font-medium text-amber-800">
+                  {eventsWithMissingGeodata.length} Termine ohne vollständige Geodaten
+                </p>
+                <p className="text-sm text-amber-600">
+                  KI kann fehlende Koordinaten und Bundesländer recherchieren
+                </p>
+              </div>
             </div>
-          </div>
-          <button
-            onClick={handleGeocodeEvents}
-            disabled={isGeocoding}
-            className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
-          >
-            {isGeocoding ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                Recherchiere...
-              </>
-            ) : (
-              <>
-                <CheckCircle className="w-4 h-4" />
-                Geodaten ergänzen
-              </>
-            )}
-          </button>
-        </div>
-      )}
-
-      {/* Header with Filters */}
-      <div className="space-y-4">
-        <div className="text-center">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Tour-Karte</h2>
-          <p className="text-gray-600 text-sm">
-            {eventsWithCoords.length} von {sortedEvents.length} Termine auf der Karte
-          </p>
-        </div>
-        
-        {/* Filters */}
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          {/* Year Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500">Jahr:</span>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+            <button
+              onClick={handleGeocodeEvents}
+              disabled={isGeocoding}
+              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
             >
-              <option value="all">Alle Jahre</option>
-              {availableYears.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
-          </div>
-          
-          {/* Source Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500">Quelle:</span>
-            <select
-              value={selectedSource}
-              onChange={(e) => setSelectedSource(e.target.value)}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
-            >
-              <option value="all">Alle</option>
-              <option value="KL">Landgraf</option>
-              <option value="KBA">KBA</option>
-            </select>
-          </div>
-          
-          {/* Count Badge */}
-          {(selectedYear !== "all" || selectedSource !== "all") && (
-            <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">
-              {sortedEvents.length} Termine gefiltert
-            </span>
-          )}
-        </div>
-        
-        {eventsWithCoords.length > 1 && (
-          <div className="flex items-center justify-center gap-2 text-amber-600 text-sm">
-            <Navigation className="w-4 h-4" />
-            <span>Tourverlauf: {eventsWithCoords.length} Stationen</span>
+              {isGeocoding ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Recherchiere...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  Geodaten ergänzen
+                </>
+              )}
+            </button>
           </div>
         )}
+
+        {/* Title & Filters */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Tour-Karte</h2>
+            <p className="text-gray-600 text-sm">
+              {eventsWithCoords.length} von {sortedEvents.length} Termine auf der Karte
+            </p>
+          </div>
+          
+          {/* Filters */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">Jahr:</span>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+              >
+                <option value="all">Alle Jahre</option>
+                {availableYears.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">Quelle:</span>
+              <select
+                value={selectedSource}
+                onChange={(e) => setSelectedSource(e.target.value)}
+                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+              >
+                <option value="all">Alle</option>
+                <option value="KL">Landgraf</option>
+                <option value="KBA">KBA</option>
+              </select>
+            </div>
+            
+            {(selectedYear !== "all" || selectedSource !== "all") && (
+              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">
+                {sortedEvents.length} Termine gefiltert
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Desktop: Split-View Grid Layout | Mobile: Stacked */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      {/* Main Content - Full Screen Split View */}
+      <div className="flex-1 flex overflow-hidden">
         
-        {/* Left Column: Sticky Map (5 cols) */}
-        <div className="lg:col-span-5 lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)]">
-          {/* Map fills full sticky container */}
-          <div className="h-[500px] lg:h-full w-full flex flex-col">
-            <div className="flex-1 min-h-0 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-              <MapContainer
-                center={germanCenter}
-                zoom={6}
-                scrollWheelZoom={true}
-                className="h-full w-full"
-              >
-                <FitBoundsToMarkers coords={routeCoords} />
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        {/* Left Column: Map - Fixed, no scroll */}
+        <div className="w-1/2 h-full flex flex-col border-r border-gray-200">
+          {/* Map Container */}
+          <div className="flex-1 min-h-0">
+            <MapContainer
+              center={germanCenter}
+              zoom={6}
+              scrollWheelZoom={true}
+              className="h-full w-full"
+            >
+              <FitBoundsToMarkers coords={routeCoords} />
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              
+              {/* Route line */}
+              {routeCoords.length > 1 && (
+                <Polyline
+                  positions={routeCoords}
+                  color="#f59e0b"
+                  weight={3}
+                  opacity={0.7}
+                  dashArray="8, 8"
                 />
-                
-                {/* Route line */}
-                {routeCoords.length > 1 && (
-                  <Polyline
-                    positions={routeCoords}
-                    color="#f59e0b"
-                    weight={3}
-                    opacity={0.7}
-                    dashArray="8, 8"
-                  />
-                )}
-                
-                {/* Numbered markers */}
-                {eventsWithCoords.map((event, index) => (
-                  <Marker 
-                    key={event.id} 
-                    position={event.coords as [number, number]}
-                    icon={activeEventId === event.id 
-                      ? createHighlightedIcon(index + 1, event.source) 
-                      : createNumberedIcon(index + 1, event.source)}
-                    eventHandlers={{
-                      click: () => scrollToEvent(event.id),
-                    }}
-                  >
-                    <Popup>
-                      <div className="min-w-[180px]">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className={`text-xs font-bold px-2 py-1 rounded-full
-                            ${event.source === "KL" ? "bg-yellow-500 text-yellow-900" : 
-                              event.source === "KBA" ? "bg-emerald-500 text-white" : "bg-gray-500 text-white"}`}>
-                            Station {index + 1}
-                          </span>
-                          <span className={`text-xs font-medium
-                            ${event.source === "KL" ? "text-yellow-600" : 
-                              event.source === "KBA" ? "text-emerald-600" : "text-gray-600"}`}>
-                            {event.source === "KL" ? "Landgraf" : 
-                             event.source === "KBA" ? "KBA" : ""}
-                          </span>
-                        </div>
-                        <p className="font-bold text-gray-900 mb-1">{event.title}</p>
-                        <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                          <Calendar className="w-3 h-3" />
-                          {formatDate(event.start_time)}
-                        </div>
-                        <div className={`flex items-center gap-1 text-xs
+              )}
+              
+              {/* Numbered markers */}
+              {eventsWithCoords.map((event, index) => (
+                <Marker 
+                  key={event.id} 
+                  position={event.coords as [number, number]}
+                  icon={activeEventId === event.id 
+                    ? createHighlightedIcon(index + 1, event.source) 
+                    : createNumberedIcon(index + 1, event.source)}
+                  eventHandlers={{
+                    click: () => scrollToEvent(event.id),
+                  }}
+                >
+                  <Popup>
+                    <div className="min-w-[180px]">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`text-xs font-bold px-2 py-1 rounded-full
+                          ${event.source === "KL" ? "bg-yellow-500 text-yellow-900" : 
+                            event.source === "KBA" ? "bg-emerald-500 text-white" : "bg-gray-500 text-white"}`}>
+                          Station {index + 1}
+                        </span>
+                        <span className={`text-xs font-medium
                           ${event.source === "KL" ? "text-yellow-600" : 
                             event.source === "KBA" ? "text-emerald-600" : "text-gray-600"}`}>
-                          <MapPin className="w-3 h-3" />
-                          {event.location}
-                        </div>
+                          {event.source === "KL" ? "Landgraf" : 
+                           event.source === "KBA" ? "KBA" : ""}
+                        </span>
                       </div>
-                    </Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
-            </div>
+                      <p className="font-bold text-gray-900 mb-1">{event.title}</p>
+                      <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                        <Calendar className="w-3 h-3" />
+                        {formatDate(event.start_time)}
+                      </div>
+                      <div className={`flex items-center gap-1 text-xs
+                        ${event.source === "KL" ? "text-yellow-600" : 
+                          event.source === "KBA" ? "text-emerald-600" : "text-gray-600"}`}>
+                        <MapPin className="w-3 h-3" />
+                        {event.location}
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          </div>
 
-            {/* Legend - below map */}
-            <div className="flex items-center justify-center gap-4 text-xs text-gray-500 mt-3 flex-shrink-0">
-              <div className="flex items-center gap-1.5">
-                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 text-yellow-900 text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
-                <span>Landgraf</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
-                <span>KBA</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-6 h-0.5 bg-amber-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #f59e0b 0px, #f59e0b 4px, transparent 4px, transparent 8px)' }}></div>
-                <span>Route</span>
-              </div>
+          {/* Legend - below map */}
+          <div className="flex-shrink-0 flex items-center justify-center gap-4 text-xs text-gray-500 py-3 bg-gray-50 border-t border-gray-200">
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 text-yellow-900 text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
+              <span>Landgraf</span>
             </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
+              <span>KBA</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-6 h-0.5 bg-amber-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #f59e0b 0px, #f59e0b 4px, transparent 4px, transparent 8px)' }}></div>
+              <span>Route</span>
+            </div>
+            {eventsWithCoords.length > 1 && (
+              <>
+                <span className="text-gray-300">|</span>
+                <div className="flex items-center gap-1.5 text-amber-600">
+                  <Navigation className="w-4 h-4" />
+                  <span>{eventsWithCoords.length} Stationen</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Right Column: Scrollable Stations List (7 cols) */}
-        <div className="lg:col-span-7 space-y-2">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sticky top-0 bg-gray-50/95 backdrop-blur-sm py-2 z-10 flex items-center justify-between">
+        {/* Right Column: Scrollable Stations List */}
+        <div className="w-1/2 h-full overflow-y-auto p-6 bg-gray-50">
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center justify-between">
             <span>Alle Stationen · {sortedEvents.length} Termine</span>
             {isLoadingDistances && (
               <span className="text-amber-500 flex items-center gap-1">
@@ -751,6 +751,8 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
               </span>
             )}
           </h3>
+          
+          <div className="space-y-2">
           
           {sortedEvents.map((event, index) => {
             const nextEvent = sortedEvents[index + 1];
@@ -846,6 +848,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
               <p>Noch keine Termine vorhanden</p>
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>
