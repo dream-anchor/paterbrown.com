@@ -21,7 +21,14 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { EVENT_CATEGORIES, getCategoryByValue } from "@/lib/eventCategories";
+import {
+  EVENT_TYPES,
+  TOUR_SOURCES,
+  EVENT_STATUSES,
+  getEventTypeByValue,
+  getTourSourceByValue,
+  getEventStatusByValue,
+} from "@/lib/eventCategories";
 
 // Unified event interface for all sources
 export interface UniversalEvent {
@@ -53,7 +60,9 @@ const EventEditModal = ({
   onDelete,
 }: EventEditModalProps) => {
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("other");
+  const [eventType, setEventType] = useState("other");
+  const [tourSource, setTourSource] = useState<"KL" | "KBA" | null>(null);
+  const [eventStatus, setEventStatus] = useState<"confirmed" | "optioniert" | "cancelled">("confirmed");
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("19:00");
   const [endTime, setEndTime] = useState("21:00");
@@ -70,7 +79,26 @@ const EventEditModal = ({
   useEffect(() => {
     if (event) {
       setTitle(event.title || "");
-      setCategory(event.category || "other");
+      
+      // Parse category into eventType and tourSource
+      let parsedType = event.category || "other";
+      let parsedSource: "KL" | "KBA" | null = null;
+      
+      if (event.category === "tour_kl") {
+        parsedType = "tour";
+        parsedSource = "KL";
+      } else if (event.category === "tour_kba") {
+        parsedType = "tour";
+        parsedSource = "KBA";
+      } else if (event.metadata?.tour_source) {
+        parsedType = "tour";
+        parsedSource = event.metadata.tour_source as "KL" | "KBA";
+      }
+      
+      setEventType(parsedType);
+      setTourSource(parsedSource);
+      setEventStatus((event.metadata?.event_status as "confirmed" | "optioniert" | "cancelled") || "confirmed");
+      
       setDate(event.start.toISOString().split("T")[0]);
       setStartTime(
         event.start.toLocaleTimeString("de-DE", {
@@ -95,6 +123,13 @@ const EventEditModal = ({
     }
   }, [event]);
 
+  // Reset tour source when event type changes away from tour
+  useEffect(() => {
+    if (eventType !== "tour") {
+      setTourSource(null);
+    }
+  }, [eventType]);
+
   // Validation
   const validate = useCallback((): boolean => {
     const newErrors: Record<string, string> = {};
@@ -114,10 +149,14 @@ const EventEditModal = ({
         newErrors.time = "Endzeit muss nach Startzeit liegen";
       }
     }
+
+    if (eventType === "tour" && !tourSource) {
+      newErrors.tourSource = "Bitte Tour-Quelle wählen";
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [title, date, allDay, startTime, endTime]);
+  }, [title, date, allDay, startTime, endTime, eventType, tourSource]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,7 +186,9 @@ const EventEditModal = ({
           .from("calendar_events")
           .update({
             title: title.trim(),
-            event_type: category,
+            event_type: eventType,
+            tour_source: eventType === "tour" ? tourSource : null,
+            event_status: eventStatus,
             start_datetime: startDatetime.toISOString(),
             end_datetime: endDatetime?.toISOString() || null,
             all_day: allDay,
@@ -158,10 +199,8 @@ const EventEditModal = ({
 
         if (error) throw error;
       } else if (event.source === "admin_events") {
-        // Map category back to source for admin_events
-        let source: "KL" | "KBA" | "unknown" = "unknown";
-        if (category === "tour_kl") source = "KL";
-        else if (category === "tour_kba") source = "KBA";
+        // For admin_events, map back to source field
+        const source: "KL" | "KBA" | "unknown" = tourSource || "unknown";
 
         const { error } = await supabase
           .from("admin_events")
@@ -248,9 +287,9 @@ const EventEditModal = ({
     }
   };
 
-  // Check if we can edit the category (not for travel bookings)
-  const canEditCategory = event?.source !== "travel_bookings";
-  const canDelete = event?.source !== "travel_bookings"; // Or allow with confirmation
+  // Check if we can edit the type/source (not for travel bookings)
+  const canEditType = event?.source !== "travel_bookings";
+  const canDelete = event?.source !== "travel_bookings";
 
   const formattedDate = date
     ? new Date(date).toLocaleDateString("de-DE", {
@@ -261,16 +300,25 @@ const EventEditModal = ({
       })
     : "";
 
-  const selectedCategory = getCategoryByValue(category);
-  const CategoryIcon = selectedCategory.icon;
+  const selectedType = getEventTypeByValue(eventType);
+  const selectedSource = getTourSourceByValue(tourSource);
+  const selectedStatus = getEventStatusByValue(eventStatus);
+  
+  // Get header color based on type and source
+  const getHeaderColor = () => {
+    if (eventType === "tour" && selectedSource) {
+      return selectedSource.color;
+    }
+    return selectedType.color;
+  };
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto bg-white text-gray-900 border-gray-200">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", selectedCategory.color)}>
-              <CategoryIcon className="w-4 h-4 text-white" />
+            <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", getHeaderColor())}>
+              <selectedType.icon className="w-4 h-4 text-white" />
             </div>
             Termin bearbeiten
           </DialogTitle>
@@ -303,28 +351,100 @@ const EventEditModal = ({
             )}
           </div>
 
-          {/* Category Selector */}
-          {canEditCategory && (
+          {/* Event Type Selector */}
+          {canEditType && (
             <div>
-              <Label>Kategorie</Label>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-2">
-                {EVENT_CATEGORIES.map((cat) => {
-                  const Icon = cat.icon;
-                  const isSelected = category === cat.value;
+              <Label className="flex items-center gap-1 mb-2">
+                Typ <span className="text-red-500">*</span>
+              </Label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {EVENT_TYPES.map((type) => {
+                  const Icon = type.icon;
+                  const isSelected = eventType === type.value;
                   return (
                     <button
-                      key={cat.value}
+                      key={type.value}
                       type="button"
-                      onClick={() => setCategory(cat.value)}
+                      onClick={() => setEventType(type.value)}
                       className={cn(
                         "flex flex-col items-center justify-center p-2.5 rounded-lg border-2 transition-all text-center",
                         isSelected
-                          ? `${cat.color} border-transparent text-white shadow-md`
+                          ? `${type.borderColor} ${type.bgColor} ${type.textColor}`
                           : "border-gray-200 text-gray-600 hover:border-gray-300 bg-white"
                       )}
                     >
                       <Icon className="w-4 h-4 mb-1" />
-                      <span className="text-[10px] font-medium leading-tight">{cat.label}</span>
+                      <span className="text-[10px] font-medium leading-tight">{type.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Tour Source (only for tour type) */}
+          {canEditType && eventType === "tour" && (
+            <div>
+              <Label className="flex items-center gap-1 mb-2">
+                Quelle <span className="text-red-500">*</span>
+              </Label>
+              <div className="grid grid-cols-2 gap-3">
+                {TOUR_SOURCES.map((source) => {
+                  const isSelected = tourSource === source.value;
+                  return (
+                    <button
+                      key={source.value}
+                      type="button"
+                      onClick={() => setTourSource(source.value)}
+                      className={cn(
+                        "flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left",
+                        isSelected
+                          ? `${source.borderColor} ${source.bgColor}`
+                          : "border-gray-200 hover:border-gray-300 bg-white"
+                      )}
+                    >
+                      <div className={cn("w-3 h-3 rounded-full", source.color)} />
+                      <div>
+                        <div className={cn("font-medium text-sm", isSelected ? source.textColor : "text-gray-900")}>
+                          {source.label}
+                        </div>
+                        <div className="text-xs text-gray-500">{source.sublabel}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              {errors.tourSource && (
+                <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.tourSource}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Event Status */}
+          {canEditType && (
+            <div>
+              <Label className="mb-2">Status</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {EVENT_STATUSES.map((status) => {
+                  const Icon = status.icon;
+                  const isSelected = eventStatus === status.value;
+                  return (
+                    <button
+                      key={status.value}
+                      type="button"
+                      onClick={() => setEventStatus(status.value)}
+                      className={cn(
+                        "flex flex-col items-center justify-center p-2.5 rounded-lg border-2 transition-all",
+                        isSelected
+                          ? `${status.borderColor} ${status.bgColor} ${status.textColor}`
+                          : "border-gray-200 hover:border-gray-300 bg-white text-gray-700"
+                      )}
+                    >
+                      <Icon className="w-4 h-4 mb-0.5" />
+                      <span className="text-xs font-medium">{status.label}</span>
                     </button>
                   );
                 })}

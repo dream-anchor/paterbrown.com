@@ -168,11 +168,13 @@ export type Database = {
           created_at: string
           description: string | null
           end_datetime: string | null
+          event_status: string | null
           event_type: string
           id: string
           location: string | null
           start_datetime: string
           title: string
+          tour_source: string | null
           updated_at: string
         }
         Insert: {
@@ -181,11 +183,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           end_datetime?: string | null
+          event_status?: string | null
           event_type?: string
           id?: string
           location?: string | null
           start_datetime: string
           title: string
+          tour_source?: string | null
           updated_at?: string
         }
         Update: {
@@ -194,11 +198,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           end_datetime?: string | null
+          event_status?: string | null
           event_type?: string
           id?: string
           location?: string | null
           start_datetime?: string
           title?: string
+          tour_source?: string | null
           updated_at?: string
         }
         Relationships: []
