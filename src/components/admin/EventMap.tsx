@@ -646,11 +646,11 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         )}
       </div>
 
-      {/* Responsive Layout: side-by-side on desktop/tablet, stacked on mobile */}
-      <div className="flex flex-col lg:flex-row lg:items-stretch gap-6 overflow-hidden">
+      {/* Responsive Layout: Map sticky on left, List scrollable on right */}
+      <div className="flex flex-col lg:flex-row gap-6">
         
-        {/* Map Container - 9:16 Portrait Aspect Ratio */}
-        <div className="w-full lg:w-1/2 lg:flex-shrink-0 max-w-md lg:max-w-none mx-auto lg:mx-0">
+        {/* Map Container - Sticky on desktop */}
+        <div className="w-full lg:w-[400px] lg:flex-shrink-0 lg:sticky lg:top-4 lg:self-start">
           <div className="relative" style={{ paddingBottom: '177.78%' }}>
             <div className="absolute inset-0 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
               <MapContainer
@@ -739,8 +739,8 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           </div>
         </div>
 
-        {/* Stations List - Scrollable, same height as map on desktop */}
-        <div className="w-full lg:w-1/2 lg:self-stretch overflow-y-auto space-y-2 pr-2 max-h-[500px] lg:max-h-none">
+        {/* Stations List - Normal scrollable content */}
+        <div className="w-full lg:flex-1 space-y-2">
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sticky top-0 bg-gray-50/95 backdrop-blur-sm py-2 z-10 flex items-center justify-between">
             <span>Alle Stationen · {sortedEvents.length} Termine</span>
             {isLoadingDistances && (
