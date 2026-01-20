@@ -12,20 +12,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Theater,
-  Film,
-  User,
-  Users,
   Calendar,
   MapPin,
   Copy,
   Clock,
   ChevronDown,
-  Check,
   X,
   AlertCircle,
   Command,
   Eye,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import {
   Popover,
@@ -35,6 +32,14 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import {
+  EVENT_TYPES,
+  TOUR_SOURCES,
+  EVENT_STATUSES,
+  getEventTypeByValue,
+  getTourSourceByValue,
+  getEventStatusByValue,
+} from "@/lib/eventCategories";
 
 interface QuickAddEventModalProps {
   open: boolean;
@@ -50,21 +55,16 @@ interface RecentEvent {
   venue_name: string | null;
   start_time: string;
   event_type: string;
+  tour_source: string | null;
+  event_status: string | null;
 }
 
 interface ValidationErrors {
   title?: string;
   date?: string;
   time?: string;
+  tourSource?: string;
 }
-
-const eventTypes = [
-  { value: "theater", label: "Theater", icon: Theater, color: "bg-red-600" },
-  { value: "filming", label: "Dreh", icon: Film, color: "bg-purple-500" },
-  { value: "meeting", label: "Meeting", icon: Users, color: "bg-emerald-500" },
-  { value: "private", label: "Privat", icon: User, color: "bg-green-500" },
-  { value: "other", label: "Sonstiges", icon: Calendar, color: "bg-gray-400" },
-];
 
 const STORAGE_KEY = "admin_recent_locations";
 const MAX_RECENT_LOCATIONS = 10;
@@ -91,8 +91,10 @@ const saveRecentLocation = (location: string) => {
 const QuickAddEventModal = ({ open, onClose, date, onEventAdded }: QuickAddEventModalProps) => {
   const [title, setTitle] = useState("");
   const [eventType, setEventType] = useState("other");
-  const [startTime, setStartTime] = useState("19:00"); // Smart default
-  const [endTime, setEndTime] = useState("21:00"); // Default 2h duration
+  const [tourSource, setTourSource] = useState<"KL" | "KBA" | null>(null);
+  const [eventStatus, setEventStatus] = useState<"confirmed" | "optioniert" | "cancelled">("confirmed");
+  const [startTime, setStartTime] = useState("19:00");
+  const [endTime, setEndTime] = useState("21:00");
   const [allDay, setAllDay] = useState(false);
   const [location, setLocation] = useState("");
   const [venue, setVenue] = useState("");
@@ -125,7 +127,7 @@ const QuickAddEventModal = ({ open, onClose, date, onEventAdded }: QuickAddEvent
     try {
       const { data } = await supabase
         .from("calendar_events")
-        .select("id, title, location, start_datetime, event_type")
+        .select("id, title, location, start_datetime, event_type, tour_source, event_status")
         .order("created_at", { ascending: false })
         .limit(5);
       
@@ -137,6 +139,8 @@ const QuickAddEventModal = ({ open, onClose, date, onEventAdded }: QuickAddEvent
           venue_name: null,
           start_time: e.start_datetime,
           event_type: e.event_type,
+          tour_source: e.tour_source,
+          event_status: e.event_status,
         })));
       }
     } catch (error) {
@@ -181,11 +185,20 @@ const QuickAddEventModal = ({ open, onClose, date, onEventAdded }: QuickAddEvent
     }
   }, [startTime, allDay]);
 
+  // Reset tour source when event type changes away from tour
+  useEffect(() => {
+    if (eventType !== "tour") {
+      setTourSource(null);
+    }
+  }, [eventType]);
+
   // Reset form when modal opens
   useEffect(() => {
     if (open) {
       setTitle("");
       setEventType("other");
+      setTourSource(null);
+      setEventStatus("confirmed");
       setStartTime("19:00");
       setEndTime("21:00");
       setAllDay(false);
@@ -212,7 +225,6 @@ const QuickAddEventModal = ({ open, onClose, date, onEventAdded }: QuickAddEvent
         e.preventDefault();
         handleSubmit(e as any);
       }
-      // Escape to close (handled by Dialog)
     };
     
     document.addEventListener("keydown", handleKeyDown);
@@ -245,10 +257,14 @@ const QuickAddEventModal = ({ open, onClose, date, onEventAdded }: QuickAddEvent
         newErrors.time = "Endzeit muss nach Startzeit liegen";
       }
     }
+
+    if (eventType === "tour" && !tourSource) {
+      newErrors.tourSource = "Bitte Tour-Quelle wählen";
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [title, date, allDay, startTime, endTime]);
+  }, [title, date, allDay, startTime, endTime, eventType, tourSource]);
 
   // Validate on blur
   const handleBlur = (field: string) => {
@@ -260,8 +276,7 @@ const QuickAddEventModal = ({ open, onClose, date, onEventAdded }: QuickAddEvent
     e.preventDefault();
     
     if (!validate()) {
-      // Mark all as touched to show errors
-      setTouched({ title: true, date: true, time: true });
+      setTouched({ title: true, date: true, time: true, tourSource: true });
       return;
     }
     
@@ -289,6 +304,8 @@ const QuickAddEventModal = ({ open, onClose, date, onEventAdded }: QuickAddEvent
       const { error } = await supabase.from("calendar_events").insert({
         title: title.trim(),
         event_type: eventType,
+        tour_source: eventType === "tour" ? tourSource : null,
+        event_status: eventStatus,
         start_datetime: startDatetime.toISOString(),
         end_datetime: endDatetime?.toISOString() || null,
         all_day: allDay,
@@ -326,6 +343,12 @@ const QuickAddEventModal = ({ open, onClose, date, onEventAdded }: QuickAddEvent
     setTitle(event.title);
     setLocation(event.location);
     setEventType(event.event_type);
+    if (event.tour_source) {
+      setTourSource(event.tour_source as "KL" | "KBA");
+    }
+    if (event.event_status) {
+      setEventStatus(event.event_status as "confirmed" | "optioniert" | "cancelled");
+    }
     const eventTime = new Date(event.start_time);
     setStartTime(format(eventTime, "HH:mm"));
     setTemplateOpen(false);
@@ -356,7 +379,17 @@ const QuickAddEventModal = ({ open, onClose, date, onEventAdded }: QuickAddEvent
     year: "numeric",
   });
 
-  const selectedType = eventTypes.find((t) => t.value === eventType);
+  const selectedType = getEventTypeByValue(eventType);
+  const selectedSource = getTourSourceByValue(tourSource);
+  const selectedStatus = getEventStatusByValue(eventStatus);
+
+  // Compute display color for preview
+  const getPreviewColor = () => {
+    if (eventType === "tour" && selectedSource) {
+      return selectedSource.color;
+    }
+    return selectedType.color;
+  };
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
@@ -423,198 +456,265 @@ const QuickAddEventModal = ({ open, onClose, date, onEventAdded }: QuickAddEvent
             </Popover>
           )}
 
-          {/* Two Column Layout */}
+          {/* Title */}
+          <div>
+            <Label htmlFor="title" className="flex items-center gap-1">
+              Titel <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              ref={titleInputRef}
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={() => handleBlur("title")}
+              placeholder="z.B. Premiere, Meeting, Drehtag..."
+              className={cn(
+                "mt-1",
+                errors.title && touched.title && "border-red-500 focus-visible:ring-red-500"
+              )}
+            />
+            {errors.title && touched.title && (
+              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                {errors.title}
+              </p>
+            )}
+          </div>
+
+          {/* Section 1: Event Type */}
+          <div>
+            <Label className="flex items-center gap-1 mb-3">
+              Typ <span className="text-red-500">*</span>
+            </Label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {EVENT_TYPES.map((type) => {
+                const Icon = type.icon;
+                const isSelected = eventType === type.value;
+                return (
+                  <button
+                    key={type.value}
+                    type="button"
+                    onClick={() => setEventType(type.value)}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all duration-200",
+                      isSelected
+                        ? `${type.borderColor} ${type.bgColor} ${type.textColor}`
+                        : "border-gray-200 hover:border-gray-300 bg-white text-gray-700"
+                    )}
+                  >
+                    <Icon className="w-5 h-5 mb-1" />
+                    <span className="text-xs font-medium">{type.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Section 2: Tour Source (only for tour type) */}
+          {eventType === "tour" && (
+            <div>
+              <Label className="flex items-center gap-1 mb-3">
+                Quelle <span className="text-red-500">*</span>
+              </Label>
+              <div className="grid grid-cols-2 gap-3">
+                {TOUR_SOURCES.map((source) => {
+                  const isSelected = tourSource === source.value;
+                  return (
+                    <button
+                      key={source.value}
+                      type="button"
+                      onClick={() => setTourSource(source.value)}
+                      className={cn(
+                        "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
+                        isSelected
+                          ? `${source.borderColor} ${source.bgColor}`
+                          : "border-gray-200 hover:border-gray-300 bg-white"
+                      )}
+                    >
+                      <div className={cn("w-3 h-3 rounded-full", source.color)} />
+                      <div>
+                        <div className={cn("font-medium text-sm", isSelected ? source.textColor : "text-gray-900")}>
+                          {source.label}
+                        </div>
+                        <div className="text-xs text-gray-500">{source.sublabel}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              {errors.tourSource && touched.tourSource && (
+                <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.tourSource}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Section 3: Event Status */}
+          <div>
+            <Label className="mb-3">Status</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {EVENT_STATUSES.map((status) => {
+                const Icon = status.icon;
+                const isSelected = eventStatus === status.value;
+                return (
+                  <button
+                    key={status.value}
+                    type="button"
+                    onClick={() => setEventStatus(status.value)}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all",
+                      isSelected
+                        ? `${status.borderColor} ${status.bgColor} ${status.textColor}`
+                        : "border-gray-200 hover:border-gray-300 bg-white text-gray-700"
+                    )}
+                  >
+                    <Icon className="w-4 h-4 mb-1" />
+                    <span className="text-xs font-medium">{status.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Optionierte Termine werden im Kalender transparent dargestellt.
+            </p>
+          </div>
+
+          {/* Time Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Left Column */}
-            <div className="space-y-4">
-              {/* Title */}
-              <div>
-                <Label htmlFor="title" className="flex items-center gap-1">
-                  Titel <span className="text-red-500">*</span>
+            {/* Time */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Label className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  Zeit
                 </Label>
-                <Input
-                  ref={titleInputRef}
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  onBlur={() => handleBlur("title")}
-                  placeholder="z.B. Premiere, Meeting, Drehtag..."
-                  className={cn(
-                    "mt-1",
-                    errors.title && touched.title && "border-red-500 focus-visible:ring-red-500"
-                  )}
-                />
-                {errors.title && touched.title && (
-                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    {errors.title}
-                  </p>
-                )}
+                <label className="flex items-center gap-1.5 text-sm text-gray-600 ml-auto cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={allDay}
+                    onChange={(e) => setAllDay(e.target.checked)}
+                    className="rounded border-gray-300"
+                  />
+                  Ganztägig
+                </label>
               </div>
-
-              {/* Event Type */}
-              <div>
-                <Label>Typ</Label>
-                <div className="grid grid-cols-5 gap-1.5 mt-2">
-                  {eventTypes.map((type) => {
-                    const Icon = type.icon;
-                    const isSelected = eventType === type.value;
-                    return (
-                      <button
-                        key={type.value}
-                        type="button"
-                        onClick={() => setEventType(type.value)}
-                        className={cn(
-                          "flex flex-col items-center justify-center p-2 rounded-lg border-2 transition-all",
-                          isSelected
-                            ? `${type.color} border-transparent text-white`
-                            : "border-gray-200 text-gray-600 hover:border-gray-300"
-                        )}
-                      >
-                        <Icon className="w-4 h-4 mb-0.5" />
-                        <span className="text-[9px] font-medium">{type.label}</span>
-                      </button>
-                    );
-                  })}
+              {!allDay && (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    onBlur={() => handleBlur("time")}
+                    className={cn(
+                      "flex-1",
+                      errors.time && touched.time && "border-red-500"
+                    )}
+                  />
+                  <span className="text-gray-400 text-sm">bis</span>
+                  <Input
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    onBlur={() => handleBlur("time")}
+                    className={cn(
+                      "flex-1",
+                      errors.time && touched.time && "border-red-500"
+                    )}
+                  />
                 </div>
-              </div>
-
-              {/* Time */}
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Label className="flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    Zeit
-                  </Label>
-                  <label className="flex items-center gap-1.5 text-sm text-gray-600 ml-auto cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={allDay}
-                      onChange={(e) => setAllDay(e.target.checked)}
-                      className="rounded border-gray-300"
-                    />
-                    Ganztägig
-                  </label>
-                </div>
-                {!allDay && (
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      onBlur={() => handleBlur("time")}
-                      className={cn(
-                        "flex-1",
-                        errors.time && touched.time && "border-red-500"
-                      )}
-                    />
-                    <span className="text-gray-400 text-sm">bis</span>
-                    <Input
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      onBlur={() => handleBlur("time")}
-                      className={cn(
-                        "flex-1",
-                        errors.time && touched.time && "border-red-500"
-                      )}
-                    />
-                  </div>
-                )}
-                {errors.time && touched.time && (
-                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    {errors.time}
-                  </p>
-                )}
-              </div>
+              )}
+              {errors.time && touched.time && (
+                <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.time}
+                </p>
+              )}
             </div>
 
-            {/* Right Column */}
-            <div className="space-y-4">
-              {/* Location with Autocomplete */}
-              <div>
-                <Label htmlFor="location" className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5" />
-                  Ort
-                </Label>
-                <Popover open={locationOpen} onOpenChange={setLocationOpen}>
-                  <PopoverTrigger asChild>
-                    <div className="relative mt-1">
-                      <Input
-                        id="location"
-                        value={location}
-                        onChange={(e) => {
-                          setLocation(e.target.value);
-                          setLocationSearch(e.target.value);
-                          if (!locationOpen) setLocationOpen(true);
+            {/* Location */}
+            <div>
+              <Label htmlFor="location" className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5" />
+                Ort
+              </Label>
+              <Popover open={locationOpen} onOpenChange={setLocationOpen}>
+                <PopoverTrigger asChild>
+                  <div className="relative mt-1">
+                    <Input
+                      id="location"
+                      value={location}
+                      onChange={(e) => {
+                        setLocation(e.target.value);
+                        setLocationSearch(e.target.value);
+                        if (!locationOpen) setLocationOpen(true);
+                      }}
+                      onFocus={() => setLocationOpen(true)}
+                      placeholder="z.B. Berlin, München..."
+                    />
+                    {location && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLocation("");
+                          setVenue("");
                         }}
-                        onFocus={() => setLocationOpen(true)}
-                        placeholder="z.B. Berlin, München..."
-                      />
-                      {location && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setLocation("");
-                            setVenue("");
-                          }}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded"
-                        >
-                          <X className="w-3 h-3 text-gray-400" />
-                        </button>
-                      )}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded"
+                      >
+                        <X className="w-3 h-3 text-gray-400" />
+                      </button>
+                    )}
+                  </div>
+                </PopoverTrigger>
+                {filteredLocations.length > 0 && (
+                  <PopoverContent
+                    className="w-[var(--radix-popover-trigger-width)] p-1 bg-white z-50"
+                    align="start"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                  >
+                    <div className="text-xs font-medium text-gray-500 px-2 py-1">
+                      Letzte Orte
                     </div>
-                  </PopoverTrigger>
-                  {filteredLocations.length > 0 && (
-                    <PopoverContent
-                      className="w-[var(--radix-popover-trigger-width)] p-1 bg-white z-50"
-                      align="start"
-                      onOpenAutoFocus={(e) => e.preventDefault()}
-                    >
-                      <div className="text-xs font-medium text-gray-500 px-2 py-1">
-                        Letzte Orte
-                      </div>
-                      {filteredLocations.map((loc) => (
-                        <button
-                          key={loc}
-                          type="button"
-                          onClick={() => selectLocation(loc)}
-                          className="w-full text-left px-3 py-1.5 text-sm rounded hover:bg-gray-100 transition-colors flex items-center gap-2"
-                        >
-                          <MapPin className="w-3 h-3 text-gray-400" />
-                          {loc}
-                        </button>
-                      ))}
-                    </PopoverContent>
-                  )}
-                </Popover>
-              </div>
+                    {filteredLocations.map((loc) => (
+                      <button
+                        key={loc}
+                        type="button"
+                        onClick={() => selectLocation(loc)}
+                        className="w-full text-left px-3 py-1.5 text-sm rounded hover:bg-gray-100 transition-colors flex items-center gap-2"
+                      >
+                        <MapPin className="w-3 h-3 text-gray-400" />
+                        {loc}
+                      </button>
+                    ))}
+                  </PopoverContent>
+                )}
+              </Popover>
+            </div>
+          </div>
 
-              {/* Venue */}
-              <div>
-                <Label htmlFor="venue">Venue / Adresse</Label>
-                <Input
-                  id="venue"
-                  value={venue}
-                  onChange={(e) => setVenue(e.target.value)}
-                  placeholder="z.B. Friedrichstadt-Palast..."
-                  className="mt-1"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <Label htmlFor="description">Notiz</Label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Zusätzliche Infos..."
-                  className="mt-1 resize-none"
-                  rows={3}
-                />
-              </div>
+          {/* Venue & Description */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="venue">Venue / Adresse</Label>
+              <Input
+                id="venue"
+                value={venue}
+                onChange={(e) => setVenue(e.target.value)}
+                placeholder="z.B. Friedrichstadt-Palast..."
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="description">Notiz</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Zusätzliche Infos..."
+                className="mt-1 resize-none"
+                rows={2}
+              />
             </div>
           </div>
 
@@ -630,13 +730,34 @@ const QuickAddEventModal = ({ open, onClose, date, onEventAdded }: QuickAddEvent
             </button>
 
             {showPreview && title && (
-              <div className="mt-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div className={cn(
+                "mt-3 p-4 rounded-xl border-2",
+                eventStatus === "optioniert" && "opacity-60 border-dashed",
+                eventStatus === "cancelled" && "opacity-50",
+                eventType === "tour" && selectedSource ? selectedSource.bgColor : selectedType.bgColor,
+                eventType === "tour" && selectedSource ? selectedSource.borderColor : selectedType.borderColor
+              )}>
                 <div className="flex items-start gap-3">
-                  <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-white", selectedType?.color)}>
-                    {selectedType && <selectedType.icon className="w-5 h-5" />}
+                  <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center text-white", getPreviewColor())}>
+                    <selectedType.icon className="w-5 h-5" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900">{title}</h4>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className={cn("font-semibold text-gray-900", eventStatus === "cancelled" && "line-through")}>
+                        {title}
+                      </h4>
+                      {eventType === "tour" && selectedSource && (
+                        <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", selectedSource.bgColor, selectedSource.textColor)}>
+                          {selectedSource.value === "KL" ? "Landgraf" : "KBA"}
+                        </span>
+                      )}
+                      {eventStatus !== "confirmed" && (
+                        <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1", selectedStatus.bgColor, selectedStatus.textColor)}>
+                          <selectedStatus.icon className="w-3 h-3" />
+                          {selectedStatus.label}
+                        </span>
+                      )}
+                    </div>
                     <div className="text-sm text-gray-600 mt-1">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-3.5 h-3.5" />
@@ -672,7 +793,7 @@ const QuickAddEventModal = ({ open, onClose, date, onEventAdded }: QuickAddEvent
               <Button type="button" variant="outline" onClick={onClose}>
                 Abbrechen
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting} className="bg-amber-500 hover:bg-amber-600 text-white">
                 {isSubmitting ? "Speichern..." : "Speichern"}
               </Button>
             </div>
