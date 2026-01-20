@@ -401,7 +401,7 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
       {/* Calendar Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={goToToday} className="rounded-lg">
+          <Button variant="apple" size="sm" onClick={goToToday} className="rounded-lg">
             Heute
           </Button>
           <div className="flex items-center">
@@ -420,14 +420,14 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500">{eventsThisMonth} Termine</span>
           
-          <Button variant="outline" size="sm" onClick={() => { setQuickAddDate(new Date()); setShowQuickAdd(true); }}>
+          <Button variant="apple" size="sm" onClick={() => { setQuickAddDate(new Date()); setShowQuickAdd(true); }}>
             <Plus className="w-4 h-4 mr-1" />
             Termin
           </Button>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="rounded-lg">
+              <Button variant="apple" size="sm" className="rounded-lg">
                 <Share2 className="w-4 h-4 mr-2" />
                 Teilen
               </Button>
