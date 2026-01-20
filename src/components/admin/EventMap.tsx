@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, Tooltip } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import { 
@@ -233,7 +233,7 @@ const clusterColors = {
 };
 
 // Create cluster icon with source-based coloring
-const createClusterCustomIcon = (cluster: any) => {
+const createClusterCustomIcon = (cluster: any, isHighlighted: boolean = false) => {
   const count = cluster.getChildCount();
   const markers = cluster.getAllChildMarkers();
   
@@ -255,10 +255,18 @@ const createClusterCustomIcon = (cluster: any) => {
     colorScheme = clusterColors.KBA;
   }
   
+  const size = isHighlighted ? 52 : 40;
+  const fontSize = isHighlighted ? 16 : 14;
+  const borderWidth = isHighlighted ? 4 : 3;
+  const animation = isHighlighted ? 'animation: cluster-glow 1.5s infinite;' : '';
+  const glowShadow = isHighlighted 
+    ? `0 0 24px ${colorScheme.shadow}, 0 4px 16px rgba(0,0,0,0.3)` 
+    : `0 4px 12px ${colorScheme.shadow}`;
+  
   return L.divIcon({
     html: `<div style="
-      width: 40px;
-      height: 40px;
+      width: ${size}px;
+      height: ${size}px;
       border-radius: 50%;
       background: ${colorScheme.gradient};
       color: white;
@@ -266,12 +274,19 @@ const createClusterCustomIcon = (cluster: any) => {
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 14px;
-      border: 3px solid white;
-      box-shadow: 0 4px 12px ${colorScheme.shadow};
-    ">${count}</div>`,
+      font-size: ${fontSize}px;
+      border: ${borderWidth}px solid white;
+      box-shadow: ${glowShadow};
+      ${animation}
+    ">${count}</div>
+    ${isHighlighted ? `<style>
+      @keyframes cluster-glow {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+      }
+    </style>` : ''}`,
     className: 'custom-cluster-icon',
-    iconSize: L.point(40, 40, true),
+    iconSize: L.point(size, size, true),
   });
 };
 
@@ -377,6 +392,7 @@ interface EventMapProps {
 const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapProps) => {
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [activeEventId, setActiveEventId] = useState<string | null>(initialActiveEventId || null);
+  const [highlightedCluster, setHighlightedCluster] = useState<any>(null);
   const [drivingDistances, setDrivingDistances] = useState<Map<string, DrivingDistance>>(new Map());
   const [isLoadingDistances, setIsLoadingDistances] = useState(false);
   const [routesLoaded, setRoutesLoaded] = useState(false);
@@ -388,6 +404,8 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedEventDetail, setSelectedEventDetail] = useState<AdminEvent | null>(null);
   const [editingEvent, setEditingEvent] = useState<UniversalEvent | null>(null);
+  const clusterGroupRef = useRef<any>(null);
+  const markerRefs = useRef<Map<string, L.Marker>>(new Map());
   const { toast } = useToast();
   
   // Get available years from events
@@ -681,7 +699,39 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
     }
   };
 
-  // Open Google Maps directions
+  // Handle hover on station list - find and highlight containing cluster
+  const handleStationHover = useCallback((eventId: string | null) => {
+    setActiveEventId(eventId);
+    
+    if (!eventId || !clusterGroupRef.current || !enableClustering) {
+      if (highlightedCluster) {
+        highlightedCluster.setIcon(createClusterCustomIcon(highlightedCluster, false));
+        setHighlightedCluster(null);
+      }
+      return;
+    }
+
+    const marker = markerRefs.current.get(eventId);
+    if (!marker) return;
+
+    // Find the cluster containing this marker
+    const clusterGroup = clusterGroupRef.current;
+    const visibleParent = clusterGroup.getVisibleParent(marker);
+    
+    // Reset previous highlighted cluster
+    if (highlightedCluster && highlightedCluster !== visibleParent) {
+      highlightedCluster.setIcon(createClusterCustomIcon(highlightedCluster, false));
+    }
+
+    // If the marker is in a cluster (visibleParent is not the marker itself)
+    if (visibleParent && visibleParent !== marker && visibleParent.getChildCount) {
+      visibleParent.setIcon(createClusterCustomIcon(visibleParent, true));
+      setHighlightedCluster(visibleParent);
+    } else {
+      setHighlightedCluster(null);
+    }
+  }, [enableClustering, highlightedCluster]);
+
   const openDirections = (event: AdminEvent) => {
     const coords = getCoordinates(event);
     if (coords) {
@@ -938,8 +988,9 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
               {/* Markers with optional clustering */}
               {enableClustering ? (
                 <MarkerClusterGroup
+                  ref={clusterGroupRef}
                   chunkedLoading
-                  iconCreateFunction={createClusterCustomIcon}
+                  iconCreateFunction={(cluster: any) => createClusterCustomIcon(cluster, false)}
                   maxClusterRadius={50}
                   spiderfyOnMaxZoom={true}
                   showCoverageOnHover={false}
@@ -953,6 +1004,9 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                         : createStatusIcon(event.stationNumber, event.status)}
                       // @ts-ignore - custom property for cluster grouping
                       eventSource={event.source}
+                      ref={(ref) => {
+                        if (ref) markerRefs.current.set(event.id, ref);
+                      }}
                       eventHandlers={{
                         click: () => scrollToEvent(event.id),
                       }}
@@ -1182,8 +1236,8 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                       ? `${colors.border} ring-2 ${colors.ring} shadow-md`
                       : `border-gray-200 hover:${colors.border} hover:shadow-sm`
                   )}
-                  onMouseEnter={() => setActiveEventId(event.id)}
-                  onMouseLeave={() => setActiveEventId(null)}
+                  onMouseEnter={() => handleStationHover(event.id)}
+                  onMouseLeave={() => handleStationHover(null)}
                   onClick={() => setSelectedEventDetail(event)}
                 >
                   {/* Number - colored by status */}
