@@ -45,6 +45,8 @@ import CalendarEventDetail from "./CalendarEventDetail";
 import EventTimeline from "./EventTimeline";
 import EventFilterPanel from "./EventFilterPanel";
 import CalendarExport from "./CalendarExport";
+import SwipeableCard from "./SwipeableCard";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -160,6 +162,7 @@ const getEventIcon = (type: string, bookingType?: string): typeof Train => {
 };
 
 const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProps) => {
+  const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Initialize currentDate from URL parameter or today
@@ -471,7 +474,11 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
   }
 
   // Event Card Component for card view
-  const EventCard = ({ entry }: { entry: CalendarEntry }) => {
+  const EventCard = ({ entry, onSwipeEdit, onSwipeDelete }: { 
+    entry: CalendarEntry; 
+    onSwipeEdit?: () => void;
+    onSwipeDelete?: () => void;
+  }) => {
     const [isHovered, setIsHovered] = useState(false);
     const status = getEventStatus(entry.start);
     const isPast = status?.isPast || false;
@@ -484,15 +491,16 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
       toast({ title: "Link kopiert" });
     };
 
-    const handleDelete = (e: React.MouseEvent) => {
-      e.stopPropagation();
+    const handleDelete = (e?: React.MouseEvent) => {
+      e?.stopPropagation();
       // For now just show a toast - actual delete would need confirmation
       toast({ title: "Löschen wird noch implementiert", variant: "destructive" });
     };
 
-    const handleEdit = (e: React.MouseEvent) => {
-      e.stopPropagation();
+    const handleEdit = (e?: React.MouseEvent) => {
+      e?.stopPropagation();
       setSelectedEvent(entry);
+    };
     };
 
     return (
@@ -800,11 +808,24 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
       {/* Cards View */}
       {viewMode === "cards" && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sortedEntries.map((entry) => (
-            <EventCard key={entry.id} entry={entry} />
-          ))}
+          {sortedEntries.map((entry) => {
+            const isPast = getEventStatus(entry.start)?.isPast || false;
+            
+            return isMobile ? (
+              <SwipeableCard 
+                key={entry.id}
+                onEdit={() => setSelectedEvent(entry)}
+                onDelete={() => toast({ title: "Löschen wird noch implementiert", variant: "destructive" })}
+                disabled={isPast}
+              >
+                <EventCard entry={entry} />
+              </SwipeableCard>
+            ) : (
+              <EventCard key={entry.id} entry={entry} />
+            );
+          })}
           {sortedEntries.length === 0 && (
-            <div className="col-span-full text-center py-12 text-gray-500">
+            <div className="col-span-full text-center py-12 text-muted-foreground">
               Keine Termine gefunden
             </div>
           )}
