@@ -64,6 +64,8 @@ export interface CalendarEntry {
   icon: typeof Train;
   location?: string;
   tourIndex?: number; // For tour events: their chronological position
+  isOptioned?: boolean; // Optioniert status
+  isCancelled?: boolean; // Cancelled status
   metadata?: {
     booking_type?: string;
     origin_city?: string;
@@ -78,6 +80,8 @@ export interface CalendarEntry {
     source?: string;
     description?: string;
     qr_code_url?: string;
+    event_status?: string;
+    tour_source?: string;
   };
 }
 
@@ -113,13 +117,15 @@ interface AdminEvent {
 interface CalendarEvent {
   id: string;
   title: string;
-  description?: string;
+  description?: string | null;
   event_type: string;
+  tour_source?: string | null;
+  event_status?: string | null;
   start_datetime: string;
-  end_datetime?: string;
-  location?: string;
-  color?: string;
-  all_day?: boolean;
+  end_datetime?: string | null;
+  location?: string | null;
+  color?: string | null;
+  all_day?: boolean | null;
 }
 
 interface FullCalendarProps {
@@ -342,8 +348,16 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
 
     // Manual calendar events
     calendarEvents.forEach((event) => {
-      const colorKey = event.event_type || "other";
+      // Determine color based on event_type and tour_source
+      let colorKey = event.event_type || "other";
+      if (event.event_type === "tour" && event.tour_source) {
+        colorKey = event.tour_source === "KL" ? "tour_KL" : "tour_KBA";
+      }
+      
       const colors = eventColors[colorKey] || eventColors.other;
+      const isOptioned = event.event_status === "optioniert";
+      const isCancelled = event.event_status === "cancelled";
+      
       entries.push({
         id: event.id,
         title: event.title,
@@ -352,12 +366,17 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
         start: new Date(event.start_datetime),
         end: event.end_datetime ? new Date(event.end_datetime) : undefined,
         allDay: event.all_day,
-        color: event.color ? `bg-[${event.color}]` : colors.bg,
-        textColor: colors.text,
+        color: isCancelled ? "bg-gray-400" : colors.bg,
+        textColor: isCancelled ? "text-gray-500" : colors.text,
         icon: getEventIcon(event.event_type),
         location: event.location,
+        isOptioned,
+        isCancelled,
         metadata: {
           description: event.description,
+          event_status: event.event_status,
+          tour_source: event.tour_source,
+          source: event.tour_source, // For compatibility
         },
       });
     });
@@ -528,14 +547,25 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
         `}
       >
         {/* Source Icon - links oben */}
-        <div className="absolute top-3 left-3">
-          <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-white text-[10px] font-bold ${entry.color}`}>
+        <div className="absolute top-3 left-3 flex items-center gap-1">
+          <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-white text-[10px] font-bold ${entry.color} ${entry.isOptioned ? "opacity-60" : ""}`}>
             {entry.metadata?.source === "KL" ? "KL" : entry.metadata?.source === "KBA" ? "KBA" : <Icon className="w-3.5 h-3.5" />}
           </div>
+          {/* Optioniert Badge */}
+          {entry.isOptioned && (
+            <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-orange-100 text-orange-700 border border-orange-200">
+              Optioniert
+            </span>
+          )}
+          {entry.isCancelled && (
+            <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-red-100 text-red-700 border border-red-200">
+              Abgesagt
+            </span>
+          )}
         </div>
         
         {/* Status Badge - rechts oben (hide when hovered for quick actions) */}
-        {status && !isHovered && (
+        {status && !isHovered && !entry.isOptioned && !entry.isCancelled && (
           <div className={`absolute top-3 right-3 px-2 py-0.5 text-[10px] font-medium rounded-full
             ${status.color} ${status.pulse ? "animate-pulse" : ""}`}>
             {status.label}
@@ -787,14 +817,17 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
                           key={entry.id}
                           onClick={() => handleEventClick(entry)}
                           className={`w-full px-1.5 py-0.5 rounded text-[10px] font-medium text-white truncate flex items-center gap-1
-                            ${entry.color} hover:opacity-90 transition-opacity text-left`}
-                          title={`${formatTime(entry.start)} ${entry.title}`}
+                            ${entry.color} hover:opacity-90 transition-opacity text-left
+                            ${entry.isOptioned ? "opacity-60 border border-dashed border-white/50" : ""}
+                            ${entry.isCancelled ? "line-through opacity-50" : ""}`}
+                          title={`${formatTime(entry.start)} ${entry.title}${entry.isOptioned ? " (Optioniert)" : ""}${entry.isCancelled ? " (Abgesagt)" : ""}`}
                         >
                           <EntryIcon className="w-3 h-3 flex-shrink-0" />
                           <span className="truncate">
                             {entry.allDay ? "" : `${formatTime(entry.start)} `}
                             {entry.title}
                           </span>
+                          {entry.isOptioned && <span className="text-[8px]">?</span>}
                         </button>
                       );
                     })}
