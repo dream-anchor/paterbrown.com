@@ -71,6 +71,10 @@ export interface CalendarEntry {
     booking_number?: string;
     provider?: string;
     venue_name?: string;
+    venue_address?: string;
+    venue_phone?: string;
+    venue_email?: string;
+    venue_url?: string;
     source?: string;
     description?: string;
     qr_code_url?: string;
@@ -96,6 +100,10 @@ interface AdminEvent {
   location: string;
   state?: string;
   venue_name?: string;
+  venue_address?: string;
+  venue_phone?: string;
+  venue_email?: string;
+  venue_url?: string;
   start_time: string;
   end_time?: string;
   note?: string;
@@ -322,6 +330,10 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
         tourIndex,
         metadata: {
           venue_name: event.venue_name,
+          venue_address: event.venue_address,
+          venue_phone: event.venue_phone,
+          venue_email: event.venue_email,
+          venue_url: event.venue_url,
           source: event.source,
           description: event.note,
         },

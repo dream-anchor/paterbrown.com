@@ -19,6 +19,10 @@ import {
   QrCode,
   FileText,
   Map,
+  Phone,
+  Globe,
+  Mail,
+  Building2,
 } from "lucide-react";
 import type { CalendarEntry } from "./FullCalendar";
 
@@ -224,9 +228,70 @@ const CalendarEventDetail = ({
                   <span className="text-gray-900">{event.metadata.venue_name}</span>
                 </div>
               )}
+
+              {/* Venue Address */}
+              {event.metadata.venue_address && (
+                <div className="flex items-start gap-3 text-sm">
+                  <Building2 className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <span className="text-gray-700">{event.metadata.venue_address}</span>
+                    <a 
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.metadata.venue_address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-amber-600 hover:text-amber-700 flex items-center gap-1 mt-1"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      Auf Karte anzeigen
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Venue Phone */}
+              {event.metadata.venue_phone && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <a 
+                    href={`tel:${event.metadata.venue_phone}`}
+                    className="text-gray-700 hover:text-amber-600"
+                  >
+                    {event.metadata.venue_phone}
+                  </a>
+                </div>
+              )}
+
+              {/* Venue Website */}
+              {event.metadata.venue_url && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Globe className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <a 
+                    href={event.metadata.venue_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-amber-600 hover:text-amber-700 flex items-center gap-1"
+                  >
+                    Website besuchen
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+
+              {/* Venue Email */}
+              {event.metadata.venue_email && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <a 
+                    href={`mailto:${event.metadata.venue_email}`}
+                    className="text-gray-700 hover:text-amber-600"
+                  >
+                    {event.metadata.venue_email}
+                  </a>
+                </div>
+              )}
               
               {event.metadata.source && (
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-sm pt-2 border-t border-gray-200">
                   <span className="text-gray-500">Quelle</span>
                   <span className={`font-medium ${
                     event.metadata.source === "KL" ? "text-yellow-600" : 
@@ -239,7 +304,7 @@ const CalendarEventDetail = ({
               )}
               
               {event.metadata.description && (
-                <div className="text-sm">
+                <div className="text-sm pt-2 border-t border-gray-200">
                   <span className="text-gray-500 block mb-1">Notiz</span>
                   <span className="text-gray-700 italic">{event.metadata.description}</span>
                 </div>

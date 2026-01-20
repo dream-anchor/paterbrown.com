@@ -28,7 +28,10 @@ export type Database = {
           state: string | null
           title: string
           updated_at: string
+          venue_address: string | null
+          venue_email: string | null
           venue_name: string | null
+          venue_phone: string | null
           venue_url: string | null
         }
         Insert: {
@@ -44,7 +47,10 @@ export type Database = {
           state?: string | null
           title: string
           updated_at?: string
+          venue_address?: string | null
+          venue_email?: string | null
           venue_name?: string | null
+          venue_phone?: string | null
           venue_url?: string | null
         }
         Update: {
@@ -60,7 +66,10 @@ export type Database = {
           state?: string | null
           title?: string
           updated_at?: string
+          venue_address?: string | null
+          venue_email?: string | null
           venue_name?: string | null
+          venue_phone?: string | null
           venue_url?: string | null
         }
         Relationships: []
