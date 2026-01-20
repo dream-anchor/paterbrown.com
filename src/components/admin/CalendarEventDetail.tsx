@@ -368,46 +368,47 @@ const CalendarEventDetail = ({
           </div>
 
           {/* Actions */}
-          <div className="flex justify-between items-center pt-4 border-t border-gray-100 mt-4">
+          <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-gray-100 mt-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleDelete}
               disabled={isDeleting}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 border-0"
             >
               <Trash2 className="w-4 h-4 mr-1" />
               {isDeleting ? "Löschen..." : "Löschen"}
             </Button>
 
-            <div className="flex gap-2">
-              {/* Edit Button */}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setShowEditModal(true)}
-                className="border-gray-200"
-              >
-                <Pencil className="w-4 h-4 mr-1" />
-                Bearbeiten
+            {/* Edit Button */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowEditModal(true)}
+              className="border-gray-200 hover:bg-gray-50"
+            >
+              <Pencil className="w-4 h-4 mr-1" />
+              Bearbeiten
+            </Button>
+            
+            {isTour && onNavigateToTour && (
+              <Button variant="outline" size="sm" onClick={() => onNavigateToTour(event.id)} className="border-gray-200 hover:bg-gray-50">
+                <Map className="w-4 h-4 mr-1" />
+                Auf Karte zeigen
               </Button>
-              
-              {isTour && onNavigateToTour && (
-                <Button variant="apple" size="sm" onClick={() => onNavigateToTour(event.id)}>
-                  <Map className="w-4 h-4 mr-1" />
-                  Auf Karte zeigen
-                </Button>
-              )}
-              {isTravel && onNavigateToTravel && (
-                <Button variant="apple" size="sm" onClick={() => onNavigateToTravel(event.id)}>
-                  <ExternalLink className="w-4 h-4 mr-1" />
-                  In Reisen öffnen
-                </Button>
-              )}
-              <Button variant="apple" size="sm" onClick={onClose}>
-                Schließen
+            )}
+            {isTravel && onNavigateToTravel && (
+              <Button variant="outline" size="sm" onClick={() => onNavigateToTravel(event.id)} className="border-gray-200 hover:bg-gray-50">
+                <ExternalLink className="w-4 h-4 mr-1" />
+                In Reisen öffnen
               </Button>
-            </div>
+            )}
+            
+            <div className="flex-1" />
+            
+            <Button variant="apple" size="sm" onClick={onClose}>
+              Schließen
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
