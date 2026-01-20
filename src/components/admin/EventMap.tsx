@@ -646,84 +646,80 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         )}
       </div>
 
-      {/* Desktop: CSS Grid Layout | Mobile: Stacked */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Desktop: Split-View Grid Layout | Mobile: Stacked */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* Left Column: Sticky Map (4 cols = 1/3) */}
-        <div className="lg:col-span-4 lg:sticky lg:top-0 lg:h-screen lg:overflow-hidden">
-          <div className="lg:h-full lg:py-4 flex flex-col">
-            {/* Map with 9:16 aspect ratio */}
-            <div className="relative flex-1 min-h-0">
-              <div className="lg:absolute lg:inset-0 aspect-[9/16] lg:aspect-auto lg:h-full w-full max-w-md lg:max-w-none mx-auto">
-                <div className="h-full w-full bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                  <MapContainer
-                    center={germanCenter}
-                    zoom={6}
-                    scrollWheelZoom={true}
-                    className="h-full w-full"
+        {/* Left Column: Sticky Map (5 cols) */}
+        <div className="lg:col-span-5 lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)]">
+          {/* Map fills full sticky container */}
+          <div className="h-[500px] lg:h-full w-full flex flex-col">
+            <div className="flex-1 min-h-0 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+              <MapContainer
+                center={germanCenter}
+                zoom={6}
+                scrollWheelZoom={true}
+                className="h-full w-full"
+              >
+                <FitBoundsToMarkers coords={routeCoords} />
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                
+                {/* Route line */}
+                {routeCoords.length > 1 && (
+                  <Polyline
+                    positions={routeCoords}
+                    color="#f59e0b"
+                    weight={3}
+                    opacity={0.7}
+                    dashArray="8, 8"
+                  />
+                )}
+                
+                {/* Numbered markers */}
+                {eventsWithCoords.map((event, index) => (
+                  <Marker 
+                    key={event.id} 
+                    position={event.coords as [number, number]}
+                    icon={activeEventId === event.id 
+                      ? createHighlightedIcon(index + 1, event.source) 
+                      : createNumberedIcon(index + 1, event.source)}
+                    eventHandlers={{
+                      click: () => scrollToEvent(event.id),
+                    }}
                   >
-                    <FitBoundsToMarkers coords={routeCoords} />
-                    <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    
-                    {/* Route line */}
-                    {routeCoords.length > 1 && (
-                      <Polyline
-                        positions={routeCoords}
-                        color="#f59e0b"
-                        weight={3}
-                        opacity={0.7}
-                        dashArray="8, 8"
-                      />
-                    )}
-                    
-                    {/* Numbered markers */}
-                    {eventsWithCoords.map((event, index) => (
-                      <Marker 
-                        key={event.id} 
-                        position={event.coords as [number, number]}
-                        icon={activeEventId === event.id 
-                          ? createHighlightedIcon(index + 1, event.source) 
-                          : createNumberedIcon(index + 1, event.source)}
-                        eventHandlers={{
-                          click: () => scrollToEvent(event.id),
-                        }}
-                      >
-                        <Popup>
-                          <div className="min-w-[180px]">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className={`text-xs font-bold px-2 py-1 rounded-full
-                                ${event.source === "KL" ? "bg-yellow-500 text-yellow-900" : 
-                                  event.source === "KBA" ? "bg-emerald-500 text-white" : "bg-gray-500 text-white"}`}>
-                                Station {index + 1}
-                              </span>
-                              <span className={`text-xs font-medium
-                                ${event.source === "KL" ? "text-yellow-600" : 
-                                  event.source === "KBA" ? "text-emerald-600" : "text-gray-600"}`}>
-                                {event.source === "KL" ? "Landgraf" : 
-                                 event.source === "KBA" ? "KBA" : ""}
-                              </span>
-                            </div>
-                            <p className="font-bold text-gray-900 mb-1">{event.title}</p>
-                            <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                              <Calendar className="w-3 h-3" />
-                              {formatDate(event.start_time)}
-                            </div>
-                            <div className={`flex items-center gap-1 text-xs
-                              ${event.source === "KL" ? "text-yellow-600" : 
-                                event.source === "KBA" ? "text-emerald-600" : "text-gray-600"}`}>
-                              <MapPin className="w-3 h-3" />
-                              {event.location}
-                            </div>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    ))}
-                  </MapContainer>
-                </div>
-              </div>
+                    <Popup>
+                      <div className="min-w-[180px]">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`text-xs font-bold px-2 py-1 rounded-full
+                            ${event.source === "KL" ? "bg-yellow-500 text-yellow-900" : 
+                              event.source === "KBA" ? "bg-emerald-500 text-white" : "bg-gray-500 text-white"}`}>
+                            Station {index + 1}
+                          </span>
+                          <span className={`text-xs font-medium
+                            ${event.source === "KL" ? "text-yellow-600" : 
+                              event.source === "KBA" ? "text-emerald-600" : "text-gray-600"}`}>
+                            {event.source === "KL" ? "Landgraf" : 
+                             event.source === "KBA" ? "KBA" : ""}
+                          </span>
+                        </div>
+                        <p className="font-bold text-gray-900 mb-1">{event.title}</p>
+                        <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                          <Calendar className="w-3 h-3" />
+                          {formatDate(event.start_time)}
+                        </div>
+                        <div className={`flex items-center gap-1 text-xs
+                          ${event.source === "KL" ? "text-yellow-600" : 
+                            event.source === "KBA" ? "text-emerald-600" : "text-gray-600"}`}>
+                          <MapPin className="w-3 h-3" />
+                          {event.location}
+                        </div>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
             </div>
 
             {/* Legend - below map */}
@@ -744,8 +740,8 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           </div>
         </div>
 
-        {/* Right Column: Scrollable Stations List (8 cols = 2/3) */}
-        <div className="lg:col-span-8 space-y-2">
+        {/* Right Column: Scrollable Stations List (7 cols) */}
+        <div className="lg:col-span-7 space-y-2">
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 sticky top-0 bg-gray-50/95 backdrop-blur-sm py-2 z-10 flex items-center justify-between">
             <span>Alle Stationen · {sortedEvents.length} Termine</span>
             {isLoadingDistances && (
