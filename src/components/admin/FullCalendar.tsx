@@ -36,6 +36,7 @@ import {
 import QuickAddEventModal from "./QuickAddEventModal";
 import CalendarEventDetail from "./CalendarEventDetail";
 import EventTimeline from "./EventTimeline";
+import EventFilterPanel from "./EventFilterPanel";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -172,6 +173,7 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
   const [selectedEvent, setSelectedEvent] = useState<CalendarEntry | null>(null);
   const [hoveredDay, setHoveredDay] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<"calendar" | "cards" | "timeline">("calendar");
+  const [filteredEntries, setFilteredEntries] = useState<CalendarEntry[]>([]);
   
   // Data states
   const [travelBookings, setTravelBookings] = useState<TravelBooking[]>([]);
@@ -339,15 +341,17 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
     return entries.sort((a, b) => a.start.getTime() - b.start.getTime());
   }, [travelBookings, adminEvents, calendarEvents]);
 
-  // Sorted entries for card view
+  // Sorted entries for card view - use filtered entries if available, otherwise all entries
+  const displayEntries = filteredEntries.length > 0 || allEntries.length === 0 ? filteredEntries : allEntries;
+  
   const sortedEntries = useMemo(() => {
     const now = new Date();
-    const upcoming = allEntries.filter(e => e.start >= now)
+    const upcoming = displayEntries.filter(e => e.start >= now)
       .sort((a, b) => a.start.getTime() - b.start.getTime());
-    const past = allEntries.filter(e => e.start < now)
+    const past = displayEntries.filter(e => e.start < now)
       .sort((a, b) => b.start.getTime() - a.start.getTime());
     return [...upcoming, ...past];
-  }, [allEntries]);
+  }, [displayEntries]);
 
   const copyToClipboard = async (url: string) => {
     try {
@@ -553,6 +557,14 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
 
   return (
     <div className="space-y-4">
+      {/* Filter Panel */}
+      <EventFilterPanel
+        entries={allEntries}
+        onFilterChange={setFilteredEntries}
+        totalCount={allEntries.length}
+        filteredCount={displayEntries.length}
+      />
+      
       {/* Calendar Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
