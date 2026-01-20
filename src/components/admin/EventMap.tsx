@@ -4,7 +4,7 @@ import MarkerClusterGroup from "react-leaflet-cluster";
 import { 
   Calendar, Clock, MapPin, Navigation, RefreshCw, CheckCircle, 
   AlertCircle, Car, ExternalLink, Eye, Filter, ChevronDown,
-  Sparkles
+  Sparkles, Pencil
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import EventEditModal, { type UniversalEvent } from "./EventEditModal";
 
 // Type for driving distance between events
 interface DrivingDistance {
@@ -386,6 +387,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
   const [dateRangeValue, setDateRangeValue] = useState<number[]>([0, 100]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedEventDetail, setSelectedEventDetail] = useState<AdminEvent | null>(null);
+  const [editingEvent, setEditingEvent] = useState<UniversalEvent | null>(null);
   const { toast } = useToast();
   
   // Get available years from events
@@ -687,6 +689,37 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
     }
   };
 
+  // Convert AdminEvent to UniversalEvent for editing
+  const convertToUniversalEvent = (event: AdminEvent): UniversalEvent => {
+    let category = "other";
+    if (event.source === "KL") category = "tour_kl";
+    else if (event.source === "KBA") category = "tour_kba";
+
+    return {
+      id: event.id,
+      title: event.title,
+      start: new Date(event.start_time),
+      end: event.end_time ? new Date(event.end_time) : null,
+      allDay: false,
+      location: event.location,
+      description: event.note,
+      category,
+      source: "admin_events",
+      metadata: {
+        venue_name: event.venue_name,
+        state: event.state,
+        source: event.source,
+      },
+    };
+  };
+
+  // Open edit modal
+  const handleEditEvent = (event: AdminEvent) => {
+    const universalEvent = convertToUniversalEvent(event);
+    setEditingEvent(universalEvent);
+    setSelectedEventDetail(null); // Close detail dialog
+  };
+
   // Count stats
   const statusCounts = useMemo(() => {
     return {
@@ -695,6 +728,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
       past: sortedEvents.filter(e => getEventStatus(e.start_time) === "past").length,
     };
   }, [sortedEvents]);
+
 
   return (
     <div className="h-screen overflow-hidden flex flex-col">
@@ -1285,6 +1319,13 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
               {/* Actions */}
               <div className="flex gap-2 pt-4 border-t border-gray-100">
                 <Button
+                  variant="outline"
+                  onClick={() => handleEditEvent(selectedEventDetail)}
+                >
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Bearbeiten
+                </Button>
+                <Button
                   className="flex-1"
                   onClick={() => openDirections(selectedEventDetail)}
                 >
@@ -1302,6 +1343,19 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Event Edit Modal */}
+      <EventEditModal
+        event={editingEvent}
+        open={!!editingEvent}
+        onClose={() => setEditingEvent(null)}
+        onSave={() => {
+          onEventsUpdated?.();
+        }}
+        onDelete={() => {
+          onEventsUpdated?.();
+        }}
+      />
     </div>
   );
 };
