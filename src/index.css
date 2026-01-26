@@ -706,7 +706,18 @@ All colors MUST be HSL.
 .admin-no-focus-ring a:focus,
 .admin-no-focus-ring input:focus,
 .admin-no-focus-ring textarea:focus,
-.admin-no-focus-ring select:focus {
+.admin-no-focus-ring select:focus,
+.admin-no-focus-ring *:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  ring: none !important;
+}
+
+/* Remove focus ring from all Radix components */
+.admin-no-focus-ring [data-radix-popper-content-wrapper] *:focus,
+.admin-no-focus-ring [data-radix-select-viewport] *:focus,
+.admin-no-focus-ring [role="listbox"] *:focus,
+.admin-no-focus-ring [role="option"]:focus {
   outline: none !important;
   box-shadow: none !important;
 }
@@ -716,4 +727,9 @@ All colors MUST be HSL.
 .admin-no-focus-ring a:focus-visible,
 .admin-no-focus-ring [role="button"]:focus-visible {
   background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Ensure Select dropdowns are clickable above dialogs */
+[data-radix-popper-content-wrapper] {
+  z-index: 10001 !important;
 }
