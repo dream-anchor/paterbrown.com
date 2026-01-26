@@ -15,7 +15,7 @@ import DocumentsPanel from "@/components/admin/DocumentsPanel";
 import PicksPanel from "@/components/admin/PicksPanel";
 import SettingsPanel from "@/components/admin/SettingsPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Map, Plane, Package, Heart, Settings, Sparkles } from "lucide-react";
+import { CalendarDays, MapPin, Plane, CloudDownload, Heart, Settings, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AdminEvent {
@@ -377,14 +377,14 @@ const Admin = () => {
                 value="calendar" 
                 className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
               >
-                <Calendar className="w-4 h-4 mr-2 inline-block" />
-                <span className="hidden sm:inline">Kalender</span>
+                <CalendarDays className="w-4 h-4 mr-2 inline-block" />
+                <span className="hidden sm:inline">Plan</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="map" 
                 className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
               >
-                <Map className="w-4 h-4 mr-2 inline-block" />
+                <MapPin className="w-4 h-4 mr-2 inline-block" />
                 <span className="hidden sm:inline">Tour</span>
               </TabsTrigger>
               <TabsTrigger 
@@ -392,13 +392,13 @@ const Admin = () => {
                 className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
               >
                 <Plane className="w-4 h-4 mr-2 inline-block" />
-                <span className="hidden sm:inline">Reisen</span>
+                <span className="hidden sm:inline">Trips</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="documents" 
                 className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
               >
-                <Package className="w-4 h-4 mr-2 inline-block" />
+                <CloudDownload className="w-4 h-4 mr-2 inline-block" />
                 <span className="hidden sm:inline">Drops</span>
               </TabsTrigger>
               <TabsTrigger 
@@ -413,7 +413,7 @@ const Admin = () => {
                 className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
               >
                 <Settings className="w-4 h-4 mr-2 inline-block" />
-                <span className="hidden sm:inline">Einstellungen</span>
+                <span className="hidden sm:inline">Settings</span>
               </TabsTrigger>
             </TabsList>
             
