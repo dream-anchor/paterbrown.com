@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.upload-to-r2]
 verify_jwt = true
+
+[functions.migrate-legacy-files]
+verify_jwt = true
