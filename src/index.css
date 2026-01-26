@@ -752,6 +752,39 @@ All colors MUST be HSL.
 }
 
 /* ============================================
+   ADMIN AREA: Force WHITE backgrounds for ALL dropdown menus
+   This prevents dark mode inheritance and ensures visibility
+   ============================================ */
+.admin-no-focus-ring [data-radix-popper-content-wrapper] [role="menu"],
+.admin-no-focus-ring [data-radix-menu-content],
+.admin-no-focus-ring [data-radix-dropdown-menu-content],
+.admin-no-focus-ring [data-radix-select-content],
+.admin-no-focus-ring [data-radix-popper-content-wrapper] > div {
+  background-color: white !important;
+  background: white !important;
+  color: #111827 !important;
+  border-color: #e5e7eb !important;
+}
+
+/* Force white background on dropdown menu items in admin */
+.admin-no-focus-ring [role="menuitem"],
+.admin-no-focus-ring [data-radix-collection-item] {
+  color: #111827 !important;
+}
+
+.admin-no-focus-ring [role="menuitem"]:hover,
+.admin-no-focus-ring [role="menuitem"]:focus,
+.admin-no-focus-ring [data-radix-collection-item]:hover,
+.admin-no-focus-ring [data-radix-collection-item]:focus {
+  background-color: #f3f4f6 !important;
+}
+
+/* Separator styling in admin dropdowns */
+.admin-no-focus-ring [role="separator"] {
+  background-color: #e5e7eb !important;
+}
+
+/* ============================================
    ADMIN AREA: Hide cookie banner/widget when authenticated
    (Osano is loaded async; we also add a body class in Admin.tsx)
    ============================================ */
