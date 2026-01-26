@@ -291,14 +291,78 @@ const PicksPanel = () => {
     }
   };
 
-  // Delete folder
+  // Delete folder (with R2 cleanup)
   const handleDeleteFolder = async (folder: FolderData) => {
     try {
+      // 1. Get all images in this folder (and recursively in subfolders)
+      const getAllImagesInFolder = async (folderId: string): Promise<ImageData[]> => {
+        const folderImages = images.filter((img) => img.folder_id === folderId);
+        const subfolders = folders.filter((f) => f.parent_id === folderId);
+        
+        let allImages = [...folderImages];
+        for (const subfolder of subfolders) {
+          const subImages = await getAllImagesInFolder(subfolder.id);
+          allImages = [...allImages, ...subImages];
+        }
+        return allImages;
+      };
+
+      const imagesToDelete = await getAllImagesInFolder(folder.id);
+      
+      // 2. Delete files from R2 if there are any
+      if (imagesToDelete.length > 0) {
+        const r2FilePaths = imagesToDelete
+          .filter((img) => img.file_path.includes("r2.dev"))
+          .map((img) => img.file_path);
+
+        if (r2FilePaths.length > 0) {
+          console.log(`Deleting ${r2FilePaths.length} files from R2...`);
+          
+          const { error: deleteError } = await supabase.functions.invoke("delete-files", {
+            body: { fileKeys: r2FilePaths },
+          });
+
+          if (deleteError) {
+            console.error("R2 deletion error:", deleteError);
+            toast({
+              title: "Warnung",
+              description: "Einige Dateien konnten nicht aus R2 gelöscht werden",
+              variant: "destructive",
+            });
+          }
+        }
+
+        // 3. Delete image records from database
+        const imageIds = imagesToDelete.map((img) => img.id);
+        await supabase.from("approvals").delete().in("image_id", imageIds);
+        await supabase.from("images").delete().in("id", imageIds);
+        
+        // Update local state
+        setImages((prev) => prev.filter((img) => !imageIds.includes(img.id)));
+        setApprovals((prev) => prev.filter((a) => !imageIds.includes(a.image_id)));
+      }
+
+      // 4. Delete subfolders recursively from DB
+      const deleteSubfolders = async (folderId: string) => {
+        const subfolders = folders.filter((f) => f.parent_id === folderId);
+        for (const subfolder of subfolders) {
+          await deleteSubfolders(subfolder.id);
+          await supabase.from("picks_folders").delete().eq("id", subfolder.id);
+        }
+      };
+      await deleteSubfolders(folder.id);
+
+      // 5. Delete the folder itself
       const { error } = await supabase.from("picks_folders").delete().eq("id", folder.id);
       if (error) throw error;
 
-      setFolders((prev) => prev.filter((f) => f.id !== folder.id));
-      toast({ title: "Ordner gelöscht" });
+      setFolders((prev) => prev.filter((f) => f.id !== folder.id && f.parent_id !== folder.id));
+      toast({ 
+        title: "Ordner gelöscht",
+        description: imagesToDelete.length > 0 
+          ? `${imagesToDelete.length} Bild(er) wurden ebenfalls entfernt`
+          : undefined,
+      });
     } catch (error) {
       console.error("Error deleting folder:", error);
       toast({
@@ -359,10 +423,29 @@ const PicksPanel = () => {
     }
   };
 
-  // Delete image
+  // Delete image (with R2 cleanup)
   const handleDeleteImage = async (image: ImageData) => {
     try {
-      await supabase.storage.from("picks-images").remove([image.file_path]);
+      // Check if it's an R2 file
+      if (image.file_path.includes("r2.dev")) {
+        // Delete from R2 first
+        const { error: r2Error } = await supabase.functions.invoke("delete-files", {
+          body: { fileKeys: [image.file_path] },
+        });
+
+        if (r2Error) {
+          console.error("R2 deletion error:", r2Error);
+          // Continue anyway to clean up DB
+        }
+      } else {
+        // Legacy: Delete from Supabase Storage
+        await supabase.storage.from("picks-images").remove([image.file_path]);
+      }
+
+      // Delete approvals first (due to foreign key)
+      await supabase.from("approvals").delete().eq("image_id", image.id);
+      
+      // Delete from database
       const { error } = await supabase.from("images").delete().eq("id", image.id);
       if (error) throw error;
 
