@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { resizeImage, generateFilePaths } from "@/lib/imageResizer";
-
+import UserManagement from "./UserManagement";
 interface R2Credentials {
   endpoint: string;
   accessKeyId: string;
@@ -700,6 +700,9 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
           </div>
         </div>
       </div>
+
+      {/* User Management - Admin only */}
+      {isAdmin && <UserManagement />}
 
       {/* R2 Configuration Card - Admin only */}
       {isAdmin && (
