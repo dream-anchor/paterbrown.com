@@ -239,6 +239,50 @@ export type Database = {
         }
         Relationships: []
       }
+      document_share_links: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          document_id: string
+          download_count: number
+          expires_at: string | null
+          id: string
+          max_downloads: number | null
+          password_hash: string | null
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          document_id: string
+          download_count?: number
+          expires_at?: string | null
+          id?: string
+          max_downloads?: number | null
+          password_hash?: string | null
+          token: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          document_id?: string
+          download_count?: number
+          expires_at?: string | null
+          id?: string
+          max_downloads?: number | null
+          password_hash?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_share_links_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "internal_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       internal_documents: {
         Row: {
           category: Database["public"]["Enums"]["document_category"]
@@ -681,6 +725,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      increment_share_link_download: {
+        Args: { p_token: string }
         Returns: boolean
       }
     }
