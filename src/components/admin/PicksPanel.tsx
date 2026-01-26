@@ -378,8 +378,8 @@ const PicksPanel = () => {
   const uploadFiles = async (files: File[]) => {
     if (files.length === 0) return;
     
-    // Pass files to global upload context
-    addFiles(files, "picks");
+    // Pass files to global upload context with current folder
+    addFiles(files, "picks", { folderId: currentFolderId });
     
     toast({
       title: "Upload gestartet",
