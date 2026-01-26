@@ -47,6 +47,17 @@ function generateToken(length = 32): string {
   return result;
 }
 
+function generateSecurePassword(length = 20): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*-_+=";
+  let result = "";
+  const randomValues = new Uint8Array(length);
+  crypto.getRandomValues(randomValues);
+  for (let i = 0; i < length; i++) {
+    result += chars[randomValues[i] % chars.length];
+  }
+  return result;
+}
+
 const ShareLinkDialog = ({
   open,
   onOpenChange,
@@ -88,6 +99,16 @@ const ShareLinkDialog = ({
       setMaxDownloads("10");
     }
     onOpenChange(isOpen);
+  };
+
+  // Auto-generate password when password protection is enabled
+  const handlePasswordToggle = (enabled: boolean) => {
+    setUsePassword(enabled);
+    if (enabled) {
+      setPassword(generateSecurePassword(20));
+    } else {
+      setPassword("");
+    }
   };
 
   const handleGenerate = async () => {
@@ -223,7 +244,7 @@ const ShareLinkDialog = ({
                 </Label>
                 <Switch
                   checked={usePassword}
-                  onCheckedChange={setUsePassword}
+                  onCheckedChange={handlePasswordToggle}
                 />
               </div>
               {usePassword && (

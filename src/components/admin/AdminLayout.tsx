@@ -44,7 +44,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50" style={{ color: '#111827' }}>
+    <div className="min-h-screen bg-gray-50 admin-no-focus-ring" style={{ color: '#111827' }}>
       {/* Premium Header */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-100">
         <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
