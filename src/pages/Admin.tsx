@@ -12,8 +12,9 @@ import AdminSearchBar from "@/components/admin/AdminSearchBar";
 import CalendarEventDetail from "@/components/admin/CalendarEventDetail";
 import BottomNav from "@/components/admin/BottomNav";
 import DocumentsPanel from "@/components/admin/DocumentsPanel";
+import PicksPanel from "@/components/admin/PicksPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Sparkles, Map, Plane, Upload, FolderOpen } from "lucide-react";
+import { Calendar, Sparkles, Map, Plane, Upload, FolderOpen, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AdminEvent {
@@ -357,6 +358,13 @@ const Admin = () => {
                 <FolderOpen className="w-4 h-4 mr-2 inline-block" />
                 <span className="hidden sm:inline">Dokumente</span>
               </TabsTrigger>
+              <TabsTrigger 
+                value="picks" 
+                className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
+              >
+                <Heart className="w-4 h-4 mr-2 inline-block" />
+                <span className="hidden sm:inline">Picks</span>
+              </TabsTrigger>
             </TabsList>
             
             {/* Search Bar - Now second */}
@@ -396,6 +404,10 @@ const Admin = () => {
 
           <TabsContent value="documents" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
             <DocumentsPanel />
+          </TabsContent>
+
+          <TabsContent value="picks" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
+            <PicksPanel />
           </TabsContent>
         </div>
       </Tabs>
