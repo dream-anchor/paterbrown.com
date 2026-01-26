@@ -98,6 +98,11 @@ export function getContentTypeIcon(contentType: string | null): string {
 }
 
 export function getPublicDownloadUrl(filePath: string): string {
+  // Check if it's already a full R2 URL
+  if (filePath.startsWith("https://")) {
+    return filePath;
+  }
+  // Legacy: Supabase Storage URL
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   return `${supabaseUrl}/storage/v1/object/public/internal-documents/${filePath}`;
 }
@@ -129,9 +134,14 @@ export function getImageThumbnailUrl(
 }
 
 /**
- * Get the original full-resolution URL for an image in Supabase Storage.
+ * Get the original full-resolution URL for an image in Supabase Storage or R2.
  */
 export function getImageOriginalUrl(bucket: string, filePath: string): string {
+  // Check if it's already a full R2 URL
+  if (filePath.startsWith("https://")) {
+    return filePath;
+  }
+  // Legacy: Supabase Storage URL
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   return `${supabaseUrl}/storage/v1/object/public/${bucket}/${filePath}`;
 }

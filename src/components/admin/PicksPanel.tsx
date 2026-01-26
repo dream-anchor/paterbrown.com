@@ -289,6 +289,16 @@ const PicksPanel = () => {
     }
   };
 
+  // Helper to convert File to Base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   // Upload files helper (used by both input and drag-drop)
   const uploadFiles = async (files: File[]) => {
     if (files.length === 0) return;
@@ -296,19 +306,32 @@ const PicksPanel = () => {
     setIsUploading(true);
     try {
       for (const file of files) {
-        const fileExt = file.name.split(".").pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-        const filePath = `uploads/${fileName}`;
+        // Convert file to base64
+        const base64Content = await fileToBase64(file);
 
-        const { error: uploadError } = await supabase.storage
-          .from("picks-images")
-          .upload(filePath, file);
+        // Call R2 upload edge function
+        const { data: r2Result, error: r2Error } = await supabase.functions.invoke("upload-to-r2", {
+          body: {
+            fileName: file.name,
+            contentType: file.type || "image/jpeg",
+            content: base64Content,
+            folder: "picks",
+          },
+        });
 
-        if (uploadError) throw uploadError;
+        if (r2Error) {
+          console.error("R2 upload error:", r2Error);
+          throw new Error(`R2 Upload fehlgeschlagen: ${r2Error.message}`);
+        }
 
+        if (!r2Result?.success) {
+          throw new Error(r2Result?.error || "R2 Upload fehlgeschlagen");
+        }
+
+        // Store the R2 public URL in the database
         const { error: insertError } = await supabase.from("images").insert({
           file_name: file.name,
-          file_path: filePath,
+          file_path: r2Result.public_url, // Store R2 public URL
           title: file.name.replace(/\.[^/.]+$/, ""),
           uploaded_by: currentUserId,
           folder_id: currentFolderId,
@@ -326,13 +349,13 @@ const PicksPanel = () => {
 
       toast({
         title: "Erfolg",
-        description: `${files.length} Bild${files.length > 1 ? "er" : ""} hochgeladen`,
+        description: `${files.length} Bild${files.length > 1 ? "er" : ""} zu R2 hochgeladen`,
       });
     } catch (error) {
       console.error("Upload error:", error);
       toast({
         title: "Fehler",
-        description: "Upload fehlgeschlagen",
+        description: error instanceof Error ? error.message : "Upload fehlgeschlagen",
         variant: "destructive",
       });
     } finally {
@@ -396,8 +419,13 @@ const PicksPanel = () => {
     return approvals.filter((a) => a.image_id === imageId).map((a) => a.user_id);
   };
 
-  // Get thumbnail URL (smaller size for gallery)
+  // Get thumbnail URL (R2 URLs are used directly, Supabase uses transformation)
   const getThumbnailUrl = (filePath: string) => {
+    // R2 URLs are already complete URLs
+    if (filePath.startsWith("https://")) {
+      return filePath;
+    }
+    // Legacy Supabase: use image transformation
     return getImageThumbnailUrl("picks-images", filePath, 400, 400, 75);
   };
 

@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.db-train-status]
 verify_jwt = false
+
+[functions.upload-to-r2]
+verify_jwt = true

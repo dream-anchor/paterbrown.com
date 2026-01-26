@@ -152,6 +152,16 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFiles }: Do
     }
   };
 
+  // Helper to convert File to Base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   const handleSubmit = async () => {
     if (uploadMode === "new" && selectedFiles.length === 0) {
       toast({
@@ -187,26 +197,39 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFiles }: Do
       const { data: { user } } = await supabase.auth.getUser();
 
       if (uploadMode === "new") {
-        // Upload all new files
+        // Upload all new files to R2
         for (const { file, displayName } of selectedFiles) {
-          const timestamp = Date.now();
-          const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-          const filePath = `${timestamp}-${safeName}`;
+          // Convert file to base64
+          const base64Content = await fileToBase64(file);
 
-          const { error: uploadError } = await supabase.storage
-            .from("internal-documents")
-            .upload(filePath, file);
+          // Call R2 upload edge function
+          const { data: r2Result, error: r2Error } = await supabase.functions.invoke("upload-to-r2", {
+            body: {
+              fileName: file.name,
+              contentType: file.type || "application/octet-stream",
+              content: base64Content,
+              folder: "documents",
+            },
+          });
 
-          if (uploadError) throw uploadError;
+          if (r2Error) {
+            console.error("R2 upload error:", r2Error);
+            throw new Error(`R2 Upload fehlgeschlagen: ${r2Error.message}`);
+          }
 
+          if (!r2Result?.success) {
+            throw new Error(r2Result?.error || "R2 Upload fehlgeschlagen");
+          }
+
+          // Store the R2 public URL in the database
           const { error: dbError } = await supabase
             .from("internal_documents")
             .insert({
               name: displayName.trim(),
               category: "other",
-              file_path: filePath,
+              file_path: r2Result.public_url, // Store R2 public URL
               file_name: file.name,
-              file_size: file.size,
+              file_size: r2Result.file_size || file.size,
               content_type: file.type || null,
               uploaded_by: user?.id || null,
             });
@@ -216,10 +239,10 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFiles }: Do
 
         toast({
           title: selectedFiles.length === 1 ? "Dokument hinzugefügt" : "Dokumente hinzugefügt",
-          description: `${selectedFiles.length} ${selectedFiles.length === 1 ? "Datei wurde" : "Dateien wurden"} erfolgreich hinzugefügt.`,
+          description: `${selectedFiles.length} ${selectedFiles.length === 1 ? "Datei wurde" : "Dateien wurden"} erfolgreich zu R2 hochgeladen.`,
         });
       } else if (uploadMode === "existing" && selectedExistingFile) {
-        // Use existing file
+        // Use existing file (from Supabase - legacy)
         const filePath = selectedExistingFile.name;
         const fileName = selectedExistingFile.name;
         const fileSize = selectedExistingFile.metadata?.size ?? 0;
@@ -252,7 +275,7 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFiles }: Do
       console.error("Error uploading document:", error);
       toast({
         title: "Fehler",
-        description: "Die Dokumente konnten nicht hochgeladen werden.",
+        description: error instanceof Error ? error.message : "Die Dokumente konnten nicht hochgeladen werden.",
         variant: "destructive",
       });
     } finally {
