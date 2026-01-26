@@ -684,3 +684,36 @@ All colors MUST be HSL.
     object-position: center !important;
   }
 }
+
+/* ============================================
+   ADMIN AREA: Remove ALL focus outlines/rings
+   This prevents the orange/black focus borders
+   ============================================ */
+.admin-no-focus-ring *:focus,
+.admin-no-focus-ring *:focus-visible,
+.admin-no-focus-ring *:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+  --tw-ring-shadow: none !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-offset-shadow: none !important;
+}
+
+/* Override Radix UI focus styles in admin */
+.admin-no-focus-ring [data-radix-collection-item]:focus,
+.admin-no-focus-ring [data-state]:focus,
+.admin-no-focus-ring button:focus,
+.admin-no-focus-ring a:focus,
+.admin-no-focus-ring input:focus,
+.admin-no-focus-ring textarea:focus,
+.admin-no-focus-ring select:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Subtle visual feedback for keyboard navigation (accessibility) */
+.admin-no-focus-ring button:focus-visible,
+.admin-no-focus-ring a:focus-visible,
+.admin-no-focus-ring [role="button"]:focus-visible {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
