@@ -68,14 +68,14 @@ const Admin = () => {
     setSearchParams({ tab: value });
   };
 
-  // Hide Osano cookie banner for admin users
+  // Hide Osano cookie banner for ALL authenticated users in admin area
   useEffect(() => {
-    if (isAuthenticated && isAdmin) {
+    if (isAuthenticated) {
       if (window.Osano?.cm) {
         window.Osano.cm.hideDialog();
       }
     }
-  }, [isAuthenticated, isAdmin]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     // Listen for auth state changes (important for password recovery flow)
