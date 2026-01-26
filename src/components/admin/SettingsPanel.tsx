@@ -347,15 +347,22 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
     });
 
     try {
-      // Fetch all images that need processing
+      // Fetch all images - we'll regenerate ALL as WebP and clean up old formats
       const { data: images, error } = await supabase
         .from("images")
-        .select("id, file_name, file_path, thumbnail_url, preview_url")
-        .or("thumbnail_url.is.null,preview_url.is.null");
+        .select("id, file_name, file_path, thumbnail_url, preview_url");
 
       if (error) throw error;
 
-      const imagesToProcess = images || [];
+      // Filter: images that need processing (missing WebP versions OR have old JPEG/PNG versions)
+      const imagesToProcess = (images || []).filter(img => {
+        const hasNoThumbnail = !img.thumbnail_url;
+        const hasNoPreview = !img.preview_url;
+        const hasOldThumbnail = img.thumbnail_url && !img.thumbnail_url.endsWith('.webp');
+        const hasOldPreview = img.preview_url && !img.preview_url.endsWith('.webp');
+        return hasNoThumbnail || hasNoPreview || hasOldThumbnail || hasOldPreview;
+      });
+      
       const total = imagesToProcess.length;
 
       if (total === 0) {
@@ -367,7 +374,7 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
         }));
         toast({
           title: "Keine Bilder zu verarbeiten",
-          description: "Alle Bilder haben bereits Thumbnails und Previews.",
+          description: "Alle Bilder haben bereits optimierte WebP-Versionen.",
         });
         return;
       }
@@ -377,7 +384,15 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
       let thumbnailsCreated = 0;
       let previewsCreated = 0;
       let skipped = 0;
+      let cleanedUp = 0;
       const errors: string[] = [];
+      
+      // Helper to check if URL is an old format that needs cleanup
+      const isOldFormat = (url: string | null): boolean => {
+        if (!url) return false;
+        const lower = url.toLowerCase();
+        return lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png');
+      };
 
       for (let i = 0; i < imagesToProcess.length; i++) {
         const image = imagesToProcess[i];
@@ -389,8 +404,12 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
         }));
 
         try {
-          // Skip if both already exist
-          if (image.thumbnail_url && image.preview_url) {
+          // Check what needs to be done for this image
+          const needsNewThumbnail = !image.thumbnail_url || isOldFormat(image.thumbnail_url);
+          const needsNewPreview = !image.preview_url || isOldFormat(image.preview_url);
+          
+          // Skip if both are already WebP
+          if (!needsNewThumbnail && !needsNewPreview) {
             skipped++;
             continue;
           }
@@ -407,16 +426,20 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
 
           const paths = generateFilePaths(image.file_name, "picks");
           const updates: { thumbnail_url?: string; preview_url?: string } = {};
+          const oldFilesToDelete: string[] = [];
 
-          // Generate thumbnail if missing (WebP format for smaller file size)
-          if (!image.thumbnail_url) {
+          // Generate thumbnail if needed (missing or old format)
+          if (needsNewThumbnail) {
+            // Store old URL for cleanup
+            if (image.thumbnail_url && isOldFormat(image.thumbnail_url)) {
+              oldFilesToDelete.push(image.thumbnail_url);
+            }
+            
             const thumbnailBlob = await resizeImage(file, 400, 0.75);
-            // Use WebP path instead of JPEG
-            const webpThumbnailPath = paths.thumbnailPath.replace(/\.jpg$/, '.webp');
             
             const { data: presignedData } = await supabase.functions.invoke("get-presigned-url", {
               body: {
-                files: [{ fileName: "thumbnail.webp", contentType: "image/webp", folder: "picks", customPath: webpThumbnailPath }]
+                files: [{ fileName: "thumbnail.webp", contentType: "image/webp", folder: "picks", customPath: paths.thumbnailPath }]
               }
             });
 
@@ -437,15 +460,18 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
             }
           }
 
-          // Generate preview if missing (WebP format for smaller file size)
-          if (!image.preview_url) {
+          // Generate preview if needed (missing or old format)
+          if (needsNewPreview) {
+            // Store old URL for cleanup
+            if (image.preview_url && isOldFormat(image.preview_url)) {
+              oldFilesToDelete.push(image.preview_url);
+            }
+            
             const previewBlob = await resizeImage(file, 1600, 0.8);
-            // Use WebP path instead of JPEG
-            const webpPreviewPath = paths.previewPath.replace(/\.jpg$/, '.webp');
             
             const { data: presignedData } = await supabase.functions.invoke("get-presigned-url", {
               body: {
-                files: [{ fileName: "preview.webp", contentType: "image/webp", folder: "picks", customPath: webpPreviewPath }]
+                files: [{ fileName: "preview.webp", contentType: "image/webp", folder: "picks", customPath: paths.previewPath }]
               }
             });
 
@@ -466,12 +492,26 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
             }
           }
 
-          // Update database with new URLs
+          // Update database with new URLs FIRST (so we don't lose reference)
           if (Object.keys(updates).length > 0) {
             await supabase
               .from("images")
               .update(updates)
               .eq("id", image.id);
+            
+            // CLEANUP: Delete old JPEG/PNG files from R2 after successful DB update
+            if (oldFilesToDelete.length > 0) {
+              try {
+                await supabase.functions.invoke("delete-files", {
+                  body: { fileKeys: oldFilesToDelete }
+                });
+                cleanedUp += oldFilesToDelete.length;
+                console.log(`Cleaned up ${oldFilesToDelete.length} old files for ${image.file_name}`);
+              } catch (cleanupError) {
+                console.warn(`Failed to cleanup old files for ${image.file_name}:`, cleanupError);
+                // Don't fail the whole process for cleanup errors
+              }
+            }
           } else {
             skipped++;
           }
@@ -500,7 +540,7 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
 
       toast({
         title: "Retrofit abgeschlossen",
-        description: `${thumbnailsCreated} Thumbnails, ${previewsCreated} Previews erstellt.`,
+        description: `${thumbnailsCreated} Thumbnails, ${previewsCreated} Previews erstellt. ${cleanedUp > 0 ? `${cleanedUp} alte Dateien bereinigt.` : ''}`,
       });
 
     } catch (error) {
