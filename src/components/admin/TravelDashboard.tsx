@@ -515,41 +515,37 @@ export default function TravelDashboard() {
                     />
                   ))}
                   
-                  {/* Past dates separator and toggle */}
-                  {pastDates.length > 0 && (
-                    <>
-                      <button
-                        onClick={() => setShowPastBookings(!showPastBookings)}
-                        className="w-full flex items-center justify-between gap-3 px-4 py-3 glass-card rounded-xl hover:bg-white/60 transition-all group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                            <History className="w-4 h-4 text-gray-400" />
-                          </div>
-                          <span className="text-sm font-medium text-gray-500">
-                            {showPastBookings 
-                              ? `Vergangene Reisen (${pastDates.length} ${pastDates.length === 1 ? 'Tag' : 'Tage'})`
-                              : "Vergangene Reisen anzeigen"
-                            }
-                          </span>
-                        </div>
-                        <ChevronDown className={cn(
-                          "w-4 h-4 text-gray-400 transition-transform",
-                          showPastBookings && "rotate-180"
-                        )} />
-                      </button>
-                      
-                      {showPastBookings && pastDates.map((date) => (
-                        <TravelTimeline
-                          key={date}
-                          date={date}
-                          bookings={groupedBookings[date]}
-                          selectedBookingId={selectedBooking?.id}
-                          onSelect={setSelectedBooking}
-                        />
-                      ))}
-                    </>
-                  )}
+                  {/* Past dates separator and toggle - Always show button */}
+                  <button
+                    onClick={() => setShowPastBookings(!showPastBookings)}
+                    className="w-full flex items-center justify-between gap-3 px-4 py-3 glass-card rounded-xl hover:bg-white/60 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <History className="w-4 h-4 text-gray-400" />
+                      </div>
+                      <span className="text-sm font-medium text-gray-500">
+                        {showPastBookings 
+                          ? `Vergangene Reisen ausblenden${pastDates.length > 0 ? ` (${pastDates.length} ${pastDates.length === 1 ? 'Tag' : 'Tage'})` : ''}`
+                          : "Vergangene Reisen anzeigen"
+                        }
+                      </span>
+                    </div>
+                    <ChevronDown className={cn(
+                      "w-4 h-4 text-gray-400 transition-transform",
+                      showPastBookings && "rotate-180"
+                    )} />
+                  </button>
+                  
+                  {showPastBookings && pastDates.map((date) => (
+                    <TravelTimeline
+                      key={date}
+                      date={date}
+                      bookings={groupedBookings[date]}
+                      selectedBookingId={selectedBooking?.id}
+                      onSelect={setSelectedBooking}
+                    />
+                  ))}
                 </>
               ) : viewMode === "cards" ? (
                 /* Card View - 2-Spalten */
