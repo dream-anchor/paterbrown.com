@@ -1,4 +1,4 @@
-import { Calendar, Map, Plane, Heart, MoreHorizontal } from "lucide-react";
+import { CalendarDays, MapPin, Plane, Heart, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { haptics } from "@/lib/haptics";
@@ -15,15 +15,15 @@ interface BottomNavProps {
 }
 
 const mainNavItems = [
-  { id: "calendar", label: "Kalender", icon: Calendar },
-  { id: "map", label: "Karte", icon: Map },
-  { id: "travel", label: "Reisen", icon: Plane },
+  { id: "calendar", label: "Plan", icon: CalendarDays },
+  { id: "map", label: "Tour", icon: MapPin },
+  { id: "travel", label: "Trips", icon: Plane },
   { id: "picks", label: "Picks", icon: Heart },
 ];
 
 const moreItems = [
   { id: "documents", label: "Drops" },
-  { id: "settings", label: "Einstellungen" },
+  { id: "settings", label: "Settings" },
 ];
 
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
