@@ -188,11 +188,12 @@ const PicksPanel = () => {
           setCurrentUserId(session.user.id);
         }
 
-        const [imagesRes, albumsRes, votesRes, rolesRes] = await Promise.all([
+        const [imagesRes, albumsRes, votesRes, rolesRes, profilesRes] = await Promise.all([
           supabase.from("images").select("*").order("created_at", { ascending: false }),
           supabase.from("picks_folders").select("*").order("name"),
           supabase.from("image_votes").select("*"),
           supabase.from("user_roles").select("user_id").eq("role", "admin"),
+          supabase.from("traveler_profiles").select("user_id, first_name, last_name"),
         ]);
 
         if (imagesRes.error) throw imagesRes.error;
@@ -200,10 +201,25 @@ const PicksPanel = () => {
         // votes table might not exist yet, so we handle that gracefully
         if (votesRes.error && !votesRes.error.message.includes("does not exist")) throw votesRes.error;
         if (rolesRes.error) throw rolesRes.error;
+        // profiles might not have entries for all users
+        const profiles = profilesRes.data || [];
 
         setImages((imagesRes.data || []) as ImageData[]);
         setAlbums((albumsRes.data || []) as AlbumData[]);
-        setVotes((votesRes.data || []) as ImageVote[]);
+        
+        // Enrich votes with user display names from traveler_profiles
+        const enrichedVotes: ImageVote[] = (votesRes.data || []).map((vote: any) => {
+          const profile = profiles.find((p: any) => p.user_id === vote.user_id);
+          return {
+            ...vote,
+            user_first_name: profile?.first_name || null,
+            user_last_name: profile?.last_name || null,
+            user_display_name: profile 
+              ? `${profile.first_name} ${profile.last_name}`.trim() 
+              : null,
+          };
+        });
+        setVotes(enrichedVotes as ImageVote[]);
 
         // Preload first 6 thumbnails for instant display
         const firstImages = (imagesRes.data || []).slice(0, 6) as ImageData[];
@@ -218,11 +234,18 @@ const PicksPanel = () => {
           }
         });
 
-        const userProfiles: UserProfile[] = (rolesRes.data || []).map((role) => ({
-          id: role.user_id,
-          email: role.user_id,
-          displayName: role.user_id.slice(0, 8) + "...",
-        }));
+        // Build user profiles with real names from traveler_profiles
+        const userProfiles: UserProfile[] = (rolesRes.data || []).map((role) => {
+          const profile = profiles.find((p: any) => p.user_id === role.user_id);
+          const displayName = profile 
+            ? `${profile.first_name} ${profile.last_name}`.trim()
+            : role.user_id.slice(0, 8) + "...";
+          return {
+            id: role.user_id,
+            email: role.user_id,
+            displayName: displayName,
+          };
+        });
         setUsers(userProfiles);
       } catch (error) {
         console.error("Error fetching data:", error);

@@ -29,6 +29,10 @@ export interface ImageVote {
   vote_status: VoteStatus;
   created_at: string;
   updated_at: string;
+  // Extended user info (optional, populated when joining with profiles)
+  user_display_name?: string;
+  user_first_name?: string;
+  user_last_name?: string;
 }
 
 export interface UserProfile {

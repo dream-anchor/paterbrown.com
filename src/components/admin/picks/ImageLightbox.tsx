@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   X, 
@@ -8,7 +8,8 @@ import {
   Check,
   HelpCircle,
   XCircle,
-  Trash2
+  Trash2,
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,28 @@ interface ImageLightboxProps {
   onDelete?: (image: ImageData) => void;
   canDelete: boolean;
 }
+
+// Helper to get initials from name
+const getInitials = (firstName?: string, lastName?: string, fallbackId?: string): string => {
+  if (firstName && lastName) {
+    return `${firstName[0]}${lastName[0]}`.toUpperCase();
+  }
+  if (firstName) return firstName.slice(0, 2).toUpperCase();
+  if (fallbackId) return fallbackId.slice(0, 2).toUpperCase();
+  return "??";
+};
+
+// Vote status icon component
+const VoteStatusIcon = ({ status }: { status: VoteStatus }) => {
+  switch (status) {
+    case 'approved':
+      return <Check className="w-4 h-4 text-green-400" />;
+    case 'unsure':
+      return <HelpCircle className="w-4 h-4 text-amber-400" />;
+    case 'rejected':
+      return <XCircle className="w-4 h-4 text-red-400" />;
+  }
+};
 
 const ImageLightbox = ({
   image,
@@ -47,6 +70,19 @@ const ImageLightbox = ({
   const currentVote = votes.find(
     v => v.image_id === image?.id && v.user_id === currentUserId
   )?.vote_status;
+
+  // Get team votes (excluding current user)
+  const teamVotes = useMemo(() => {
+    if (!image) return [];
+    return votes
+      .filter(v => v.image_id === image.id && v.user_id !== currentUserId)
+      .sort((a, b) => {
+        // Sort by name if available
+        const nameA = a.user_display_name || '';
+        const nameB = b.user_display_name || '';
+        return nameA.localeCompare(nameB);
+      });
+  }, [image, votes, currentUserId]);
 
   // Keyboard shortcuts
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -212,6 +248,40 @@ const ImageLightbox = ({
               </button>
             ))}
           </div>
+
+          {/* Team Decisions Section */}
+          {teamVotes.length > 0 && (
+            <div className="mt-6 pt-6 border-t border-white/10">
+              <div className="flex items-center gap-2 mb-4">
+                <Users className="w-4 h-4 text-white/60" />
+                <h4 className="text-white/80 text-sm font-medium">Team-Entscheidungen</h4>
+              </div>
+              
+              <div className="space-y-2">
+                {teamVotes.map((vote) => (
+                  <div 
+                    key={vote.id}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5"
+                  >
+                    {/* Avatar / Initials */}
+                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 text-xs font-medium">
+                      {getInitials(vote.user_first_name, vote.user_last_name, vote.user_id)}
+                    </div>
+                    
+                    {/* Name */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white/80 text-sm truncate">
+                        {vote.user_display_name || `User ${vote.user_id.slice(0, 6)}...`}
+                      </p>
+                    </div>
+                    
+                    {/* Vote Status Icon */}
+                    <VoteStatusIcon status={vote.vote_status} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Spacer */}
           <div className="flex-1" />
