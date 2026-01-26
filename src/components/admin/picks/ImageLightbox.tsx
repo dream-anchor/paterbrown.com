@@ -91,9 +91,21 @@ const ImageLightbox = ({
 
   if (!image) return null;
 
-  const getFullImageUrl = (filePath: string) => {
+  // Use preview_url if available, otherwise fall back to original
+  const getDisplayUrl = (img: ImageData) => {
+    if (img.preview_url) {
+      return img.preview_url;
+    }
+    // Fallback to original
+    return getImageOriginalUrl("picks-images", img.file_path);
+  };
+  
+  // Get original for download
+  const getDownloadUrl = (filePath: string) => {
     return getImageOriginalUrl("picks-images", filePath);
   };
+  
+  const isMissingPreview = !image.preview_url;
 
   const voteButtons = [
     { status: 'approved' as VoteStatus, icon: Check, label: 'Freigabe', key: '1', color: 'bg-green-500 hover:bg-green-600 text-white' },
@@ -145,11 +157,18 @@ const ImageLightbox = ({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            src={getFullImageUrl(image.file_path)}
+            src={getDisplayUrl(image)}
             alt={image.title || image.file_name}
             className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
+          
+          {/* Missing preview indicator */}
+          {isMissingPreview && (
+            <div className="absolute top-16 right-4 bg-amber-500/80 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-2">
+              <span>⚠️ Original wird geladen (Preview fehlt)</span>
+            </div>
+          )}
 
           {/* Image info - bottom left */}
           <div className="absolute bottom-6 left-6 text-white/80 text-sm">

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { generateImageVersions, generateFilePaths } from "@/lib/imageResizer";
 
 // ============ TYPES ============
 
@@ -15,6 +16,8 @@ export interface UploadFile {
   status: UploadStatus;
   progress: number;
   publicUrl?: string;
+  thumbnailUrl?: string;
+  previewUrl?: string;
   r2Key?: string;
   error?: string;
   startedAt?: number;
@@ -40,6 +43,7 @@ export interface UploadContextType {
 const UploadContext = createContext<UploadContextType | null>(null);
 
 const MAX_CONCURRENT_UPLOADS = 5;
+const R2_PUBLIC_BASE = "https://pub-4061a33a9b314588bf9fc24f750ecf89.r2.dev";
 
 export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { toast } = useToast();
@@ -77,7 +81,51 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const generateId = () => `upload-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
-  // Upload single file - defined before processQueue
+  // Upload with XMLHttpRequest for progress
+  const uploadWithProgress = (
+    url: string,
+    data: Blob | File,
+    contentType: string,
+    signal: AbortSignal,
+    onProgress: (progress: number) => void
+  ): Promise<Response> => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      
+      signal.addEventListener("abort", () => {
+        xhr.abort();
+        reject(new DOMException("Upload aborted", "AbortError"));
+      });
+
+      xhr.upload.addEventListener("progress", (e) => {
+        if (e.lengthComputable) {
+          const progress = Math.round((e.loaded / e.total) * 100);
+          onProgress(progress);
+        }
+      });
+
+      xhr.addEventListener("load", () => {
+        resolve(new Response(xhr.response, {
+          status: xhr.status,
+          statusText: xhr.statusText,
+        }));
+      });
+
+      xhr.addEventListener("error", () => {
+        reject(new Error("Network error during upload"));
+      });
+
+      xhr.addEventListener("abort", () => {
+        reject(new DOMException("Upload aborted", "AbortError"));
+      });
+
+      xhr.open("PUT", url);
+      xhr.setRequestHeader("Content-Type", contentType);
+      xhr.send(data);
+    });
+  };
+
+  // Upload single file with 3-tier logic for picks
   const uploadSingleFile = async (uploadFile: UploadFile) => {
     const fileId = uploadFile.id;
     
@@ -94,73 +142,83 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     try {
       console.log(`[Upload] Starting upload for ${uploadFile.file.name}`);
       
-      // Step 1: Get presigned URL
-      const { data: presignedData, error: presignedError } = await supabase.functions.invoke(
-        "get-presigned-url",
-        {
-          body: {
-            files: [{
-              fileName: uploadFile.file.name,
-              contentType: uploadFile.file.type || "application/octet-stream",
-              folder: uploadFile.folder,
-            }]
-          },
-        }
-      );
-
-      console.log(`[Upload] Presigned URL response:`, { presignedData, presignedError });
-
-      if (presignedError || !presignedData?.success) {
-        throw new Error(presignedData?.error || presignedError?.message || "Failed to get presigned URL");
-      }
-
-      const urlInfo = presignedData.urls[0];
-      console.log(`[Upload] Got presigned URL, uploading to R2...`);
-
-      // Step 2: Direct upload to R2
-      const response = await uploadWithProgress(
-        urlInfo.uploadUrl,
-        uploadFile.file,
-        abortController.signal,
-        (progress) => {
-          setFiles(prev => prev.map(f =>
-            f.id === fileId ? { ...f, progress } : f
-          ));
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
-      }
-
-      console.log(`[Upload] R2 upload complete, saving to database...`);
-
-      // Step 3: Save to database
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (uploadFile.folder === "documents") {
-        const { error: dbError } = await supabase
-          .from("internal_documents")
-          .insert({
-            name: uploadFile.displayName || uploadFile.file.name.replace(/\.[^/.]+$/, ""),
-            category: "other",
-            file_path: urlInfo.publicUrl,
-            file_name: uploadFile.file.name,
-            file_size: uploadFile.file.size,
-            content_type: uploadFile.file.type || null,
-            uploaded_by: user?.id || null,
-          });
+      if (uploadFile.folder === "picks" && uploadFile.file.type.startsWith("image/")) {
+        // === 3-TIER IMAGE UPLOAD ===
+        console.log(`[Upload] Generating thumbnail and preview for ${uploadFile.file.name}...`);
         
-        if (dbError) {
-          console.error("DB insert error for document:", dbError);
+        // Generate all 3 versions
+        const versions = await generateImageVersions(uploadFile.file);
+        const paths = generateFilePaths(uploadFile.file.name, "picks");
+        
+        // Get presigned URLs for all 3 versions
+        const { data: presignedData, error: presignedError } = await supabase.functions.invoke(
+          "get-presigned-url",
+          {
+            body: {
+              files: [
+                { fileName: "thumbnail.jpg", contentType: "image/jpeg", folder: "picks", customPath: paths.thumbnailPath },
+                { fileName: "preview.jpg", contentType: "image/jpeg", folder: "picks", customPath: paths.previewPath },
+                { fileName: uploadFile.file.name, contentType: uploadFile.file.type || "image/jpeg", folder: "picks", customPath: paths.originalPath },
+              ]
+            },
+          }
+        );
+
+        if (presignedError || !presignedData?.success) {
+          throw new Error(presignedData?.error || presignedError?.message || "Failed to get presigned URLs");
         }
-      } else if (uploadFile.folder === "picks") {
+
+        const [thumbnailUrl, previewUrl, originalUrl] = presignedData.urls;
+
+        // Upload all 3 in parallel with combined progress
+        let thumbnailProgress = 0;
+        let previewProgress = 0;
+        let originalProgress = 0;
+
+        const updateCombinedProgress = () => {
+          // Weight: thumbnail 10%, preview 30%, original 60%
+          const combined = (thumbnailProgress * 0.1) + (previewProgress * 0.3) + (originalProgress * 0.6);
+          setFiles(prev => prev.map(f =>
+            f.id === fileId ? { ...f, progress: Math.round(combined) } : f
+          ));
+        };
+
+        await Promise.all([
+          uploadWithProgress(
+            thumbnailUrl.uploadUrl,
+            versions.thumbnail,
+            "image/jpeg",
+            abortController.signal,
+            (p) => { thumbnailProgress = p; updateCombinedProgress(); }
+          ),
+          uploadWithProgress(
+            previewUrl.uploadUrl,
+            versions.preview,
+            "image/jpeg",
+            abortController.signal,
+            (p) => { previewProgress = p; updateCombinedProgress(); }
+          ),
+          uploadWithProgress(
+            originalUrl.uploadUrl,
+            versions.original,
+            uploadFile.file.type || "image/jpeg",
+            abortController.signal,
+            (p) => { originalProgress = p; updateCombinedProgress(); }
+          ),
+        ]);
+
+        console.log(`[Upload] All 3 versions uploaded, saving to database...`);
+
+        // Save to database with all URLs
         const { error: dbError } = await supabase
           .from("images")
           .insert({
             file_name: uploadFile.file.name,
-            file_path: urlInfo.publicUrl,
+            file_path: originalUrl.publicUrl,
+            thumbnail_url: thumbnailUrl.publicUrl,
+            preview_url: previewUrl.publicUrl,
             title: uploadFile.displayName || uploadFile.file.name.replace(/\.[^/.]+$/, ""),
             uploaded_by: user?.id || null,
             folder_id: uploadFile.folderId || null,
@@ -169,23 +227,111 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         if (dbError) {
           console.error("DB insert error for image:", dbError);
         }
+
+        // Success
+        setFiles(prev => prev.map(f =>
+          f.id === fileId
+            ? { 
+                ...f, 
+                status: "success" as UploadStatus, 
+                progress: 100, 
+                publicUrl: originalUrl.publicUrl,
+                thumbnailUrl: thumbnailUrl.publicUrl,
+                previewUrl: previewUrl.publicUrl,
+                r2Key: originalUrl.r2Key,
+                savedToDb: true,
+              }
+            : f
+        ));
+
+      } else {
+        // === SINGLE FILE UPLOAD (documents or non-image) ===
+        const { data: presignedData, error: presignedError } = await supabase.functions.invoke(
+          "get-presigned-url",
+          {
+            body: {
+              files: [{
+                fileName: uploadFile.file.name,
+                contentType: uploadFile.file.type || "application/octet-stream",
+                folder: uploadFile.folder,
+              }]
+            },
+          }
+        );
+
+        if (presignedError || !presignedData?.success) {
+          throw new Error(presignedData?.error || presignedError?.message || "Failed to get presigned URL");
+        }
+
+        const urlInfo = presignedData.urls[0];
+
+        const response = await uploadWithProgress(
+          urlInfo.uploadUrl,
+          uploadFile.file,
+          uploadFile.file.type || "application/octet-stream",
+          abortController.signal,
+          (progress) => {
+            setFiles(prev => prev.map(f =>
+              f.id === fileId ? { ...f, progress } : f
+            ));
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+        }
+
+        // Save to database
+        if (uploadFile.folder === "documents") {
+          const { error: dbError } = await supabase
+            .from("internal_documents")
+            .insert({
+              name: uploadFile.displayName || uploadFile.file.name.replace(/\.[^/.]+$/, ""),
+              category: "other",
+              file_path: urlInfo.publicUrl,
+              file_name: uploadFile.file.name,
+              file_size: uploadFile.file.size,
+              content_type: uploadFile.file.type || null,
+              uploaded_by: user?.id || null,
+            });
+          
+          if (dbError) {
+            console.error("DB insert error for document:", dbError);
+          }
+        } else if (uploadFile.folder === "picks") {
+          // Non-image file in picks (rare case)
+          const { error: dbError } = await supabase
+            .from("images")
+            .insert({
+              file_name: uploadFile.file.name,
+              file_path: urlInfo.publicUrl,
+              title: uploadFile.displayName || uploadFile.file.name.replace(/\.[^/.]+$/, ""),
+              uploaded_by: user?.id || null,
+              folder_id: uploadFile.folderId || null,
+            });
+          
+          if (dbError) {
+            console.error("DB insert error for image:", dbError);
+          }
+        }
+
+        // Success
+        setFiles(prev => prev.map(f =>
+          f.id === fileId
+            ? { 
+                ...f, 
+                status: "success" as UploadStatus, 
+                progress: 100, 
+                publicUrl: urlInfo.publicUrl,
+                r2Key: urlInfo.r2Key,
+                savedToDb: true,
+              }
+            : f
+        ));
       }
 
       console.log(`[Upload] Success: ${uploadFile.file.name}`);
-
-      // Success
-      setFiles(prev => prev.map(f =>
-        f.id === fileId
-          ? { 
-              ...f, 
-              status: "success" as UploadStatus, 
-              progress: 100, 
-              publicUrl: urlInfo.publicUrl,
-              r2Key: urlInfo.r2Key,
-              savedToDb: true,
-            }
-          : f
-      ));
 
     } catch (error: any) {
       if (error.name === "AbortError") {
@@ -240,49 +386,6 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     process();
   }, []);
-
-  // Upload with XMLHttpRequest for progress
-  const uploadWithProgress = (
-    url: string,
-    file: File,
-    signal: AbortSignal,
-    onProgress: (progress: number) => void
-  ): Promise<Response> => {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      
-      signal.addEventListener("abort", () => {
-        xhr.abort();
-        reject(new DOMException("Upload aborted", "AbortError"));
-      });
-
-      xhr.upload.addEventListener("progress", (e) => {
-        if (e.lengthComputable) {
-          const progress = Math.round((e.loaded / e.total) * 100);
-          onProgress(progress);
-        }
-      });
-
-      xhr.addEventListener("load", () => {
-        resolve(new Response(xhr.response, {
-          status: xhr.status,
-          statusText: xhr.statusText,
-        }));
-      });
-
-      xhr.addEventListener("error", () => {
-        reject(new Error("Network error during upload"));
-      });
-
-      xhr.addEventListener("abort", () => {
-        reject(new DOMException("Upload aborted", "AbortError"));
-      });
-
-      xhr.open("PUT", url);
-      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-      xhr.send(file);
-    });
-  };
 
   // Add files to queue
   const addFiles = useCallback((newFiles: File[], folder: "documents" | "picks", options?: { displayNames?: string[]; folderId?: string | null }) => {

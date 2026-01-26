@@ -11,6 +11,7 @@ interface PresignedUrlRequest {
     fileName: string;
     contentType: string;
     folder: "documents" | "picks";
+    customPath?: string; // Optional custom path for the file
   }>;
 }
 
@@ -21,6 +22,7 @@ interface PresignedUrlResponse {
     uploadUrl: string;
     publicUrl: string;
     r2Key: string;
+    customPath?: string;
   }>;
   error?: string;
 }
@@ -185,9 +187,15 @@ serve(async (req) => {
     
     // Generate presigned URLs for all files
     const urls = await Promise.all(payload.files.map(async (file) => {
-      const timestamp = Date.now() + Math.floor(Math.random() * 1000);
-      const sanitizedFilename = file.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const r2Key = `${file.folder}/${timestamp}-${sanitizedFilename}`;
+      // Use customPath if provided, otherwise generate a path
+      let r2Key: string;
+      if (file.customPath) {
+        r2Key = file.customPath;
+      } else {
+        const timestamp = Date.now() + Math.floor(Math.random() * 1000);
+        const sanitizedFilename = file.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+        r2Key = `${file.folder}/${timestamp}-${sanitizedFilename}`;
+      }
       
       const uploadUrl = await createPresignedUrl(
         'PUT',
@@ -205,6 +213,7 @@ serve(async (req) => {
         uploadUrl,
         publicUrl: `${publicUrlBase}/${r2Key}`,
         r2Key,
+        customPath: file.customPath,
       };
     }));
 
