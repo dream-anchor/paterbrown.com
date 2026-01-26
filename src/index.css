@@ -881,3 +881,48 @@ body.prevent-pull-to-refresh {
     border-radius: 3px;
   }
 }
+
+/* ===== Image Loading Optimizations ===== */
+
+/* Shimmer animation for image skeletons */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* GPU-accelerated image transitions */
+.image-optimized {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Fade-in animation for loaded images */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.image-loaded {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[shimmer_1\.5s_infinite\] {
+    animation: none;
+    background: hsl(0 0% 90%);
+  }
+  
+  .image-loaded {
+    animation: none;
+  }
+}
