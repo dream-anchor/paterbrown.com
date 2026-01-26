@@ -9,7 +9,7 @@ import {
   Calendar, MapPin, Users, Hash, ChevronRight,
   Mail, Clock, AlertCircle, CheckCircle2, Loader2,
   Filter, Search, RefreshCw, Upload, LayoutGrid, List,
-  User, Sparkles, ChevronDown, History
+  User, Sparkles, ChevronDown, History, Ticket
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -393,8 +393,8 @@ export default function TravelDashboard() {
                 onClick={() => setIsImportModalOpen(true)}
                 className="h-9 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 gap-2"
               >
-                <Upload className="w-4 h-4" />
-                <span className="hidden sm:inline">Import</span>
+                <Ticket className="w-4 h-4" />
+                <span className="hidden sm:inline">Ticket importieren</span>
               </Button>
             </div>
           )}
