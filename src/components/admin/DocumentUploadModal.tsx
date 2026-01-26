@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Upload, X, FileText, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,9 +28,10 @@ interface DocumentUploadModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  initialFile?: File | null;
 }
 
-const DocumentUploadModal = ({ open, onOpenChange, onSuccess }: DocumentUploadModalProps) => {
+const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFile }: DocumentUploadModalProps) => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -42,6 +43,16 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess }: DocumentUploadMo
   const [name, setName] = useState("");
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+
+  // Handle initial file from page drop
+  useEffect(() => {
+    if (initialFile && open) {
+      setSelectedFile(initialFile);
+      setUploadMode("new");
+      const nameWithoutExt = initialFile.name.replace(/\.[^/.]+$/, "");
+      setName(nameWithoutExt);
+    }
+  }, [initialFile, open]);
 
   const loadExistingFiles = useCallback(async () => {
     setLoadingExisting(true);
@@ -214,7 +225,13 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess }: DocumentUploadMo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white max-w-lg">
+      <DialogContent 
+        className="bg-white max-w-lg"
+        onDragEnter={handleDrag}
+        onDragLeave={handleDrag}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
+      >
         <DialogHeader>
           <DialogTitle className="text-gray-900">Dokument hinzufügen</DialogTitle>
         </DialogHeader>
