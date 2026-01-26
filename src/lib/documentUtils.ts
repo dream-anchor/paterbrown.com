@@ -105,3 +105,33 @@ export function getPublicDownloadUrl(filePath: string): string {
 export function getDownloadPageUrl(documentId: string): string {
   return `${window.location.origin}/download/${documentId}`;
 }
+
+/**
+ * Get a thumbnail URL for an image stored in Supabase Storage.
+ * Uses Supabase Image Transformations for on-the-fly resizing.
+ * 
+ * @param bucket - The storage bucket name
+ * @param filePath - The file path within the bucket
+ * @param width - Target width (default: 400)
+ * @param height - Target height (default: 400)
+ * @param quality - Image quality 1-100 (default: 75)
+ */
+export function getImageThumbnailUrl(
+  bucket: string,
+  filePath: string,
+  width: number = 400,
+  height: number = 400,
+  quality: number = 75
+): string {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  // Supabase image transformation URL format
+  return `${supabaseUrl}/storage/v1/render/image/public/${bucket}/${filePath}?width=${width}&height=${height}&quality=${quality}&resize=contain`;
+}
+
+/**
+ * Get the original full-resolution URL for an image in Supabase Storage.
+ */
+export function getImageOriginalUrl(bucket: string, filePath: string): string {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  return `${supabaseUrl}/storage/v1/object/public/${bucket}/${filePath}`;
+}

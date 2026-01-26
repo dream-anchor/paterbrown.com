@@ -18,7 +18,10 @@ import {
   Folder,
   ChevronRight,
   Home,
-  ArrowLeft
+  ArrowLeft,
+  X,
+  Download,
+  ZoomIn
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -34,6 +37,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { getImageThumbnailUrl, getImageOriginalUrl } from "@/lib/documentUtils";
 
 interface ImageData {
   id: string;
@@ -80,6 +84,9 @@ const PicksPanel = () => {
   const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+
+  // Lightbox state
+  const [lightboxImage, setLightboxImage] = useState<ImageData | null>(null);
 
   // Page-level drag-and-drop
   const [pageDragActive, setPageDragActive] = useState(false);
@@ -389,9 +396,26 @@ const PicksPanel = () => {
     return approvals.filter((a) => a.image_id === imageId).map((a) => a.user_id);
   };
 
-  const getImageUrl = (filePath: string) => {
-    const { data } = supabase.storage.from("picks-images").getPublicUrl(filePath);
-    return data.publicUrl;
+  // Get thumbnail URL (smaller size for gallery)
+  const getThumbnailUrl = (filePath: string) => {
+    return getImageThumbnailUrl("picks-images", filePath, 400, 400, 75);
+  };
+
+  // Get full-resolution URL (for lightbox/download)
+  const getFullImageUrl = (filePath: string) => {
+    return getImageOriginalUrl("picks-images", filePath);
+  };
+
+  // Handle download from lightbox
+  const handleDownloadImage = (image: ImageData) => {
+    const url = getFullImageUrl(image.file_path);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = image.file_name;
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const toggleUserFilter = (userId: string) => {
@@ -626,13 +650,20 @@ const PicksPanel = () => {
               >
                 <div className="aspect-square relative">
                   <img
-                    src={getImageUrl(image.file_path)}
+                    src={getThumbnailUrl(image.file_path)}
                     alt={image.title || image.file_name}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
 
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => setLightboxImage(image)}
+                      className="p-3 rounded-full bg-white text-gray-700 hover:bg-gray-100 transition-all"
+                      title="Vollbild anzeigen"
+                    >
+                      <ZoomIn className="w-5 h-5" />
+                    </button>
                     <button
                       onClick={() => toggleApproval(image.id)}
                       className={cn(
@@ -720,6 +751,69 @@ const PicksPanel = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Lightbox for full-resolution view */}
+      {lightboxImage && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setLightboxImage(null)}
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setLightboxImage(null)}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {/* Action buttons */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDownloadImage(lightboxImage);
+              }}
+              className="bg-white text-gray-900 hover:bg-gray-100"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Herunterladen
+            </Button>
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleApproval(lightboxImage.id);
+              }}
+              variant="outline"
+              className={cn(
+                "border-white/20",
+                approvals.some(a => a.image_id === lightboxImage.id && a.user_id === currentUserId)
+                  ? "bg-green-500 text-white border-green-500 hover:bg-green-600"
+                  : "bg-white/10 text-white hover:bg-white/20"
+              )}
+            >
+              <Check className="w-4 h-4 mr-2" />
+              {approvals.some(a => a.image_id === lightboxImage.id && a.user_id === currentUserId)
+                ? "Markiert"
+                : "Markieren"
+              }
+            </Button>
+          </div>
+
+          {/* Full-resolution image */}
+          <img
+            src={getFullImageUrl(lightboxImage.file_path)}
+            alt={lightboxImage.title || lightboxImage.file_name}
+            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          {/* Image info */}
+          <div className="absolute bottom-6 left-6 text-white/80 text-sm">
+            <p className="font-medium">{lightboxImage.title || lightboxImage.file_name}</p>
+            <p className="text-white/50">{lightboxImage.file_name}</p>
+          </div>
+        </div>
+      )}
       </div>
     </>
   );
