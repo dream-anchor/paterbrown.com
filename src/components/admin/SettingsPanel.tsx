@@ -3,7 +3,6 @@ import { Settings, Eye, EyeOff, Save, CheckCircle2, AlertCircle, Loader2 } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -161,9 +160,10 @@ const SettingsPanel = () => {
         </div>
       </div>
 
-      {/* R2 Configuration Card */}
-      <Card className="border-gray-200 shadow-sm">
-        <CardHeader className="pb-4">
+      {/* R2 Configuration Card - Explicit light mode styles */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        {/* Card Header */}
+        <div className="px-6 py-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
@@ -172,10 +172,10 @@ const SettingsPanel = () => {
                 </svg>
               </div>
               <div>
-                <CardTitle className="text-base">Cloudflare R2 Storage</CardTitle>
-                <CardDescription>
+                <h3 className="text-base font-semibold text-gray-900">Cloudflare R2 Storage</h3>
+                <p className="text-sm text-gray-500">
                   Zugangsdaten für den externen Dateispeicher
-                </CardDescription>
+                </p>
               </div>
             </div>
             {isConfigured ? (
@@ -190,8 +190,10 @@ const SettingsPanel = () => {
               </div>
             )}
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        </div>
+
+        {/* Card Content */}
+        <div className="px-6 py-5 space-y-5 bg-white">
           {/* Info Box */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
             <p className="font-medium mb-1">Speicherorte:</p>
@@ -206,7 +208,7 @@ const SettingsPanel = () => {
 
           {/* Endpoint URL */}
           <div className="space-y-2">
-            <Label htmlFor="r2-endpoint" className="text-gray-700">
+            <Label htmlFor="r2-endpoint" className="text-sm font-medium text-gray-700">
               R2 Endpoint URL
             </Label>
             <Input
@@ -215,7 +217,7 @@ const SettingsPanel = () => {
               placeholder="https://xxxxxxxx.r2.cloudflarestorage.com"
               value={credentials.endpoint}
               onChange={(e) => setCredentials({ ...credentials, endpoint: e.target.value })}
-              className="font-mono text-sm"
+              className="font-mono text-sm bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
             />
             <p className="text-xs text-gray-500">
               Die S3-kompatible Endpoint-URL deines R2-Buckets
@@ -224,7 +226,7 @@ const SettingsPanel = () => {
 
           {/* Access Key ID */}
           <div className="space-y-2">
-            <Label htmlFor="r2-access-key" className="text-gray-700">
+            <Label htmlFor="r2-access-key" className="text-sm font-medium text-gray-700">
               Access Key ID
             </Label>
             <div className="relative">
@@ -234,7 +236,7 @@ const SettingsPanel = () => {
                 placeholder="••••••••••••••••"
                 value={credentials.accessKeyId}
                 onChange={(e) => setCredentials({ ...credentials, accessKeyId: e.target.value })}
-                className="font-mono text-sm pr-10"
+                className="font-mono text-sm pr-10 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
               />
               <button
                 type="button"
@@ -252,7 +254,7 @@ const SettingsPanel = () => {
 
           {/* Secret Access Key */}
           <div className="space-y-2">
-            <Label htmlFor="r2-secret-key" className="text-gray-700">
+            <Label htmlFor="r2-secret-key" className="text-sm font-medium text-gray-700">
               Secret Access Key
             </Label>
             <div className="relative">
@@ -262,7 +264,7 @@ const SettingsPanel = () => {
                 placeholder="••••••••••••••••••••••••••••••••"
                 value={credentials.secretAccessKey}
                 onChange={(e) => setCredentials({ ...credentials, secretAccessKey: e.target.value })}
-                className="font-mono text-sm pr-10"
+                className="font-mono text-sm pr-10 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
               />
               <button
                 type="button"
@@ -301,8 +303,8 @@ const SettingsPanel = () => {
               )}
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
