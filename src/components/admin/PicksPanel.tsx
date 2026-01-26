@@ -854,20 +854,19 @@ const PicksPanel = () => {
             </p>
           </Card>
         ) : filteredImages.length > 0 && (
-          <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-4 space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {filteredImages.map((image, index) => (
-              <div key={image.id} className="break-inside-avoid">
-                <MasonryImageCard
-                  image={image}
-                  votes={votes}
-                  currentUserId={currentUserId}
-                  isSelected={selectedImageIds.has(image.id)}
-                  index={index}
-                  onSelect={handleSelectImage}
-                  onOpen={setLightboxImage}
-                  onVote={handleVote}
-                />
-              </div>
+              <MasonryImageCard
+                key={image.id}
+                image={image}
+                votes={votes}
+                currentUserId={currentUserId}
+                isSelected={selectedImageIds.has(image.id)}
+                index={index}
+                onSelect={handleSelectImage}
+                onOpen={setLightboxImage}
+                onVote={handleVote}
+              />
             ))}
           </div>
         )}
