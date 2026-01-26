@@ -210,28 +210,29 @@ const DocumentsPanel = () => {
       )}
 
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+        {/* Header - Mobile optimized */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-sm">
               <CloudDownload className="w-5 h-5 text-white" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Drops</h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 hidden sm:block">
                 Dateien bereitstellen und Links teilen
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={fetchDocuments}
               className="bg-white text-gray-700"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-4 h-4 sm:mr-0" />
+              <span className="sm:hidden ml-2">Aktualisieren</span>
             </Button>
             <Button
               onClick={() => setShowUploadModal(true)}
