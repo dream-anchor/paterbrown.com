@@ -1,4 +1,4 @@
-import { Calendar, Map, Plane, FolderOpen, Heart, MoreHorizontal } from "lucide-react";
+import { Calendar, Map, Plane, Heart, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import {
@@ -22,6 +22,7 @@ const mainNavItems = [
 
 const moreItems = [
   { id: "documents", label: "Dokumente" },
+  { id: "settings", label: "Einstellungen" },
 ];
 
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
