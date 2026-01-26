@@ -23,7 +23,6 @@ const mainNavItems = [
 
 const moreItems = [
   { id: "documents", label: "Drops" },
-  { id: "settings", label: "Settings" },
 ];
 
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {

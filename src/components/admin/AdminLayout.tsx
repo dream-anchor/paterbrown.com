@@ -1,8 +1,15 @@
 import { ReactNode, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { LogOut, Settings, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -10,6 +17,7 @@ interface AdminLayoutProps {
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,6 +39,10 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     window.location.reload();
   };
 
+  const handleSettings = () => {
+    navigate("/admin?tab=settings");
+  };
+
   // Get display name from email (before @)
   const displayName = userEmail?.split("@")[0] || "Admin";
 
@@ -48,56 +60,81 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       {/* Premium Header */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-100">
         <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors duration-150 text-sm font-medium"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Zurück</span>
-          </Link>
+          {/* Empty left spacer for balance */}
+          <div className="w-24" />
           
-          {/* Logo / Title */}
-          <div className="flex items-center gap-2">
+          {/* Logo / Title - Clickable */}
+          <Link 
+            to="/admin"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-sm">
               <span className="text-white text-xs font-bold">PB</span>
             </div>
             <span className="text-sm font-semibold text-gray-900 tracking-tight">
               Pater Brown Admin
             </span>
-          </div>
+          </Link>
           
-          {/* Modern User Profile Pill */}
+          {/* User Dropdown Menu */}
           <div className="flex items-center">
-            {userEmail && (
-              <button
-                onClick={handleLogout}
-                className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-full 
-                           bg-white/60 border border-gray-200/60 
-                           hover:bg-white hover:border-orange-200 hover:shadow-sm
-                           transition-all duration-200"
-                title="Abmelden"
-              >
-                {/* Gradient Initial Avatar */}
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 
-                                flex items-center justify-center shadow-sm ring-2 ring-white">
-                  <span className="text-[10px] font-bold text-white">
-                    {getInitials(displayName)}
-                  </span>
-                </div>
-                
-                {/* Name + Email (Desktop) */}
-                <div className="hidden sm:flex flex-col items-start">
-                  <span className="text-sm font-medium text-gray-900 leading-tight">
-                    {displayName}
-                  </span>
-                  <span className="text-[11px] text-gray-500 leading-tight">
-                    {userEmail}
-                  </span>
-                </div>
-                
-                {/* Logout Icon with Hover */}
-                <LogOut className="w-4 h-4 text-gray-400 group-hover:text-orange-600 transition-colors ml-1" />
-              </button>
+            {userEmail ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-full 
+                               bg-white/60 border border-gray-200/60 
+                               hover:bg-white hover:border-amber-200 hover:shadow-sm
+                               transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                  >
+                    {/* Gradient Initial Avatar */}
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 
+                                    flex items-center justify-center shadow-sm ring-2 ring-white">
+                      <span className="text-[10px] font-bold text-white">
+                        {getInitials(displayName)}
+                      </span>
+                    </div>
+                    
+                    {/* Name (Desktop) */}
+                    <span className="hidden sm:block text-sm font-medium text-gray-900">
+                      {displayName}
+                    </span>
+                    
+                    {/* Chevron */}
+                    <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-56 bg-white border-gray-200 shadow-lg"
+                >
+                  {/* User Info Header */}
+                  <div className="px-3 py-2 border-b border-gray-100">
+                    <p className="text-sm font-medium text-gray-900">{displayName}</p>
+                    <p className="text-xs text-gray-500 truncate">{userEmail}</p>
+                  </div>
+                  
+                  <DropdownMenuItem 
+                    onClick={handleSettings}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuItem 
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="w-24" /> 
             )}
           </div>
         </div>

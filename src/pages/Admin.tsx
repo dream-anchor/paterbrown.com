@@ -15,7 +15,7 @@ import DocumentsPanel from "@/components/admin/DocumentsPanel";
 import PicksPanel from "@/components/admin/PicksPanel";
 import SettingsPanel from "@/components/admin/SettingsPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, MapPin, Plane, CloudDownload, Heart, Settings, Sparkles } from "lucide-react";
+import { CalendarDays, MapPin, Plane, CloudDownload, Heart, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AdminEvent {
@@ -407,13 +407,6 @@ const Admin = () => {
               >
                 <Heart className="w-4 h-4 mr-2 inline-block" />
                 <span className="hidden sm:inline">Picks</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="settings" 
-                className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
-              >
-                <Settings className="w-4 h-4 mr-2 inline-block" />
-                <span className="hidden sm:inline">Settings</span>
               </TabsTrigger>
             </TabsList>
             
