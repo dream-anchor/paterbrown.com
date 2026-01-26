@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, Share2, Trash2, Download, Mail, MessageCircle, MoreHorizontal, Check, FileText } from "lucide-react";
+import { Copy, Share2, Trash2, Download, Mail, MessageCircle, MoreHorizontal, Check, FileText, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -29,6 +29,7 @@ import {
 } from "@/lib/documentUtils";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import ShareLinkDialog from "./ShareLinkDialog";
 
 interface DocumentCardProps {
   id: string;
@@ -56,6 +57,7 @@ const DocumentCard = ({
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const [imageError, setImageError] = useState(false);
 
   const downloadPageUrl = getDownloadPageUrl(id);
@@ -167,9 +169,14 @@ const DocumentCard = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="bg-white">
+                  <DropdownMenuItem onClick={() => setShowShareDialog(true)} className="text-gray-700">
+                    <Link className="w-4 h-4 mr-2" />
+                    Ablaufenden Link erstellen
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleCopyLink} className="text-gray-700">
                     <Copy className="w-4 h-4 mr-2" />
-                    Link kopieren
+                    Permanenten Link kopieren
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleShareEmail} className="text-gray-700">
                     <Mail className="w-4 h-4 mr-2" />
@@ -228,6 +235,14 @@ const DocumentCard = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Share Link Dialog */}
+      <ShareLinkDialog
+        open={showShareDialog}
+        onOpenChange={setShowShareDialog}
+        documentId={id}
+        documentName={name}
+      />
     </>
   );
 };
