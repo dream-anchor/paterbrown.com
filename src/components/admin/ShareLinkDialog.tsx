@@ -225,7 +225,8 @@ const ShareLinkDialog = ({
                 <SelectTrigger className="bg-white border-gray-200 text-gray-900">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
+                {/* Ensure dropdown renders above the Dialog overlay */}
+                <SelectContent className="bg-white z-[100]">
                   {Object.entries(EXPIRATION_OPTIONS).map(([key, { label }]) => (
                     <SelectItem key={key} value={key} className="text-gray-700">
                       {label}
