@@ -407,7 +407,7 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="settings" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
-            <SettingsPanel />
+            <SettingsPanel isAdmin={isAdmin} />
           </TabsContent>
         </div>
       </Tabs>
