@@ -100,17 +100,12 @@ const DocumentCard = ({
     <>
       <Card className="p-4 bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200">
         <div className="flex items-start gap-4">
-          {/* PDF Preview Icon */}
-          <div className="flex-shrink-0 w-14 h-18 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex flex-col items-center justify-center shadow-sm relative overflow-hidden">
-            <FileText className="w-6 h-6 text-white/90 mb-1" />
-            <span className="text-[10px] font-bold text-white/90 uppercase tracking-wider">
+          {/* Modern Document Icon */}
+          <div className="flex-shrink-0 w-12 h-14 rounded-lg bg-gray-100 border border-gray-200 flex flex-col items-center justify-center relative overflow-hidden">
+            <FileText className="w-5 h-5 text-gray-400 mb-0.5" />
+            <span className="text-[9px] font-medium text-gray-500 uppercase tracking-wide">
               {fileExtension || "DOC"}
             </span>
-            {/* Document lines decoration */}
-            <div className="absolute bottom-2 left-2 right-2 space-y-0.5">
-              <div className="h-0.5 bg-white/20 rounded" />
-              <div className="h-0.5 bg-white/20 rounded w-3/4" />
-            </div>
           </div>
 
           {/* Content */}
