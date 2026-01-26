@@ -140,19 +140,23 @@ export default function TravelDashboard() {
 
   useEffect(() => {
     fetchBookings();
-  }, []);
+  }, [showPastBookings]);
 
   const fetchBookings = async () => {
     setIsLoading(true);
     try {
-      // Only load bookings from 14 days ago to keep data relevant
-      const fourteenDaysAgo = subDays(new Date(), 14);
-      
-      const { data, error } = await supabase
+      let query = supabase
         .from("travel_bookings")
         .select("*")
-        .gte("start_datetime", fourteenDaysAgo.toISOString())
         .order("start_datetime", { ascending: true });
+      
+      // Only limit to recent bookings if not showing past
+      if (!showPastBookings) {
+        const fourteenDaysAgo = subDays(new Date(), 14);
+        query = query.gte("start_datetime", fourteenDaysAgo.toISOString());
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       // Deduplicate the bookings
@@ -523,7 +527,10 @@ export default function TravelDashboard() {
                             <History className="w-4 h-4 text-gray-400" />
                           </div>
                           <span className="text-sm font-medium text-gray-500">
-                            Vergangene Reisen ({pastDates.length} {pastDates.length === 1 ? 'Tag' : 'Tage'})
+                            {showPastBookings 
+                              ? `Vergangene Reisen (${pastDates.length} ${pastDates.length === 1 ? 'Tag' : 'Tage'})`
+                              : "Vergangene Reisen anzeigen"
+                            }
                           </span>
                         </div>
                         <ChevronDown className={cn(
