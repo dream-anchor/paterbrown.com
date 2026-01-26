@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUpload } from "@/contexts/UploadContext";
@@ -55,6 +56,10 @@ import MoveToAlbumDialog from "./picks/MoveToAlbumDialog";
 const PicksPanel = () => {
   const { toast } = useToast();
   const { addFiles, files: uploadingFiles, isUploading: globalIsUploading } = useUpload();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get album ID from URL
+  const urlAlbumId = searchParams.get("album");
   
   // Data state
   const [images, setImages] = useState<ImageData[]>([]);
@@ -62,9 +67,22 @@ const PicksPanel = () => {
   const [votes, setVotes] = useState<ImageVote[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [currentAlbumId, setCurrentAlbumId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  
+  // Current album from URL (null = root)
+  const currentAlbumId = urlAlbumId || null;
+  
+  // Update URL when navigating albums
+  const setCurrentAlbumId = useCallback((albumId: string | null) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (albumId) {
+      newParams.set("album", albumId);
+    } else {
+      newParams.delete("album");
+    }
+    setSearchParams(newParams, { replace: true });
+  }, [searchParams, setSearchParams]);
   
   // Selection state
   const [selectedImageIds, setSelectedImageIds] = useState<Set<string>>(new Set());
@@ -796,21 +814,29 @@ const PicksPanel = () => {
           </div>
         )}
 
-        {/* Albums Grid */}
+        {/* Albums Grid - Modern card layout */}
         {currentSubalbums.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
-            {currentSubalbums.map((album) => (
-              <AlbumCard
-                key={album.id}
-                album={album}
-                imageCount={images.filter(i => i.folder_id === album.id).length}
-                previewImages={images.filter(i => i.folder_id === album.id).slice(0, 4)}
-                currentUserId={currentUserId}
-                onOpen={(a) => setCurrentAlbumId(a.id)}
-                onDelete={(a) => setDeleteConfirmation({ type: 'album', item: a })}
-                canDelete={canDeleteItem(album)}
-              />
-            ))}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                Alben
+              </h3>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+              {currentSubalbums.map((album) => (
+                <AlbumCard
+                  key={album.id}
+                  album={album}
+                  imageCount={images.filter(i => i.folder_id === album.id).length}
+                  previewImages={images.filter(i => i.folder_id === album.id).slice(0, 4)}
+                  currentUserId={currentUserId}
+                  onOpen={(a) => setCurrentAlbumId(a.id)}
+                  onDelete={(a) => setDeleteConfirmation({ type: 'album', item: a })}
+                  canDelete={canDeleteItem(album)}
+                />
+              ))}
+            </div>
           </div>
         )}
 
