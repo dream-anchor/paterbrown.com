@@ -5,7 +5,8 @@ import {
   HelpCircle, 
   XCircle,
   ZoomIn,
-  Users
+  Users,
+  AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -57,11 +58,20 @@ const MasonryImageCard = ({
   
   const totalVotes = votes.filter(v => v.image_id === image.id).length;
 
-  const getThumbnailUrl = (filePath: string) => {
-    if (filePath.startsWith("https://")) {
-      return filePath;
+  // Use thumbnail_url if available, otherwise fall back to original with transform
+  const isMissingThumbnail = !image.thumbnail_url;
+  
+  const getDisplayUrl = () => {
+    // Priority: thumbnail_url > supabase transform > original
+    if (image.thumbnail_url) {
+      return image.thumbnail_url;
     }
-    return getImageThumbnailUrl("picks-images", filePath, 600, 600, 80);
+    // Fallback: if it's a supabase storage URL, use transform
+    if (!image.file_path.startsWith("https://")) {
+      return getImageThumbnailUrl("picks-images", image.file_path, 600, 600, 80);
+    }
+    // Last resort: original file (slow!)
+    return image.file_path;
   };
 
   const handleClick = (e: React.MouseEvent) => {
@@ -96,7 +106,7 @@ const MasonryImageCard = ({
           <div className="aspect-square bg-gray-200 animate-pulse" />
         )}
         <img
-          src={getThumbnailUrl(image.file_path)}
+          src={getDisplayUrl()}
           alt={image.title || image.file_name}
           className={cn(
             "w-full object-cover transition-transform duration-300",
@@ -106,6 +116,13 @@ const MasonryImageCard = ({
           loading="lazy"
           onLoad={() => setImageLoaded(true)}
         />
+
+        {/* Missing thumbnail warning */}
+        {isMissingThumbnail && imageLoaded && (
+          <div className="absolute top-2 left-10 bg-amber-500 text-white p-1 rounded-full" title="Thumbnail fehlt - Original wird geladen">
+            <AlertTriangle className="w-3 h-3" />
+          </div>
+        )}
 
         {/* Selection checkbox - top left */}
         <div

@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Settings, Eye, EyeOff, Save, CheckCircle2, AlertCircle, Loader2, User, Mail, Phone, AlertTriangle, ArrowRightLeft } from "lucide-react";
+import { Settings, Eye, EyeOff, Save, CheckCircle2, AlertCircle, Loader2, User, Mail, Phone, AlertTriangle, ArrowRightLeft, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { resizeImage, generateFilePaths } from "@/lib/imageResizer";
 
 interface R2Credentials {
   endpoint: string;
@@ -26,6 +27,18 @@ interface MigrationStatus {
   currentFile: string;
   total: number;
   migrated: number;
+  skipped: number;
+  errors: string[];
+  completed: boolean;
+}
+
+interface RetrofitStatus {
+  isRunning: boolean;
+  progress: number;
+  currentImage: string;
+  total: number;
+  thumbnailsCreated: number;
+  previewsCreated: number;
   skipped: number;
   errors: string[];
   completed: boolean;
@@ -58,6 +71,19 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
     currentFile: "",
     total: 0,
     migrated: 0,
+    skipped: 0,
+    errors: [],
+    completed: false,
+  });
+  
+  // Retrofit state
+  const [retrofit, setRetrofit] = useState<RetrofitStatus>({
+    isRunning: false,
+    progress: 0,
+    currentImage: "",
+    total: 0,
+    thumbnailsCreated: 0,
+    previewsCreated: 0,
     skipped: 0,
     errors: [],
     completed: false,
@@ -291,6 +317,191 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
       }));
       toast({
         title: "Migration fehlgeschlagen",
+        description: error instanceof Error ? error.message : "Unbekannter Fehler",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Retrofit: Generate missing thumbnails and previews for existing images
+  const handleRetrofit = async () => {
+    if (!isR2Configured) {
+      toast({
+        title: "R2 nicht konfiguriert",
+        description: "Bitte zuerst die R2-Zugangsdaten eingeben und speichern.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setRetrofit({
+      isRunning: true,
+      progress: 0,
+      currentImage: "Lade Bilder...",
+      total: 0,
+      thumbnailsCreated: 0,
+      previewsCreated: 0,
+      skipped: 0,
+      errors: [],
+      completed: false,
+    });
+
+    try {
+      // Fetch all images that need processing
+      const { data: images, error } = await supabase
+        .from("images")
+        .select("id, file_name, file_path, thumbnail_url, preview_url")
+        .or("thumbnail_url.is.null,preview_url.is.null");
+
+      if (error) throw error;
+
+      const imagesToProcess = images || [];
+      const total = imagesToProcess.length;
+
+      if (total === 0) {
+        setRetrofit(prev => ({
+          ...prev,
+          isRunning: false,
+          completed: true,
+          currentImage: "",
+        }));
+        toast({
+          title: "Keine Bilder zu verarbeiten",
+          description: "Alle Bilder haben bereits Thumbnails und Previews.",
+        });
+        return;
+      }
+
+      setRetrofit(prev => ({ ...prev, total }));
+
+      let thumbnailsCreated = 0;
+      let previewsCreated = 0;
+      let skipped = 0;
+      const errors: string[] = [];
+
+      for (let i = 0; i < imagesToProcess.length; i++) {
+        const image = imagesToProcess[i];
+        
+        setRetrofit(prev => ({
+          ...prev,
+          progress: Math.round(((i + 1) / total) * 100),
+          currentImage: image.file_name,
+        }));
+
+        try {
+          // Skip if both already exist
+          if (image.thumbnail_url && image.preview_url) {
+            skipped++;
+            continue;
+          }
+
+          // Fetch the original image
+          const response = await fetch(image.file_path);
+          if (!response.ok) {
+            errors.push(`Konnte ${image.file_name} nicht laden`);
+            continue;
+          }
+
+          const blob = await response.blob();
+          const file = new File([blob], image.file_name, { type: blob.type || "image/jpeg" });
+
+          const paths = generateFilePaths(image.file_name, "picks");
+          const updates: { thumbnail_url?: string; preview_url?: string } = {};
+
+          // Generate thumbnail if missing
+          if (!image.thumbnail_url) {
+            const thumbnailBlob = await resizeImage(file, 400, 0.75);
+            
+            const { data: presignedData } = await supabase.functions.invoke("get-presigned-url", {
+              body: {
+                files: [{ fileName: "thumbnail.jpg", contentType: "image/jpeg", folder: "picks", customPath: paths.thumbnailPath }]
+              }
+            });
+
+            if (presignedData?.success) {
+              const uploadRes = await fetch(presignedData.urls[0].uploadUrl, {
+                method: "PUT",
+                headers: { "Content-Type": "image/jpeg" },
+                body: thumbnailBlob,
+              });
+
+              if (uploadRes.ok) {
+                updates.thumbnail_url = presignedData.urls[0].publicUrl;
+                thumbnailsCreated++;
+              }
+            }
+          }
+
+          // Generate preview if missing
+          if (!image.preview_url) {
+            const previewBlob = await resizeImage(file, 1600, 0.8);
+            
+            const { data: presignedData } = await supabase.functions.invoke("get-presigned-url", {
+              body: {
+                files: [{ fileName: "preview.jpg", contentType: "image/jpeg", folder: "picks", customPath: paths.previewPath }]
+              }
+            });
+
+            if (presignedData?.success) {
+              const uploadRes = await fetch(presignedData.urls[0].uploadUrl, {
+                method: "PUT",
+                headers: { "Content-Type": "image/jpeg" },
+                body: previewBlob,
+              });
+
+              if (uploadRes.ok) {
+                updates.preview_url = presignedData.urls[0].publicUrl;
+                previewsCreated++;
+              }
+            }
+          }
+
+          // Update database with new URLs
+          if (Object.keys(updates).length > 0) {
+            await supabase
+              .from("images")
+              .update(updates)
+              .eq("id", image.id);
+          } else {
+            skipped++;
+          }
+
+        } catch (imgError) {
+          console.error(`Error processing ${image.file_name}:`, imgError);
+          errors.push(`${image.file_name}: ${imgError instanceof Error ? imgError.message : "Fehler"}`);
+        }
+
+        // Update progress
+        setRetrofit(prev => ({
+          ...prev,
+          thumbnailsCreated,
+          previewsCreated,
+          skipped,
+          errors,
+        }));
+      }
+
+      setRetrofit(prev => ({
+        ...prev,
+        isRunning: false,
+        completed: true,
+        currentImage: "",
+      }));
+
+      toast({
+        title: "Retrofit abgeschlossen",
+        description: `${thumbnailsCreated} Thumbnails, ${previewsCreated} Previews erstellt.`,
+      });
+
+    } catch (error) {
+      console.error("Retrofit error:", error);
+      setRetrofit(prev => ({
+        ...prev,
+        isRunning: false,
+        errors: [error instanceof Error ? error.message : "Unbekannter Fehler"],
+      }));
+      toast({
+        title: "Retrofit fehlgeschlagen",
         description: error instanceof Error ? error.message : "Unbekannter Fehler",
         variant: "destructive",
       });
@@ -668,6 +879,105 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
                 <>
                   <AlertTriangle className="w-4 h-4 mr-2" />
                   Alle alten Dateien zu R2 migrieren
+                </>
+              )}
+            </Button>
+
+            {!isR2Configured && (
+              <p className="text-xs text-gray-400 mt-2 text-center">
+                Zuerst R2-Zugangsdaten speichern
+              </p>
+            )}
+          </div>
+
+          {/* Retrofit Section - Generate missing thumbnails/previews */}
+          <div className="px-6 py-5 border-t border-gray-100 bg-blue-50/50">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <ImageIcon className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900">Thumbnails & Previews nachgenerieren</h4>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Erstellt fehlende Vorschaubilder für bestehende Uploads
+                </p>
+              </div>
+            </div>
+
+            {/* Info */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <div className="text-xs text-blue-800">
+                <p className="font-medium mb-1">Was passiert:</p>
+                <ul className="list-disc list-inside space-y-0.5 text-blue-700">
+                  <li>Thumbnail (400px) für schnelle Grid-Ansicht</li>
+                  <li>Preview (1600px) für Lightbox</li>
+                  <li>Original bleibt für Download erhalten</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Retrofit Status */}
+            {retrofit.isRunning && (
+              <div className="mb-4 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600 truncate max-w-[200px]">{retrofit.currentImage}</span>
+                  <span className="text-gray-500">{retrofit.progress}%</span>
+                </div>
+                <Progress value={retrofit.progress} className="h-2" />
+                <div className="text-xs text-gray-500">
+                  {retrofit.thumbnailsCreated} Thumbnails, {retrofit.previewsCreated} Previews erstellt
+                </div>
+              </div>
+            )}
+
+            {/* Retrofit Results */}
+            {retrofit.completed && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-2 text-green-800">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span className="text-sm font-medium">Retrofit abgeschlossen</span>
+                </div>
+                <div className="mt-2 text-xs text-green-700 space-y-0.5">
+                  <p>✓ {retrofit.thumbnailsCreated} Thumbnails erstellt</p>
+                  <p>✓ {retrofit.previewsCreated} Previews erstellt</p>
+                  <p>○ {retrofit.skipped} übersprungen</p>
+                  {retrofit.errors.length > 0 && (
+                    <p className="text-red-600">✗ {retrofit.errors.length} Fehler</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Retrofit Errors */}
+            {retrofit.errors.length > 0 && !retrofit.isRunning && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm font-medium text-red-800 mb-1">Fehler:</p>
+                <ul className="text-xs text-red-700 list-disc list-inside space-y-0.5">
+                  {retrofit.errors.slice(0, 5).map((err, i) => (
+                    <li key={i}>{err}</li>
+                  ))}
+                  {retrofit.errors.length > 5 && (
+                    <li>... und {retrofit.errors.length - 5} weitere</li>
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {/* Retrofit Button */}
+            <Button
+              onClick={handleRetrofit}
+              disabled={retrofit.isRunning || !isR2Configured}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {retrofit.isRunning ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Verarbeite {retrofit.progress}%...
+                </>
+              ) : (
+                <>
+                  <ImageIcon className="w-4 h-4 mr-2" />
+                  Fehlende Vorschaubilder generieren
                 </>
               )}
             </Button>

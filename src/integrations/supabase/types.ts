@@ -381,6 +381,8 @@ export type Database = {
           file_path: string
           folder_id: string | null
           id: string
+          preview_url: string | null
+          thumbnail_url: string | null
           title: string | null
           updated_at: string
           uploaded_by: string | null
@@ -391,6 +393,8 @@ export type Database = {
           file_path: string
           folder_id?: string | null
           id?: string
+          preview_url?: string | null
+          thumbnail_url?: string | null
           title?: string | null
           updated_at?: string
           uploaded_by?: string | null
@@ -401,6 +405,8 @@ export type Database = {
           file_path?: string
           folder_id?: string | null
           id?: string
+          preview_url?: string | null
+          thumbnail_url?: string | null
           title?: string | null
           updated_at?: string
           uploaded_by?: string | null

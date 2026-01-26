@@ -4,6 +4,8 @@ export interface ImageData {
   id: string;
   file_name: string;
   file_path: string;
+  thumbnail_url: string | null;
+  preview_url: string | null;
   title: string | null;
   folder_id: string | null;
   uploaded_by: string | null;
