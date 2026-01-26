@@ -686,9 +686,26 @@ All colors MUST be HSL.
 }
 
 /* ============================================
-   ADMIN AREA: Remove ALL focus outlines/rings
-   This prevents the orange/black focus borders
+   ADMIN AREA: Force Light Mode & Remove Focus Rings
+   The Admin area is ALWAYS light mode, no dark mode.
    ============================================ */
+
+/* Force light mode colors in admin area */
+.admin-no-focus-ring {
+  --background: 0 0% 98%;
+  --foreground: 0 0% 7%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 7%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+  --border: 0 0% 90%;
+  --input: 0 0% 100%;
+  color-scheme: light;
+}
+
+/* Remove ALL focus outlines/rings in admin */
 .admin-no-focus-ring *:focus,
 .admin-no-focus-ring *:focus-visible,
 .admin-no-focus-ring *:focus-within {
