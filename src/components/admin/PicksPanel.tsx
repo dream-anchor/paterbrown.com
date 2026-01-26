@@ -9,20 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
   Upload, 
-  Check, 
   Users, 
   Image as ImageIcon, 
-  Trash2,
   Filter,
   Loader2,
   FolderPlus,
-  Folder,
   ChevronRight,
   Home,
   ArrowLeft,
-  X,
-  Download,
-  ZoomIn
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -37,75 +31,74 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { getImageThumbnailUrl, getImageOriginalUrl } from "@/lib/documentUtils";
+import { getImageOriginalUrl } from "@/lib/documentUtils";
 
-interface ImageData {
-  id: string;
-  file_name: string;
-  file_path: string;
-  title: string | null;
-  folder_id: string | null;
-  created_at: string;
-}
-
-interface FolderData {
-  id: string;
-  name: string;
-  parent_id: string | null;
-  created_at: string;
-}
-
-interface ApprovalData {
-  id: string;
-  user_id: string;
-  image_id: string;
-  created_at: string;
-}
-
-interface UserProfile {
-  id: string;
-  email: string;
-  displayName: string;
-}
+// Import new components
+import { ImageData, AlbumData, VoteStatus, ImageVote, UserProfile } from "./picks/types";
+import MasonryImageCard from "./picks/MasonryImageCard";
+import AlbumCard from "./picks/AlbumCard";
+import ImageLightbox from "./picks/ImageLightbox";
+import FloatingActionBar from "./picks/FloatingActionBar";
+import MoveToAlbumDialog from "./picks/MoveToAlbumDialog";
 
 const PicksPanel = () => {
   const { toast } = useToast();
   const { addFiles, files: uploadingFiles, isUploading: globalIsUploading } = useUpload();
+  
+  // Data state
   const [images, setImages] = useState<ImageData[]>([]);
-  const [folders, setFolders] = useState<FolderData[]>([]);
-  const [approvals, setApprovals] = useState<ApprovalData[]>([]);
+  const [albums, setAlbums] = useState<AlbumData[]>([]);
+  const [votes, setVotes] = useState<ImageVote[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const [currentAlbumId, setCurrentAlbumId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   
-  // New folder dialog
-  const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
-  const [newFolderName, setNewFolderName] = useState("");
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  // Selection state
+  const [selectedImageIds, setSelectedImageIds] = useState<Set<string>>(new Set());
+  
+  // New album dialog
+  const [showNewAlbumDialog, setShowNewAlbumDialog] = useState(false);
+  const [newAlbumName, setNewAlbumName] = useState("");
+  const [isCreatingAlbum, setIsCreatingAlbum] = useState(false);
 
   // Lightbox state
   const [lightboxImage, setLightboxImage] = useState<ImageData | null>(null);
 
+  // Move dialog state
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
+  
+  // Delete confirmation
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ type: 'image' | 'album' | 'batch'; item?: ImageData | AlbumData } | null>(null);
+
   // Page-level drag-and-drop
   const [pageDragActive, setPageDragActive] = useState(false);
 
-  // Refresh images when uploads complete (DB insert now happens in UploadContext)
+  // Refresh images when uploads complete
   const completedUploadsCount = uploadingFiles.filter(
     f => f.status === "success" && f.folder === "picks"
   ).length;
   
   useEffect(() => {
     if (completedUploadsCount > 0) {
-      // Just refresh the images list - UploadContext already saved to DB
       const refreshImages = async () => {
         const { data } = await supabase
           .from("images")
           .select("*")
           .order("created_at", { ascending: false });
-        if (data) setImages(data);
+        if (data) setImages(data as ImageData[]);
       };
       refreshImages();
     }
@@ -150,7 +143,7 @@ const PicksPanel = () => {
       }
       await uploadFiles(files);
     }
-  }, [currentFolderId, currentUserId, toast]);
+  }, [currentAlbumId, currentUserId, toast]);
 
   // Add global drag listeners
   useEffect(() => {
@@ -177,21 +170,22 @@ const PicksPanel = () => {
           setCurrentUserId(session.user.id);
         }
 
-        const [imagesRes, foldersRes, approvalsRes, rolesRes] = await Promise.all([
+        const [imagesRes, albumsRes, votesRes, rolesRes] = await Promise.all([
           supabase.from("images").select("*").order("created_at", { ascending: false }),
           supabase.from("picks_folders").select("*").order("name"),
-          supabase.from("approvals").select("*"),
+          supabase.from("image_votes").select("*"),
           supabase.from("user_roles").select("user_id").eq("role", "admin"),
         ]);
 
         if (imagesRes.error) throw imagesRes.error;
-        if (foldersRes.error) throw foldersRes.error;
-        if (approvalsRes.error) throw approvalsRes.error;
+        if (albumsRes.error) throw albumsRes.error;
+        // votes table might not exist yet, so we handle that gracefully
+        if (votesRes.error && !votesRes.error.message.includes("does not exist")) throw votesRes.error;
         if (rolesRes.error) throw rolesRes.error;
 
-        setImages(imagesRes.data || []);
-        setFolders(foldersRes.data || []);
-        setApprovals(approvalsRes.data || []);
+        setImages((imagesRes.data || []) as ImageData[]);
+        setAlbums((albumsRes.data || []) as AlbumData[]);
+        setVotes((votesRes.data || []) as ImageVote[]);
 
         const userProfiles: UserProfile[] = (rolesRes.data || []).map((role) => ({
           id: role.user_id,
@@ -216,54 +210,66 @@ const PicksPanel = () => {
 
   // Get breadcrumb path
   const breadcrumbPath = useMemo(() => {
-    const path: FolderData[] = [];
-    let currentId = currentFolderId;
+    const path: AlbumData[] = [];
+    let currentId = currentAlbumId;
     
     while (currentId) {
-      const folder = folders.find((f) => f.id === currentId);
-      if (folder) {
-        path.unshift(folder);
-        currentId = folder.parent_id;
+      const album = albums.find((a) => a.id === currentId);
+      if (album) {
+        path.unshift(album);
+        currentId = album.parent_id;
       } else {
         break;
       }
     }
     
     return path;
-  }, [currentFolderId, folders]);
+  }, [currentAlbumId, albums]);
 
-  // Get current folder's subfolders
-  const currentSubfolders = useMemo(() => {
-    return folders.filter((f) => f.parent_id === currentFolderId);
-  }, [folders, currentFolderId]);
+  // Get current album's subalbums
+  const currentSubalbums = useMemo(() => {
+    return albums.filter((a) => a.parent_id === currentAlbumId);
+  }, [albums, currentAlbumId]);
 
-  // Get current folder's images
+  // Get current album's images
   const currentImages = useMemo(() => {
-    return images.filter((img) => img.folder_id === currentFolderId);
-  }, [images, currentFolderId]);
+    return images.filter((img) => img.folder_id === currentAlbumId);
+  }, [images, currentAlbumId]);
 
-  // Filter images based on selected users (intersection logic)
+  // Filter images based on selected users (vote-based)
   const filteredImages = useMemo(() => {
     if (selectedUserIds.length === 0) return currentImages;
 
     return currentImages.filter((image) => {
       return selectedUserIds.every((userId) =>
-        approvals.some((a) => a.image_id === image.id && a.user_id === userId)
+        votes.some((v) => v.image_id === image.id && v.user_id === userId && v.vote_status === 'approved')
       );
     });
-  }, [currentImages, approvals, selectedUserIds]);
+  }, [currentImages, votes, selectedUserIds]);
 
-  // Create new folder
-  const handleCreateFolder = async () => {
-    if (!newFolderName.trim()) return;
+  // Check if current user can delete an item
+  const canDeleteItem = useCallback((item: ImageData | AlbumData) => {
+    if (!currentUserId) return false;
+    if ('uploaded_by' in item) {
+      return item.uploaded_by === currentUserId;
+    }
+    if ('created_by' in item) {
+      return item.created_by === currentUserId;
+    }
+    return false;
+  }, [currentUserId]);
+
+  // Create new album
+  const handleCreateAlbum = async () => {
+    if (!newAlbumName.trim()) return;
     
-    setIsCreatingFolder(true);
+    setIsCreatingAlbum(true);
     try {
       const { data, error } = await supabase
         .from("picks_folders")
         .insert({
-          name: newFolderName.trim(),
-          parent_id: currentFolderId,
+          name: newAlbumName.trim(),
+          parent_id: currentAlbumId,
           created_by: currentUserId,
         })
         .select()
@@ -271,43 +277,43 @@ const PicksPanel = () => {
 
       if (error) throw error;
       
-      setFolders((prev) => [...prev, data]);
-      setNewFolderName("");
-      setShowNewFolderDialog(false);
+      setAlbums((prev) => [...prev, data as AlbumData]);
+      setNewAlbumName("");
+      setShowNewAlbumDialog(false);
       
       toast({
-        title: "Ordner erstellt",
+        title: "Album erstellt",
         description: `"${data.name}" wurde erstellt`,
       });
     } catch (error) {
-      console.error("Error creating folder:", error);
+      console.error("Error creating album:", error);
       toast({
         title: "Fehler",
-        description: "Ordner konnte nicht erstellt werden",
+        description: "Album konnte nicht erstellt werden",
         variant: "destructive",
       });
     } finally {
-      setIsCreatingFolder(false);
+      setIsCreatingAlbum(false);
     }
   };
 
-  // Delete folder (with R2 cleanup)
-  const handleDeleteFolder = async (folder: FolderData) => {
+  // Delete album (with R2 cleanup)
+  const handleDeleteAlbum = async (album: AlbumData) => {
     try {
-      // 1. Get all images in this folder (and recursively in subfolders)
-      const getAllImagesInFolder = async (folderId: string): Promise<ImageData[]> => {
-        const folderImages = images.filter((img) => img.folder_id === folderId);
-        const subfolders = folders.filter((f) => f.parent_id === folderId);
+      // 1. Get all images in this album (and recursively in subalbums)
+      const getAllImagesInAlbum = async (albumId: string): Promise<ImageData[]> => {
+        const albumImages = images.filter((img) => img.folder_id === albumId);
+        const subalbums = albums.filter((a) => a.parent_id === albumId);
         
-        let allImages = [...folderImages];
-        for (const subfolder of subfolders) {
-          const subImages = await getAllImagesInFolder(subfolder.id);
+        let allImages = [...albumImages];
+        for (const subalbum of subalbums) {
+          const subImages = await getAllImagesInAlbum(subalbum.id);
           allImages = [...allImages, ...subImages];
         }
         return allImages;
       };
 
-      const imagesToDelete = await getAllImagesInFolder(folder.id);
+      const imagesToDelete = await getAllImagesInAlbum(album.id);
       
       // 2. Delete files from R2 if there are any
       if (imagesToDelete.length > 0) {
@@ -324,62 +330,54 @@ const PicksPanel = () => {
 
           if (deleteError) {
             console.error("R2 deletion error:", deleteError);
-            toast({
-              title: "Warnung",
-              description: "Einige Dateien konnten nicht aus R2 gelöscht werden",
-              variant: "destructive",
-            });
           }
         }
 
         // 3. Delete image records from database
         const imageIds = imagesToDelete.map((img) => img.id);
-        await supabase.from("approvals").delete().in("image_id", imageIds);
+        await supabase.from("image_votes").delete().in("image_id", imageIds);
         await supabase.from("images").delete().in("id", imageIds);
         
-        // Update local state
         setImages((prev) => prev.filter((img) => !imageIds.includes(img.id)));
-        setApprovals((prev) => prev.filter((a) => !imageIds.includes(a.image_id)));
+        setVotes((prev) => prev.filter((v) => !imageIds.includes(v.image_id)));
       }
 
-      // 4. Delete subfolders recursively from DB
-      const deleteSubfolders = async (folderId: string) => {
-        const subfolders = folders.filter((f) => f.parent_id === folderId);
-        for (const subfolder of subfolders) {
-          await deleteSubfolders(subfolder.id);
-          await supabase.from("picks_folders").delete().eq("id", subfolder.id);
+      // 4. Delete subalbums recursively
+      const deleteSubalbums = async (albumId: string) => {
+        const subalbums = albums.filter((a) => a.parent_id === albumId);
+        for (const subalbum of subalbums) {
+          await deleteSubalbums(subalbum.id);
+          await supabase.from("picks_folders").delete().eq("id", subalbum.id);
         }
       };
-      await deleteSubfolders(folder.id);
+      await deleteSubalbums(album.id);
 
-      // 5. Delete the folder itself
-      const { error } = await supabase.from("picks_folders").delete().eq("id", folder.id);
+      // 5. Delete the album itself
+      const { error } = await supabase.from("picks_folders").delete().eq("id", album.id);
       if (error) throw error;
 
-      setFolders((prev) => prev.filter((f) => f.id !== folder.id && f.parent_id !== folder.id));
+      setAlbums((prev) => prev.filter((a) => a.id !== album.id && a.parent_id !== album.id));
       toast({ 
-        title: "Ordner gelöscht",
+        title: "Album gelöscht",
         description: imagesToDelete.length > 0 
           ? `${imagesToDelete.length} Bild(er) wurden ebenfalls entfernt`
           : undefined,
       });
     } catch (error) {
-      console.error("Error deleting folder:", error);
+      console.error("Error deleting album:", error);
       toast({
         title: "Fehler",
-        description: "Ordner konnte nicht gelöscht werden",
+        description: "Album konnte nicht gelöscht werden",
         variant: "destructive",
       });
     }
   };
 
-  // Upload files helper (used by both input and drag-drop)
-  // Now uses global upload context for parallel, persistent uploads
+  // Upload files helper
   const uploadFiles = async (files: File[]) => {
     if (files.length === 0) return;
     
-    // Pass files to global upload context with current folder
-    addFiles(files, "picks", { folderId: currentFolderId });
+    addFiles(files, "picks", { folderId: currentAlbumId });
     
     toast({
       title: "Upload gestartet",
@@ -395,62 +393,66 @@ const PicksPanel = () => {
     e.target.value = "";
   };
 
-  // Toggle approval
-  const toggleApproval = async (imageId: string) => {
+  // Vote on an image
+  const handleVote = async (imageId: string, status: VoteStatus) => {
     if (!currentUserId) return;
 
-    const existingApproval = approvals.find(
-      (a) => a.image_id === imageId && a.user_id === currentUserId
+    const existingVote = votes.find(
+      (v) => v.image_id === imageId && v.user_id === currentUserId
     );
 
     try {
-      if (existingApproval) {
-        const { error } = await supabase.from("approvals").delete().eq("id", existingApproval.id);
-        if (error) throw error;
-        setApprovals((prev) => prev.filter((a) => a.id !== existingApproval.id));
+      if (existingVote) {
+        if (existingVote.vote_status === status) {
+          // Remove vote if clicking same status
+          const { error } = await supabase.from("image_votes").delete().eq("id", existingVote.id);
+          if (error) throw error;
+          setVotes((prev) => prev.filter((v) => v.id !== existingVote.id));
+        } else {
+          // Update vote status
+          const { data, error } = await supabase
+            .from("image_votes")
+            .update({ vote_status: status })
+            .eq("id", existingVote.id)
+            .select()
+            .single();
+          if (error) throw error;
+          setVotes((prev) => prev.map((v) => v.id === existingVote.id ? (data as ImageVote) : v));
+        }
       } else {
+        // Create new vote
         const { data, error } = await supabase
-          .from("approvals")
-          .insert({ user_id: currentUserId, image_id: imageId })
+          .from("image_votes")
+          .insert({ user_id: currentUserId, image_id: imageId, vote_status: status })
           .select()
           .single();
         if (error) throw error;
-        setApprovals((prev) => [...prev, data]);
+        setVotes((prev) => [...prev, data as ImageVote]);
       }
     } catch (error) {
-      console.error("Approval toggle error:", error);
-      toast({ title: "Fehler", description: "Aktion fehlgeschlagen", variant: "destructive" });
+      console.error("Vote error:", error);
+      toast({ title: "Fehler", description: "Bewertung fehlgeschlagen", variant: "destructive" });
     }
   };
 
-  // Delete image (with R2 cleanup)
+  // Delete single image
   const handleDeleteImage = async (image: ImageData) => {
     try {
-      // Check if it's an R2 file
       if (image.file_path.includes("r2.dev")) {
-        // Delete from R2 first
-        const { error: r2Error } = await supabase.functions.invoke("delete-files", {
+        await supabase.functions.invoke("delete-files", {
           body: { fileKeys: [image.file_path] },
         });
-
-        if (r2Error) {
-          console.error("R2 deletion error:", r2Error);
-          // Continue anyway to clean up DB
-        }
       } else {
-        // Legacy: Delete from Supabase Storage
         await supabase.storage.from("picks-images").remove([image.file_path]);
       }
 
-      // Delete approvals first (due to foreign key)
-      await supabase.from("approvals").delete().eq("image_id", image.id);
-      
-      // Delete from database
+      await supabase.from("image_votes").delete().eq("image_id", image.id);
       const { error } = await supabase.from("images").delete().eq("id", image.id);
       if (error) throw error;
 
       setImages((prev) => prev.filter((i) => i.id !== image.id));
-      setApprovals((prev) => prev.filter((a) => a.image_id !== image.id));
+      setVotes((prev) => prev.filter((v) => v.image_id !== image.id));
+      setLightboxImage(null);
       toast({ title: "Gelöscht" });
     } catch (error) {
       console.error("Delete error:", error);
@@ -458,28 +460,144 @@ const PicksPanel = () => {
     }
   };
 
-  const getImageApprovers = (imageId: string): string[] => {
-    return approvals.filter((a) => a.image_id === imageId).map((a) => a.user_id);
-  };
+  // Batch delete selected images
+  const handleBatchDelete = async () => {
+    const imagesToDelete = images.filter(img => selectedImageIds.has(img.id));
+    
+    try {
+      const r2Paths = imagesToDelete
+        .filter(img => img.file_path.includes("r2.dev"))
+        .map(img => img.file_path);
 
-  // Get thumbnail URL (R2 URLs are used directly, Supabase uses transformation)
-  const getThumbnailUrl = (filePath: string) => {
-    // R2 URLs are already complete URLs
-    if (filePath.startsWith("https://")) {
-      return filePath;
+      if (r2Paths.length > 0) {
+        await supabase.functions.invoke("delete-files", {
+          body: { fileKeys: r2Paths },
+        });
+      }
+
+      const imageIds = imagesToDelete.map(img => img.id);
+      await supabase.from("image_votes").delete().in("image_id", imageIds);
+      await supabase.from("images").delete().in("id", imageIds);
+
+      setImages(prev => prev.filter(img => !selectedImageIds.has(img.id)));
+      setVotes(prev => prev.filter(v => !selectedImageIds.has(v.image_id)));
+      setSelectedImageIds(new Set());
+      
+      toast({ title: `${imageIds.length} Bilder gelöscht` });
+    } catch (error) {
+      console.error("Batch delete error:", error);
+      toast({ title: "Fehler", description: "Batch-Löschen fehlgeschlagen", variant: "destructive" });
     }
-    // Legacy Supabase: use image transformation
-    return getImageThumbnailUrl("picks-images", filePath, 400, 400, 75);
   };
 
-  // Get full-resolution URL (for lightbox/download)
-  const getFullImageUrl = (filePath: string) => {
-    return getImageOriginalUrl("picks-images", filePath);
+  // Batch vote
+  const handleBatchVote = async (status: VoteStatus) => {
+    if (!currentUserId) return;
+    
+    try {
+      for (const imageId of selectedImageIds) {
+        const existingVote = votes.find(
+          v => v.image_id === imageId && v.user_id === currentUserId
+        );
+
+        if (existingVote) {
+          await supabase
+            .from("image_votes")
+            .update({ vote_status: status })
+            .eq("id", existingVote.id);
+        } else {
+          await supabase
+            .from("image_votes")
+            .insert({ user_id: currentUserId, image_id: imageId, vote_status: status });
+        }
+      }
+
+      // Refresh votes
+      const { data } = await supabase.from("image_votes").select("*");
+      if (data) setVotes(data as ImageVote[]);
+      
+      setSelectedImageIds(new Set());
+      toast({ title: `${selectedImageIds.size} Bilder bewertet` });
+    } catch (error) {
+      console.error("Batch vote error:", error);
+      toast({ title: "Fehler", variant: "destructive" });
+    }
   };
 
-  // Handle download from lightbox
+  // Move images to album
+  const handleMoveImages = async (targetAlbumId: string | null) => {
+    try {
+      await supabase
+        .from("images")
+        .update({ folder_id: targetAlbumId })
+        .in("id", Array.from(selectedImageIds));
+
+      setImages(prev => prev.map(img => 
+        selectedImageIds.has(img.id) 
+          ? { ...img, folder_id: targetAlbumId }
+          : img
+      ));
+      
+      setSelectedImageIds(new Set());
+      toast({ title: "Bilder verschoben" });
+    } catch (error) {
+      console.error("Move error:", error);
+      toast({ title: "Fehler", variant: "destructive" });
+    }
+  };
+
+  // Create album and move images
+  const handleCreateAlbumAndMove = async (albumName: string) => {
+    try {
+      const { data: newAlbum, error } = await supabase
+        .from("picks_folders")
+        .insert({
+          name: albumName,
+          parent_id: currentAlbumId,
+          created_by: currentUserId,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setAlbums(prev => [...prev, newAlbum as AlbumData]);
+      await handleMoveImages(newAlbum.id);
+    } catch (error) {
+      console.error("Create and move error:", error);
+      toast({ title: "Fehler", variant: "destructive" });
+    }
+  };
+
+  // Selection handling
+  const handleSelectImage = (imageId: string, addToSelection: boolean) => {
+    setSelectedImageIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(imageId)) {
+        newSet.delete(imageId);
+      } else {
+        if (!addToSelection) {
+          newSet.clear();
+        }
+        newSet.add(imageId);
+      }
+      return newSet;
+    });
+  };
+
+  // Lightbox navigation
+  const handleLightboxNavigate = (direction: 'prev' | 'next') => {
+    if (!lightboxImage) return;
+    const currentIndex = filteredImages.findIndex(img => img.id === lightboxImage.id);
+    const newIndex = direction === 'prev' ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex >= 0 && newIndex < filteredImages.length) {
+      setLightboxImage(filteredImages[newIndex]);
+    }
+  };
+
+  // Download image
   const handleDownloadImage = (image: ImageData) => {
-    const url = getFullImageUrl(image.file_path);
+    const url = getImageOriginalUrl("picks-images", image.file_path);
     const link = document.createElement("a");
     link.href = url;
     link.download = image.file_name;
@@ -494,6 +612,15 @@ const PicksPanel = () => {
       prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
     );
   };
+
+  // Check if all selected images are owned by current user
+  const canDeleteSelected = useMemo(() => {
+    if (selectedImageIds.size === 0 || !currentUserId) return false;
+    return Array.from(selectedImageIds).every(id => {
+      const img = images.find(i => i.id === id);
+      return img?.uploaded_by === currentUserId;
+    });
+  }, [selectedImageIds, images, currentUserId]);
 
   if (isLoading) {
     return (
@@ -511,381 +638,321 @@ const PicksPanel = () => {
           <div className="bg-white rounded-2xl shadow-2xl border-2 border-dashed border-amber-500 p-12 text-center">
             <Upload className="w-16 h-16 text-amber-500 mx-auto mb-4" />
             <p className="text-xl font-semibold text-gray-900">Bilder hier ablegen</p>
-            <p className="text-gray-500 mt-1">zum Hochladen</p>
+            <p className="text-gray-500 mt-1">zum Hochladen in dieses Album</p>
           </div>
         </div>
       )}
 
       <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">Picks</h2>
-          <p className="text-sm text-gray-500">
-            Bilder in Ordnern organisieren und Favoriten markieren
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* User Filter */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="bg-white text-gray-700">
-                <Filter className="w-4 h-4 mr-2" />
-                Filter
-                {selectedUserIds.length > 0 && (
-                  <Badge variant="secondary" className="ml-2 bg-amber-100 text-amber-700">
-                    {selectedUserIds.length}
-                  </Badge>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-white min-w-[200px]">
-              <div className="px-2 py-1.5 text-xs font-medium text-gray-500">
-                Schnittmenge (alle ausgewählten):
-              </div>
-              {users.map((user) => (
-                <DropdownMenuCheckboxItem
-                  key={user.id}
-                  checked={selectedUserIds.includes(user.id)}
-                  onCheckedChange={() => toggleUserFilter(user.id)}
-                  className="text-gray-700"
-                >
-                  <Users className="w-4 h-4 mr-2 text-gray-400" />
-                  {user.displayName}
-                </DropdownMenuCheckboxItem>
-              ))}
-              {selectedUserIds.length > 0 && (
-                <button
-                  onClick={() => setSelectedUserIds([])}
-                  className="w-full px-2 py-1.5 text-xs text-gray-500 hover:text-gray-700 text-left border-t border-gray-100 mt-1"
-                >
-                  Filter zurücksetzen
-                </button>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* New Folder Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowNewFolderDialog(true)}
-            className="bg-white text-gray-700"
-          >
-            <FolderPlus className="w-4 h-4 mr-2" />
-            Ordner
-          </Button>
-
-          {/* Upload Button */}
-          <Label
-            htmlFor="image-upload"
-            className={cn(
-              "inline-flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm",
-              "bg-gray-900 text-white hover:bg-gray-800",
-              globalIsUploading && "opacity-50 pointer-events-none"
-            )}
-          >
-            {globalIsUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-            Hochladen
-          </Label>
-          <Input
-            id="image-upload"
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileUpload}
-            className="hidden"
-            disabled={globalIsUploading}
-          />
-        </div>
-      </div>
-
-      {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-1 text-sm">
-        <button
-          onClick={() => setCurrentFolderId(null)}
-          className={cn(
-            "flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-100 transition-colors",
-            currentFolderId === null ? "text-gray-900 font-medium" : "text-gray-500"
-          )}
-        >
-          <Home className="w-4 h-4" />
-          <span>Picks</span>
-        </button>
-        
-        {breadcrumbPath.map((folder) => (
-          <div key={folder.id} className="flex items-center">
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-            <button
-              onClick={() => setCurrentFolderId(folder.id)}
-              className={cn(
-                "px-2 py-1 rounded hover:bg-gray-100 transition-colors",
-                currentFolderId === folder.id ? "text-gray-900 font-medium" : "text-gray-500"
-              )}
-            >
-              {folder.name}
-            </button>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">Picks</h2>
+            <p className="text-sm text-gray-500">
+              Bilder in Alben organisieren und mit Ampel-System bewerten
+            </p>
           </div>
-        ))}
-      </div>
 
-      {/* Back Button (when in subfolder) */}
-      {currentFolderId && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            const currentFolder = folders.find((f) => f.id === currentFolderId);
-            setCurrentFolderId(currentFolder?.parent_id || null);
-          }}
-          className="text-gray-600"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Zurück
-        </Button>
-      )}
-
-      {/* Filter Info */}
-      {selectedUserIds.length > 0 && (
-        <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <Filter className="w-4 h-4 text-amber-600" />
-          <span className="text-sm text-amber-800">
-            Zeige {filteredImages.length} Bild{filteredImages.length !== 1 ? "er" : ""} (Schnittmenge von {selectedUserIds.length} Nutzern)
-          </span>
-        </div>
-      )}
-
-      {/* Folders Grid */}
-      {currentSubfolders.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-          {currentSubfolders.map((folder) => (
-            <Card
-              key={folder.id}
-              className="group relative p-4 bg-white border-gray-200 hover:border-amber-300 hover:shadow-sm transition-all cursor-pointer"
-              onClick={() => setCurrentFolderId(folder.id)}
-            >
-              <div className="flex flex-col items-center gap-2">
-                <Folder className="w-10 h-10 text-amber-500" />
-                <span className="text-sm font-medium text-gray-900 text-center truncate w-full">
-                  {folder.name}
-                </span>
-                <span className="text-xs text-gray-400">
-                  {images.filter((i) => i.folder_id === folder.id).length} Bilder
-                </span>
-              </div>
-              
-              {/* Delete folder button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteFolder(folder);
-                }}
-                className="absolute top-2 right-2 p-1 rounded bg-white/80 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Images Grid */}
-      {filteredImages.length === 0 && currentSubfolders.length === 0 ? (
-        <Card className="p-12 text-center bg-white border-gray-200">
-          <ImageIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="font-medium text-gray-900 mb-1">
-            {currentImages.length === 0 ? "Ordner ist leer" : "Keine Treffer"}
-          </h3>
-          <p className="text-sm text-gray-500">
-            {currentImages.length === 0
-              ? "Lade Bilder hoch oder erstelle Unterordner"
-              : "Passe die Filter an"}
-          </p>
-        </Card>
-      ) : filteredImages.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {filteredImages.map((image) => {
-            const approvers = getImageApprovers(image.id);
-            const isApprovedByMe = currentUserId && approvers.includes(currentUserId);
-
-            return (
-              <Card
-                key={image.id}
-                className={cn(
-                  "group relative overflow-hidden bg-white border transition-all duration-200",
-                  isApprovedByMe
-                    ? "border-green-300 ring-2 ring-green-100"
-                    : "border-gray-200 hover:border-gray-300"
-                )}
-              >
-                <div className="aspect-square relative">
-                  <img
-                    src={getThumbnailUrl(image.file_path)}
-                    alt={image.title || image.file_name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <button
-                      onClick={() => setLightboxImage(image)}
-                      className="p-3 rounded-full bg-white text-gray-700 hover:bg-gray-100 transition-all"
-                      title="Vollbild anzeigen"
-                    >
-                      <ZoomIn className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => toggleApproval(image.id)}
-                      className={cn(
-                        "p-3 rounded-full transition-all",
-                        isApprovedByMe
-                          ? "bg-green-500 text-white"
-                          : "bg-white text-gray-700 hover:bg-green-500 hover:text-white"
-                      )}
-                    >
-                      <Check className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteImage(image)}
-                      className="p-3 rounded-full bg-white text-red-600 hover:bg-red-500 hover:text-white transition-all"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {isApprovedByMe && (
-                    <div className="absolute top-2 right-2 p-1.5 rounded-full bg-green-500 text-white shadow-lg">
-                      <Check className="w-3 h-3" />
-                    </div>
+          <div className="flex items-center gap-2">
+            {/* User Filter */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="bg-white text-gray-700">
+                  <Filter className="w-4 h-4 mr-2" />
+                  Filter
+                  {selectedUserIds.length > 0 && (
+                    <Badge variant="secondary" className="ml-2 bg-amber-100 text-amber-700">
+                      {selectedUserIds.length}
+                    </Badge>
                   )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-white min-w-[200px]">
+                <div className="px-2 py-1.5 text-xs font-medium text-gray-500">
+                  Nur Freigaben von:
                 </div>
+                {users.map((user) => (
+                  <DropdownMenuCheckboxItem
+                    key={user.id}
+                    checked={selectedUserIds.includes(user.id)}
+                    onCheckedChange={() => toggleUserFilter(user.id)}
+                    className="text-gray-700"
+                  >
+                    <Users className="w-4 h-4 mr-2 text-gray-400" />
+                    {user.displayName}
+                  </DropdownMenuCheckboxItem>
+                ))}
+                {selectedUserIds.length > 0 && (
+                  <button
+                    onClick={() => setSelectedUserIds([])}
+                    className="w-full px-2 py-1.5 text-xs text-gray-500 hover:text-gray-700 text-left border-t border-gray-100 mt-1"
+                  >
+                    Filter zurücksetzen
+                  </button>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-                <div className="p-2 border-t border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 truncate flex-1">
-                      {image.title || image.file_name}
-                    </span>
-                    {approvers.length > 0 && (
-                      <Badge variant="secondary" className="ml-2 bg-gray-100 text-gray-600 text-xs">
-                        <Users className="w-3 h-3 mr-1" />
-                        {approvers.length}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      {/* New Folder Dialog */}
-      <Dialog open={showNewFolderDialog} onOpenChange={setShowNewFolderDialog}>
-        <DialogContent className="bg-white sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-gray-900">Neuer Ordner</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <Label htmlFor="folder-name" className="text-gray-700">
-              Ordnername
-            </Label>
-            <Input
-              id="folder-name"
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              placeholder="z.B. Probefotos"
-              className="mt-2 bg-white border-gray-200 text-gray-900"
-              onKeyDown={(e) => e.key === "Enter" && handleCreateFolder()}
-            />
-          </div>
-          <DialogFooter>
+            {/* New Album Button */}
             <Button
               variant="outline"
-              onClick={() => setShowNewFolderDialog(false)}
+              size="sm"
+              onClick={() => setShowNewAlbumDialog(true)}
               className="bg-white text-gray-700"
             >
-              Abbrechen
+              <FolderPlus className="w-4 h-4 mr-2" />
+              Album
             </Button>
-            <Button
-              onClick={handleCreateFolder}
-              disabled={!newFolderName.trim() || isCreatingFolder}
-              className="bg-gray-900 text-white hover:bg-gray-800"
-            >
-              {isCreatingFolder ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : (
-                <FolderPlus className="w-4 h-4 mr-2" />
-              )}
-              Erstellen
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
-      {/* Lightbox for full-resolution view */}
-      {lightboxImage && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setLightboxImage(null)}
-        >
-          {/* Close button */}
-          <button
-            onClick={() => setLightboxImage(null)}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
-
-          {/* Action buttons */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDownloadImage(lightboxImage);
-              }}
-              className="bg-white text-gray-900 hover:bg-gray-100"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Herunterladen
-            </Button>
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleApproval(lightboxImage.id);
-              }}
-              variant="outline"
+            {/* Upload Button */}
+            <Label
+              htmlFor="image-upload"
               className={cn(
-                "border-white/20",
-                approvals.some(a => a.image_id === lightboxImage.id && a.user_id === currentUserId)
-                  ? "bg-green-500 text-white border-green-500 hover:bg-green-600"
-                  : "bg-white/10 text-white hover:bg-white/20"
+                "inline-flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm",
+                "bg-gray-900 text-white hover:bg-gray-800",
+                globalIsUploading && "opacity-50 pointer-events-none"
               )}
             >
-              <Check className="w-4 h-4 mr-2" />
-              {approvals.some(a => a.image_id === lightboxImage.id && a.user_id === currentUserId)
-                ? "Markiert"
-                : "Markieren"
-              }
-            </Button>
-          </div>
-
-          {/* Full-resolution image */}
-          <img
-            src={getFullImageUrl(lightboxImage.file_path)}
-            alt={lightboxImage.title || lightboxImage.file_name}
-            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
-
-          {/* Image info */}
-          <div className="absolute bottom-6 left-6 text-white/80 text-sm">
-            <p className="font-medium">{lightboxImage.title || lightboxImage.file_name}</p>
-            <p className="text-white/50">{lightboxImage.file_name}</p>
+              {globalIsUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+              Hochladen
+            </Label>
+            <Input
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFileUpload}
+              className="hidden"
+              disabled={globalIsUploading}
+            />
           </div>
         </div>
-      )}
+
+        {/* Breadcrumb Navigation */}
+        <div className="flex items-center gap-1 text-sm">
+          <button
+            onClick={() => setCurrentAlbumId(null)}
+            className={cn(
+              "flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-100 transition-colors",
+              currentAlbumId === null ? "text-gray-900 font-medium" : "text-gray-500"
+            )}
+          >
+            <Home className="w-4 h-4" />
+            <span>Picks</span>
+          </button>
+          
+          {breadcrumbPath.map((album) => (
+            <div key={album.id} className="flex items-center">
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <button
+                onClick={() => setCurrentAlbumId(album.id)}
+                className={cn(
+                  "px-2 py-1 rounded hover:bg-gray-100 transition-colors",
+                  currentAlbumId === album.id ? "text-gray-900 font-medium" : "text-gray-500"
+                )}
+              >
+                {album.name}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Back Button */}
+        {currentAlbumId && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              const currentAlbum = albums.find((a) => a.id === currentAlbumId);
+              setCurrentAlbumId(currentAlbum?.parent_id || null);
+            }}
+            className="text-gray-600"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Zurück
+          </Button>
+        )}
+
+        {/* Filter Info */}
+        {selectedUserIds.length > 0 && (
+          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <Filter className="w-4 h-4 text-green-600" />
+            <span className="text-sm text-green-800">
+              Zeige {filteredImages.length} Bild{filteredImages.length !== 1 ? "er" : ""} mit Freigabe von {selectedUserIds.length} Nutzer(n)
+            </span>
+          </div>
+        )}
+
+        {/* Albums Grid */}
+        {currentSubalbums.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
+            {currentSubalbums.map((album) => (
+              <AlbumCard
+                key={album.id}
+                album={album}
+                imageCount={images.filter(i => i.folder_id === album.id).length}
+                previewImages={images.filter(i => i.folder_id === album.id).slice(0, 4)}
+                currentUserId={currentUserId}
+                onOpen={(a) => setCurrentAlbumId(a.id)}
+                onDelete={(a) => setDeleteConfirmation({ type: 'album', item: a })}
+                canDelete={canDeleteItem(album)}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Masonry Image Grid */}
+        {filteredImages.length === 0 && currentSubalbums.length === 0 ? (
+          <Card className="p-12 text-center bg-white border-gray-200">
+            <ImageIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <h3 className="font-medium text-gray-900 mb-1">
+              {currentImages.length === 0 ? "Album ist leer" : "Keine Treffer"}
+            </h3>
+            <p className="text-sm text-gray-500">
+              {currentImages.length === 0
+                ? "Lade Bilder hoch oder erstelle Unteralben"
+                : "Passe die Filter an"}
+            </p>
+          </Card>
+        ) : filteredImages.length > 0 && (
+          <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-4 space-y-4">
+            {filteredImages.map((image) => (
+              <div key={image.id} className="break-inside-avoid">
+                <MasonryImageCard
+                  image={image}
+                  votes={votes}
+                  currentUserId={currentUserId}
+                  isSelected={selectedImageIds.has(image.id)}
+                  onSelect={handleSelectImage}
+                  onOpen={setLightboxImage}
+                  onVote={handleVote}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* New Album Dialog */}
+        <Dialog open={showNewAlbumDialog} onOpenChange={setShowNewAlbumDialog}>
+          <DialogContent className="bg-white sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-gray-900">Neues Album</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <Label htmlFor="album-name" className="text-gray-700">
+                Albumname
+              </Label>
+              <Input
+                id="album-name"
+                value={newAlbumName}
+                onChange={(e) => setNewAlbumName(e.target.value)}
+                placeholder="z.B. Probefotos"
+                className="mt-2 bg-white border-gray-200 text-gray-900"
+                onKeyDown={(e) => e.key === "Enter" && handleCreateAlbum()}
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowNewAlbumDialog(false)}
+                className="bg-white text-gray-700"
+              >
+                Abbrechen
+              </Button>
+              <Button
+                onClick={handleCreateAlbum}
+                disabled={!newAlbumName.trim() || isCreatingAlbum}
+                className="bg-gray-900 text-white hover:bg-gray-800"
+              >
+                {isCreatingAlbum ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <FolderPlus className="w-4 h-4 mr-2" />
+                )}
+                Erstellen
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog 
+          open={deleteConfirmation !== null} 
+          onOpenChange={(open) => !open && setDeleteConfirmation(null)}
+        >
+          <AlertDialogContent className="bg-white">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-gray-900">
+                {deleteConfirmation?.type === 'album' 
+                  ? 'Album löschen?' 
+                  : deleteConfirmation?.type === 'batch'
+                    ? `${selectedImageIds.size} Bilder löschen?`
+                    : 'Bild löschen?'}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {deleteConfirmation?.type === 'album' 
+                  ? 'Alle Bilder in diesem Album werden ebenfalls unwiderruflich gelöscht.'
+                  : 'Diese Aktion kann nicht rückgängig gemacht werden.'}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="bg-white text-gray-700">
+                Abbrechen
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  if (deleteConfirmation?.type === 'album' && deleteConfirmation.item) {
+                    handleDeleteAlbum(deleteConfirmation.item as AlbumData);
+                  } else if (deleteConfirmation?.type === 'image' && deleteConfirmation.item) {
+                    handleDeleteImage(deleteConfirmation.item as ImageData);
+                  } else if (deleteConfirmation?.type === 'batch') {
+                    handleBatchDelete();
+                  }
+                  setDeleteConfirmation(null);
+                }}
+                className="bg-red-600 text-white hover:bg-red-700"
+              >
+                Löschen
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Move to Album Dialog */}
+        <MoveToAlbumDialog
+          open={showMoveDialog}
+          onOpenChange={setShowMoveDialog}
+          albums={albums}
+          currentAlbumId={currentAlbumId}
+          selectedCount={selectedImageIds.size}
+          onMove={handleMoveImages}
+          onCreateAndMove={handleCreateAlbumAndMove}
+        />
       </div>
+
+      {/* Floating Action Bar */}
+      <FloatingActionBar
+        selectedCount={selectedImageIds.size}
+        onBatchVote={handleBatchVote}
+        onBatchDelete={() => setDeleteConfirmation({ type: 'batch' })}
+        onBatchMove={() => setShowMoveDialog(true)}
+        onClearSelection={() => setSelectedImageIds(new Set())}
+        canDelete={canDeleteSelected}
+      />
+
+      {/* Lightbox */}
+      <ImageLightbox
+        image={lightboxImage}
+        images={filteredImages}
+        votes={votes}
+        currentUserId={currentUserId}
+        onClose={() => setLightboxImage(null)}
+        onNavigate={handleLightboxNavigate}
+        onVote={handleVote}
+        onDownload={handleDownloadImage}
+        onDelete={(img) => setDeleteConfirmation({ type: 'image', item: img })}
+        canDelete={lightboxImage ? canDeleteItem(lightboxImage) : false}
+      />
     </>
   );
 };

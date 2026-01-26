@@ -1,0 +1,36 @@
+// Types for the Picks/Album system
+
+export interface ImageData {
+  id: string;
+  file_name: string;
+  file_path: string;
+  title: string | null;
+  folder_id: string | null;
+  uploaded_by: string | null;
+  created_at: string;
+}
+
+export interface AlbumData {
+  id: string;
+  name: string;
+  parent_id: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+export type VoteStatus = 'approved' | 'unsure' | 'rejected';
+
+export interface ImageVote {
+  id: string;
+  user_id: string;
+  image_id: string;
+  vote_status: VoteStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  displayName: string;
+}

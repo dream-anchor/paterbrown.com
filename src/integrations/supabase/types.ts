@@ -339,6 +339,41 @@ export type Database = {
           },
         ]
       }
+      image_votes: {
+        Row: {
+          created_at: string
+          id: string
+          image_id: string
+          updated_at: string
+          user_id: string
+          vote_status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_id: string
+          updated_at?: string
+          user_id: string
+          vote_status: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_id?: string
+          updated_at?: string
+          user_id?: string
+          vote_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "image_votes_image_id_fkey"
+            columns: ["image_id"]
+            isOneToOne: false
+            referencedRelation: "images"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       images: {
         Row: {
           created_at: string
