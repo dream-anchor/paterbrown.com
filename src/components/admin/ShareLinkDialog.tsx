@@ -131,13 +131,27 @@ const ShareLinkDialog = ({
       if (error) throw error;
 
       const link = `${window.location.origin}/dl/${token}`;
-      setGeneratedLink(link);
-      setActiveLinksCount((prev) => (prev ?? 0) + 1);
+      
+      // Copy to clipboard immediately
+      await navigator.clipboard.writeText(link);
+      
+      // Build description with settings info
+      const settings: string[] = [];
+      if (expiration !== "never") settings.push(EXPIRATION_OPTIONS[expiration].label);
+      if (usePassword) settings.push("Passwortgeschützt");
+      if (useMaxDownloads) settings.push(`Max. ${maxDownloads} Downloads`);
+      
+      const description = settings.length > 0 
+        ? `Link kopiert! (${settings.join(", ")})`
+        : "Link wurde in die Zwischenablage kopiert.";
 
       toast({
-        title: "Link erstellt",
-        description: "Der Download-Link wurde erfolgreich generiert.",
+        title: "✓ Link erstellt & kopiert",
+        description,
       });
+      
+      // Close dialog immediately
+      handleOpenChange(false);
     } catch (error) {
       console.error("Error creating share link:", error);
       toast({
