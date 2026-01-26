@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Settings, Eye, EyeOff, Save, CheckCircle2, AlertCircle, Loader2, User, Mail, Phone } from "lucide-react";
+import { Settings, Eye, EyeOff, Save, CheckCircle2, AlertCircle, Loader2, User, Mail, Phone, AlertTriangle, ArrowRightLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,6 +18,17 @@ interface UserProfile {
   lastName: string;
   email: string;
   phone: string;
+}
+
+interface MigrationStatus {
+  isRunning: boolean;
+  progress: number;
+  currentFile: string;
+  total: number;
+  migrated: number;
+  skipped: number;
+  errors: string[];
+  completed: boolean;
 }
 
 const SETTING_KEYS = {
@@ -37,6 +49,18 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
   const [showSecrets, setShowSecrets] = useState({
     accessKeyId: false,
     secretAccessKey: false,
+  });
+  
+  // Migration state
+  const [migration, setMigration] = useState<MigrationStatus>({
+    isRunning: false,
+    progress: 0,
+    currentFile: "",
+    total: 0,
+    migrated: 0,
+    skipped: 0,
+    errors: [],
+    completed: false,
   });
   
   // User profile state
@@ -208,6 +232,68 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleMigration = async () => {
+    if (!isR2Configured) {
+      toast({
+        title: "R2 nicht konfiguriert",
+        description: "Bitte zuerst die R2-Zugangsdaten eingeben und speichern.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setMigration({
+      isRunning: true,
+      progress: 10,
+      currentFile: "Starte Migration...",
+      total: 0,
+      migrated: 0,
+      skipped: 0,
+      errors: [],
+      completed: false,
+    });
+
+    try {
+      const { data, error } = await supabase.functions.invoke("migrate-legacy-files");
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || "Migration fehlgeschlagen");
+      }
+
+      setMigration({
+        isRunning: false,
+        progress: 100,
+        currentFile: "",
+        total: data.total || 0,
+        migrated: data.migrated || 0,
+        skipped: data.skipped || 0,
+        errors: data.errors || [],
+        completed: true,
+      });
+
+      toast({
+        title: "Migration abgeschlossen",
+        description: `${data.migrated} Dateien migriert, ${data.skipped} übersprungen.`,
+      });
+    } catch (error) {
+      console.error("Migration error:", error);
+      setMigration(prev => ({
+        ...prev,
+        isRunning: false,
+        errors: [error instanceof Error ? error.message : "Unbekannter Fehler"],
+      }));
+      toast({
+        title: "Migration fehlgeschlagen",
+        description: error instanceof Error ? error.message : "Unbekannter Fehler",
+        variant: "destructive",
+      });
     }
   };
 
@@ -496,6 +582,101 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
                 )}
               </Button>
             </div>
+          </div>
+
+          {/* Migration Section */}
+          <div className="px-6 py-5 border-t border-gray-100 bg-gray-50">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
+                <ArrowRightLeft className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900">Legacy-Dateien migrieren</h4>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Verschiebt alle bestehenden Dateien von Supabase Storage nach R2
+                </p>
+              </div>
+            </div>
+
+            {/* Warning */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div className="text-xs text-amber-800">
+                  <p className="font-medium mb-1">Achtung!</p>
+                  <p>Diese Aktion lädt alle Dateien von Supabase herunter und zu R2 hoch. Nach erfolgreicher Migration werden die alten Dateien aus Supabase gelöscht.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Migration Status */}
+            {migration.isRunning && (
+              <div className="mb-4 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">{migration.currentFile}</span>
+                  <span className="text-gray-500">{migration.progress}%</span>
+                </div>
+                <Progress value={migration.progress} className="h-2" />
+              </div>
+            )}
+
+            {/* Migration Results */}
+            {migration.completed && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-2 text-green-800">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span className="text-sm font-medium">Migration abgeschlossen</span>
+                </div>
+                <div className="mt-2 text-xs text-green-700 space-y-0.5">
+                  <p>✓ {migration.migrated} Dateien erfolgreich migriert</p>
+                  <p>○ {migration.skipped} Dateien übersprungen (bereits auf R2)</p>
+                  {migration.errors.length > 0 && (
+                    <p className="text-red-600">✗ {migration.errors.length} Fehler</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Migration Errors */}
+            {migration.errors.length > 0 && !migration.isRunning && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm font-medium text-red-800 mb-1">Fehler:</p>
+                <ul className="text-xs text-red-700 list-disc list-inside space-y-0.5">
+                  {migration.errors.slice(0, 5).map((err, i) => (
+                    <li key={i}>{err}</li>
+                  ))}
+                  {migration.errors.length > 5 && (
+                    <li>... und {migration.errors.length - 5} weitere</li>
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {/* Migration Button */}
+            <Button
+              onClick={handleMigration}
+              disabled={migration.isRunning || !isR2Configured}
+              variant="outline"
+              className="w-full border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800"
+            >
+              {migration.isRunning ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Migration läuft...
+                </>
+              ) : (
+                <>
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Alle alten Dateien zu R2 migrieren
+                </>
+              )}
+            </Button>
+
+            {!isR2Configured && (
+              <p className="text-xs text-gray-400 mt-2 text-center">
+                Zuerst R2-Zugangsdaten speichern
+              </p>
+            )}
           </div>
         </div>
       )}
