@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Check, 
@@ -54,6 +54,32 @@ const MasonryImageCard = ({
 }: MasonryImageCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(index < 12); // First 12 are always in view
+  const imgRef = useRef<HTMLImageElement>(null);
+  
+  // Intersection Observer for smarter lazy loading with rootMargin
+  useEffect(() => {
+    if (index < 12) return; // First 12 don't need observer
+    
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { 
+        rootMargin: '200px', // Start loading 200px before entering viewport
+        threshold: 0.01 
+      }
+    );
+    
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+    
+    return () => observer.disconnect();
+  }, [index]);
   
   const myVote = votes.find(
     v => v.image_id === image.id && v.user_id === currentUserId
@@ -104,26 +130,31 @@ const MasonryImageCard = ({
       onClick={handleClick}
     >
       {/* Image */}
-      <div className="relative">
+      <div className="relative" ref={imgRef}>
+        {/* Improved skeleton with shimmer effect */}
         {!imageLoaded && (
-          <div className="aspect-square bg-gray-200 animate-pulse" />
+          <div className="aspect-square bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-[shimmer_1.5s_infinite]" />
         )}
-        <img
-          src={getDisplayUrl()}
-          alt={image.title || image.file_name}
-          className={cn(
-            "w-full object-cover transition-transform duration-300",
-            isHovered && "scale-105",
-            !imageLoaded && "hidden"
-          )}
-          // First 12 images load eagerly for instant display, rest lazy load
-          loading={index < 12 ? "eager" : "lazy"}
-          // Add decoding hint for faster rendering
-          decoding={index < 12 ? "sync" : "async"}
-          // Preload hint for first batch
-          fetchPriority={index < 6 ? "high" : "auto"}
-          onLoad={() => setImageLoaded(true)}
-        />
+        
+        {/* Only render img when in view (Intersection Observer) */}
+        {isInView && (
+          <img
+            src={getDisplayUrl()}
+            alt={image.title || image.file_name}
+            className={cn(
+              "w-full object-cover transition-transform duration-300",
+              isHovered && "scale-105",
+              !imageLoaded && "absolute inset-0 opacity-0"
+            )}
+            // First 12 images load eagerly for instant display, rest lazy load
+            loading={index < 12 ? "eager" : "lazy"}
+            // Add decoding hint for faster rendering
+            decoding={index < 12 ? "sync" : "async"}
+            // Preload hint for first batch
+            fetchPriority={index < 6 ? "high" : "auto"}
+            onLoad={() => setImageLoaded(true)}
+          />
+        )}
 
         {/* Missing thumbnail warning */}
         {isMissingThumbnail && imageLoaded && (

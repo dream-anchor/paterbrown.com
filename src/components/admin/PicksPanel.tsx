@@ -187,6 +187,19 @@ const PicksPanel = () => {
         setAlbums((albumsRes.data || []) as AlbumData[]);
         setVotes((votesRes.data || []) as ImageVote[]);
 
+        // Preload first 6 thumbnails for instant display
+        const firstImages = (imagesRes.data || []).slice(0, 6) as ImageData[];
+        firstImages.forEach((img) => {
+          if (img.thumbnail_url) {
+            const link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = 'image';
+            link.href = img.thumbnail_url;
+            link.fetchPriority = 'high';
+            document.head.appendChild(link);
+          }
+        });
+
         const userProfiles: UserProfile[] = (rolesRes.data || []).map((role) => ({
           id: role.user_id,
           email: role.user_id,
