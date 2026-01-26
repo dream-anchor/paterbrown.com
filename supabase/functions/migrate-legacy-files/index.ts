@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { S3Client, PutObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.400.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,6 +21,128 @@ interface MigrationResult {
     status: "migrated" | "skipped" | "error";
     message?: string;
   }>;
+}
+
+// AWS Signature V4 implementation for R2
+async function createAwsSignature(
+  method: string,
+  url: URL,
+  headers: Record<string, string>,
+  body: Uint8Array,
+  accessKeyId: string,
+  secretAccessKey: string,
+  region: string,
+  service: string
+): Promise<Record<string, string>> {
+  const encoder = new TextEncoder();
+  
+  const now = new Date();
+  const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '').slice(0, 15) + 'Z';
+  const dateStamp = amzDate.slice(0, 8);
+  
+  const signedHeaders = Object.keys(headers).sort().join(';').toLowerCase();
+  const canonicalHeaders = Object.entries(headers)
+    .sort(([a], [b]) => a.toLowerCase().localeCompare(b.toLowerCase()))
+    .map(([k, v]) => `${k.toLowerCase()}:${v.trim()}\n`)
+    .join('');
+  
+  const payloadHash = await crypto.subtle.digest('SHA-256', body.buffer as ArrayBuffer);
+  const payloadHashHex = Array.from(new Uint8Array(payloadHash))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  
+  const canonicalRequest = [
+    method,
+    url.pathname,
+    url.search.slice(1) || '',
+    canonicalHeaders,
+    signedHeaders,
+    payloadHashHex
+  ].join('\n');
+  
+  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+  const canonicalRequestHash = await crypto.subtle.digest('SHA-256', encoder.encode(canonicalRequest));
+  const canonicalRequestHashHex = Array.from(new Uint8Array(canonicalRequestHash))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  
+  const stringToSign = [
+    'AWS4-HMAC-SHA256',
+    amzDate,
+    credentialScope,
+    canonicalRequestHashHex
+  ].join('\n');
+  
+  async function hmacSha256(key: ArrayBuffer | Uint8Array, data: string): Promise<ArrayBuffer> {
+    const keyBuffer = (key instanceof Uint8Array ? key.buffer : key) as ArrayBuffer;
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw',
+      keyBuffer,
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    return crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(data));
+  }
+  
+  const kDate = await hmacSha256(encoder.encode(`AWS4${secretAccessKey}`), dateStamp);
+  const kRegion = await hmacSha256(kDate, region);
+  const kService = await hmacSha256(kRegion, service);
+  const kSigning = await hmacSha256(kService, 'aws4_request');
+  
+  const signature = await hmacSha256(kSigning, stringToSign);
+  const signatureHex = Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  
+  const authorization = `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signatureHex}`;
+  
+  return {
+    ...headers,
+    'x-amz-date': amzDate,
+    'x-amz-content-sha256': payloadHashHex,
+    'Authorization': authorization
+  };
+}
+
+// Upload to R2 using native fetch
+async function uploadToR2(
+  fileBytes: Uint8Array,
+  r2Key: string,
+  contentType: string,
+  r2Endpoint: string,
+  r2AccessKeyId: string,
+  r2SecretAccessKey: string
+): Promise<void> {
+  const r2Url = new URL(`${r2Endpoint}/${R2_BUCKET_NAME}/${r2Key}`);
+  
+  const headersToSign: Record<string, string> = {
+    'Host': r2Url.host,
+    'Content-Type': contentType,
+    'Content-Length': fileBytes.length.toString(),
+  };
+
+  const signedHeaders = await createAwsSignature(
+    'PUT',
+    r2Url,
+    headersToSign,
+    fileBytes,
+    r2AccessKeyId,
+    r2SecretAccessKey,
+    'auto',
+    's3'
+  );
+
+  const uploadResponse = await fetch(r2Url.toString(), {
+    method: 'PUT',
+    headers: signedHeaders,
+    body: fileBytes.buffer as ArrayBuffer,
+  });
+
+  if (!uploadResponse.ok) {
+    const errorText = await uploadResponse.text();
+    throw new Error(`R2 upload failed: ${uploadResponse.status} ${errorText}`);
+  }
 }
 
 serve(async (req) => {
@@ -77,16 +198,6 @@ serve(async (req) => {
       );
     }
 
-    // Initialize S3 client for R2
-    const s3Client = new S3Client({
-      region: "auto",
-      endpoint: r2Endpoint,
-      credentials: {
-        accessKeyId: r2AccessKeyId,
-        secretAccessKey: r2SecretAccessKey,
-      },
-    });
-
     // ========== MIGRATE DOCUMENTS ==========
     console.log("Fetching documents from internal_documents...");
     const { data: documents, error: docsError } = await supabase
@@ -134,14 +245,14 @@ serve(async (req) => {
           const r2Key = `documents/${timestamp}-${sanitizedFilename}`;
 
           // Upload to R2
-          const putCommand = new PutObjectCommand({
-            Bucket: R2_BUCKET_NAME,
-            Key: r2Key,
-            Body: fileBytes,
-            ContentType: fileData.type || "application/octet-stream",
-          });
-
-          await s3Client.send(putCommand);
+          await uploadToR2(
+            fileBytes,
+            r2Key,
+            fileData.type || "application/octet-stream",
+            r2Endpoint,
+            r2AccessKeyId,
+            r2SecretAccessKey
+          );
           console.log(`Uploaded to R2: ${r2Key}`);
 
           // Update database with new R2 URL
@@ -235,14 +346,14 @@ serve(async (req) => {
           const r2Key = `picks/${timestamp}-${sanitizedFilename}`;
 
           // Upload to R2
-          const putCommand = new PutObjectCommand({
-            Bucket: R2_BUCKET_NAME,
-            Key: r2Key,
-            Body: fileBytes,
-            ContentType: fileData.type || "image/jpeg",
-          });
-
-          await s3Client.send(putCommand);
+          await uploadToR2(
+            fileBytes,
+            r2Key,
+            fileData.type || "image/jpeg",
+            r2Endpoint,
+            r2AccessKeyId,
+            r2SecretAccessKey
+          );
           console.log(`Uploaded to R2: ${r2Key}`);
 
           // Update database with new R2 URL
