@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, Share2, Trash2, Download, Mail, MessageCircle, MoreHorizontal, Check } from "lucide-react";
+import { Copy, Share2, Trash2, Download, Mail, MessageCircle, MoreHorizontal, Check, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -22,11 +22,9 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { 
   formatFileSize, 
-  getContentTypeIcon, 
   getDownloadPageUrl,
   getPublicDownloadUrl,
-  DOCUMENT_CATEGORIES,
-  type DocumentCategory 
+  getFileExtension,
 } from "@/lib/documentUtils";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -34,7 +32,6 @@ import { de } from "date-fns/locale";
 interface DocumentCardProps {
   id: string;
   name: string;
-  category: DocumentCategory;
   fileName: string;
   filePath: string;
   fileSize: number;
@@ -47,7 +44,6 @@ interface DocumentCardProps {
 const DocumentCard = ({
   id,
   name,
-  category,
   fileName,
   filePath,
   fileSize,
@@ -62,7 +58,8 @@ const DocumentCard = ({
 
   const downloadPageUrl = getDownloadPageUrl(id);
   const directDownloadUrl = getPublicDownloadUrl(filePath);
-  const categoryInfo = DOCUMENT_CATEGORIES[category];
+  const fileExtension = getFileExtension(fileName);
+  const isPdf = contentType?.includes("pdf") || fileName.toLowerCase().endsWith(".pdf");
 
   const handleCopyLink = async () => {
     try {
@@ -103,9 +100,17 @@ const DocumentCard = ({
     <>
       <Card className="p-4 bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200">
         <div className="flex items-start gap-4">
-          {/* Icon */}
-          <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-2xl">
-            {getContentTypeIcon(contentType)}
+          {/* PDF Preview Icon */}
+          <div className="flex-shrink-0 w-14 h-18 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex flex-col items-center justify-center shadow-sm relative overflow-hidden">
+            <FileText className="w-6 h-6 text-white/90 mb-1" />
+            <span className="text-[10px] font-bold text-white/90 uppercase tracking-wider">
+              {fileExtension || "DOC"}
+            </span>
+            {/* Document lines decoration */}
+            <div className="absolute bottom-2 left-2 right-2 space-y-0.5">
+              <div className="h-0.5 bg-white/20 rounded" />
+              <div className="h-0.5 bg-white/20 rounded w-3/4" />
+            </div>
           </div>
 
           {/* Content */}
@@ -121,9 +126,6 @@ const DocumentCard = ({
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
-              <span className="flex items-center gap-1">
-                {categoryInfo.icon} {categoryInfo.label}
-              </span>
               <span>
                 Hochgeladen: {format(new Date(createdAt), "dd.MM.yyyy", { locale: de })}
               </span>
@@ -139,7 +141,7 @@ const DocumentCard = ({
                 variant="outline"
                 size="sm"
                 onClick={handleCopyLink}
-                className="h-8 text-xs bg-white hover:bg-gray-50"
+                className="h-8 text-xs bg-white hover:bg-gray-50 text-gray-700"
               >
                 {copied ? (
                   <Check className="w-3.5 h-3.5 mr-1.5 text-green-600" />
@@ -151,21 +153,21 @@ const DocumentCard = ({
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 text-xs bg-white hover:bg-gray-50">
+                  <Button variant="outline" size="sm" className="h-8 text-xs bg-white hover:bg-gray-50 text-gray-700">
                     <Share2 className="w-3.5 h-3.5 mr-1.5" />
                     Teilen
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="bg-white">
-                  <DropdownMenuItem onClick={handleCopyLink}>
+                  <DropdownMenuItem onClick={handleCopyLink} className="text-gray-700">
                     <Copy className="w-4 h-4 mr-2" />
                     Link kopieren
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleShareEmail}>
+                  <DropdownMenuItem onClick={handleShareEmail} className="text-gray-700">
                     <Mail className="w-4 h-4 mr-2" />
                     Per E-Mail teilen
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleShareWhatsApp}>
+                  <DropdownMenuItem onClick={handleShareWhatsApp} className="text-gray-700">
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Per WhatsApp teilen
                   </DropdownMenuItem>
@@ -179,14 +181,14 @@ const DocumentCard = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-white">
-                  <DropdownMenuItem onClick={handleDirectDownload}>
+                  <DropdownMenuItem onClick={handleDirectDownload} className="text-gray-700">
                     <Download className="w-4 h-4 mr-2" />
                     Direkt herunterladen
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onClick={() => setShowDeleteDialog(true)}
-                    className="text-red-600 focus:text-red-600"
+                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Löschen
@@ -202,13 +204,13 @@ const DocumentCard = ({
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent className="bg-white">
           <AlertDialogHeader>
-            <AlertDialogTitle>Dokument löschen?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-gray-900">Dokument löschen?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600">
               Das Dokument "{name}" wird unwiderruflich gelöscht. Bestehende Download-Links funktionieren danach nicht mehr.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white">Abbrechen</AlertDialogCancel>
+            <AlertDialogCancel className="bg-white text-gray-700">Abbrechen</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => onDelete(id)}
               className="bg-red-600 hover:bg-red-700 text-white"

@@ -1,16 +1,14 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Plus, FolderOpen, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import DocumentCard from "./DocumentCard";
 import DocumentUploadModal from "./DocumentUploadModal";
-import { DOCUMENT_CATEGORIES, type DocumentCategory } from "@/lib/documentUtils";
 
 interface Document {
   id: string;
   name: string;
-  category: DocumentCategory;
   file_path: string;
   file_name: string;
   file_size: number;
@@ -31,8 +29,7 @@ const DocumentsPanel = () => {
       const { data, error } = await supabase
         .from("internal_documents")
         .select("*")
-        .order("category")
-        .order("name");
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setDocuments((data as Document[]) || []);
@@ -90,23 +87,6 @@ const DocumentsPanel = () => {
     }
   };
 
-  // Group documents by category
-  const groupedDocuments = useMemo(() => {
-    const groups: Partial<Record<DocumentCategory, Document[]>> = {};
-    
-    documents.forEach(doc => {
-      if (!groups[doc.category]) {
-        groups[doc.category] = [];
-      }
-      groups[doc.category]!.push(doc);
-    });
-
-    return groups;
-  }, [documents]);
-
-  // Order of categories
-  const categoryOrder: DocumentCategory[] = ["dossier_produktion", "dossier_presse", "flyer", "other"];
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -139,7 +119,7 @@ const DocumentsPanel = () => {
             variant="outline"
             size="sm"
             onClick={fetchDocuments}
-            className="bg-white"
+            className="bg-white text-gray-700"
           >
             <RefreshCw className="w-4 h-4" />
           </Button>
@@ -172,42 +152,21 @@ const DocumentsPanel = () => {
           </Button>
         </div>
       ) : (
-        <div className="space-y-8">
-          {categoryOrder.map(categoryKey => {
-            const docs = groupedDocuments[categoryKey];
-            if (!docs || docs.length === 0) return null;
-
-            const categoryInfo = DOCUMENT_CATEGORIES[categoryKey];
-
-            return (
-              <div key={categoryKey}>
-                <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                  <span>{categoryInfo.icon}</span>
-                  <span>{categoryInfo.label}</span>
-                  <span className="ml-1 px-1.5 py-0.5 bg-gray-100 rounded text-xs font-medium">
-                    {docs.length}
-                  </span>
-                </h3>
-                <div className="space-y-3">
-                  {docs.map(doc => (
-                    <DocumentCard
-                      key={doc.id}
-                      id={doc.id}
-                      name={doc.name}
-                      category={doc.category}
-                      fileName={doc.file_name}
-                      filePath={doc.file_path}
-                      fileSize={doc.file_size}
-                      contentType={doc.content_type}
-                      downloadCount={doc.download_count}
-                      createdAt={doc.created_at}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+        <div className="space-y-3">
+          {documents.map(doc => (
+            <DocumentCard
+              key={doc.id}
+              id={doc.id}
+              name={doc.name}
+              fileName={doc.file_name}
+              filePath={doc.file_path}
+              fileSize={doc.file_size}
+              contentType={doc.content_type}
+              downloadCount={doc.download_count}
+              createdAt={doc.created_at}
+              onDelete={handleDelete}
+            />
+          ))}
         </div>
       )}
 

@@ -9,18 +9,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { DOCUMENT_CATEGORIES, formatFileSize, type DocumentCategory } from "@/lib/documentUtils";
+import { formatFileSize } from "@/lib/documentUtils";
 
 interface ExistingFile {
   name: string;
@@ -47,7 +40,6 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess }: DocumentUploadMo
   const [existingFiles, setExistingFiles] = useState<ExistingFile[]>([]);
   const [loadingExisting, setLoadingExisting] = useState(false);
   const [name, setName] = useState("");
-  const [category, setCategory] = useState<DocumentCategory>("other");
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
 
@@ -99,7 +91,6 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess }: DocumentUploadMo
       setSelectedFile(file);
       setUploadMode("new");
       if (!name) {
-        // Auto-fill name from filename without extension
         const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
         setName(nameWithoutExt);
       }
@@ -129,7 +120,6 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess }: DocumentUploadMo
     setSelectedFile(null);
     setSelectedExistingFile(null);
     setName("");
-    setCategory("other");
     setUploadMode("new");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -187,12 +177,12 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess }: DocumentUploadMo
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Create document record
+      // Create document record (category defaults to 'other')
       const { error: dbError } = await supabase
         .from("internal_documents")
         .insert({
           name: name.trim(),
-          category,
+          category: "other",
           file_path: filePath,
           file_name: fileName,
           file_size: fileSize,
@@ -367,26 +357,6 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess }: DocumentUploadMo
             />
           </div>
 
-          {/* Category Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="category" className="text-gray-700">Kategorie</Label>
-            <Select value={category} onValueChange={(v) => setCategory(v as DocumentCategory)}>
-              <SelectTrigger className="bg-white border-gray-200 text-gray-900">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                {Object.entries(DOCUMENT_CATEGORIES).map(([key, { label, icon }]) => (
-                  <SelectItem key={key} value={key}>
-                    <span className="flex items-center gap-2">
-                      <span>{icon}</span>
-                      <span>{label}</span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2">
             <Button
@@ -396,7 +366,7 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess }: DocumentUploadMo
                 onOpenChange(false);
               }}
               disabled={uploading}
-              className="bg-white"
+              className="bg-white text-gray-700"
             >
               Abbrechen
             </Button>
