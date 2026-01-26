@@ -110,7 +110,7 @@ const ImageLightbox = ({
   const voteButtons = [
     { status: 'approved' as VoteStatus, icon: Check, label: 'Freigabe', key: '1', color: 'bg-green-500 hover:bg-green-600 text-white' },
     { status: 'unsure' as VoteStatus, icon: HelpCircle, label: 'Unsicher', key: '2', color: 'bg-amber-500 hover:bg-amber-600 text-white' },
-    { status: 'rejected' as VoteStatus, icon: XCircle, label: 'Ablehnen', key: '3', color: 'bg-red-500 hover:bg-red-600 text-white' },
+    { status: 'rejected' as VoteStatus, icon: XCircle, label: 'Verwerfen', key: '3', color: 'bg-red-500 hover:bg-red-600 text-white' },
   ];
 
   return (
