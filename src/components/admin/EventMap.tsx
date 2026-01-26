@@ -4,8 +4,10 @@ import MarkerClusterGroup from "react-leaflet-cluster";
 import { 
   Calendar, Clock, MapPin, Navigation, RefreshCw, CheckCircle, 
   AlertCircle, Car, ExternalLink, Eye, Filter, ChevronDown,
-  Sparkles, Pencil
+  Sparkles, Pencil, ChevronUp
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { haptics } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -780,70 +782,94 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
   }, [sortedEvents]);
 
 
+  const isMobile = useIsMobile();
+  const [mobileListExpanded, setMobileListExpanded] = useState(false);
+
   return (
     <div className="h-screen overflow-hidden flex flex-col">
       {/* Header Section - Fixed at top */}
-      <div className="flex-shrink-0 p-4 border-b border-gray-200 bg-white">
+      <div className="flex-shrink-0 p-3 md:p-4 border-b border-gray-200 bg-white">
         {/* Missing Geodata Warning */}
+        {/* Missing Geodata Warning - Simplified on mobile */}
         {eventsWithMissingGeodata.length > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-600" />
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 md:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 md:mb-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-amber-600 flex-shrink-0" />
               <div>
-                <p className="font-medium text-amber-800">
-                  {eventsWithMissingGeodata.length} Termine ohne vollständige Geodaten
+                <p className="font-medium text-amber-800 text-sm md:text-base">
+                  {eventsWithMissingGeodata.length} ohne Geodaten
                 </p>
-                <p className="text-sm text-amber-600">
-                  KI kann fehlende Koordinaten und Bundesländer recherchieren
+                <p className="text-xs md:text-sm text-amber-600 hidden sm:block">
+                  KI kann fehlende Koordinaten recherchieren
                 </p>
               </div>
             </div>
             <button
               onClick={handleGeocodeEvents}
               disabled={isGeocoding}
-              className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+              className="px-3 py-1.5 md:px-4 md:py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors w-full sm:w-auto"
             >
               {isGeocoding ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  Recherchiere...
+                  <span className="hidden sm:inline">Recherchiere...</span>
+                  <span className="sm:hidden">Lädt...</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  Geodaten ergänzen
+                  <span className="hidden sm:inline">Geodaten ergänzen</span>
+                  <span className="sm:hidden">Ergänzen</span>
                 </>
               )}
             </button>
           </div>
         )}
 
-        {/* Title & Filters */}
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Tour-Karte</h2>
-            <p className="text-gray-600 text-sm">
-              {eventsWithCoords.length} von {sortedEvents.length} Termine auf der Karte
-            </p>
-            {/* Status Summary */}
-            <div className="flex items-center gap-3 mt-2">
-              {statusCounts.today > 0 && (
-                <span className="flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded-full">
-                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                  {statusCounts.today} Heute
-                </span>
-              )}
-              <span className="flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
-                {statusCounts.upcoming} Anstehend
-              </span>
-              <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                {statusCounts.past} Vergangen
-              </span>
+        {/* Title & Filters - Mobile optimized */}
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 md:gap-4">
+          {/* Title section */}
+          <div className="flex items-center justify-between md:block">
+            <div>
+              <h2 className="text-lg md:text-xl font-bold text-gray-900">Tour-Karte</h2>
+              <p className="text-gray-600 text-xs md:text-sm">
+                {eventsWithCoords.length} von {sortedEvents.length} auf der Karte
+              </p>
+            </div>
+            {/* Mobile: Quick toggle */}
+            <div className="flex md:hidden items-center gap-2">
+              <button
+                onClick={() => setShowUpcomingOnly(!showUpcomingOnly)}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium rounded-full transition-colors",
+                  showUpcomingOnly 
+                    ? "bg-amber-500 text-white" 
+                    : "bg-gray-100 text-gray-600"
+                )}
+              >
+                Nur anstehende
+              </button>
             </div>
           </div>
+
+          {/* Status Summary - Scrollable on mobile */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-3 px-3 md:mx-0 md:px-0 md:mt-2 scrollbar-hide">
+            {statusCounts.today > 0 && (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                {statusCounts.today} Heute
+              </span>
+            )}
+            <span className="flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0">
+              {statusCounts.upcoming} Anstehend
+            </span>
+            <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0">
+              {statusCounts.past} Vergangen
+            </span>
+          </div>
           
-          {/* Filters */}
-          <div className="flex flex-wrap items-center gap-3">
+          {/* Filters - Hidden on mobile, shown in dropdown */}
+          <div className="hidden md:flex flex-wrap items-center gap-3">
             {/* Quick Filters */}
             <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2">
               <div className="flex items-center gap-2">
@@ -955,11 +981,19 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         </div>
       </div>
 
-      {/* Main Content - Full Screen Split View */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Main Content - Full Screen Split View (Desktop) / Stacked with Sticky Map (Mobile) */}
+      <div className={cn(
+        "flex-1 overflow-hidden",
+        isMobile ? "flex flex-col" : "flex flex-row"
+      )}>
         
-        {/* Left Column: Map - Fixed, no scroll */}
-        <div className="w-1/2 h-full flex flex-col border-r border-gray-200">
+        {/* Map Container - Fixed on desktop, Sticky on mobile */}
+        <div className={cn(
+          "flex flex-col border-r border-gray-200",
+          isMobile 
+            ? "sticky top-0 z-10 h-[45vh] min-h-[280px] flex-shrink-0" 
+            : "w-1/2 h-full"
+        )}>
           {/* Map Container */}
           <div className="flex-1 min-h-0">
             <MapContainer
@@ -1205,17 +1239,47 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           </div>
         </div>
 
-        {/* Right Column: Scrollable Stations List */}
-        <div className="w-1/2 h-full overflow-y-auto p-6 bg-gray-50">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center justify-between">
-            <span>Alle Stationen · {sortedEvents.length} Termine</span>
-            {isLoadingDistances && (
-              <span className="text-amber-500 flex items-center gap-1">
-                <RefreshCw className="w-3 h-3 animate-spin" />
-                Routen laden...
-              </span>
-            )}
-          </h3>
+        {/* Scrollable Stations List */}
+        <div className={cn(
+          "overflow-y-auto bg-gray-50",
+          isMobile 
+            ? "flex-1 px-4 pt-4 pb-24" 
+            : "w-1/2 h-full p-6"
+        )}>
+          {/* Mobile: Expandable list header */}
+          {isMobile && (
+            <button
+              onClick={() => {
+                haptics.tap();
+                setMobileListExpanded(!mobileListExpanded);
+              }}
+              className="w-full flex items-center justify-between p-3 mb-3 bg-white rounded-xl border border-gray-200 shadow-sm active:scale-[0.98] transition-transform"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold">
+                  {sortedEvents.length}
+                </div>
+                <span className="font-medium text-gray-900">Stationen</span>
+              </div>
+              <ChevronUp className={cn(
+                "w-5 h-5 text-gray-400 transition-transform",
+                mobileListExpanded && "rotate-180"
+              )} />
+            </button>
+          )}
+
+          {/* Desktop header */}
+          {!isMobile && (
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center justify-between">
+              <span>Alle Stationen · {sortedEvents.length} Termine</span>
+              {isLoadingDistances && (
+                <span className="text-amber-500 flex items-center gap-1">
+                  <RefreshCw className="w-3 h-3 animate-spin" />
+                  Routen laden...
+                </span>
+              )}
+            </h3>
+          )}
           
           <div className="space-y-2">
           
@@ -1231,14 +1295,18 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                 <div
                   id={`station-${event.id}`}
                   className={cn(
-                    "flex items-center gap-3 p-3 bg-white rounded-lg border transition-all cursor-pointer",
+                    "flex items-center gap-3 p-3 bg-white rounded-xl border transition-all cursor-pointer active:scale-[0.98]",
                     activeEventId === event.id 
                       ? `${colors.border} ring-2 ${colors.ring} shadow-md`
                       : `border-gray-200 hover:${colors.border} hover:shadow-sm`
                   )}
-                  onMouseEnter={() => handleStationHover(event.id)}
-                  onMouseLeave={() => handleStationHover(null)}
-                  onClick={() => setSelectedEventDetail(event)}
+                  onMouseEnter={() => !isMobile && handleStationHover(event.id)}
+                  onMouseLeave={() => !isMobile && handleStationHover(null)}
+                  onClick={() => {
+                    haptics.tap();
+                    handleStationHover(event.id);
+                    setSelectedEventDetail(event);
+                  }}
                 >
                   {/* Number - colored by status */}
                   <div className={cn(

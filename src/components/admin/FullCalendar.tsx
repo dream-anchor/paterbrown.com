@@ -651,28 +651,30 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: F
         filteredCount={displayEntries.length}
       />
       
-      {/* Calendar Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <Button variant="apple" size="sm" onClick={goToToday} className="rounded-lg">
+      {/* Calendar Header - Mobile optimized */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Left side: Navigation */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Button variant="apple" size="sm" onClick={goToToday} className="rounded-lg text-xs sm:text-sm">
             Heute
           </Button>
           <div className="flex items-center">
-            <button onClick={prevMonth} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-              <ChevronLeft className="w-5 h-5 text-gray-600" />
+            <button onClick={prevMonth} className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition-colors">
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
             </button>
-            <button onClick={nextMonth} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-              <ChevronRight className="w-5 h-5 text-gray-600" />
+            <button onClick={nextMonth} className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition-colors">
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
             </button>
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 ml-2">
+          <h2 className="text-base sm:text-xl font-semibold text-gray-800 ml-1 sm:ml-2">
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h2>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* View Toggle */}
-          <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-1">
+        {/* Right side: Actions - stacked on mobile */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* View Toggle - Desktop */}
+          <div className="hidden sm:flex items-center gap-0.5 bg-gray-100 rounded-lg p-1">
             <button 
               onClick={() => setViewMode("calendar")}
               className={`p-2 rounded-md transition-colors
@@ -698,32 +700,31 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: F
               <List className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Event count badge */}
+          <span className="text-xs sm:text-sm text-gray-500 hidden sm:inline">{eventsThisMonth} Termine</span>
           
-          <span className="text-sm text-gray-500">{eventsThisMonth} Termine</span>
-          
-          <Button variant="apple" size="sm" onClick={() => { setQuickAddDate(new Date()); setShowQuickAdd(true); }}>
-            <Plus className="w-4 h-4 mr-1" />
-            Termin
+          {/* Quick Add Button */}
+          <Button variant="apple" size="sm" onClick={() => { setQuickAddDate(new Date()); setShowQuickAdd(true); }} className="text-xs sm:text-sm">
+            <Plus className="w-4 h-4 sm:mr-1" />
+            <span className="hidden sm:inline">Termin</span>
           </Button>
           
-          <Button 
-            variant="apple" 
-            size="sm" 
-            onClick={() => setShowImportModal(true)}
-            className="bg-amber-500 hover:bg-amber-600 text-white border-amber-500"
-          >
-            <FileUp className="w-4 h-4 mr-2" />
-            Termine importieren
-          </Button>
-          
+          {/* More Actions Dropdown - combines Import & Share on mobile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="apple" size="sm" className="rounded-lg">
-                <Share2 className="w-4 h-4 mr-2" />
-                Teilen
+                <MoreHorizontal className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-72">
+            <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuItem onClick={() => setShowImportModal(true)} className="cursor-pointer">
+                <FileUp className="w-4 h-4 mr-2" />
+                <div className="flex flex-col">
+                  <span className="font-medium">Termine importieren</span>
+                  <span className="text-xs text-gray-500">Aus Excel oder Text</span>
+                </div>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowExportModal(true)} className="cursor-pointer">
                 <Download className="w-4 h-4 mr-2" />
                 <div className="flex flex-col">
