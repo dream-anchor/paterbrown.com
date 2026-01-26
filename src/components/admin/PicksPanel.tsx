@@ -52,6 +52,7 @@ import AlbumCard from "./picks/AlbumCard";
 import ImageLightbox from "./picks/ImageLightbox";
 import FloatingActionBar from "./picks/FloatingActionBar";
 import MoveToAlbumDialog from "./picks/MoveToAlbumDialog";
+import JustifiedGallery from "./picks/JustifiedGallery";
 
 const PicksPanel = () => {
   const { toast } = useToast();
@@ -877,21 +878,17 @@ const PicksPanel = () => {
             </p>
           </Card>
         ) : filteredImages.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {filteredImages.map((image, index) => (
-              <MasonryImageCard
-                key={image.id}
-                image={image}
-                votes={votes}
-                currentUserId={currentUserId}
-                isSelected={selectedImageIds.has(image.id)}
-                index={index}
-                onSelect={handleSelectImage}
-                onOpen={setLightboxImage}
-                onVote={handleVote}
-              />
-            ))}
-          </div>
+          <JustifiedGallery
+            images={filteredImages}
+            votes={votes}
+            currentUserId={currentUserId}
+            selectedImageIds={selectedImageIds}
+            onSelect={handleSelectImage}
+            onOpen={setLightboxImage}
+            onVote={handleVote}
+            targetRowHeight={220}
+            gap={4}
+          />
         )}
 
         {/* New Album Dialog */}
