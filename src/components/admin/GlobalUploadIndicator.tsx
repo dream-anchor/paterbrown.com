@@ -159,7 +159,7 @@ const GlobalUploadIndicator = () => {
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <ScrollArea className="max-h-64">
+                <ScrollArea className="h-64 overflow-y-auto">
                   <div className="p-2 space-y-1">
                     {files.map((file) => (
                       <div
