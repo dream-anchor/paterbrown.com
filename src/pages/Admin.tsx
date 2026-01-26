@@ -14,7 +14,7 @@ import BottomNav from "@/components/admin/BottomNav";
 import DocumentsPanel from "@/components/admin/DocumentsPanel";
 import PicksPanel from "@/components/admin/PicksPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Sparkles, Map, Plane, Upload, FolderOpen, Heart } from "lucide-react";
+import { Calendar, Sparkles, Map, Plane, FolderOpen, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AdminEvent {
@@ -345,13 +345,6 @@ const Admin = () => {
                 <span className="hidden sm:inline">Reisen</span>
               </TabsTrigger>
               <TabsTrigger 
-                value="upload" 
-                className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
-              >
-                <Upload className="w-4 h-4 mr-2 inline-block" />
-                <span className="hidden sm:inline">Upload</span>
-              </TabsTrigger>
-              <TabsTrigger 
                 value="documents" 
                 className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
               >
@@ -381,6 +374,7 @@ const Admin = () => {
               onNavigateToTour={(eventId) => {
                 setSearchParams({ tab: "map", activeEventId: eventId });
               }}
+              onEventsAdded={fetchEvents}
             />
           </TabsContent>
 
@@ -394,12 +388,6 @@ const Admin = () => {
 
           <TabsContent value="travel" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
             <TravelDashboard />
-          </TabsContent>
-
-          <TabsContent value="upload" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
-            <EventUploader onEventsAdded={() => {
-              fetchEvents();
-            }} />
           </TabsContent>
 
           <TabsContent value="documents" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">

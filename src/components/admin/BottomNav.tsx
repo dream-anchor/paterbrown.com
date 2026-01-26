@@ -22,7 +22,6 @@ const mainNavItems = [
 
 const moreItems = [
   { id: "documents", label: "Dokumente" },
-  { id: "upload", label: "Upload" },
 ];
 
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
