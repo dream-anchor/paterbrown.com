@@ -249,14 +249,14 @@ const ImageLightbox = ({
             ))}
           </div>
 
-          {/* Team Decisions Section */}
-          {teamVotes.length > 0 && (
-            <div className="mt-6 pt-6 border-t border-white/10">
-              <div className="flex items-center gap-2 mb-4">
-                <Users className="w-4 h-4 text-white/60" />
-                <h4 className="text-white/80 text-sm font-medium">Team-Entscheidungen</h4>
-              </div>
-              
+          {/* Team Decisions Section - always show, even if empty */}
+          <div className="mt-6 pt-6 border-t border-white/10">
+            <div className="flex items-center gap-2 mb-4">
+              <Users className="w-4 h-4 text-white/60" />
+              <h4 className="text-white/80 text-sm font-medium">Team-Entscheidungen</h4>
+            </div>
+            
+            {teamVotes.length > 0 ? (
               <div className="space-y-2">
                 {teamVotes.map((vote) => (
                   <div 
@@ -280,8 +280,12 @@ const ImageLightbox = ({
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="text-white/40 text-sm text-center py-4">
+                Noch keine Bewertungen von anderen
+              </p>
+            )}
+          </div>
 
           {/* Spacer */}
           <div className="flex-1" />
