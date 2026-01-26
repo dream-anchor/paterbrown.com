@@ -320,6 +320,7 @@ export type Database = {
           created_at: string
           file_name: string
           file_path: string
+          folder_id: string | null
           id: string
           title: string | null
           updated_at: string
@@ -329,6 +330,7 @@ export type Database = {
           created_at?: string
           file_name: string
           file_path: string
+          folder_id?: string | null
           id?: string
           title?: string | null
           updated_at?: string
@@ -338,12 +340,21 @@ export type Database = {
           created_at?: string
           file_name?: string
           file_path?: string
+          folder_id?: string | null
           id?: string
           title?: string | null
           updated_at?: string
           uploaded_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "images_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "picks_folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       internal_documents: {
         Row: {
@@ -410,6 +421,38 @@ export type Database = {
           subscribed_at?: string | null
         }
         Relationships: []
+      }
+      picks_folders: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          parent_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "picks_folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "picks_folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tour_events: {
         Row: {
