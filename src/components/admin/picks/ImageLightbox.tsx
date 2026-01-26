@@ -201,8 +201,8 @@ const ImageLightbox = ({
           <div className="space-y-3 pt-6 border-t border-white/10">
             <Button
               onClick={() => onDownload(image)}
-              variant="outline"
-              className="w-full border-white/20 text-white hover:bg-white/10"
+              variant="ghost"
+              className="w-full border border-white/20 bg-white/10 text-white hover:bg-white/20"
             >
               <Download className="w-4 h-4 mr-2" />
               Herunterladen
@@ -211,8 +211,8 @@ const ImageLightbox = ({
             {canDelete && onDelete && (
               <Button
                 onClick={() => onDelete(image)}
-                variant="outline"
-                className="w-full border-red-500/30 text-red-400 hover:bg-red-500/20 hover:text-red-300"
+                variant="ghost"
+                className="w-full border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Löschen
