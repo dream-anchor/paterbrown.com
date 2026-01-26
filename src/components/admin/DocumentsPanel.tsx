@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
-import { Plus, FolderOpen, RefreshCw, Upload } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { Plus, FolderOpen, RefreshCw, Upload, Image, FileText, Table, Presentation, Archive, File } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import DocumentCard from "./DocumentCard";
 import DocumentUploadModal from "./DocumentUploadModal";
+import { getFileTypeGroup, FILE_TYPE_GROUPS, FileTypeGroup } from "@/lib/documentUtils";
 
 interface Document {
   id: string;
@@ -17,6 +18,16 @@ interface Document {
   created_at: string;
 }
 
+const GROUP_ICONS: Record<FileTypeGroup, React.ReactNode> = {
+  images: <Image className="w-4 h-4" />,
+  pdfs: <FileText className="w-4 h-4" />,
+  documents: <FileText className="w-4 h-4" />,
+  spreadsheets: <Table className="w-4 h-4" />,
+  presentations: <Presentation className="w-4 h-4" />,
+  archives: <Archive className="w-4 h-4" />,
+  other: <File className="w-4 h-4" />,
+};
+
 const DocumentsPanel = () => {
   const { toast } = useToast();
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -24,6 +35,34 @@ const DocumentsPanel = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [pageDragActive, setPageDragActive] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
+
+  // Group documents by file type
+  const groupedDocuments = useMemo(() => {
+    const groups: Record<FileTypeGroup, Document[]> = {
+      images: [],
+      pdfs: [],
+      documents: [],
+      spreadsheets: [],
+      presentations: [],
+      archives: [],
+      other: [],
+    };
+
+    documents.forEach(doc => {
+      const group = getFileTypeGroup(doc.content_type, doc.file_name);
+      groups[group].push(doc);
+    });
+
+    // Sort groups by order and filter empty ones
+    return Object.entries(groups)
+      .filter(([, docs]) => docs.length > 0)
+      .sort(([a], [b]) => FILE_TYPE_GROUPS[a as FileTypeGroup].order - FILE_TYPE_GROUPS[b as FileTypeGroup].order)
+      .map(([group, docs]) => ({
+        group: group as FileTypeGroup,
+        label: FILE_TYPE_GROUPS[group as FileTypeGroup].label,
+        documents: docs,
+      }));
+  }, [documents]);
 
   // Handle page-level drag events
   const handlePageDragEnter = useCallback((e: DragEvent) => {
@@ -164,7 +203,7 @@ const DocumentsPanel = () => {
         <div className="fixed inset-0 z-50 bg-amber-500/10 backdrop-blur-sm flex items-center justify-center pointer-events-none">
           <div className="bg-white rounded-2xl shadow-2xl border-2 border-dashed border-amber-500 p-12 text-center">
             <Upload className="w-16 h-16 text-amber-500 mx-auto mb-4" />
-            <p className="text-xl font-semibold text-gray-900">Datei hier ablegen</p>
+            <p className="text-xl font-semibold text-gray-900">Dateien hier ablegen</p>
             <p className="text-gray-500 mt-1">zum Hochladen</p>
           </div>
         </div>
@@ -204,7 +243,7 @@ const DocumentsPanel = () => {
           </div>
         </div>
 
-        {/* Documents List */}
+        {/* Documents List - Grouped */}
         {documents.length === 0 ? (
           <div className="text-center py-16 px-4">
             <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
@@ -223,20 +262,40 @@ const DocumentsPanel = () => {
             </Button>
           </div>
         ) : (
-          <div className="space-y-3">
-            {documents.map(doc => (
-              <DocumentCard
-                key={doc.id}
-                id={doc.id}
-                name={doc.name}
-                fileName={doc.file_name}
-                filePath={doc.file_path}
-                fileSize={doc.file_size}
-                contentType={doc.content_type}
-                downloadCount={doc.download_count}
-                createdAt={doc.created_at}
-                onDelete={handleDelete}
-              />
+          <div className="space-y-6">
+            {groupedDocuments.map(({ group, label, documents: docs }) => (
+              <div key={group}>
+                {/* Group Header */}
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-md bg-gray-100 flex items-center justify-center text-gray-500">
+                    {GROUP_ICONS[group]}
+                  </div>
+                  <h3 className="text-sm font-medium text-gray-700">
+                    {label}
+                  </h3>
+                  <span className="text-xs text-gray-400">
+                    ({docs.length})
+                  </span>
+                </div>
+                
+                {/* Group Documents */}
+                <div className="space-y-3">
+                  {docs.map(doc => (
+                    <DocumentCard
+                      key={doc.id}
+                      id={doc.id}
+                      name={doc.name}
+                      fileName={doc.file_name}
+                      filePath={doc.file_path}
+                      fileSize={doc.file_size}
+                      contentType={doc.content_type}
+                      downloadCount={doc.download_count}
+                      createdAt={doc.created_at}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}

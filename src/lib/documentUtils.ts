@@ -21,6 +21,52 @@ export const DOCUMENT_CATEGORIES = {
 
 export type DocumentCategory = keyof typeof DOCUMENT_CATEGORIES;
 
+// File type groups for automatic categorization
+export type FileTypeGroup = "images" | "pdfs" | "documents" | "spreadsheets" | "presentations" | "archives" | "other";
+
+export interface FileTypeGroupInfo {
+  label: string;
+  order: number;
+}
+
+export const FILE_TYPE_GROUPS: Record<FileTypeGroup, FileTypeGroupInfo> = {
+  images: { label: "Bilder", order: 1 },
+  pdfs: { label: "PDF-Dokumente", order: 2 },
+  documents: { label: "Dokumente", order: 3 },
+  spreadsheets: { label: "Tabellen", order: 4 },
+  presentations: { label: "Präsentationen", order: 5 },
+  archives: { label: "Archive", order: 6 },
+  other: { label: "Sonstige", order: 7 },
+};
+
+export function getFileTypeGroup(contentType: string | null, fileName: string): FileTypeGroup {
+  const lowerName = fileName.toLowerCase();
+  
+  // Check by content type first
+  if (contentType) {
+    if (contentType.startsWith("image/")) return "images";
+    if (contentType.includes("pdf")) return "pdfs";
+    if (contentType.includes("word") || contentType.includes("document")) return "documents";
+    if (contentType.includes("sheet") || contentType.includes("excel")) return "spreadsheets";
+    if (contentType.includes("presentation") || contentType.includes("powerpoint")) return "presentations";
+    if (contentType.includes("zip") || contentType.includes("archive") || contentType.includes("compressed")) return "archives";
+  }
+  
+  // Fallback to file extension
+  if (/\.(jpg|jpeg|png|gif|webp|svg|bmp|ico|heic|heif)$/.test(lowerName)) return "images";
+  if (/\.pdf$/.test(lowerName)) return "pdfs";
+  if (/\.(doc|docx|odt|rtf|txt|md)$/.test(lowerName)) return "documents";
+  if (/\.(xls|xlsx|csv|ods)$/.test(lowerName)) return "spreadsheets";
+  if (/\.(ppt|pptx|odp|key)$/.test(lowerName)) return "presentations";
+  if (/\.(zip|rar|7z|tar|gz)$/.test(lowerName)) return "archives";
+  
+  return "other";
+}
+
+export function isImageFile(contentType: string | null, fileName: string): boolean {
+  return getFileTypeGroup(contentType, fileName) === "images";
+}
+
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 B";
   
