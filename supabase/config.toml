@@ -44,3 +44,9 @@ verify_jwt = true
 
 [functions.delete-files]
 verify_jwt = true
+
+[functions.admin-update-password]
+verify_jwt = false
+
+[functions.admin-sync-profiles]
+verify_jwt = false
