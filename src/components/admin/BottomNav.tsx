@@ -1,41 +1,28 @@
-import { CalendarDays, MapPin, Plane, Heart, MoreHorizontal } from "lucide-react";
+import { CalendarDays, MapPin, Plane, Heart, CloudDownload } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 import { haptics } from "@/lib/haptics";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
-const mainNavItems = [
+const navItems = [
   { id: "calendar", label: "Plan", icon: CalendarDays },
   { id: "map", label: "Tour", icon: MapPin },
   { id: "travel", label: "Trips", icon: Plane },
   { id: "picks", label: "Picks", icon: Heart },
-];
-
-const moreItems = [
-  { id: "documents", label: "Drops" },
+  { id: "documents", label: "Drops", icon: CloudDownload },
 ];
 
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
-  const [moreOpen, setMoreOpen] = useState(false);
-  const isMoreActive = moreItems.some(item => item.id === activeTab);
-  
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden safe-area-bottom">
       {/* Glass background */}
-      <div className="bg-white/80 backdrop-blur-xl border-t border-gray-200/60 shadow-lg">
+      <div className="bg-background/80 backdrop-blur-xl border-t border-border/60 shadow-lg">
         {/* Safe area padding for iPhone notch + home indicator */}
         <div className="flex items-center justify-around px-2 pt-2 pb-2" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
-          {mainNavItems.map((item) => {
+          {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
             
@@ -47,10 +34,10 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
                   onTabChange(item.id);
                 }}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 px-3 py-1.5 rounded-xl transition-all duration-200 relative min-w-[56px] touch-target touch-feedback",
+                  "flex flex-col items-center justify-center gap-1 px-2 py-1.5 rounded-xl transition-all duration-200 relative min-w-[52px] touch-target touch-feedback",
                   isActive 
                     ? "text-amber-600" 
-                    : "text-gray-400 hover:text-gray-600"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 {/* Active indicator dot */}
@@ -81,55 +68,6 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
               </button>
             );
           })}
-
-          {/* More Menu */}
-          <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
-            <DropdownMenuTrigger asChild>
-              <button
-                className={cn(
-                  "flex flex-col items-center justify-center gap-1 px-3 py-1.5 rounded-xl transition-all duration-200 relative min-w-[56px]",
-                  isMoreActive 
-                    ? "text-amber-600" 
-                    : "text-gray-400 hover:text-gray-600"
-                )}
-              >
-                {isMoreActive && (
-                  <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                )}
-                <div className={cn(
-                  "p-1.5 rounded-lg transition-all duration-200",
-                  isMoreActive && "bg-amber-100/80"
-                )}>
-                  <MoreHorizontal className={cn(
-                    "w-5 h-5 transition-transform duration-200",
-                    isMoreActive && "scale-110"
-                  )} />
-                </div>
-                <span className={cn(
-                  "text-[10px] font-medium transition-all duration-200",
-                  isMoreActive ? "opacity-100" : "opacity-70"
-                )}>
-                  Mehr
-                </span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-white mb-2 text-gray-900 border-gray-200">
-              {moreItems.map((item) => (
-                <DropdownMenuItem
-                  key={item.id}
-                  onClick={() => {
-                    onTabChange(item.id);
-                    setMoreOpen(false);
-                  }}
-                  className={cn(
-                    activeTab === item.id && "bg-amber-50 text-amber-700"
-                  )}
-                >
-                  {item.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
     </nav>
