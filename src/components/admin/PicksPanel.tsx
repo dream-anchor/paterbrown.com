@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -80,6 +80,65 @@ const PicksPanel = () => {
   const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+
+  // Page-level drag-and-drop
+  const [pageDragActive, setPageDragActive] = useState(false);
+
+  // Handle page-level drag events
+  const handlePageDragEnter = useCallback((e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer?.types.includes("Files")) {
+      setPageDragActive(true);
+    }
+  }, []);
+
+  const handlePageDragOver = useCallback((e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handlePageDragLeave = useCallback((e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.relatedTarget === null || !(e.relatedTarget as Node).ownerDocument) {
+      setPageDragActive(false);
+    }
+  }, []);
+
+  const handlePageDrop = useCallback(async (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPageDragActive(false);
+
+    if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
+      if (files.length === 0) {
+        toast({
+          title: "Keine Bilder",
+          description: "Bitte nur Bilddateien ablegen.",
+          variant: "destructive",
+        });
+        return;
+      }
+      await uploadFiles(files);
+    }
+  }, [currentFolderId, currentUserId, toast]);
+
+  // Add global drag listeners
+  useEffect(() => {
+    document.addEventListener("dragenter", handlePageDragEnter);
+    document.addEventListener("dragover", handlePageDragOver);
+    document.addEventListener("dragleave", handlePageDragLeave);
+    document.addEventListener("drop", handlePageDrop);
+
+    return () => {
+      document.removeEventListener("dragenter", handlePageDragEnter);
+      document.removeEventListener("dragover", handlePageDragOver);
+      document.removeEventListener("dragleave", handlePageDragLeave);
+      document.removeEventListener("drop", handlePageDrop);
+    };
+  }, [handlePageDragEnter, handlePageDragOver, handlePageDragLeave, handlePageDrop]);
 
   // Fetch all data
   useEffect(() => {
@@ -223,14 +282,13 @@ const PicksPanel = () => {
     }
   };
 
-  // Handle file upload
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  // Upload files helper (used by both input and drag-drop)
+  const uploadFiles = async (files: File[]) => {
+    if (files.length === 0) return;
 
     setIsUploading(true);
     try {
-      for (const file of Array.from(files)) {
+      for (const file of files) {
         const fileExt = file.name.split(".").pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
         const filePath = `uploads/${fileName}`;
@@ -272,8 +330,15 @@ const PicksPanel = () => {
       });
     } finally {
       setIsUploading(false);
-      e.target.value = "";
     }
+  };
+
+  // Handle file upload from input
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    await uploadFiles(Array.from(files));
+    e.target.value = "";
   };
 
   // Toggle approval
@@ -344,7 +409,19 @@ const PicksPanel = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      {/* Page-level drop overlay */}
+      {pageDragActive && (
+        <div className="fixed inset-0 z-50 bg-amber-500/10 backdrop-blur-sm flex items-center justify-center pointer-events-none">
+          <div className="bg-white rounded-2xl shadow-2xl border-2 border-dashed border-amber-500 p-12 text-center">
+            <Upload className="w-16 h-16 text-amber-500 mx-auto mb-4" />
+            <p className="text-xl font-semibold text-gray-900">Bilder hier ablegen</p>
+            <p className="text-gray-500 mt-1">zum Hochladen</p>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -643,7 +720,8 @@ const PicksPanel = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </>
   );
 };
 
