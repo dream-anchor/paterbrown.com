@@ -22,7 +22,7 @@ const mainNavItems = [
 ];
 
 const moreItems = [
-  { id: "documents", label: "Dokumente" },
+  { id: "documents", label: "Drops" },
   { id: "settings", label: "Einstellungen" },
 ];
 
