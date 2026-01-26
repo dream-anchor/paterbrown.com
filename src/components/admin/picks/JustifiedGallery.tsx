@@ -37,23 +37,31 @@ interface Row {
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1500;
 
-// Glassmorphism Vote Badge
-const VoteBadge = ({ status }: { status: VoteStatus }) => {
+// Premium Glassmorphism Vote Badge - Floating circle with blur
+const VoteBadge = ({ status, isHovered }: { status: VoteStatus; isHovered?: boolean }) => {
   const config = {
-    approved: { icon: Check, bg: 'bg-green-500/80', border: 'border-green-400/50' },
-    unsure: { icon: HelpCircle, bg: 'bg-amber-500/80', border: 'border-amber-400/50' },
-    rejected: { icon: XCircle, bg: 'bg-red-500/80', border: 'border-red-400/50' },
+    approved: { icon: Check, ring: 'ring-green-400/40' },
+    unsure: { icon: HelpCircle, ring: 'ring-amber-400/40' },
+    rejected: { icon: XCircle, ring: 'ring-red-400/40' },
   };
   
-  const { icon: Icon, bg, border } = config[status];
+  const { icon: Icon, ring } = config[status];
   
   return (
-    <div className={cn(
-      "p-1 rounded-md backdrop-blur-md border shadow-sm",
-      bg, border
-    )}>
-      <Icon className="w-3 h-3 text-white drop-shadow-sm" />
-    </div>
+    <motion.div
+      initial={false}
+      animate={{ 
+        scale: isHovered ? 1.1 : 1,
+        backgroundColor: isHovered ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.35)'
+      }}
+      transition={{ duration: 0.15 }}
+      className={cn(
+        "p-2 rounded-full backdrop-blur-xl shadow-lg ring-1",
+        ring
+      )}
+    >
+      <Icon className="w-4 h-4 text-white drop-shadow-md" strokeWidth={2.5} />
+    </motion.div>
   );
 };
 
@@ -175,15 +183,17 @@ const JustifiedImageItem = ({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.3) }}
       className={cn(
-        "group relative overflow-hidden cursor-pointer transition-all duration-150 rounded-sm flex-shrink-0",
-        isSelected && "ring-2 ring-amber-500 ring-offset-1"
+        "group relative overflow-hidden cursor-pointer transition-all duration-200 rounded-2xl flex-shrink-0",
+        isSelected 
+          ? "ring-3 ring-amber-500 ring-offset-2 ring-offset-gray-100 shadow-lg" 
+          : "hover:shadow-xl"
       )}
       style={{ 
         width: calculatedWidth, 
         height: calculatedHeight,
         flexGrow: 1,
         flexBasis: calculatedWidth,
-        maxWidth: calculatedWidth * 1.2, // Allow slight stretch
+        maxWidth: calculatedWidth * 1.2,
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -234,27 +244,30 @@ const JustifiedImageItem = ({
         />
       )}
 
-      {/* Selection checkbox - glassmorphism */}
-      <div
-        className={cn(
-          "absolute top-1.5 left-1.5 transition-opacity z-10",
-          isSelected || isHovered ? "opacity-100" : "opacity-0"
-        )}
+      {/* Selection checkbox - premium glassmorphism */}
+      <motion.div
+        initial={false}
+        animate={{ 
+          opacity: isSelected || isHovered ? 1 : 0,
+          scale: isSelected || isHovered ? 1 : 0.8 
+        }}
+        transition={{ duration: 0.15 }}
+        className="absolute top-3 left-3 z-10"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-white/80 backdrop-blur-sm rounded shadow-sm">
+        <div className="bg-black/30 backdrop-blur-xl rounded-full p-1.5 shadow-lg ring-1 ring-white/20">
           <Checkbox
             checked={isSelected}
             onCheckedChange={() => onSelect(image.id, false)}
-            className="h-4 w-4 border-gray-300"
+            className="h-4 w-4 border-white/50 bg-white/20 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
           />
         </div>
-      </div>
+      </motion.div>
 
-      {/* Vote badge - glassmorphism style, top right */}
+      {/* Vote badge - floating glassmorphism, top right */}
       {myVote && (
-        <div className="absolute top-1.5 right-1.5 z-10">
-          <VoteBadge status={myVote} />
+        <div className="absolute top-3 right-3 z-10">
+          <VoteBadge status={myVote} isHovered={isHovered} />
         </div>
       )}
 
@@ -266,34 +279,36 @@ const JustifiedImageItem = ({
         className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none"
       />
 
-      {/* Hover vote buttons */}
+      {/* Hover vote buttons - premium floating bar */}
       <AnimatePresence>
         {isHovered && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 5 }}
-            transition={{ duration: 0.15 }}
-            className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1"
+            initial={{ opacity: 0, y: 12, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/40 backdrop-blur-xl rounded-full px-2 py-1.5 shadow-xl ring-1 ring-white/10"
             onClick={(e) => e.stopPropagation()}
           >
             {[
-              { status: 'approved' as VoteStatus, icon: Check, activeColor: 'bg-green-500', hoverColor: 'hover:bg-green-500' },
-              { status: 'unsure' as VoteStatus, icon: HelpCircle, activeColor: 'bg-amber-500', hoverColor: 'hover:bg-amber-500' },
-              { status: 'rejected' as VoteStatus, icon: XCircle, activeColor: 'bg-red-500', hoverColor: 'hover:bg-red-500' },
-            ].map(({ status, icon: Icon, activeColor, hoverColor }) => (
-              <button
+              { status: 'approved' as VoteStatus, icon: Check, activeRing: 'ring-green-400', activeBg: 'bg-green-500' },
+              { status: 'unsure' as VoteStatus, icon: HelpCircle, activeRing: 'ring-amber-400', activeBg: 'bg-amber-500' },
+              { status: 'rejected' as VoteStatus, icon: XCircle, activeRing: 'ring-red-400', activeBg: 'bg-red-500' },
+            ].map(({ status, icon: Icon, activeRing, activeBg }) => (
+              <motion.button
                 key={status}
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => onVote(image.id, status)}
                 className={cn(
-                  "p-1.5 rounded-md backdrop-blur-md border border-white/20 transition-all shadow-sm",
+                  "p-2 rounded-full transition-all duration-150",
                   myVote === status
-                    ? cn(activeColor, "text-white scale-105")
-                    : cn("bg-white/70 text-gray-700", hoverColor, "hover:text-white")
+                    ? cn(activeBg, "text-white shadow-lg ring-2", activeRing)
+                    : "bg-white/20 text-white/90 hover:bg-white/30 hover:text-white"
                 )}
               >
-                <Icon className="w-3.5 h-3.5" />
-              </button>
+                <Icon className="w-4 h-4" strokeWidth={2.5} />
+              </motion.button>
             ))}
           </motion.div>
         )}
