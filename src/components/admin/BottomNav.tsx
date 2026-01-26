@@ -110,7 +110,7 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
                 </span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-white mb-2">
+            <DropdownMenuContent align="end" className="bg-white mb-2 text-gray-900 border-gray-200">
               {moreItems.map((item) => (
                 <DropdownMenuItem
                   key={item.id}
