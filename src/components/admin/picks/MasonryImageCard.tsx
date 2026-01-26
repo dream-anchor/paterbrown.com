@@ -19,6 +19,8 @@ interface MasonryImageCardProps {
   votes: ImageVote[];
   currentUserId: string | null;
   isSelected: boolean;
+  /** Index in the list - first 12 images load eagerly for instant display */
+  index?: number;
   onSelect: (imageId: string, addToSelection: boolean) => void;
   onOpen: (image: ImageData) => void;
   onVote: (imageId: string, status: VoteStatus) => void;
@@ -45,6 +47,7 @@ const MasonryImageCard = ({
   votes,
   currentUserId,
   isSelected,
+  index = 999,
   onSelect,
   onOpen,
   onVote,
@@ -113,7 +116,12 @@ const MasonryImageCard = ({
             isHovered && "scale-105",
             !imageLoaded && "hidden"
           )}
-          loading="lazy"
+          // First 12 images load eagerly for instant display, rest lazy load
+          loading={index < 12 ? "eager" : "lazy"}
+          // Add decoding hint for faster rendering
+          decoding={index < 12 ? "sync" : "async"}
+          // Preload hint for first batch
+          fetchPriority={index < 6 ? "high" : "auto"}
           onLoad={() => setImageLoaded(true)}
         />
 
