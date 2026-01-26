@@ -187,7 +187,7 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFiles }: Do
       const files = selectedFiles.map(f => f.file);
       const displayNames = selectedFiles.map(f => f.displayName.trim());
       
-      addToGlobalUpload(files, "documents", displayNames);
+      addToGlobalUpload(files, "documents", { displayNames });
       
       toast({
         title: "Upload gestartet",

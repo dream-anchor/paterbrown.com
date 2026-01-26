@@ -10,6 +10,7 @@ export interface UploadFile {
   id: string;
   file: File;
   folder: "documents" | "picks";
+  folderId?: string | null;
   displayName?: string;
   status: UploadStatus;
   progress: number;
@@ -17,55 +18,48 @@ export interface UploadFile {
   r2Key?: string;
   error?: string;
   startedAt?: number;
-  // Track if this upload has been saved to DB
   savedToDb?: boolean;
 }
 
 export interface UploadContextType {
-  // State
   files: UploadFile[];
   isUploading: boolean;
   totalProgress: number;
   estimatedTimeRemaining: number | null;
   
-  // Actions
-  addFiles: (files: File[], folder: "documents" | "picks", displayNames?: string[]) => void;
+  addFiles: (files: File[], folder: "documents" | "picks", options?: { displayNames?: string[]; folderId?: string | null }) => void;
   cancelUpload: (id: string) => void;
   cancelAllUploads: () => void;
   retryUpload: (id: string) => void;
   clearCompleted: () => void;
   
-  // UI State
   isIndicatorExpanded: boolean;
   setIndicatorExpanded: (expanded: boolean) => void;
 }
 
 const UploadContext = createContext<UploadContextType | null>(null);
 
-// ============ CONFIG ============
-
 const MAX_CONCURRENT_UPLOADS = 5;
-const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB for progress tracking
-
-// ============ PROVIDER ============
 
 export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { toast } = useToast();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isIndicatorExpanded, setIndicatorExpanded] = useState(false);
   
-  // Track active uploads
+  // Use ref to always have access to latest files
+  const filesRef = useRef<UploadFile[]>([]);
+  filesRef.current = files;
+  
   const activeUploads = useRef<Set<string>>(new Set());
   const uploadQueue = useRef<string[]>([]);
   const abortControllers = useRef<Map<string, AbortController>>(new Map());
+  const isProcessing = useRef(false);
   
-  // Speed tracking for ETA
   const speedTracking = useRef<{ bytesUploaded: number; startTime: number }>({
     bytesUploaded: 0,
     startTime: Date.now(),
   });
 
-  // Calculate derived state
   const isUploading = files.some(f => f.status === "uploading" || f.status === "pending");
   
   const totalProgress = files.length > 0
@@ -81,60 +75,16 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return Math.ceil((100 - totalProgress) / rate);
   })();
 
-  // Generate unique ID
   const generateId = () => `upload-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
-  // Add files to queue
-  const addFiles = useCallback((newFiles: File[], folder: "documents" | "picks", displayNames?: string[]) => {
-    const uploadFiles: UploadFile[] = newFiles.map((file, i) => ({
-      id: generateId(),
-      file,
-      folder,
-      displayName: displayNames?.[i] || file.name.replace(/\.[^/.]+$/, ""),
-      status: "pending" as UploadStatus,
-      progress: 0,
-    }));
-
-    setFiles(prev => [...prev, ...uploadFiles]);
+  // Upload single file - defined before processQueue
+  const uploadSingleFile = async (uploadFile: UploadFile) => {
+    const fileId = uploadFile.id;
     
-    // Add to queue
-    uploadFiles.forEach(f => uploadQueue.current.push(f.id));
-    
-    // Reset speed tracking for new batch
-    speedTracking.current = { bytesUploaded: 0, startTime: Date.now() };
-    
-    // Start processing
-    processQueue();
-  }, []);
-
-  // Process upload queue
-  const processQueue = useCallback(async () => {
-    while (
-      uploadQueue.current.length > 0 &&
-      activeUploads.current.size < MAX_CONCURRENT_UPLOADS
-    ) {
-      const fileId = uploadQueue.current.shift();
-      if (!fileId) break;
-      
-      activeUploads.current.add(fileId);
-      uploadFile(fileId);
-    }
-  }, []);
-
-  // Upload single file
-  const uploadFile = async (fileId: string) => {
-    const file = files.find(f => f.id === fileId);
-    if (!file) {
-      activeUploads.current.delete(fileId);
-      processQueue();
-      return;
-    }
-
-    // Create abort controller
     const abortController = new AbortController();
     abortControllers.current.set(fileId, abortController);
 
-    // Update status
+    // Update status to uploading
     setFiles(prev => prev.map(f => 
       f.id === fileId 
         ? { ...f, status: "uploading" as UploadStatus, startedAt: Date.now() }
@@ -142,30 +92,35 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     ));
 
     try {
+      console.log(`[Upload] Starting upload for ${uploadFile.file.name}`);
+      
       // Step 1: Get presigned URL
       const { data: presignedData, error: presignedError } = await supabase.functions.invoke(
         "get-presigned-url",
         {
           body: {
             files: [{
-              fileName: file.file.name,
-              contentType: file.file.type || "application/octet-stream",
-              folder: file.folder,
+              fileName: uploadFile.file.name,
+              contentType: uploadFile.file.type || "application/octet-stream",
+              folder: uploadFile.folder,
             }]
           },
         }
       );
+
+      console.log(`[Upload] Presigned URL response:`, { presignedData, presignedError });
 
       if (presignedError || !presignedData?.success) {
         throw new Error(presignedData?.error || presignedError?.message || "Failed to get presigned URL");
       }
 
       const urlInfo = presignedData.urls[0];
+      console.log(`[Upload] Got presigned URL, uploading to R2...`);
 
       // Step 2: Direct upload to R2
       const response = await uploadWithProgress(
         urlInfo.uploadUrl,
-        file.file,
+        uploadFile.file,
         abortController.signal,
         (progress) => {
           setFiles(prev => prev.map(f =>
@@ -179,42 +134,44 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         throw new Error(`Upload failed: ${response.status} - ${errorText}`);
       }
 
-      // Step 3: Save to database based on folder type
+      console.log(`[Upload] R2 upload complete, saving to database...`);
+
+      // Step 3: Save to database
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (file.folder === "documents") {
+      if (uploadFile.folder === "documents") {
         const { error: dbError } = await supabase
           .from("internal_documents")
           .insert({
-            name: file.displayName || file.file.name.replace(/\.[^/.]+$/, ""),
+            name: uploadFile.displayName || uploadFile.file.name.replace(/\.[^/.]+$/, ""),
             category: "other",
             file_path: urlInfo.publicUrl,
-            file_name: file.file.name,
-            file_size: file.file.size,
-            content_type: file.file.type || null,
+            file_name: uploadFile.file.name,
+            file_size: uploadFile.file.size,
+            content_type: uploadFile.file.type || null,
             uploaded_by: user?.id || null,
           });
         
         if (dbError) {
           console.error("DB insert error for document:", dbError);
-          // Don't throw - file was uploaded, just DB entry failed
         }
-      } else if (file.folder === "picks") {
+      } else if (uploadFile.folder === "picks") {
         const { error: dbError } = await supabase
           .from("images")
           .insert({
-            file_name: file.file.name,
+            file_name: uploadFile.file.name,
             file_path: urlInfo.publicUrl,
-            title: file.displayName || file.file.name.replace(/\.[^/.]+$/, ""),
+            title: uploadFile.displayName || uploadFile.file.name.replace(/\.[^/.]+$/, ""),
             uploaded_by: user?.id || null,
-            folder_id: null, // Will be updated by PicksPanel if needed
+            folder_id: uploadFile.folderId || null,
           });
         
         if (dbError) {
           console.error("DB insert error for image:", dbError);
-          // Don't throw - file was uploaded, just DB entry failed
         }
       }
+
+      console.log(`[Upload] Success: ${uploadFile.file.name}`);
 
       // Success
       setFiles(prev => prev.map(f =>
@@ -232,10 +189,9 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     } catch (error: any) {
       if (error.name === "AbortError") {
-        // Upload was cancelled
         setFiles(prev => prev.filter(f => f.id !== fileId));
       } else {
-        console.error(`Upload error for ${fileId}:`, error);
+        console.error(`[Upload] Error for ${fileId}:`, error);
         setFiles(prev => prev.map(f =>
           f.id === fileId
             ? { ...f, status: "error" as UploadStatus, error: error.message }
@@ -245,9 +201,45 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } finally {
       abortControllers.current.delete(fileId);
       activeUploads.current.delete(fileId);
-      processQueue();
     }
   };
+
+  // Process upload queue
+  const processQueue = useCallback(() => {
+    if (isProcessing.current) return;
+    isProcessing.current = true;
+
+    const process = async () => {
+      while (
+        uploadQueue.current.length > 0 &&
+        activeUploads.current.size < MAX_CONCURRENT_UPLOADS
+      ) {
+        const fileId = uploadQueue.current.shift();
+        if (!fileId) break;
+        
+        // Get file from ref (always has latest state)
+        const file = filesRef.current.find(f => f.id === fileId);
+        if (!file) {
+          console.log(`[Upload] File ${fileId} not found in state, skipping`);
+          continue;
+        }
+        
+        activeUploads.current.add(fileId);
+        
+        // Start upload without awaiting (parallel)
+        uploadSingleFile(file).finally(() => {
+          // Check if more files to process
+          if (uploadQueue.current.length > 0) {
+            process();
+          }
+        });
+      }
+      
+      isProcessing.current = false;
+    };
+
+    process();
+  }, []);
 
   // Upload with XMLHttpRequest for progress
   const uploadWithProgress = (
@@ -292,13 +284,43 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   };
 
+  // Add files to queue
+  const addFiles = useCallback((newFiles: File[], folder: "documents" | "picks", options?: { displayNames?: string[]; folderId?: string | null }) => {
+    const uploadFiles: UploadFile[] = newFiles.map((file, i) => ({
+      id: generateId(),
+      file,
+      folder,
+      folderId: options?.folderId,
+      displayName: options?.displayNames?.[i] || file.name.replace(/\.[^/.]+$/, ""),
+      status: "pending" as UploadStatus,
+      progress: 0,
+    }));
+
+    console.log(`[Upload] Adding ${uploadFiles.length} files to queue`);
+
+    // Update state and ref synchronously
+    setFiles(prev => {
+      const newState = [...prev, ...uploadFiles];
+      filesRef.current = newState;
+      return newState;
+    });
+    
+    // Add to queue
+    uploadFiles.forEach(f => uploadQueue.current.push(f.id));
+    
+    // Reset speed tracking
+    speedTracking.current = { bytesUploaded: 0, startTime: Date.now() };
+    
+    // Start processing after a micro-task to ensure state is updated
+    setTimeout(() => processQueue(), 0);
+  }, [processQueue]);
+
   // Cancel single upload
   const cancelUpload = useCallback((id: string) => {
     const controller = abortControllers.current.get(id);
     if (controller) {
       controller.abort();
     }
-    // Remove from queue if pending
     uploadQueue.current = uploadQueue.current.filter(qId => qId !== id);
     setFiles(prev => prev.filter(f => f.id !== id));
   }, []);
@@ -314,11 +336,15 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Retry failed upload
   const retryUpload = useCallback((id: string) => {
-    setFiles(prev => prev.map(f =>
-      f.id === id ? { ...f, status: "pending" as UploadStatus, progress: 0, error: undefined } : f
-    ));
+    setFiles(prev => {
+      const newState = prev.map(f =>
+        f.id === id ? { ...f, status: "pending" as UploadStatus, progress: 0, error: undefined } : f
+      );
+      filesRef.current = newState;
+      return newState;
+    });
     uploadQueue.current.push(id);
-    processQueue();
+    setTimeout(() => processQueue(), 0);
   }, [processQueue]);
 
   // Clear completed uploads
@@ -332,13 +358,6 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setIndicatorExpanded(true);
     }
   }, [files]);
-
-  // Process queue when files change
-  useEffect(() => {
-    if (files.some(f => f.status === "pending")) {
-      processQueue();
-    }
-  }, [files, processQueue]);
 
   const value: UploadContextType = {
     files,
@@ -360,8 +379,6 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     </UploadContext.Provider>
   );
 };
-
-// ============ HOOK ============
 
 export const useUpload = () => {
   const context = useContext(UploadContext);
