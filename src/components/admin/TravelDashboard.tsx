@@ -375,6 +375,19 @@ export default function TravelDashboard() {
               >
                 <RefreshCw className="w-4 h-4" />
               </Button>
+
+              <Button
+                variant="ghost"
+                onClick={() => setShowPastBookings((v) => !v)}
+                className="h-9 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 gap-2"
+                title={showPastBookings ? "Nur aktuelle Reisen" : "Vergangene Reisen"}
+              >
+                <History className="w-4 h-4" />
+                <span className="hidden sm:inline">
+                  {showPastBookings ? "Nur aktuelle" : "Vergangene"}
+                </span>
+              </Button>
+
               <Button 
                 variant="ghost"
                 onClick={() => setIsImportModalOpen(true)}
@@ -500,6 +513,23 @@ export default function TravelDashboard() {
                   <p className="text-sm text-gray-500 max-w-sm mx-auto">
                     Leite E-Mails an die Travel-Adresse weiter, um Buchungen automatisch zu erfassen.
                   </p>
+
+                  {!showPastBookings ? (
+                    <div className="mt-6 flex justify-center">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowPastBookings(true)}
+                        className="bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                      >
+                        <History className="w-4 h-4 mr-2" />
+                        Vergangene Reisen anzeigen
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="mt-6 text-xs text-gray-400">
+                      Keine vergangenen Reisen gefunden.
+                    </p>
+                  )}
                 </div>
               ) : viewMode === "timeline" ? (
                 /* Timeline View - New Default */
