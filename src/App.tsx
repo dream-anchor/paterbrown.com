@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { UploadProvider } from "@/contexts/UploadContext";
+import GlobalUploadIndicator from "@/components/admin/GlobalUploadIndicator";
 
 const Index = lazy(() => import("./pages/Index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -41,25 +43,29 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/newsletter-gesendet" element={<NewsletterSent />} />
-              <Route path="/danke-newsletter" element={<NewsletterThankYou />} />
-              <Route path="/danke-ticket" element={<TicketThankYou />} />
-              <Route path="/impressum" element={<Impressum />} />
-              <Route path="/datenschutz" element={<Datenschutz />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/download/:id" element={<Download />} />
-              <Route path="/dl/:token" element={<ShareDownload />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
+        <UploadProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/newsletter-gesendet" element={<NewsletterSent />} />
+                <Route path="/danke-newsletter" element={<NewsletterThankYou />} />
+                <Route path="/danke-ticket" element={<TicketThankYou />} />
+                <Route path="/impressum" element={<Impressum />} />
+                <Route path="/datenschutz" element={<Datenschutz />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/download/:id" element={<Download />} />
+                <Route path="/dl/:token" element={<ShareDownload />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+          {/* Global Upload Indicator - visible across all pages */}
+          <GlobalUploadIndicator />
+        </UploadProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </ErrorBoundary>

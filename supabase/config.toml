@@ -38,3 +38,6 @@ verify_jwt = true
 
 [functions.migrate-legacy-files]
 verify_jwt = true
+
+[functions.get-presigned-url]
+verify_jwt = true

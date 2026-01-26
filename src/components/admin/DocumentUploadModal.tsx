@@ -12,6 +12,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { useUpload } from "@/contexts/UploadContext";
 import { supabase } from "@/integrations/supabase/client";
 import { formatFileSize } from "@/lib/documentUtils";
 
@@ -38,6 +39,7 @@ interface DocumentUploadModalProps {
 
 const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFiles }: DocumentUploadModalProps) => {
   const { toast } = useToast();
+  const { addFiles: addToGlobalUpload } = useUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [uploadMode, setUploadMode] = useState<"new" | "existing">("new");
@@ -152,16 +154,6 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFiles }: Do
     }
   };
 
-  // Helper to convert File to Base64
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   const handleSubmit = async () => {
     if (uploadMode === "new" && selectedFiles.length === 0) {
       toast({
@@ -190,59 +182,27 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFiles }: Do
       return;
     }
 
-    setUploading(true);
-
-    try {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (uploadMode === "new") {
-        // Upload all new files to R2
-        for (const { file, displayName } of selectedFiles) {
-          // Convert file to base64
-          const base64Content = await fileToBase64(file);
-
-          // Call R2 upload edge function
-          const { data: r2Result, error: r2Error } = await supabase.functions.invoke("upload-to-r2", {
-            body: {
-              fileName: file.name,
-              contentType: file.type || "application/octet-stream",
-              content: base64Content,
-              folder: "documents",
-            },
-          });
-
-          if (r2Error) {
-            console.error("R2 upload error:", r2Error);
-            throw new Error(`R2 Upload fehlgeschlagen: ${r2Error.message}`);
-          }
-
-          if (!r2Result?.success) {
-            throw new Error(r2Result?.error || "R2 Upload fehlgeschlagen");
-          }
-
-          // Store the R2 public URL in the database
-          const { error: dbError } = await supabase
-            .from("internal_documents")
-            .insert({
-              name: displayName.trim(),
-              category: "other",
-              file_path: r2Result.public_url, // Store R2 public URL
-              file_name: file.name,
-              file_size: r2Result.file_size || file.size,
-              content_type: file.type || null,
-              uploaded_by: user?.id || null,
-            });
-
-          if (dbError) throw dbError;
-        }
-
-        toast({
-          title: selectedFiles.length === 1 ? "Dokument hinzugefügt" : "Dokumente hinzugefügt",
-          description: `${selectedFiles.length} ${selectedFiles.length === 1 ? "Datei wurde" : "Dateien wurden"} erfolgreich zu R2 hochgeladen.`,
-        });
-      } else if (uploadMode === "existing" && selectedExistingFile) {
-        // Use existing file (from Supabase - legacy)
+    if (uploadMode === "new") {
+      // Use global upload context for new files - fast parallel uploads
+      const files = selectedFiles.map(f => f.file);
+      const displayNames = selectedFiles.map(f => f.displayName.trim());
+      
+      addToGlobalUpload(files, "documents", displayNames);
+      
+      toast({
+        title: "Upload gestartet",
+        description: `${selectedFiles.length} ${selectedFiles.length === 1 ? "Datei wird" : "Dateien werden"} hochgeladen...`,
+      });
+      
+      resetForm();
+      onOpenChange(false);
+      onSuccess();
+    } else if (uploadMode === "existing" && selectedExistingFile) {
+      // Legacy: Use existing file from Supabase Storage
+      setUploading(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
         const filePath = selectedExistingFile.name;
         const fileName = selectedExistingFile.name;
         const fileSize = selectedExistingFile.metadata?.size ?? 0;
@@ -266,20 +226,20 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFiles }: Do
           title: "Dokument hinzugefügt",
           description: `"${existingFileName}" wurde erfolgreich hinzugefügt.`,
         });
-      }
 
-      resetForm();
-      onOpenChange(false);
-      onSuccess();
-    } catch (error) {
-      console.error("Error uploading document:", error);
-      toast({
-        title: "Fehler",
-        description: error instanceof Error ? error.message : "Die Dokumente konnten nicht hochgeladen werden.",
-        variant: "destructive",
-      });
-    } finally {
-      setUploading(false);
+        resetForm();
+        onOpenChange(false);
+        onSuccess();
+      } catch (error) {
+        console.error("Error uploading document:", error);
+        toast({
+          title: "Fehler",
+          description: error instanceof Error ? error.message : "Die Dokumente konnten nicht hochgeladen werden.",
+          variant: "destructive",
+        });
+      } finally {
+        setUploading(false);
+      }
     }
   };
 

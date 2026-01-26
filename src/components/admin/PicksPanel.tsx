@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useUpload } from "@/contexts/UploadContext";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -70,6 +71,7 @@ interface UserProfile {
 
 const PicksPanel = () => {
   const { toast } = useToast();
+  const { addFiles, files: uploadingFiles, isUploading: globalIsUploading } = useUpload();
   const [images, setImages] = useState<ImageData[]>([]);
   const [folders, setFolders] = useState<FolderData[]>([]);
   const [approvals, setApprovals] = useState<ApprovalData[]>([]);
@@ -77,7 +79,6 @@ const PicksPanel = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isUploading, setIsUploading] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   
   // New folder dialog
@@ -90,6 +91,25 @@ const PicksPanel = () => {
 
   // Page-level drag-and-drop
   const [pageDragActive, setPageDragActive] = useState(false);
+
+  // Refresh images when uploads complete (DB insert now happens in UploadContext)
+  const completedUploadsCount = uploadingFiles.filter(
+    f => f.status === "success" && f.folder === "picks"
+  ).length;
+  
+  useEffect(() => {
+    if (completedUploadsCount > 0) {
+      // Just refresh the images list - UploadContext already saved to DB
+      const refreshImages = async () => {
+        const { data } = await supabase
+          .from("images")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (data) setImages(data);
+      };
+      refreshImages();
+    }
+  }, [completedUploadsCount]);
 
   // Handle page-level drag events
   const handlePageDragEnter = useCallback((e: DragEvent) => {
@@ -289,78 +309,18 @@ const PicksPanel = () => {
     }
   };
 
-  // Helper to convert File to Base64
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   // Upload files helper (used by both input and drag-drop)
+  // Now uses global upload context for parallel, persistent uploads
   const uploadFiles = async (files: File[]) => {
     if (files.length === 0) return;
-
-    setIsUploading(true);
-    try {
-      for (const file of files) {
-        // Convert file to base64
-        const base64Content = await fileToBase64(file);
-
-        // Call R2 upload edge function
-        const { data: r2Result, error: r2Error } = await supabase.functions.invoke("upload-to-r2", {
-          body: {
-            fileName: file.name,
-            contentType: file.type || "image/jpeg",
-            content: base64Content,
-            folder: "picks",
-          },
-        });
-
-        if (r2Error) {
-          console.error("R2 upload error:", r2Error);
-          throw new Error(`R2 Upload fehlgeschlagen: ${r2Error.message}`);
-        }
-
-        if (!r2Result?.success) {
-          throw new Error(r2Result?.error || "R2 Upload fehlgeschlagen");
-        }
-
-        // Store the R2 public URL in the database
-        const { error: insertError } = await supabase.from("images").insert({
-          file_name: file.name,
-          file_path: r2Result.public_url, // Store R2 public URL
-          title: file.name.replace(/\.[^/.]+$/, ""),
-          uploaded_by: currentUserId,
-          folder_id: currentFolderId,
-        });
-
-        if (insertError) throw insertError;
-      }
-
-      const { data: imagesData } = await supabase
-        .from("images")
-        .select("*")
-        .order("created_at", { ascending: false });
-      
-      setImages(imagesData || []);
-
-      toast({
-        title: "Erfolg",
-        description: `${files.length} Bild${files.length > 1 ? "er" : ""} zu R2 hochgeladen`,
-      });
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast({
-        title: "Fehler",
-        description: error instanceof Error ? error.message : "Upload fehlgeschlagen",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUploading(false);
-    }
+    
+    // Pass files to global upload context
+    addFiles(files, "picks");
+    
+    toast({
+      title: "Upload gestartet",
+      description: `${files.length} Bild${files.length > 1 ? "er" : ""} werden hochgeladen...`,
+    });
   };
 
   // Handle file upload from input
@@ -540,10 +500,10 @@ const PicksPanel = () => {
             className={cn(
               "inline-flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm",
               "bg-gray-900 text-white hover:bg-gray-800",
-              isUploading && "opacity-50 pointer-events-none"
+              globalIsUploading && "opacity-50 pointer-events-none"
             )}
           >
-            {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            {globalIsUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
             Hochladen
           </Label>
           <Input
@@ -553,7 +513,7 @@ const PicksPanel = () => {
             multiple
             onChange={handleFileUpload}
             className="hidden"
-            disabled={isUploading}
+            disabled={globalIsUploading}
           />
         </div>
       </div>
