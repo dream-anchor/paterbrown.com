@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, Share2, Trash2, Download, Mail, MessageCircle, MoreHorizontal, Check, FileText, Link, Loader2 } from "lucide-react";
+import { Copy, Share2, Trash2, Download, Mail, MessageCircle, MoreHorizontal, Check, FileText, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -20,7 +20,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { 
   formatFileSize, 
   getDownloadPageUrl,
@@ -30,6 +29,7 @@ import {
 } from "@/lib/documentUtils";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import ShareLinkDialog from "./ShareLinkDialog";
 
 interface DocumentCardProps {
   id: string;
@@ -57,59 +57,8 @@ const DocumentCard = ({
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const [imageError, setImageError] = useState(false);
-
-  // Generate a secure token for share links
-  const generateToken = (length = 32): string => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let result = "";
-    const randomValues = new Uint8Array(length);
-    crypto.getRandomValues(randomValues);
-    for (let i = 0; i < length; i++) {
-      result += chars[randomValues[i] % chars.length];
-    }
-    return result;
-  };
-
-  // Generate share link and copy to clipboard in one action
-  const handleGenerateAndCopyLink = async () => {
-    setIsGeneratingLink(true);
-    try {
-      const token = generateToken();
-      
-      const { error } = await supabase.from("document_share_links").insert({
-        document_id: id,
-        token,
-        expires_at: null, // Unlimited
-        password_hash: null,
-        max_downloads: null,
-      });
-
-      if (error) throw error;
-
-      const link = `${window.location.origin}/dl/${token}`;
-      
-      await navigator.clipboard.writeText(link);
-      setCopied(true);
-      
-      toast({
-        title: "Link kopiert!",
-        description: "Download-Link wurde erstellt und in die Zwischenablage kopiert.",
-      });
-      
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error("Error creating share link:", error);
-      toast({
-        title: "Fehler",
-        description: "Link konnte nicht erstellt werden.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingLink(false);
-    }
-  };
 
   const downloadPageUrl = getDownloadPageUrl(id);
   const directDownloadUrl = getPublicDownloadUrl(filePath);
@@ -201,18 +150,11 @@ const DocumentCard = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleGenerateAndCopyLink}
-                disabled={isGeneratingLink}
+                onClick={() => setShowShareDialog(true)}
                 className="h-8 text-xs bg-white hover:bg-gray-50 text-gray-700"
               >
-                {isGeneratingLink ? (
-                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                ) : copied ? (
-                  <Check className="w-3.5 h-3.5 mr-1.5 text-green-600" />
-                ) : (
-                  <Link className="w-3.5 h-3.5 mr-1.5" />
-                )}
-                {copied ? "Kopiert!" : "Link kopieren"}
+                <Link className="w-3.5 h-3.5 mr-1.5" />
+                Link generieren
               </Button>
 
               <DropdownMenu>
@@ -285,6 +227,13 @@ const DocumentCard = ({
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Share Link Dialog */}
+      <ShareLinkDialog
+        open={showShareDialog}
+        onOpenChange={setShowShareDialog}
+        documentId={id}
+        documentName={name}
+      />
     </>
   );
 };
