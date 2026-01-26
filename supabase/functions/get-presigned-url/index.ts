@@ -53,13 +53,16 @@ async function createPresignedUrl(
   const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
   const credential = `${accessKeyId}/${credentialScope}`;
   
+  // Cache-Control header for immutable caching (1 year)
+  const cacheControl = 'public, max-age=31536000, immutable';
+  
   // Build canonical query string
   const queryParams: Record<string, string> = {
     'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
     'X-Amz-Credential': credential,
     'X-Amz-Date': amzDate,
     'X-Amz-Expires': expiresIn.toString(),
-    'X-Amz-SignedHeaders': 'content-type;host',
+    'X-Amz-SignedHeaders': 'cache-control;content-type;host',
   };
   
   // Sort and encode query string
@@ -68,9 +71,9 @@ async function createPresignedUrl(
     .map(k => `${encodeURIComponent(k)}=${encodeURIComponent(queryParams[k])}`)
     .join('&');
   
-  // Canonical headers
-  const canonicalHeaders = `content-type:${contentType}\nhost:${host}\n`;
-  const signedHeaders = 'content-type;host';
+  // Canonical headers (must be sorted alphabetically)
+  const canonicalHeaders = `cache-control:${cacheControl}\ncontent-type:${contentType}\nhost:${host}\n`;
+  const signedHeaders = 'cache-control;content-type;host';
   
   // Canonical request (UNSIGNED-PAYLOAD for presigned URLs)
   const canonicalRequest = [

@@ -121,6 +121,8 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       xhr.open("PUT", url);
       xhr.setRequestHeader("Content-Type", contentType);
+      // Add Cache-Control for immutable caching (1 year)
+      xhr.setRequestHeader("Cache-Control", "public, max-age=31536000, immutable");
       xhr.send(data);
     });
   };
@@ -158,8 +160,10 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           {
             body: {
               files: [
-                { fileName: "thumbnail.jpg", contentType: "image/jpeg", folder: "picks", customPath: paths.thumbnailPath },
-                { fileName: "preview.jpg", contentType: "image/jpeg", folder: "picks", customPath: paths.previewPath },
+                // WebP for thumbnails and previews (smaller file sizes)
+                { fileName: "thumbnail.webp", contentType: "image/webp", folder: "picks", customPath: paths.thumbnailPath },
+                { fileName: "preview.webp", contentType: "image/webp", folder: "picks", customPath: paths.previewPath },
+                // Original keeps its original format
                 { fileName: uploadFile.file.name, contentType: uploadFile.file.type || "image/jpeg", folder: "picks", customPath: paths.originalPath },
               ]
             },
@@ -186,20 +190,23 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         };
 
         await Promise.all([
+          // WebP thumbnails
           uploadWithProgress(
             thumbnailUrl.uploadUrl,
             versions.thumbnail,
-            "image/jpeg",
+            "image/webp",
             abortController.signal,
             (p) => { thumbnailProgress = p; updateCombinedProgress(); }
           ),
+          // WebP previews
           uploadWithProgress(
             previewUrl.uploadUrl,
             versions.preview,
-            "image/jpeg",
+            "image/webp",
             abortController.signal,
             (p) => { previewProgress = p; updateCombinedProgress(); }
           ),
+          // Original keeps its original format
           uploadWithProgress(
             originalUrl.uploadUrl,
             versions.original,
