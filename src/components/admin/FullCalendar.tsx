@@ -48,6 +48,7 @@ import EventFilterPanel from "./EventFilterPanel";
 import CalendarExport from "./CalendarExport";
 import EventUploader from "./EventUploader";
 import SwipeableCard from "./SwipeableCard";
+import MobileAgendaView from "./MobileAgendaView";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -784,8 +785,8 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: F
         </div>
       </div>
 
-      {/* Calendar Grid View */}
-      {viewMode === "calendar" && (
+      {/* Calendar Grid View - Hidden on mobile, show Agenda instead */}
+      {viewMode === "calendar" && !isMobile && (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
           {/* Day Names Header */}
           <div className="grid grid-cols-7 border-b border-gray-100">
@@ -875,6 +876,15 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: F
             })}
           </div>
         </div>
+      )}
+
+      {/* Mobile Agenda View - Shows when calendar mode is selected on mobile */}
+      {viewMode === "calendar" && isMobile && (
+        <MobileAgendaView 
+          entries={sortedEntries}
+          onEventClick={handleEventClick}
+          onRefresh={loadData}
+        />
       )}
 
       {/* Cards View */}

@@ -1,6 +1,7 @@
 import { Calendar, Map, Plane, Heart, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { haptics } from "@/lib/haptics";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,11 +31,11 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   const isMoreActive = moreItems.some(item => item.id === activeTab);
   
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden safe-area-bottom">
       {/* Glass background */}
       <div className="bg-white/80 backdrop-blur-xl border-t border-gray-200/60 shadow-lg">
-        {/* Safe area padding for iPhone */}
-        <div className="flex items-center justify-around px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+        {/* Safe area padding for iPhone notch + home indicator */}
+        <div className="flex items-center justify-around px-2 pt-2 pb-2" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
           {mainNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -42,9 +43,12 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
             return (
               <button
                 key={item.id}
-                onClick={() => onTabChange(item.id)}
+                onClick={() => {
+                  haptics.tap();
+                  onTabChange(item.id);
+                }}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 px-3 py-1.5 rounded-xl transition-all duration-200 relative min-w-[56px]",
+                  "flex flex-col items-center justify-center gap-1 px-3 py-1.5 rounded-xl transition-all duration-200 relative min-w-[56px] touch-target touch-feedback",
                   isActive 
                     ? "text-amber-600" 
                     : "text-gray-400 hover:text-gray-600"
