@@ -67,7 +67,7 @@ const FloatingActionBar = ({
               className="bg-red-500 hover:bg-red-600 text-white"
             >
               <XCircle className="w-4 h-4 mr-1" />
-              Ablehnen
+              Verwerfen
             </Button>
 
             <div className="w-px h-8 bg-gray-700" />
