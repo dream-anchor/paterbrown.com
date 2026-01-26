@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Plus, FolderOpen, RefreshCw, Upload, Image, FileText, Table, Presentation, Archive, File } from "lucide-react";
+import { Plus, Package, RefreshCw, Upload, Image, FileText, Table, Presentation, Archive, File } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -214,12 +214,12 @@ const DocumentsPanel = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-sm">
-              <FolderOpen className="w-5 h-5 text-white" />
+              <Package className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Dokumente</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Drops</h2>
               <p className="text-sm text-gray-500">
-                {documents.length} Dokument{documents.length !== 1 ? "e" : ""} verfügbar
+                Dateien bereitstellen und Links teilen
               </p>
             </div>
           </div>
@@ -238,27 +238,27 @@ const DocumentsPanel = () => {
               className="bg-amber-600 hover:bg-amber-700 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Hochladen
+              Neuer Drop
             </Button>
           </div>
         </div>
 
-        {/* Documents List - Grouped */}
+        {/* Drops List - Grouped */}
         {documents.length === 0 ? (
           <div className="text-center py-16 px-4">
             <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-              <FolderOpen className="w-8 h-8 text-gray-400" />
+              <Package className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-1">Noch keine Dokumente</h3>
+            <h3 className="font-semibold text-gray-900 mb-1">Noch keine Drops</h3>
             <p className="text-sm text-gray-500 mb-4">
-              Lade dein erstes Dokument hoch, um es mit anderen zu teilen.
+              Erstelle deinen ersten Drop, um Dateien mit anderen zu teilen.
             </p>
             <Button
               onClick={() => setShowUploadModal(true)}
               className="bg-amber-600 hover:bg-amber-700 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Erstes Dokument hochladen
+              Ersten Drop erstellen
             </Button>
           </div>
         ) : (
