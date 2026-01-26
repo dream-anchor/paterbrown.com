@@ -247,6 +247,7 @@ export type Database = {
           download_count: number
           expires_at: string | null
           id: string
+          is_active: boolean
           max_downloads: number | null
           password_hash: string | null
           token: string
@@ -258,6 +259,7 @@ export type Database = {
           download_count?: number
           expires_at?: string | null
           id?: string
+          is_active?: boolean
           max_downloads?: number | null
           password_hash?: string | null
           token: string
@@ -269,6 +271,7 @@ export type Database = {
           download_count?: number
           expires_at?: string | null
           id?: string
+          is_active?: boolean
           max_downloads?: number | null
           password_hash?: string | null
           token?: string
@@ -720,6 +723,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      deactivate_document_share_links: {
+        Args: { p_document_id: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
