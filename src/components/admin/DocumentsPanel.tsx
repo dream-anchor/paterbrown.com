@@ -1,0 +1,224 @@
+import { useState, useEffect, useMemo } from "react";
+import { Plus, FolderOpen, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import DocumentCard from "./DocumentCard";
+import DocumentUploadModal from "./DocumentUploadModal";
+import { DOCUMENT_CATEGORIES, type DocumentCategory } from "@/lib/documentUtils";
+
+interface Document {
+  id: string;
+  name: string;
+  category: DocumentCategory;
+  file_path: string;
+  file_name: string;
+  file_size: number;
+  content_type: string | null;
+  download_count: number;
+  created_at: string;
+}
+
+const DocumentsPanel = () => {
+  const { toast } = useToast();
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+
+  const fetchDocuments = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("internal_documents")
+        .select("*")
+        .order("category")
+        .order("name");
+
+      if (error) throw error;
+      setDocuments((data as Document[]) || []);
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+      toast({
+        title: "Fehler",
+        description: "Dokumente konnten nicht geladen werden.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    const doc = documents.find(d => d.id === id);
+    if (!doc) return;
+
+    try {
+      // Delete from storage
+      const { error: storageError } = await supabase.storage
+        .from("internal-documents")
+        .remove([doc.file_path]);
+
+      if (storageError) {
+        console.warn("Storage delete warning:", storageError);
+      }
+
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from("internal_documents")
+        .delete()
+        .eq("id", id);
+
+      if (dbError) throw dbError;
+
+      setDocuments(prev => prev.filter(d => d.id !== id));
+      
+      toast({
+        title: "Dokument gelöscht",
+        description: `"${doc.name}" wurde erfolgreich gelöscht.`,
+      });
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      toast({
+        title: "Fehler",
+        description: "Das Dokument konnte nicht gelöscht werden.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Group documents by category
+  const groupedDocuments = useMemo(() => {
+    const groups: Partial<Record<DocumentCategory, Document[]>> = {};
+    
+    documents.forEach(doc => {
+      if (!groups[doc.category]) {
+        groups[doc.category] = [];
+      }
+      groups[doc.category]!.push(doc);
+    });
+
+    return groups;
+  }, [documents]);
+
+  // Order of categories
+  const categoryOrder: DocumentCategory[] = ["dossier_produktion", "dossier_presse", "flyer", "other"];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-gray-300 border-t-amber-600 rounded-full animate-spin" />
+          <span className="text-sm text-gray-500">Lade Dokumente...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-sm">
+            <FolderOpen className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Dokumente</h2>
+            <p className="text-sm text-gray-500">
+              {documents.length} Dokument{documents.length !== 1 ? "e" : ""} verfügbar
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchDocuments}
+            className="bg-white"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </Button>
+          <Button
+            onClick={() => setShowUploadModal(true)}
+            className="bg-amber-600 hover:bg-amber-700 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Hochladen
+          </Button>
+        </div>
+      </div>
+
+      {/* Documents List */}
+      {documents.length === 0 ? (
+        <div className="text-center py-16 px-4">
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <FolderOpen className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="font-semibold text-gray-900 mb-1">Noch keine Dokumente</h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Lade dein erstes Dokument hoch, um es mit anderen zu teilen.
+          </p>
+          <Button
+            onClick={() => setShowUploadModal(true)}
+            className="bg-amber-600 hover:bg-amber-700 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Erstes Dokument hochladen
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {categoryOrder.map(categoryKey => {
+            const docs = groupedDocuments[categoryKey];
+            if (!docs || docs.length === 0) return null;
+
+            const categoryInfo = DOCUMENT_CATEGORIES[categoryKey];
+
+            return (
+              <div key={categoryKey}>
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                  <span>{categoryInfo.icon}</span>
+                  <span>{categoryInfo.label}</span>
+                  <span className="ml-1 px-1.5 py-0.5 bg-gray-100 rounded text-xs font-medium">
+                    {docs.length}
+                  </span>
+                </h3>
+                <div className="space-y-3">
+                  {docs.map(doc => (
+                    <DocumentCard
+                      key={doc.id}
+                      id={doc.id}
+                      name={doc.name}
+                      category={doc.category}
+                      fileName={doc.file_name}
+                      filePath={doc.file_path}
+                      fileSize={doc.file_size}
+                      contentType={doc.content_type}
+                      downloadCount={doc.download_count}
+                      createdAt={doc.created_at}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Upload Modal */}
+      <DocumentUploadModal
+        open={showUploadModal}
+        onOpenChange={setShowUploadModal}
+        onSuccess={fetchDocuments}
+      />
+    </div>
+  );
+};
+
+export default DocumentsPanel;
