@@ -24,6 +24,7 @@ import {
   Link2,
   List,
   Download,
+  FileUp,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -45,6 +46,7 @@ import CalendarEventDetail from "./CalendarEventDetail";
 import EventTimeline from "./EventTimeline";
 import EventFilterPanel from "./EventFilterPanel";
 import CalendarExport from "./CalendarExport";
+import EventUploader from "./EventUploader";
 import SwipeableCard from "./SwipeableCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { format } from "date-fns";
@@ -131,6 +133,7 @@ interface CalendarEvent {
 interface FullCalendarProps {
   onNavigateToTravel?: (bookingId: string) => void;
   onNavigateToTour?: (eventId: string) => void;
+  onEventsAdded?: () => void;
 }
 
 // Color schemes for different event types
@@ -175,7 +178,7 @@ const getEventIcon = (type: string, bookingType?: string): typeof Train => {
   }
 };
 
-const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProps) => {
+const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: FullCalendarProps) => {
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   
@@ -200,6 +203,7 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
   const [viewMode, setViewMode] = useState<"calendar" | "cards" | "timeline">("calendar");
   const [filteredEntries, setFilteredEntries] = useState<CalendarEntry[]>([]);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   
   // Data states
   const [travelBookings, setTravelBookings] = useState<TravelBooking[]>([]);
@@ -701,6 +705,16 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
             Termin
           </Button>
           
+          <Button 
+            variant="apple" 
+            size="sm" 
+            onClick={() => setShowImportModal(true)}
+            className="bg-amber-500 hover:bg-amber-600 text-white border-amber-500"
+          >
+            <FileUp className="w-4 h-4 mr-2" />
+            Termine importieren
+          </Button>
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="apple" size="sm" className="rounded-lg">
@@ -751,6 +765,20 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour }: FullCalendarProp
                   source: e.source,
                 }))}
               />
+            </DialogContent>
+          </Dialog>
+          
+          {/* Import Modal */}
+          <Dialog open={showImportModal} onOpenChange={setShowImportModal}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Termine importieren</DialogTitle>
+              </DialogHeader>
+              <EventUploader onEventsAdded={() => {
+                loadData();
+                onEventsAdded?.();
+                setShowImportModal(false);
+              }} />
             </DialogContent>
           </Dialog>
         </div>
