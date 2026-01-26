@@ -1,4 +1,4 @@
-import { Calendar, Map, Plane, FolderOpen, MoreHorizontal } from "lucide-react";
+import { Calendar, Map, Plane, FolderOpen, Heart, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import {
@@ -17,10 +17,11 @@ const mainNavItems = [
   { id: "calendar", label: "Kalender", icon: Calendar },
   { id: "map", label: "Karte", icon: Map },
   { id: "travel", label: "Reisen", icon: Plane },
-  { id: "documents", label: "Dokumente", icon: FolderOpen },
+  { id: "picks", label: "Picks", icon: Heart },
 ];
 
 const moreItems = [
+  { id: "documents", label: "Dokumente" },
   { id: "upload", label: "Upload" },
 ];
 
