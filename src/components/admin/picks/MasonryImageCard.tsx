@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { 
   Check, 
@@ -6,7 +6,8 @@ import {
   XCircle,
   ZoomIn,
   Users,
-  AlertTriangle
+  AlertTriangle,
+  RefreshCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,6 +26,9 @@ interface MasonryImageCardProps {
   onOpen: (image: ImageData) => void;
   onVote: (imageId: string, status: VoteStatus) => void;
 }
+
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 1500;
 
 const VoteIndicator = ({ status }: { status: VoteStatus }) => {
   const config = {
@@ -54,8 +58,21 @@ const MasonryImageCard = ({
 }: MasonryImageCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
   const [isInView, setIsInView] = useState(index < 12); // First 12 are always in view
   const imgRef = useRef<HTMLImageElement>(null);
+  const retryTimeoutRef = useRef<number | null>(null);
+  
+  // Clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+    };
+  }, []);
   
   // Intersection Observer for smarter lazy loading with rootMargin
   useEffect(() => {
@@ -81,6 +98,39 @@ const MasonryImageCard = ({
     return () => observer.disconnect();
   }, [index]);
   
+  // Auto-retry on error
+  const handleImageError = useCallback(() => {
+    if (retryCount < MAX_RETRIES) {
+      setIsRetrying(true);
+      setLoadError(true);
+      
+      // Exponential backoff: 1.5s, 3s, 4.5s
+      const delay = RETRY_DELAY_MS * (retryCount + 1);
+      
+      retryTimeoutRef.current = window.setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+        setLoadError(false);
+        setImageLoaded(false);
+        setIsRetrying(false);
+      }, delay);
+    } else {
+      setLoadError(true);
+      setIsRetrying(false);
+    }
+  }, [retryCount]);
+  
+  // Manual retry handler
+  const handleManualRetry = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRetryCount(0);
+    setLoadError(false);
+    setImageLoaded(false);
+    setIsRetrying(true);
+    
+    // Force reload by changing the URL slightly
+    setTimeout(() => setIsRetrying(false), 100);
+  }, []);
+  
   const myVote = votes.find(
     v => v.image_id === image.id && v.user_id === currentUserId
   )?.vote_status;
@@ -90,18 +140,21 @@ const MasonryImageCard = ({
   // Use thumbnail_url if available, otherwise fall back to original with transform
   const isMissingThumbnail = !image.thumbnail_url;
   
-  const getDisplayUrl = () => {
+  const getDisplayUrl = useCallback(() => {
+    // Add cache-busting parameter on retry
+    const cacheBuster = retryCount > 0 ? `?retry=${retryCount}` : '';
+    
     // Priority: thumbnail_url > supabase transform > original
     if (image.thumbnail_url) {
-      return image.thumbnail_url;
+      return image.thumbnail_url + cacheBuster;
     }
     // Fallback: if it's a supabase storage URL, use transform
     if (!image.file_path.startsWith("https://")) {
-      return getImageThumbnailUrl("picks-images", image.file_path, 600, 600, 80);
+      return getImageThumbnailUrl("picks-images", image.file_path, 600, 600, 80) + cacheBuster;
     }
     // Last resort: original file (slow!)
-    return image.file_path;
-  };
+    return image.file_path + cacheBuster;
+  }, [image.thumbnail_url, image.file_path, retryCount]);
 
   const handleClick = (e: React.MouseEvent) => {
     if (e.shiftKey) {
@@ -131,13 +184,34 @@ const MasonryImageCard = ({
     >
       {/* Image */}
       <div className="relative" ref={imgRef}>
-        {/* Improved skeleton with shimmer effect */}
-        {!imageLoaded && (
-          <div className="aspect-square bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-[shimmer_1.5s_infinite]" />
+        {/* Improved skeleton with shimmer effect - show while loading or retrying */}
+        {(!imageLoaded || isRetrying) && !loadError && (
+          <div className="aspect-square bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-[shimmer_1.5s_infinite]">
+            {isRetrying && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <RefreshCw className="w-6 h-6 text-gray-400 animate-spin" />
+              </div>
+            )}
+          </div>
         )}
         
-        {/* Only render img when in view (Intersection Observer) */}
-        {isInView && (
+        {/* Error state with manual retry */}
+        {loadError && !isRetrying && (
+          <div className="aspect-square bg-gray-200 flex flex-col items-center justify-center gap-2 p-4">
+            <AlertTriangle className="w-8 h-8 text-amber-500" />
+            <span className="text-xs text-gray-500 text-center">Laden fehlgeschlagen</span>
+            <button
+              onClick={handleManualRetry}
+              className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs text-gray-600 transition-colors"
+            >
+              <RefreshCw className="w-3 h-3" />
+              Erneut laden
+            </button>
+          </div>
+        )}
+        
+        {/* Only render img when in view (Intersection Observer) and not in error state */}
+        {isInView && !loadError && !isRetrying && (
           <img
             src={getDisplayUrl()}
             alt={image.title || image.file_name}
@@ -152,7 +226,11 @@ const MasonryImageCard = ({
             decoding={index < 12 ? "sync" : "async"}
             // Preload hint for first batch
             fetchPriority={index < 6 ? "high" : "auto"}
-            onLoad={() => setImageLoaded(true)}
+            onLoad={() => {
+              setImageLoaded(true);
+              setLoadError(false);
+            }}
+            onError={handleImageError}
           />
         )}
 
