@@ -750,3 +750,18 @@ All colors MUST be HSL.
 [data-radix-popper-content-wrapper] {
   z-index: 10001 !important;
 }
+
+/* ============================================
+   ADMIN AREA: Hide cookie banner/widget when authenticated
+   (Osano is loaded async; we also add a body class in Admin.tsx)
+   ============================================ */
+body.admin-area.admin-authenticated .osano-cm-dialog,
+body.admin-area.admin-authenticated .osano-cm-window,
+body.admin-area.admin-authenticated .osano-cm-widget,
+body.admin-area.admin-authenticated #osano-cm-dialog,
+body.admin-area.admin-authenticated #osano-cm-window,
+body.admin-area.admin-authenticated #osano-cm-widget {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

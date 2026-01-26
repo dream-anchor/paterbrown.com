@@ -68,14 +68,63 @@ const Admin = () => {
     setSearchParams({ tab: value });
   };
 
-  // Hide Osano cookie banner for ALL authenticated users in admin area
+  // Mark admin route on <body> so CSS can target cookie widgets reliably
   useEffect(() => {
-    if (isAuthenticated) {
-      if (window.Osano?.cm) {
-        window.Osano.cm.hideDialog();
-      }
+    document.body.classList.add("admin-area");
+    return () => {
+      document.body.classList.remove("admin-area");
+      document.body.classList.remove("admin-authenticated");
+    };
+  }, []);
+
+  const hideOsanoUi = useCallback(() => {
+    // 1) Best-effort API call (may not be ready due to async script loading)
+    try {
+      window.Osano?.cm?.hideDialog?.();
+    } catch {
+      // ignore
     }
-  }, [isAuthenticated]);
+
+    // 2) Hard hide known DOM nodes (widget bubble + dialog)
+    const selectors = [
+      ".osano-cm-dialog",
+      ".osano-cm-window",
+      ".osano-cm-widget",
+      "#osano-cm-dialog",
+      "#osano-cm-window",
+      "#osano-cm-widget",
+    ];
+
+    for (const sel of selectors) {
+      document.querySelectorAll(sel).forEach((el) => {
+        (el as HTMLElement).style.setProperty("display", "none", "important");
+        (el as HTMLElement).style.setProperty("visibility", "hidden", "important");
+        (el as HTMLElement).style.setProperty("pointer-events", "none", "important");
+      });
+    }
+  }, []);
+
+  // Hide Osano cookie UI for authenticated users (including late script init)
+  useEffect(() => {
+    if (!isAuthenticated) {
+      document.body.classList.remove("admin-authenticated");
+      return;
+    }
+
+    document.body.classList.add("admin-authenticated");
+    hideOsanoUi();
+
+    // Osano script is async; observe DOM for late inserts and hide again.
+    const observer = new MutationObserver(() => hideOsanoUi());
+    observer.observe(document.body, { childList: true, subtree: true });
+    const timeout = window.setTimeout(() => observer.disconnect(), 15000);
+
+    return () => {
+      window.clearTimeout(timeout);
+      observer.disconnect();
+      document.body.classList.remove("admin-authenticated");
+    };
+  }, [isAuthenticated, hideOsanoUi]);
 
   useEffect(() => {
     // Listen for auth state changes (important for password recovery flow)
