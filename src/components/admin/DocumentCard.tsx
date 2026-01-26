@@ -25,6 +25,7 @@ import {
   getDownloadPageUrl,
   getPublicDownloadUrl,
   getFileExtension,
+  isImageFile,
 } from "@/lib/documentUtils";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -55,11 +56,12 @@ const DocumentCard = ({
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const downloadPageUrl = getDownloadPageUrl(id);
   const directDownloadUrl = getPublicDownloadUrl(filePath);
   const fileExtension = getFileExtension(fileName);
-  const isPdf = contentType?.includes("pdf") || fileName.toLowerCase().endsWith(".pdf");
+  const isImage = isImageFile(contentType, fileName);
 
   const handleCopyLink = async () => {
     try {
@@ -100,12 +102,23 @@ const DocumentCard = ({
     <>
       <Card className="p-4 bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200">
         <div className="flex items-start gap-4">
-          {/* Modern Document Icon */}
+          {/* Document Icon or Image Thumbnail */}
           <div className="flex-shrink-0 w-12 h-14 rounded-lg bg-gray-100 border border-gray-200 flex flex-col items-center justify-center relative overflow-hidden">
-            <FileText className="w-5 h-5 text-gray-400 mb-0.5" />
-            <span className="text-[9px] font-medium text-gray-500 uppercase tracking-wide">
-              {fileExtension || "DOC"}
-            </span>
+            {isImage && !imageError ? (
+              <img
+                src={directDownloadUrl}
+                alt={name}
+                className="absolute inset-0 w-full h-full object-cover"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <>
+                <FileText className="w-5 h-5 text-gray-400 mb-0.5" />
+                <span className="text-[9px] font-medium text-gray-500 uppercase tracking-wide">
+                  {fileExtension || "DOC"}
+                </span>
+              </>
+            )}
           </div>
 
           {/* Content */}
