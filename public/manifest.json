@@ -1,11 +1,15 @@
 {
   "name": "Pater Brown - Das Live-Hörspiel",
-  "short_name": "Pater Brown Live",
+  "short_name": "Pater Brown",
   "description": "Erleben Sie das spannende Live-Hörspiel Pater Brown mit Antoine Monot und Wanja Mues",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#050505",
   "theme_color": "#F59E0B",
+  "scope": "/",
+  "categories": ["entertainment", "events"],
+  "lang": "de-DE",
   "icons": [
     {
       "src": "/favicon.ico",
@@ -24,5 +28,7 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
 }
