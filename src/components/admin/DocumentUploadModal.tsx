@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Upload, X, FileText, Check } from "lucide-react";
+import { Upload, X, FileText, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,35 +24,42 @@ interface ExistingFile {
   } | null;
 }
 
+interface FileWithName {
+  file: File;
+  displayName: string;
+}
+
 interface DocumentUploadModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
-  initialFile?: File | null;
+  initialFiles?: File[];
 }
 
-const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFile }: DocumentUploadModalProps) => {
+const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFiles }: DocumentUploadModalProps) => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [uploadMode, setUploadMode] = useState<"new" | "existing">("new");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<FileWithName[]>([]);
   const [selectedExistingFile, setSelectedExistingFile] = useState<ExistingFile | null>(null);
   const [existingFiles, setExistingFiles] = useState<ExistingFile[]>([]);
   const [loadingExisting, setLoadingExisting] = useState(false);
-  const [name, setName] = useState("");
+  const [existingFileName, setExistingFileName] = useState("");
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
 
-  // Handle initial file from page drop
+  // Handle initial files from page drop
   useEffect(() => {
-    if (initialFile && open) {
-      setSelectedFile(initialFile);
+    if (initialFiles && initialFiles.length > 0 && open) {
+      const filesWithNames = initialFiles.map(file => ({
+        file,
+        displayName: file.name.replace(/\.[^/.]+$/, ""),
+      }));
+      setSelectedFiles(filesWithNames);
       setUploadMode("new");
-      const nameWithoutExt = initialFile.name.replace(/\.[^/.]+$/, "");
-      setName(nameWithoutExt);
     }
-  }, [initialFile, open]);
+  }, [initialFiles, open]);
 
   const loadExistingFiles = useCallback(async () => {
     setLoadingExisting(true);
@@ -97,40 +104,48 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFile }: Doc
     e.stopPropagation();
     setDragActive(false);
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      setSelectedFile(file);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const newFiles = Array.from(e.dataTransfer.files).map(file => ({
+        file,
+        displayName: file.name.replace(/\.[^/.]+$/, ""),
+      }));
+      setSelectedFiles(prev => [...prev, ...newFiles]);
       setUploadMode("new");
-      if (!name) {
-        const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
-        setName(nameWithoutExt);
-      }
     }
-  }, [name]);
+  }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      if (!name) {
-        const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
-        setName(nameWithoutExt);
-      }
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files).map(file => ({
+        file,
+        displayName: file.name.replace(/\.[^/.]+$/, ""),
+      }));
+      setSelectedFiles(prev => [...prev, ...newFiles]);
     }
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleFileNameChange = (index: number, newName: string) => {
+    setSelectedFiles(prev => prev.map((f, i) => 
+      i === index ? { ...f, displayName: newName } : f
+    ));
   };
 
   const handleExistingFileSelect = (file: ExistingFile) => {
     setSelectedExistingFile(file);
-    if (!name) {
+    if (!existingFileName) {
       const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
-      setName(nameWithoutExt);
+      setExistingFileName(nameWithoutExt);
     }
   };
 
   const resetForm = () => {
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setSelectedExistingFile(null);
-    setName("");
+    setExistingFileName("");
     setUploadMode("new");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -138,10 +153,28 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFile }: Doc
   };
 
   const handleSubmit = async () => {
-    if (!name.trim()) {
+    if (uploadMode === "new" && selectedFiles.length === 0) {
+      toast({
+        title: "Keine Dateien ausgewählt",
+        description: "Bitte wähle mindestens eine Datei aus.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (uploadMode === "new" && selectedFiles.some(f => !f.displayName.trim())) {
       toast({
         title: "Name erforderlich",
-        description: "Bitte gib einen Namen für das Dokument ein.",
+        description: "Bitte gib für alle Dateien einen Namen ein.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (uploadMode === "existing" && (!selectedExistingFile || !existingFileName.trim())) {
+      toast({
+        title: "Auswahl erforderlich",
+        description: "Bitte wähle eine Datei aus und gib einen Namen ein.",
         variant: "destructive",
       });
       return;
@@ -150,63 +183,67 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFile }: Doc
     setUploading(true);
 
     try {
-      let filePath: string;
-      let fileName: string;
-      let fileSize: number;
-      let contentType: string | null;
-
-      if (uploadMode === "new" && selectedFile) {
-        // Upload new file
-        const timestamp = Date.now();
-        const safeName = selectedFile.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-        filePath = `${timestamp}-${safeName}`;
-        fileName = selectedFile.name;
-        fileSize = selectedFile.size;
-        contentType = selectedFile.type || null;
-
-        const { error: uploadError } = await supabase.storage
-          .from("internal-documents")
-          .upload(filePath, selectedFile);
-
-        if (uploadError) throw uploadError;
-      } else if (uploadMode === "existing" && selectedExistingFile) {
-        // Use existing file
-        filePath = selectedExistingFile.name;
-        fileName = selectedExistingFile.name;
-        fileSize = selectedExistingFile.metadata?.size ?? 0;
-        contentType = selectedExistingFile.metadata?.mimetype ?? null;
-      } else {
-        toast({
-          title: "Keine Datei ausgewählt",
-          description: "Bitte wähle eine Datei aus oder lade eine neue hoch.",
-          variant: "destructive",
-        });
-        setUploading(false);
-        return;
-      }
-
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Create document record (category defaults to 'other')
-      const { error: dbError } = await supabase
-        .from("internal_documents")
-        .insert({
-          name: name.trim(),
-          category: "other",
-          file_path: filePath,
-          file_name: fileName,
-          file_size: fileSize,
-          content_type: contentType,
-          uploaded_by: user?.id || null,
+      if (uploadMode === "new") {
+        // Upload all new files
+        for (const { file, displayName } of selectedFiles) {
+          const timestamp = Date.now();
+          const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+          const filePath = `${timestamp}-${safeName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from("internal-documents")
+            .upload(filePath, file);
+
+          if (uploadError) throw uploadError;
+
+          const { error: dbError } = await supabase
+            .from("internal_documents")
+            .insert({
+              name: displayName.trim(),
+              category: "other",
+              file_path: filePath,
+              file_name: file.name,
+              file_size: file.size,
+              content_type: file.type || null,
+              uploaded_by: user?.id || null,
+            });
+
+          if (dbError) throw dbError;
+        }
+
+        toast({
+          title: selectedFiles.length === 1 ? "Dokument hinzugefügt" : "Dokumente hinzugefügt",
+          description: `${selectedFiles.length} ${selectedFiles.length === 1 ? "Datei wurde" : "Dateien wurden"} erfolgreich hinzugefügt.`,
         });
+      } else if (uploadMode === "existing" && selectedExistingFile) {
+        // Use existing file
+        const filePath = selectedExistingFile.name;
+        const fileName = selectedExistingFile.name;
+        const fileSize = selectedExistingFile.metadata?.size ?? 0;
+        const contentType = selectedExistingFile.metadata?.mimetype ?? null;
 
-      if (dbError) throw dbError;
+        const { error: dbError } = await supabase
+          .from("internal_documents")
+          .insert({
+            name: existingFileName.trim(),
+            category: "other",
+            file_path: filePath,
+            file_name: fileName,
+            file_size: fileSize,
+            content_type: contentType,
+            uploaded_by: user?.id || null,
+          });
 
-      toast({
-        title: "Dokument hinzugefügt",
-        description: `"${name}" wurde erfolgreich hinzugefügt.`,
-      });
+        if (dbError) throw dbError;
+
+        toast({
+          title: "Dokument hinzugefügt",
+          description: `"${existingFileName}" wurde erfolgreich hinzugefügt.`,
+        });
+      }
 
       resetForm();
       onOpenChange(false);
@@ -215,7 +252,7 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFile }: Doc
       console.error("Error uploading document:", error);
       toast({
         title: "Fehler",
-        description: "Das Dokument konnte nicht hochgeladen werden.",
+        description: "Die Dokumente konnten nicht hochgeladen werden.",
         variant: "destructive",
       });
     } finally {
@@ -233,7 +270,9 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFile }: Doc
         onDrop={handleDrop}
       >
         <DialogHeader>
-          <DialogTitle className="text-gray-900">Dokument hinzufügen</DialogTitle>
+          <DialogTitle className="text-gray-900">
+            {selectedFiles.length > 1 ? `${selectedFiles.length} Dokumente hinzufügen` : "Dokument hinzufügen"}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-5 pt-2">
@@ -259,102 +298,71 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFile }: Doc
 
           {/* New File Upload */}
           {uploadMode === "new" && (
-            <div
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-              className={`
-                relative border-2 border-dashed rounded-lg p-8 text-center transition-colors
-                ${dragActive 
-                  ? "border-amber-500 bg-amber-50" 
-                  : selectedFile 
-                    ? "border-green-500 bg-green-50" 
+            <div className="space-y-4">
+              {/* Drop Zone */}
+              <div
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+                className={`
+                  relative border-2 border-dashed rounded-lg p-6 text-center transition-colors
+                  ${dragActive 
+                    ? "border-amber-500 bg-amber-50" 
                     : "border-gray-300 hover:border-gray-400 bg-gray-50"
-                }
-              `}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                onChange={handleFileSelect}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.zip"
-              />
-              
-              {selectedFile ? (
-                <div className="flex items-center justify-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                    <Check className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div className="text-left">
-                    <p className="font-medium text-gray-900">{selectedFile.name}</p>
-                    <p className="text-sm text-gray-500">{formatFileSize(selectedFile.size)}</p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedFile(null);
-                      if (fileInputRef.current) fileInputRef.current.value = "";
-                    }}
-                    className="ml-2"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <Upload className="w-10 h-10 mx-auto text-gray-400 mb-3" />
-                  <p className="text-gray-600 mb-1">Datei hierher ziehen</p>
-                  <p className="text-sm text-gray-500">oder klicken zum Auswählen</p>
-                  <p className="text-xs text-gray-400 mt-2">Max. 50 MB</p>
-                </>
-              )}
-            </div>
-          )}
+                  }
+                `}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  onChange={handleFileSelect}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.zip"
+                />
+                
+                <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                <p className="text-gray-600 text-sm mb-1">Dateien hierher ziehen</p>
+                <p className="text-xs text-gray-500">oder klicken zum Auswählen (mehrere möglich)</p>
+              </div>
 
-          {/* Existing Files Selection */}
-          {uploadMode === "existing" && (
-            <div className="border border-gray-200 rounded-lg bg-gray-50">
-              {loadingExisting ? (
-                <div className="p-8 text-center text-gray-500">
-                  <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin mx-auto mb-2" />
-                  Lade Dateien...
-                </div>
-              ) : existingFiles.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  Keine bestehenden Dateien gefunden
-                </div>
-              ) : (
-                <ScrollArea className="h-48">
-                  <div className="p-2 space-y-1">
-                    {existingFiles.map((file) => (
-                      <button
-                        key={file.id || file.name}
-                        type="button"
-                        onClick={() => handleExistingFileSelect(file)}
-                        className={`
-                          w-full flex items-center gap-3 p-2.5 rounded-lg text-left transition-colors
-                          ${selectedExistingFile?.name === file.name
-                            ? "bg-amber-100 border border-amber-300"
-                            : "hover:bg-gray-100 border border-transparent"
-                          }
-                        `}
+              {/* Selected Files List */}
+              {selectedFiles.length > 0 && (
+                <ScrollArea className="max-h-48">
+                  <div className="space-y-2">
+                    {selectedFiles.map((fileWithName, index) => (
+                      <div 
+                        key={index}
+                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
                       >
-                        <FileText className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <p className="font-medium text-gray-900 truncate text-sm">{file.name}</p>
-                          <p className="text-xs text-gray-500">
-                            {formatFileSize(file.metadata?.size || 0)}
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex flex-col items-center justify-center flex-shrink-0">
+                          <FileText className="w-4 h-4 text-gray-400" />
+                          <span className="text-[8px] font-medium text-gray-500 uppercase mt-0.5">
+                            {fileWithName.file.name.split('.').pop()}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <Input
+                            value={fileWithName.displayName}
+                            onChange={(e) => handleFileNameChange(index, e.target.value)}
+                            placeholder="Anzeigename"
+                            className="h-8 text-sm bg-white border-gray-200"
+                          />
+                          <p className="text-xs text-gray-500 mt-1 truncate">
+                            {fileWithName.file.name} • {formatFileSize(fileWithName.file.size)}
                           </p>
                         </div>
-                        {selectedExistingFile?.name === file.name && (
-                          <Check className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                        )}
-                      </button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveFile(index)}
+                          className="flex-shrink-0 text-gray-400 hover:text-red-500"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     ))}
                   </div>
                 </ScrollArea>
@@ -362,17 +370,67 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFile }: Doc
             </div>
           )}
 
-          {/* Name Input */}
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-gray-700">Anzeigename</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="z.B. Presse-Dossier v2.2"
-              className="bg-white border-gray-200 text-gray-900"
-            />
-          </div>
+          {/* Existing Files Selection */}
+          {uploadMode === "existing" && (
+            <div className="space-y-4">
+              <div className="border border-gray-200 rounded-lg bg-gray-50">
+                {loadingExisting ? (
+                  <div className="p-8 text-center text-gray-500">
+                    <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin mx-auto mb-2" />
+                    Lade Dateien...
+                  </div>
+                ) : existingFiles.length === 0 ? (
+                  <div className="p-8 text-center text-gray-500">
+                    Keine bestehenden Dateien gefunden
+                  </div>
+                ) : (
+                  <ScrollArea className="h-48">
+                    <div className="p-2 space-y-1">
+                      {existingFiles.map((file) => (
+                        <button
+                          key={file.id || file.name}
+                          type="button"
+                          onClick={() => handleExistingFileSelect(file)}
+                          className={`
+                            w-full flex items-center gap-3 p-2.5 rounded-lg text-left transition-colors
+                            ${selectedExistingFile?.name === file.name
+                              ? "bg-amber-100 border border-amber-300"
+                              : "hover:bg-gray-100 border border-transparent"
+                            }
+                          `}
+                        >
+                          <FileText className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-gray-900 truncate text-sm">{file.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {formatFileSize(file.metadata?.size || 0)}
+                            </p>
+                          </div>
+                          {selectedExistingFile?.name === file.name && (
+                            <Check className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </div>
+
+              {/* Name Input for existing file */}
+              {selectedExistingFile && (
+                <div className="space-y-2">
+                  <Label htmlFor="existingName" className="text-gray-700">Anzeigename</Label>
+                  <Input
+                    id="existingName"
+                    value={existingFileName}
+                    onChange={(e) => setExistingFileName(e.target.value)}
+                    placeholder="z.B. Presse-Dossier v2.2"
+                    className="bg-white border-gray-200 text-gray-900"
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2">
@@ -389,7 +447,11 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFile }: Doc
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={uploading || (!selectedFile && !selectedExistingFile) || !name.trim()}
+              disabled={
+                uploading || 
+                (uploadMode === "new" && selectedFiles.length === 0) ||
+                (uploadMode === "existing" && (!selectedExistingFile || !existingFileName.trim()))
+              }
               className="bg-amber-600 hover:bg-amber-700 text-white"
             >
               {uploading ? (
@@ -400,7 +462,7 @@ const DocumentUploadModal = ({ open, onOpenChange, onSuccess, initialFile }: Doc
               ) : (
                 <>
                   <Upload className="w-4 h-4 mr-2" />
-                  Hinzufügen
+                  {selectedFiles.length > 1 ? `${selectedFiles.length} Dateien hinzufügen` : "Hinzufügen"}
                 </>
               )}
             </Button>

@@ -23,7 +23,7 @@ const DocumentsPanel = () => {
   const [loading, setLoading] = useState(true);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [pageDragActive, setPageDragActive] = useState(false);
-  const [droppedFile, setDroppedFile] = useState<File | null>(null);
+  const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
 
   // Handle page-level drag events
   const handlePageDragEnter = useCallback((e: DragEvent) => {
@@ -52,9 +52,9 @@ const DocumentsPanel = () => {
     e.stopPropagation();
     setPageDragActive(false);
 
-    if (e.dataTransfer?.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      setDroppedFile(file);
+    if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files);
+      setDroppedFiles(files);
       setShowUploadModal(true);
     }
   }, []);
@@ -74,11 +74,11 @@ const DocumentsPanel = () => {
     };
   }, [handlePageDragEnter, handlePageDragOver, handlePageDragLeave, handlePageDrop]);
 
-  // Clear dropped file when modal closes
+  // Clear dropped files when modal closes
   const handleModalOpenChange = (open: boolean) => {
     setShowUploadModal(open);
     if (!open) {
-      setDroppedFile(null);
+      setDroppedFiles([]);
     }
   };
 
@@ -246,7 +246,7 @@ const DocumentsPanel = () => {
           open={showUploadModal}
           onOpenChange={handleModalOpenChange}
           onSuccess={fetchDocuments}
-          initialFile={droppedFile}
+          initialFiles={droppedFiles}
         />
       </div>
     </>
