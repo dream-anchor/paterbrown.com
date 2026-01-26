@@ -150,15 +150,11 @@ const DocumentCard = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleCopyLink}
+                onClick={() => setShowShareDialog(true)}
                 className="h-8 text-xs bg-white hover:bg-gray-50 text-gray-700"
               >
-                {copied ? (
-                  <Check className="w-3.5 h-3.5 mr-1.5 text-green-600" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5 mr-1.5" />
-                )}
-                {copied ? "Kopiert!" : "Link kopieren"}
+                <Link className="w-3.5 h-3.5 mr-1.5" />
+                Link generieren
               </Button>
 
               <DropdownMenu>
@@ -169,11 +165,6 @@ const DocumentCard = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="bg-white">
-                  <DropdownMenuItem onClick={() => setShowShareDialog(true)} className="text-gray-700">
-                    <Link className="w-4 h-4 mr-2" />
-                    Ablaufenden Link erstellen
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleCopyLink} className="text-gray-700">
                     <Copy className="w-4 h-4 mr-2" />
                     Permanenten Link kopieren

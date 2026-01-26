@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Download, AlertCircle, FileText, ArrowLeft, ExternalLink, Lock, Clock, Hash } from "lucide-react";
+import { Download, AlertCircle, FileText, ArrowLeft, ExternalLink, Lock, Clock, Hash, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,7 @@ interface ShareLinkData {
   password_hash: string | null;
   max_downloads: number | null;
   download_count: number;
+  is_active: boolean;
   document: {
     id: string;
     name: string;
@@ -21,10 +22,10 @@ interface ShareLinkData {
     file_name: string;
     file_size: number;
     content_type: string | null;
-  };
+  } | null;
 }
 
-type ErrorType = "not_found" | "expired" | "max_downloads" | "password_required" | "wrong_password";
+type ErrorType = "not_found" | "expired" | "max_downloads" | "password_required" | "wrong_password" | "deactivated" | "document_removed";
 
 const ERROR_MESSAGES: Record<ErrorType, { title: string; description: string; icon: React.ReactNode }> = {
   not_found: {
@@ -34,12 +35,12 @@ const ERROR_MESSAGES: Record<ErrorType, { title: string; description: string; ic
   },
   expired: {
     title: "Link abgelaufen",
-    description: "Dieser Download-Link ist nicht mehr gültig.",
+    description: "Dieser Download-Link ist nicht mehr gültig. Bitte fordere einen neuen Link an.",
     icon: <Clock className="w-8 h-8 text-amber-500" />,
   },
   max_downloads: {
     title: "Download-Limit erreicht",
-    description: "Die maximale Anzahl an Downloads wurde erreicht.",
+    description: "Die maximale Anzahl an Downloads wurde erreicht. Bitte fordere einen neuen Link an.",
     icon: <Hash className="w-8 h-8 text-amber-500" />,
   },
   password_required: {
@@ -51,6 +52,16 @@ const ERROR_MESSAGES: Record<ErrorType, { title: string; description: string; ic
     title: "Falsches Passwort",
     description: "Das eingegebene Passwort ist nicht korrekt.",
     icon: <Lock className="w-8 h-8 text-red-500" />,
+  },
+  deactivated: {
+    title: "Link deaktiviert",
+    description: "Dieser Download-Link wurde vom Absender deaktiviert und ist nicht mehr verfügbar.",
+    icon: <Ban className="w-8 h-8 text-gray-400" />,
+  },
+  document_removed: {
+    title: "Dokument nicht mehr verfügbar",
+    description: "Das Dokument wurde entfernt oder durch eine neue Version ersetzt. Bitte fordere einen aktuellen Link an.",
+    icon: <FileText className="w-8 h-8 text-gray-400" />,
   },
 };
 
@@ -81,6 +92,7 @@ const ShareDownloadPage = () => {
             password_hash,
             max_downloads,
             download_count,
+            is_active,
             document:internal_documents(
               id,
               name,
@@ -95,8 +107,22 @@ const ShareDownloadPage = () => {
 
         if (dbError) throw dbError;
 
-        if (!data || !data.document) {
+        if (!data) {
           setError("not_found");
+          setLoading(false);
+          return;
+        }
+
+        // Check if link is active
+        if (!data.is_active) {
+          setError("deactivated");
+          setLoading(false);
+          return;
+        }
+
+        // Check if document still exists
+        if (!data.document) {
+          setError("document_removed");
           setLoading(false);
           return;
         }
@@ -147,7 +173,7 @@ const ShareDownloadPage = () => {
   };
 
   const handleDownload = async () => {
-    if (!shareLink || !token) return;
+    if (!shareLink || !shareLink.document || !token) return;
 
     setDownloading(true);
 
@@ -165,7 +191,7 @@ const ShareDownloadPage = () => {
       // Also increment on document
       await supabase
         .from("internal_documents")
-        .update({ download_count: shareLink.document.file_size + 1 })
+        .update({ download_count: (shareLink.document.file_size || 0) + 1 })
         .eq("id", shareLink.document.id);
 
       // Open download URL
@@ -249,8 +275,8 @@ const ShareDownloadPage = () => {
     );
   }
 
-  // Error screens
-  if (error || !shareLink) {
+  // Error screens (including deactivated and document_removed)
+  if (error || !shareLink || !shareLink.document) {
     const errorInfo = ERROR_MESSAGES[error || "not_found"];
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
