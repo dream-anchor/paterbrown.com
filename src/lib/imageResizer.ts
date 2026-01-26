@@ -55,6 +55,7 @@ export const resizeImage = (
       ctx.imageSmoothingQuality = "high";
       ctx.drawImage(img, 0, 0, width, height);
 
+      // Use WebP for much smaller file sizes (30-50% smaller than JPEG)
       canvas.toBlob(
         (blob) => {
           if (blob) {
@@ -63,7 +64,7 @@ export const resizeImage = (
             reject(new Error("Failed to create blob"));
           }
         },
-        "image/jpeg",
+        "image/webp",
         quality
       );
     };
@@ -137,8 +138,10 @@ export const generateFilePaths = (
   const uniqueName = `${baseName}_${timestamp}_${random}`;
 
   return {
-    thumbnailPath: `${folder}/thumbnails/${uniqueName}.jpg`,
-    previewPath: `${folder}/previews/${uniqueName}.jpg`,
+    // WebP for thumbnails and previews (much smaller file sizes)
+    thumbnailPath: `${folder}/thumbnails/${uniqueName}.webp`,
+    previewPath: `${folder}/previews/${uniqueName}.webp`,
+    // Original keeps its original extension
     originalPath: `${folder}/originals/${uniqueName}.${ext}`,
   };
 };

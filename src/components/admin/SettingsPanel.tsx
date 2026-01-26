@@ -408,20 +408,25 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
           const paths = generateFilePaths(image.file_name, "picks");
           const updates: { thumbnail_url?: string; preview_url?: string } = {};
 
-          // Generate thumbnail if missing
+          // Generate thumbnail if missing (WebP format for smaller file size)
           if (!image.thumbnail_url) {
             const thumbnailBlob = await resizeImage(file, 400, 0.75);
+            // Use WebP path instead of JPEG
+            const webpThumbnailPath = paths.thumbnailPath.replace(/\.jpg$/, '.webp');
             
             const { data: presignedData } = await supabase.functions.invoke("get-presigned-url", {
               body: {
-                files: [{ fileName: "thumbnail.jpg", contentType: "image/jpeg", folder: "picks", customPath: paths.thumbnailPath }]
+                files: [{ fileName: "thumbnail.webp", contentType: "image/webp", folder: "picks", customPath: webpThumbnailPath }]
               }
             });
 
             if (presignedData?.success) {
               const uploadRes = await fetch(presignedData.urls[0].uploadUrl, {
                 method: "PUT",
-                headers: { "Content-Type": "image/jpeg" },
+                headers: { 
+                  "Content-Type": "image/webp",
+                  "Cache-Control": "public, max-age=31536000, immutable"
+                },
                 body: thumbnailBlob,
               });
 
@@ -432,20 +437,25 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
             }
           }
 
-          // Generate preview if missing
+          // Generate preview if missing (WebP format for smaller file size)
           if (!image.preview_url) {
             const previewBlob = await resizeImage(file, 1600, 0.8);
+            // Use WebP path instead of JPEG
+            const webpPreviewPath = paths.previewPath.replace(/\.jpg$/, '.webp');
             
             const { data: presignedData } = await supabase.functions.invoke("get-presigned-url", {
               body: {
-                files: [{ fileName: "preview.jpg", contentType: "image/jpeg", folder: "picks", customPath: paths.previewPath }]
+                files: [{ fileName: "preview.webp", contentType: "image/webp", folder: "picks", customPath: webpPreviewPath }]
               }
             });
 
             if (presignedData?.success) {
               const uploadRes = await fetch(presignedData.urls[0].uploadUrl, {
                 method: "PUT",
-                headers: { "Content-Type": "image/jpeg" },
+                headers: { 
+                  "Content-Type": "image/webp",
+                  "Cache-Control": "public, max-age=31536000, immutable"
+                },
                 body: previewBlob,
               });
 
