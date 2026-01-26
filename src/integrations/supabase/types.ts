@@ -239,6 +239,48 @@ export type Database = {
         }
         Relationships: []
       }
+      internal_documents: {
+        Row: {
+          category: Database["public"]["Enums"]["document_category"]
+          content_type: string | null
+          created_at: string
+          download_count: number
+          file_name: string
+          file_path: string
+          file_size: number
+          id: string
+          name: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["document_category"]
+          content_type?: string | null
+          created_at?: string
+          download_count?: number
+          file_name: string
+          file_path: string
+          file_size?: number
+          id?: string
+          name: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["document_category"]
+          content_type?: string | null
+          created_at?: string
+          download_count?: number
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          id?: string
+          name?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string | null
@@ -657,6 +699,11 @@ export type Database = {
         | "bus"
         | "rental_car"
         | "other"
+      document_category:
+        | "dossier_produktion"
+        | "dossier_presse"
+        | "flyer"
+        | "other"
       email_status: "pending" | "processing" | "processed" | "error"
       event_source: "KL" | "KBA" | "unknown"
       trip_status: "active" | "completed" | "cancelled"
@@ -796,6 +843,12 @@ export const Constants = {
         "proposal",
       ],
       booking_type: ["hotel", "train", "flight", "bus", "rental_car", "other"],
+      document_category: [
+        "dossier_produktion",
+        "dossier_presse",
+        "flyer",
+        "other",
+      ],
       email_status: ["pending", "processing", "processed", "error"],
       event_source: ["KL", "KBA", "unknown"],
       trip_status: ["active", "completed", "cancelled"],

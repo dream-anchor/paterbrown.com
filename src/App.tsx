@@ -14,6 +14,7 @@ const TicketThankYou = lazy(() => import("./pages/TicketThankYou"));
 const Impressum = lazy(() => import("./pages/Impressum"));
 const Datenschutz = lazy(() => import("./pages/Datenschutz"));
 const Admin = lazy(() => import("./pages/Admin"));
+const Download = lazy(() => import("./pages/Download"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/impressum" element={<Impressum />} />
               <Route path="/datenschutz" element={<Datenschutz />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/download/:id" element={<Download />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
