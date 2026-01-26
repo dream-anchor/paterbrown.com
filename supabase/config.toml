@@ -41,3 +41,6 @@ verify_jwt = true
 
 [functions.get-presigned-url]
 verify_jwt = true
+
+[functions.delete-files]
+verify_jwt = true
