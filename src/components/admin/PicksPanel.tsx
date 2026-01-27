@@ -821,20 +821,65 @@ const PicksPanel = () => {
           ))}
         </div>
 
-        {/* Back Button */}
+        {/* Back Button + Photographer Info */}
         {currentAlbumId && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
+          <div className="flex flex-wrap items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                const currentAlbum = albums.find((a) => a.id === currentAlbumId);
+                setCurrentAlbumId(currentAlbum?.parent_id || null);
+              }}
+              className="text-gray-600"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Zurück
+            </Button>
+            
+            {/* Photographer Info Banner */}
+            {(() => {
               const currentAlbum = albums.find((a) => a.id === currentAlbumId);
-              setCurrentAlbumId(currentAlbum?.parent_id || null);
-            }}
-            className="text-gray-600"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Zurück
-          </Button>
+              if (!currentAlbum?.photographer_name && !currentAlbum?.photographer_email && !currentAlbum?.photographer_phone) return null;
+              
+              return (
+                <div className="flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 rounded-lg text-sm">
+                  <div className="flex items-center gap-2 text-amber-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                      <circle cx="12" cy="13" r="3"/>
+                    </svg>
+                    <span className="font-medium">{currentAlbum.photographer_name || 'Fotograf'}</span>
+                  </div>
+                  {currentAlbum.photographer_email && (
+                    <a 
+                      href={`mailto:${currentAlbum.photographer_email}`}
+                      className="flex items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
+                      title={currentAlbum.photographer_email}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect width="20" height="16" x="2" y="4" rx="2"/>
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                      </svg>
+                      <span className="hidden sm:inline">{currentAlbum.photographer_email}</span>
+                    </a>
+                  )}
+                  {currentAlbum.photographer_phone && (
+                    <a 
+                      href={`tel:${currentAlbum.photographer_phone}`}
+                      className="flex items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
+                      title={currentAlbum.photographer_phone}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                      </svg>
+                      <span className="hidden sm:inline">{currentAlbum.photographer_phone}</span>
+                    </a>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
         )}
 
         {/* Filter Info */}
