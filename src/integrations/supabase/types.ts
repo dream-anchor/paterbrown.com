@@ -494,6 +494,9 @@ export type Database = {
           id: string
           name: string
           parent_id: string | null
+          photographer_email: string | null
+          photographer_name: string | null
+          photographer_phone: string | null
         }
         Insert: {
           created_at?: string
@@ -501,6 +504,9 @@ export type Database = {
           id?: string
           name: string
           parent_id?: string | null
+          photographer_email?: string | null
+          photographer_name?: string | null
+          photographer_phone?: string | null
         }
         Update: {
           created_at?: string
@@ -508,6 +514,9 @@ export type Database = {
           id?: string
           name?: string
           parent_id?: string | null
+          photographer_email?: string | null
+          photographer_name?: string | null
+          photographer_phone?: string | null
         }
         Relationships: [
           {
