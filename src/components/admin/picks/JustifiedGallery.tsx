@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ImageData, VoteStatus, ImageVote } from "./types";
 import { getImageThumbnailUrl } from "@/lib/documentUtils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface JustifiedGalleryProps {
   images: ImageData[];
@@ -38,7 +39,8 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1500;
 
 // Premium Glassmorphism Vote Badge - Floating circle with blur
-const VoteBadge = ({ status, isHovered }: { status: VoteStatus; isHovered?: boolean }) => {
+// Responsive: smaller on mobile to prevent clipping
+const VoteBadge = ({ status, isHovered, isMobile }: { status: VoteStatus; isHovered?: boolean; isMobile?: boolean }) => {
   const config = {
     approved: { icon: Check, ring: 'ring-green-400/40' },
     unsure: { icon: HelpCircle, ring: 'ring-amber-400/40' },
@@ -56,11 +58,15 @@ const VoteBadge = ({ status, isHovered }: { status: VoteStatus; isHovered?: bool
       }}
       transition={{ duration: 0.15 }}
       className={cn(
-        "p-2 rounded-full backdrop-blur-xl shadow-lg ring-1",
-        ring
+        "rounded-full backdrop-blur-xl shadow-lg ring-1",
+        ring,
+        isMobile ? "p-1.5" : "p-2"
       )}
     >
-      <Icon className="w-4 h-4 text-white drop-shadow-md" strokeWidth={2.5} />
+      <Icon className={cn(
+        "text-white drop-shadow-md",
+        isMobile ? "w-3 h-3" : "w-4 h-4"
+      )} strokeWidth={2.5} />
     </motion.div>
   );
 };
@@ -77,6 +83,7 @@ const JustifiedImageItem = ({
   onSelect,
   onOpen,
   onVote,
+  isMobile,
 }: {
   image: ImageData;
   votes: ImageVote[];
@@ -88,6 +95,7 @@ const JustifiedImageItem = ({
   onSelect: (imageId: string, addToSelection: boolean) => void;
   onOpen: (image: ImageData) => void;
   onVote: (imageId: string, status: VoteStatus) => void;
+  isMobile: boolean;
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -244,7 +252,7 @@ const JustifiedImageItem = ({
         />
       )}
 
-      {/* Selection checkbox - premium glassmorphism */}
+      {/* Selection checkbox - premium glassmorphism - responsive positioning */}
       <motion.div
         initial={false}
         animate={{ 
@@ -252,22 +260,34 @@ const JustifiedImageItem = ({
           scale: isSelected || isHovered ? 1 : 0.8 
         }}
         transition={{ duration: 0.15 }}
-        className="absolute top-3 left-3 z-10"
+        className={cn(
+          "absolute z-10",
+          isMobile ? "top-1.5 left-1.5" : "top-3 left-3"
+        )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-black/30 backdrop-blur-xl rounded-full p-1.5 shadow-lg ring-1 ring-white/20">
+        <div className={cn(
+          "bg-black/30 backdrop-blur-xl rounded-full shadow-lg ring-1 ring-white/20",
+          isMobile ? "p-1" : "p-1.5"
+        )}>
           <Checkbox
             checked={isSelected}
             onCheckedChange={() => onSelect(image.id, false)}
-            className="h-4 w-4 border-white/50 bg-white/20 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+            className={cn(
+              "border-white/50 bg-white/20 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500",
+              isMobile ? "h-3.5 w-3.5" : "h-4 w-4"
+            )}
           />
         </div>
       </motion.div>
 
-      {/* Vote badge - floating glassmorphism, top right */}
+      {/* Vote badge - floating glassmorphism, top right - responsive */}
       {myVote && (
-        <div className="absolute top-3 right-3 z-10">
-          <VoteBadge status={myVote} isHovered={isHovered} />
+        <div className={cn(
+          "absolute z-10",
+          isMobile ? "top-1.5 right-1.5" : "top-3 right-3"
+        )}>
+          <VoteBadge status={myVote} isHovered={isHovered} isMobile={isMobile} />
         </div>
       )}
 
@@ -279,9 +299,9 @@ const JustifiedImageItem = ({
         className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none"
       />
 
-      {/* Hover vote buttons - premium floating bar */}
+      {/* Hover vote buttons - premium floating bar - hide on mobile (voting via lightbox) */}
       <AnimatePresence>
-        {isHovered && (
+        {isHovered && !isMobile && (
           <motion.div
             initial={{ opacity: 0, y: 12, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -330,6 +350,11 @@ const JustifiedGallery = ({
 }: JustifiedGalleryProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
+  const isMobile = useIsMobile();
+  
+  // Use smaller row height on mobile
+  const effectiveRowHeight = isMobile ? 140 : targetRowHeight;
+  const effectiveGap = isMobile ? 2 : gap;
 
   // Observe container width
   useEffect(() => {
@@ -359,19 +384,19 @@ const JustifiedGallery = ({
       // Estimate aspect ratio - in production you'd have actual dimensions
       // Using 1.5 (landscape) as default since photos are typically landscape
       const aspectRatio = defaultAspectRatio;
-      const imageWidth = targetRowHeight * aspectRatio;
+      const imageWidth = effectiveRowHeight * aspectRatio;
 
       currentRow.push({
         ...image,
         calculatedWidth: imageWidth,
-        calculatedHeight: targetRowHeight,
+        calculatedHeight: effectiveRowHeight,
       });
-      currentRowWidth += imageWidth + gap;
+      currentRowWidth += imageWidth + effectiveGap;
 
       // Check if row is full
       if (currentRowWidth >= containerWidth) {
         // Calculate scale factor to fit row exactly
-        const totalGaps = (currentRow.length - 1) * gap;
+        const totalGaps = (currentRow.length - 1) * effectiveGap;
         const availableWidth = containerWidth - totalGaps;
         const naturalWidth = currentRow.reduce((sum, img) => sum + img.calculatedWidth, 0);
         const scale = availableWidth / naturalWidth;
@@ -380,12 +405,12 @@ const JustifiedGallery = ({
         const scaledRow = currentRow.map((img) => ({
           ...img,
           calculatedWidth: Math.floor(img.calculatedWidth * scale),
-          calculatedHeight: Math.floor(targetRowHeight * scale),
+          calculatedHeight: Math.floor(effectiveRowHeight * scale),
         }));
 
         rows.push({
           images: scaledRow,
-          height: Math.floor(targetRowHeight * scale),
+          height: Math.floor(effectiveRowHeight * scale),
         });
 
         currentRow = [];
@@ -397,25 +422,25 @@ const JustifiedGallery = ({
     if (currentRow.length > 0) {
       rows.push({
         images: currentRow,
-        height: targetRowHeight,
+        height: effectiveRowHeight,
       });
     }
 
     return rows;
-  }, [images, containerWidth, targetRowHeight, gap]);
+  }, [images, containerWidth, effectiveRowHeight, effectiveGap]);
 
   // Flatten for index tracking
   let globalIndex = 0;
 
   return (
     <div ref={containerRef} className="w-full">
-      <div className="flex flex-col" style={{ gap }}>
+      <div className="flex flex-col" style={{ gap: effectiveGap }}>
         <AnimatePresence mode="popLayout">
           {rows.map((row, rowIndex) => (
             <div
               key={`row-${rowIndex}`}
               className="flex"
-              style={{ gap, height: row.height }}
+              style={{ gap: effectiveGap, height: row.height }}
             >
               {row.images.map((image) => {
                 const idx = globalIndex++;
@@ -432,6 +457,7 @@ const JustifiedGallery = ({
                     onSelect={onSelect}
                     onOpen={onOpen}
                     onVote={onVote}
+                    isMobile={isMobile}
                   />
                 );
               })}
