@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback, useRef } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef, type RefObject } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, Tooltip } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import { 
@@ -83,19 +83,76 @@ const fetchDrivingDistance = async (
 };
 
 // Component to auto-fit map bounds to all markers
-const FitBoundsToMarkers = ({ coords }: { coords: [number, number][] }) => {
+const FitBoundsToMarkers = ({
+  coords,
+  watch,
+}: {
+  coords: [number, number][];
+  watch?: string;
+}) => {
   const map = useMap();
   
   useEffect(() => {
     if (coords.length > 0) {
       const bounds = L.latLngBounds(coords);
-      map.fitBounds(bounds, { 
-        padding: [40, 40],
-        maxZoom: 8
-      });
+      // Delay slightly so Leaflet has the correct container size on mobile.
+      // Without this, fitBounds can calculate with a too-small width (gray area issue)
+      // and ends up zooming way too far out.
+      const t = window.setTimeout(() => {
+        map.invalidateSize();
+        map.fitBounds(bounds, {
+          padding: [40, 40],
+          maxZoom: 8,
+        });
+      }, 200);
+
+      return () => window.clearTimeout(t);
     }
-  }, [coords, map]);
+  }, [coords, map, watch]);
   
+  return null;
+};
+
+/**
+ * Leaflet can render with a wrong internal size if the container changes after mount
+ * (very common on mobile with sticky headers / dynamic heights). This leads to the
+ * classic "gray area" / clipped tiles on the right.
+ */
+const InvalidateLeafletSize = ({
+  containerRef,
+  watch,
+}: {
+  containerRef: RefObject<HTMLElement>;
+  watch?: string;
+}) => {
+  const map = useMap();
+
+  useEffect(() => {
+    // 1) immediate + delayed invalidation (covers initial layout + fonts)
+    const raf = requestAnimationFrame(() => map.invalidateSize());
+    const t = window.setTimeout(() => map.invalidateSize(), 150);
+
+    // 2) observe container resizes (orientation change, address bar collapse, etc.)
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") {
+      return () => {
+        cancelAnimationFrame(raf);
+        window.clearTimeout(t);
+      };
+    }
+
+    const ro = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+    ro.observe(el);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(t);
+      ro.disconnect();
+    };
+  }, [map, containerRef, watch]);
+
   return null;
 };
 
@@ -408,6 +465,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
   const [editingEvent, setEditingEvent] = useState<UniversalEvent | null>(null);
   const clusterGroupRef = useRef<any>(null);
   const markerRefs = useRef<Map<string, L.Marker>>(new Map());
+  const mapViewportRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
   // Get available years from events
@@ -997,14 +1055,18 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         style={isMobile ? { height: '55vh', minHeight: '320px', maxHeight: '500px' } : undefined}
         >
           {/* Map Container */}
-          <div className="flex-1 min-h-0 relative">
+          <div ref={mapViewportRef} className="flex-1 min-h-0 relative">
             <MapContainer
               center={germanCenter}
               zoom={isMobile ? 5.5 : 6}
               scrollWheelZoom={true}
               className="absolute inset-0 h-full w-full"
             >
-              <FitBoundsToMarkers coords={routeCoords} />
+              <InvalidateLeafletSize
+                containerRef={mapViewportRef}
+                watch={`${isMobile}-${sortedEvents.length}`}
+              />
+              <FitBoundsToMarkers coords={routeCoords} watch={`${isMobile}-${sortedEvents.length}`} />
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
