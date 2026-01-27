@@ -987,12 +987,12 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         isMobile ? "flex flex-col" : "flex flex-row"
       )}>
         
-        {/* Map Container - Fixed on desktop, Sticky on mobile */}
+        {/* Map Container - Fixed on desktop, Portrait aspect on mobile */}
         <div className={cn(
-          "flex flex-col border-r border-gray-200",
+          "flex flex-col",
           isMobile 
-            ? "sticky top-0 z-10 h-[45vh] min-h-[280px] flex-shrink-0" 
-            : "w-1/2 h-full"
+            ? "sticky top-0 z-10 w-full aspect-[9/16] max-h-[65vh] min-h-[400px] flex-shrink-0" 
+            : "w-1/2 h-full border-r border-gray-200"
         )}>
           {/* Map Container */}
           <div className="flex-1 min-h-0">
