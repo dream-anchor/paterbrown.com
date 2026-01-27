@@ -1329,7 +1329,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
-              <span>Kulturbanause (KBA)</span>
+              <span>Konzertbüro Augsburg (KBA)</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-6 h-0.5 bg-indigo-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #6366f1 0px, #6366f1 6px, transparent 6px, transparent 12px)' }}></div>

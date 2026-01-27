@@ -118,7 +118,7 @@ export const TOUR_SOURCES: TourSource[] = [
   },
   {
     value: "KBA",
-    label: "Kulturbanause",
+    label: "Konzertbüro Augsburg",
     sublabel: "Grüne Tour-Markierung",
     color: "bg-emerald-500",
     bgColor: "bg-emerald-50",
