@@ -156,6 +156,19 @@ const InvalidateLeafletSize = ({
   return null;
 };
 
+// Component to fly/pan the map to a specific coordinate
+const FlyToMarker = ({ coords }: { coords: [number, number] | null }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (coords) {
+      map.flyTo(coords, 10, { duration: 0.5 });
+    }
+  }, [coords, map]);
+  
+  return null;
+};
+
 // Fix for default marker icons in Leaflet with bundlers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -462,6 +475,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
   const [dateRangeValue, setDateRangeValue] = useState<number[]>([0, 100]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedEventDetail, setSelectedEventDetail] = useState<AdminEvent | null>(null);
+  const [flyToCoords, setFlyToCoords] = useState<[number, number] | null>(null);
   const [editingEvent, setEditingEvent] = useState<UniversalEvent | null>(null);
   const clusterGroupRef = useRef<any>(null);
   const markerRefs = useRef<Map<string, L.Marker>>(new Map());
@@ -1067,6 +1081,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                 watch={`${isMobile}-${sortedEvents.length}`}
               />
               <FitBoundsToMarkers coords={routeCoords} watch={`${isMobile}-${sortedEvents.length}`} />
+              <FlyToMarker coords={flyToCoords} />
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -1368,8 +1383,18 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                   onMouseLeave={() => !isMobile && handleStationHover(null)}
                   onClick={() => {
                     haptics.tap();
-                    handleStationHover(event.id);
-                    setSelectedEventDetail(event);
+                    // 1st click: highlight marker + fly to it
+                    // 2nd click (already active): open popup
+                    if (activeEventId === event.id) {
+                      setSelectedEventDetail(event);
+                    } else {
+                      handleStationHover(event.id);
+                      // Fly to marker on map
+                      const coords = getCoordinates(event);
+                      if (coords) {
+                        setFlyToCoords(coords);
+                      }
+                    }
                   }}
                 >
                   {/* Number - colored by status */}
