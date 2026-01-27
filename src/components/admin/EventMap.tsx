@@ -314,8 +314,25 @@ const clusterColors = {
   },
 };
 
+// Convert number to Roman numerals (for cluster markers)
+const toRoman = (num: number): string => {
+  if (num <= 0 || num > 50) return num.toString(); // Fallback for edge cases
+  const romanNumerals: [number, string][] = [
+    [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'],
+    [5, 'V'], [4, 'IV'], [1, 'I']
+  ];
+  let result = '';
+  for (const [value, symbol] of romanNumerals) {
+    while (num >= value) {
+      result += symbol;
+      num -= value;
+    }
+  }
+  return result;
+};
+
 // Create cluster icon with source-based coloring
-// Uses a STACKED RING design to differentiate from single station markers
+// Uses ROMAN NUMERALS to differentiate from single station markers (Arabic)
 const createClusterCustomIcon = (cluster: any, isHighlighted: boolean = false) => {
   const count = cluster.getChildCount();
   const markers = cluster.getAllChildMarkers();
@@ -338,66 +355,35 @@ const createClusterCustomIcon = (cluster: any, isHighlighted: boolean = false) =
     colorScheme = clusterColors.KBA;
   }
   
-  const size = isHighlighted ? 56 : 44;
-  const innerSize = isHighlighted ? 40 : 32;
-  const fontSize = isHighlighted ? 15 : 13;
+  const size = isHighlighted ? 48 : 40;
+  // Dynamic font size based on Roman numeral length
+  const romanNumeral = toRoman(count);
+  const baseFontSize = isHighlighted ? 14 : 12;
+  const fontSize = romanNumeral.length > 4 ? baseFontSize - 2 : baseFontSize;
+  const borderWidth = isHighlighted ? 4 : 3;
   const animation = isHighlighted ? 'animation: cluster-glow 1.5s infinite;' : '';
   const glowShadow = isHighlighted 
     ? `0 0 24px ${colorScheme.shadow}, 0 4px 16px rgba(0,0,0,0.3)` 
     : `0 4px 12px ${colorScheme.shadow}`;
   
-  // Stacked ring design: outer ring + inner circle with number
   return L.divIcon({
     html: `<div style="
-      position: relative;
       width: ${size}px;
       height: ${size}px;
+      border-radius: 50%;
+      background: ${colorScheme.gradient};
+      color: white;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-weight: bold;
+      font-size: ${fontSize}px;
+      font-family: 'Times New Roman', Georgia, serif;
+      letter-spacing: -0.5px;
+      border: ${borderWidth}px solid white;
+      box-shadow: ${glowShadow};
       ${animation}
-    ">
-      <!-- Outer stacked ring (visual indicator that it's a group) -->
-      <div style="
-        position: absolute;
-        width: ${size}px;
-        height: ${size}px;
-        border-radius: 50%;
-        border: 3px solid white;
-        background: ${colorScheme.gradient};
-        opacity: 0.5;
-        box-shadow: ${glowShadow};
-      "></div>
-      <!-- Middle ring offset -->
-      <div style="
-        position: absolute;
-        width: ${size - 6}px;
-        height: ${size - 6}px;
-        border-radius: 50%;
-        border: 2px solid white;
-        background: ${colorScheme.gradient};
-        opacity: 0.7;
-        top: 3px;
-        left: 3px;
-      "></div>
-      <!-- Inner circle with count -->
-      <div style="
-        position: relative;
-        width: ${innerSize}px;
-        height: ${innerSize}px;
-        border-radius: 50%;
-        background: ${colorScheme.gradient};
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: ${fontSize}px;
-        border: 3px solid white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        z-index: 2;
-      ">${count}</div>
-    </div>
+    ">${romanNumeral}</div>
     ${isHighlighted ? `<style>
       @keyframes cluster-glow {
         0%, 100% { transform: scale(1); }
