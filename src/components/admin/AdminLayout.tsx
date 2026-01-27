@@ -66,13 +66,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           {/* Logo / Title - Clickable */}
           <Link 
             to="/admin"
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
           >
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-sm">
-              <span className="text-white text-xs font-bold">PB</span>
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center shadow-md">
+              <span className="text-amber-400 text-sm font-bold tracking-tight">T</span>
             </div>
-            <span className="text-sm font-semibold text-gray-900 tracking-tight">
-              Pater Brown Admin
+            <span className="text-base font-bold text-gray-900 tracking-tight">
+              Troupe
             </span>
           </Link>
           
