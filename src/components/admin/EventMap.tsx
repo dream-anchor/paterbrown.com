@@ -1374,15 +1374,15 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         <div className={cn(
           "overflow-y-auto",
           isMobile 
-            ? "flex-1 px-4 pt-4 pb-24 bg-gradient-to-b from-gray-50 to-white" 
-            : "w-1/2 h-full p-6 bg-gradient-to-br from-gray-50 via-white to-gray-50"
+            ? "flex-1 px-4 pb-24 bg-gradient-to-b from-gray-50 to-white" 
+            : "w-1/2 h-full px-6 pb-6 bg-gradient-to-br from-gray-50 via-white to-gray-50"
         )}>
-          {/* Premium Header - Glassmorphism */}
+          {/* Premium Header */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className={cn(
-              "sticky top-0 z-10 -mx-4 px-4 py-3",
+              "sticky top-0 z-10 -mx-6 px-6 py-4",
               "bg-white border-b border-gray-100"
             )}
           >
