@@ -96,6 +96,13 @@ const PicksPanel = () => {
   const [newAlbumPhotographerPhone, setNewAlbumPhotographerPhone] = useState("");
   const [isCreatingAlbum, setIsCreatingAlbum] = useState(false);
 
+  // Edit photographer dialog
+  const [showEditPhotographerDialog, setShowEditPhotographerDialog] = useState(false);
+  const [editPhotographerName, setEditPhotographerName] = useState("");
+  const [editPhotographerEmail, setEditPhotographerEmail] = useState("");
+  const [editPhotographerPhone, setEditPhotographerPhone] = useState("");
+  const [isSavingPhotographer, setIsSavingPhotographer] = useState(false);
+
   // Lightbox state
   const [lightboxImage, setLightboxImage] = useState<ImageData | null>(null);
 
@@ -358,6 +365,55 @@ const PicksPanel = () => {
       });
     } finally {
       setIsCreatingAlbum(false);
+    }
+  };
+
+  // Open edit photographer dialog
+  const openEditPhotographerDialog = () => {
+    const currentAlbum = albums.find((a) => a.id === currentAlbumId);
+    if (currentAlbum) {
+      setEditPhotographerName(currentAlbum.photographer_name || "");
+      setEditPhotographerEmail(currentAlbum.photographer_email || "");
+      setEditPhotographerPhone(currentAlbum.photographer_phone || "");
+      setShowEditPhotographerDialog(true);
+    }
+  };
+
+  // Save photographer info
+  const handleSavePhotographer = async () => {
+    if (!currentAlbumId) return;
+    
+    setIsSavingPhotographer(true);
+    try {
+      const { data, error } = await supabase
+        .from("picks_folders")
+        .update({
+          photographer_name: editPhotographerName.trim() || null,
+          photographer_email: editPhotographerEmail.trim() || null,
+          photographer_phone: editPhotographerPhone.trim() || null,
+        })
+        .eq("id", currentAlbumId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setAlbums((prev) => prev.map((a) => a.id === currentAlbumId ? (data as AlbumData) : a));
+      setShowEditPhotographerDialog(false);
+      
+      toast({
+        title: "Gespeichert",
+        description: "Fotografen-Info wurde aktualisiert",
+      });
+    } catch (error) {
+      console.error("Error updating photographer:", error);
+      toast({
+        title: "Fehler",
+        description: "Speichern fehlgeschlagen",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingPhotographer(false);
     }
   };
 
@@ -840,43 +896,41 @@ const PicksPanel = () => {
             {/* Photographer Info Banner */}
             {(() => {
               const currentAlbum = albums.find((a) => a.id === currentAlbumId);
-              if (!currentAlbum?.photographer_name && !currentAlbum?.photographer_email && !currentAlbum?.photographer_phone) return null;
+              const hasPhotographer = currentAlbum?.photographer_name || currentAlbum?.photographer_email || currentAlbum?.photographer_phone;
               
               return (
-                <div className="flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 rounded-lg text-sm">
-                  <div className="flex items-center gap-2 text-amber-700">
+                <button
+                  onClick={openEditPhotographerDialog}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
+                    hasPhotographer 
+                      ? "bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 hover:border-amber-300" 
+                      : "bg-gray-50 border border-gray-200 hover:border-gray-300 text-gray-500"
+                  )}
+                  title="Fotografen-Info bearbeiten"
+                >
+                  <div className={cn(
+                    "flex items-center gap-2",
+                    hasPhotographer ? "text-amber-700" : "text-gray-500"
+                  )}>
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
                       <circle cx="12" cy="13" r="3"/>
                     </svg>
-                    <span className="font-medium">{currentAlbum.photographer_name || 'Fotograf'}</span>
+                    <span className="font-medium">
+                      {currentAlbum?.photographer_name || 'Fotograf hinzufügen'}
+                    </span>
                   </div>
-                  {currentAlbum.photographer_email && (
-                    <a 
-                      href={`mailto:${currentAlbum.photographer_email}`}
-                      className="flex items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
-                      title={currentAlbum.photographer_email}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect width="20" height="16" x="2" y="4" rx="2"/>
-                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-                      </svg>
-                      <span className="hidden sm:inline">{currentAlbum.photographer_email}</span>
-                    </a>
+                  {hasPhotographer && currentAlbum?.photographer_email && (
+                    <span className="text-gray-500 hidden sm:inline">
+                      {currentAlbum.photographer_email}
+                    </span>
                   )}
-                  {currentAlbum.photographer_phone && (
-                    <a 
-                      href={`tel:${currentAlbum.photographer_phone}`}
-                      className="flex items-center gap-1 text-gray-600 hover:text-amber-600 transition-colors"
-                      title={currentAlbum.photographer_phone}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                      </svg>
-                      <span className="hidden sm:inline">{currentAlbum.photographer_phone}</span>
-                    </a>
-                  )}
-                </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                    <path d="m15 5 4 4"/>
+                  </svg>
+                </button>
               );
             })()}
           </div>
@@ -1031,6 +1085,74 @@ const PicksPanel = () => {
                   <FolderPlus className="w-4 h-4 mr-2" />
                 )}
                 Erstellen
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Photographer Dialog */}
+        <Dialog open={showEditPhotographerDialog} onOpenChange={setShowEditPhotographerDialog}>
+          <DialogContent className="bg-white sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-gray-900">Fotografen-Info bearbeiten</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div>
+                <Label htmlFor="edit-photographer-name" className="text-gray-700">
+                  Name
+                </Label>
+                <Input
+                  id="edit-photographer-name"
+                  value={editPhotographerName}
+                  onChange={(e) => setEditPhotographerName(e.target.value)}
+                  placeholder="z.B. Max Mustermann"
+                  className="mt-2 bg-white border-gray-200 text-gray-900"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-photographer-email" className="text-gray-700">
+                  E-Mail
+                </Label>
+                <Input
+                  id="edit-photographer-email"
+                  type="email"
+                  value={editPhotographerEmail}
+                  onChange={(e) => setEditPhotographerEmail(e.target.value)}
+                  placeholder="foto@example.de"
+                  className="mt-2 bg-white border-gray-200 text-gray-900"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-photographer-phone" className="text-gray-700">
+                  Telefon
+                </Label>
+                <Input
+                  id="edit-photographer-phone"
+                  type="tel"
+                  value={editPhotographerPhone}
+                  onChange={(e) => setEditPhotographerPhone(e.target.value)}
+                  placeholder="+49 123 456789"
+                  className="mt-2 bg-white border-gray-200 text-gray-900"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowEditPhotographerDialog(false)}
+                className="bg-white text-gray-700"
+              >
+                Abbrechen
+              </Button>
+              <Button
+                onClick={handleSavePhotographer}
+                disabled={isSavingPhotographer}
+                className="bg-gray-900 text-white hover:bg-gray-800"
+              >
+                {isSavingPhotographer ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : null}
+                Speichern
               </Button>
             </DialogFooter>
           </DialogContent>
