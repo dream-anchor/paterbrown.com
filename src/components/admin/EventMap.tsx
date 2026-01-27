@@ -1392,17 +1392,14 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                   onClick={() => {
                     haptics.tap();
                     // Two-step interaction for ALL views (mobile + desktop):
-                    // 1st click: highlight marker + pan to it
+                    // 1st click: highlight marker/cluster (no map movement)
                     // 2nd click (already active): open popup with details
                     if (activeEventId === event.id) {
                       setSelectedEventDetail(event);
                     } else {
                       handleStationHover(event.id);
-                      // Pan to marker on map (no zoom change)
-                      const coords = getCoordinates(event);
-                      if (coords) {
-                        setFlyToCoords(coords);
-                      }
+                      // Ensure we don't “drive around” the map when clicking the list.
+                      setFlyToCoords(null);
                     }
                   }}
                 >
