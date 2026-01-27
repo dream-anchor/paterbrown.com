@@ -34,12 +34,12 @@ const GROUP_ICONS: Record<FileTypeGroup, React.ReactNode> = {
 };
 
 const GROUP_COLORS: Record<FileTypeGroup, string> = {
-  images: "from-pink-500 to-rose-600",
-  pdfs: "from-red-500 to-red-600",
-  documents: "from-blue-500 to-indigo-600",
-  spreadsheets: "from-green-500 to-emerald-600",
-  presentations: "from-orange-500 to-amber-600",
-  archives: "from-purple-500 to-violet-600",
+  images: "from-slate-500 to-slate-600",
+  pdfs: "from-slate-600 to-slate-700",
+  documents: "from-slate-500 to-slate-600",
+  spreadsheets: "from-slate-500 to-slate-600",
+  presentations: "from-amber-500 to-amber-600",
+  archives: "from-slate-400 to-slate-500",
   other: "from-gray-500 to-slate-600",
 };
 

@@ -53,14 +53,14 @@ interface DocumentCardProps {
   index?: number;
 }
 
-// Premium gradient colors for file types
+// Premium gradient colors for file types - neutral palette to avoid visual clutter
 const FILE_TYPE_GRADIENTS: Record<FileTypeGroup, { from: string; to: string; icon: typeof FileText }> = {
-  images: { from: "from-pink-500", to: "to-rose-600", icon: Image },
-  pdfs: { from: "from-red-500", to: "to-red-600", icon: FileText },
-  documents: { from: "from-blue-500", to: "to-indigo-600", icon: FileText },
-  spreadsheets: { from: "from-green-500", to: "to-emerald-600", icon: FileSpreadsheet },
-  presentations: { from: "from-orange-500", to: "to-amber-600", icon: Presentation },
-  archives: { from: "from-purple-500", to: "to-violet-600", icon: FileArchive },
+  images: { from: "from-slate-500", to: "to-slate-600", icon: Image },
+  pdfs: { from: "from-slate-600", to: "to-slate-700", icon: FileText },
+  documents: { from: "from-slate-500", to: "to-slate-600", icon: FileText },
+  spreadsheets: { from: "from-slate-500", to: "to-slate-600", icon: FileSpreadsheet },
+  presentations: { from: "from-amber-500", to: "to-amber-600", icon: Presentation },
+  archives: { from: "from-slate-400", to: "to-slate-500", icon: FileArchive },
   other: { from: "from-gray-500", to: "to-slate-600", icon: File },
 };
 
