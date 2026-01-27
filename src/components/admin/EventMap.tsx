@@ -156,13 +156,15 @@ const InvalidateLeafletSize = ({
   return null;
 };
 
-// Component to fly/pan the map to a specific coordinate
+// Component to pan the map to a specific coordinate (keep current zoom)
 const FlyToMarker = ({ coords }: { coords: [number, number] | null }) => {
   const map = useMap();
   
   useEffect(() => {
     if (coords) {
-      map.flyTo(coords, 10, { duration: 0.5 });
+      // Important: do NOT change zoom when selecting from list on mobile.
+      // We only pan so the marker becomes visible + highlighted.
+      map.panTo(coords, { animate: true, duration: 0.5 });
     }
   }, [coords, map]);
   
