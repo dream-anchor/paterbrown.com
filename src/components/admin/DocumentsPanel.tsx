@@ -1,11 +1,16 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Plus, CloudDownload, RefreshCw, Upload, Image, FileText, Table, Presentation, Archive, File } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Plus, CloudDownload, RefreshCw, Upload, Image, FileText, 
+  Table, Presentation, Archive, File, Sparkles, FolderOpen
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import DocumentCard from "./DocumentCard";
 import DocumentUploadModal from "./DocumentUploadModal";
 import { getFileTypeGroup, FILE_TYPE_GROUPS, FileTypeGroup } from "@/lib/documentUtils";
+import { cn } from "@/lib/utils";
 
 interface Document {
   id: string;
@@ -26,6 +31,16 @@ const GROUP_ICONS: Record<FileTypeGroup, React.ReactNode> = {
   presentations: <Presentation className="w-4 h-4" />,
   archives: <Archive className="w-4 h-4" />,
   other: <File className="w-4 h-4" />,
+};
+
+const GROUP_COLORS: Record<FileTypeGroup, string> = {
+  images: "from-pink-500 to-rose-600",
+  pdfs: "from-red-500 to-red-600",
+  documents: "from-blue-500 to-indigo-600",
+  spreadsheets: "from-green-500 to-emerald-600",
+  presentations: "from-orange-500 to-amber-600",
+  archives: "from-purple-500 to-violet-600",
+  other: "from-gray-500 to-slate-600",
 };
 
 const DocumentsPanel = () => {
@@ -187,117 +202,204 @@ const DocumentsPanel = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-gray-300 border-t-amber-600 rounded-full animate-spin" />
-          <span className="text-sm text-gray-500">Lade Dokumente...</span>
-        </div>
+      <div className="flex items-center justify-center py-20">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="relative">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-xl shadow-amber-500/30">
+              <CloudDownload className="w-8 h-8 text-white" />
+            </div>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              className="absolute -inset-1 border-2 border-amber-500/30 border-t-amber-500 rounded-2xl"
+            />
+          </div>
+          <span className="text-sm text-gray-500 font-medium">Lade Drops...</span>
+        </motion.div>
       </div>
     );
   }
 
   return (
     <>
-      {/* Page-level drop overlay */}
-      {pageDragActive && (
-        <div className="fixed inset-0 z-50 bg-amber-500/10 backdrop-blur-sm flex items-center justify-center pointer-events-none">
-          <div className="bg-white rounded-2xl shadow-2xl border-2 border-dashed border-amber-500 p-12 text-center">
-            <Upload className="w-16 h-16 text-amber-500 mx-auto mb-4" />
-            <p className="text-xl font-semibold text-gray-900">Dateien hier ablegen</p>
-            <p className="text-gray-500 mt-1">zum Hochladen</p>
-          </div>
-        </div>
-      )}
+      {/* Page-level drop overlay - Premium glassmorphism */}
+      <AnimatePresence>
+        {pageDragActive && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-gradient-to-br from-amber-500/20 to-orange-500/20 backdrop-blur-md flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border-2 border-dashed border-amber-400 p-16 text-center"
+            >
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-amber-500/30"
+              >
+                <Upload className="w-10 h-10 text-white" />
+              </motion.div>
+              <p className="text-2xl font-semibold text-gray-900">Dateien hier ablegen</p>
+              <p className="text-gray-500 mt-2">zum Hochladen</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <div className="space-y-6">
-        {/* Header - Mobile optimized */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-sm">
-              <CloudDownload className="w-5 h-5 text-white" />
+      <div className="space-y-8">
+        {/* Premium Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        >
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                <CloudDownload className="w-7 h-7 text-white" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-white shadow-md flex items-center justify-center">
+                <Sparkles className="w-3 h-3 text-amber-500" />
+              </div>
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Drops</h2>
-              <p className="text-sm text-gray-500 hidden sm:block">
-                Dateien bereitstellen und Links teilen
+              <h2 className="text-xl font-bold text-gray-900">Drops</h2>
+              <p className="text-sm text-gray-500">
+                {documents.length} {documents.length === 1 ? 'Datei' : 'Dateien'} bereit zum Teilen
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={fetchDocuments}
-              className="bg-white text-gray-700"
+              className="h-10 rounded-xl bg-white hover:bg-gray-50 text-gray-700 border-gray-200"
             >
-              <RefreshCw className="w-4 h-4 sm:mr-0" />
-              <span className="sm:hidden ml-2">Aktualisieren</span>
+              <RefreshCw className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Aktualisieren</span>
             </Button>
             <Button
               onClick={() => setShowUploadModal(true)}
-              className="bg-amber-600 hover:bg-amber-700 text-white"
+              className={cn(
+                "h-10 rounded-xl",
+                "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700",
+                "text-white font-medium shadow-lg shadow-amber-500/30",
+                "transition-all duration-200 hover:shadow-xl hover:shadow-amber-500/40"
+              )}
             >
               <Plus className="w-4 h-4 mr-2" />
               Neuer Drop
             </Button>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Drops List - Grouped */}
+        {/* Empty State - Premium */}
         {documents.length === 0 ? (
-          <div className="text-center py-16 px-4">
-            <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-              <CloudDownload className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-1">Noch keine Drops</h3>
-            <p className="text-sm text-gray-500 mb-4">
-              Erstelle deinen ersten Drop, um Dateien mit anderen zu teilen.
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-20 px-4"
+          >
+            <motion.div
+              initial={{ y: 20 }}
+              animate={{ y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="relative inline-block"
+            >
+              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <FolderOpen className="w-12 h-12 text-gray-400" />
+              </div>
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="absolute -top-2 -right-2 w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg"
+              >
+                <Plus className="w-4 h-4 text-white" />
+              </motion.div>
+            </motion.div>
+            
+            <h3 className="font-bold text-xl text-gray-900 mb-2">Noch keine Drops</h3>
+            <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+              Erstelle deinen ersten Drop, um Dateien schnell und sicher mit anderen zu teilen.
             </p>
             <Button
               onClick={() => setShowUploadModal(true)}
-              className="bg-amber-600 hover:bg-amber-700 text-white"
+              className={cn(
+                "h-12 px-8 rounded-xl",
+                "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700",
+                "text-white font-medium shadow-lg shadow-amber-500/30"
+              )}
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-5 h-5 mr-2" />
               Ersten Drop erstellen
             </Button>
-          </div>
+          </motion.div>
         ) : (
-          <div className="space-y-6">
-            {groupedDocuments.map(({ group, label, documents: docs }) => (
-              <div key={group}>
-                {/* Group Header */}
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-md bg-gray-100 flex items-center justify-center text-gray-500">
-                    {GROUP_ICONS[group]}
+          /* Grouped Documents */
+          <div className="space-y-8">
+            <AnimatePresence mode="popLayout">
+              {groupedDocuments.map(({ group, label, documents: docs }, groupIndex) => (
+                <motion.div
+                  key={group}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ delay: groupIndex * 0.1 }}
+                >
+                  {/* Premium Group Header */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={cn(
+                      "w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-md",
+                      "bg-gradient-to-br",
+                      GROUP_COLORS[group]
+                    )}>
+                      {GROUP_ICONS[group]}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-gray-800">
+                        {label}
+                      </h3>
+                      <span className={cn(
+                        "px-2 py-0.5 rounded-full text-xs font-medium",
+                        "bg-gray-100 text-gray-500"
+                      )}>
+                        {docs.length}
+                      </span>
+                    </div>
                   </div>
-                  <h3 className="text-sm font-medium text-gray-700">
-                    {label}
-                  </h3>
-                  <span className="text-xs text-gray-400">
-                    ({docs.length})
-                  </span>
-                </div>
-                
-                {/* Group Documents */}
-                <div className="space-y-3">
-                  {docs.map(doc => (
-                    <DocumentCard
-                      key={doc.id}
-                      id={doc.id}
-                      name={doc.name}
-                      fileName={doc.file_name}
-                      filePath={doc.file_path}
-                      fileSize={doc.file_size}
-                      contentType={doc.content_type}
-                      downloadCount={doc.download_count}
-                      createdAt={doc.created_at}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
+                  
+                  {/* Document Cards */}
+                  <div className="space-y-3">
+                    {docs.map((doc, index) => (
+                      <DocumentCard
+                        key={doc.id}
+                        id={doc.id}
+                        name={doc.name}
+                        fileName={doc.file_name}
+                        filePath={doc.file_path}
+                        fileSize={doc.file_size}
+                        contentType={doc.content_type}
+                        downloadCount={doc.download_count}
+                        createdAt={doc.created_at}
+                        onDelete={handleDelete}
+                        index={groupIndex * 10 + index}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         )}
 
