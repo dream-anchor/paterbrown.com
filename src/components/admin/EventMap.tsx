@@ -1446,6 +1446,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                     distanceInfo={distanceInfo}
                     isLoadingDistances={isLoadingDistances}
                     hasNextEvent={!!nextEvent}
+                    nextEventStartTime={nextEvent?.start_time}
                     onSelect={(evt, isAlreadyActive) => {
                       if (isAlreadyActive) {
                         setSelectedEventDetail(evt);

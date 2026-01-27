@@ -50,11 +50,12 @@ interface Props {
   onEmailProcessed: () => void;
 }
 
+// Muted, subdued status colors
 const statusConfig = {
-  pending: { icon: Clock, label: "Ausstehend", color: "bg-gray-50 text-gray-600 border-gray-200" },
-  processing: { icon: Loader2, label: "Wird verarbeitet", color: "bg-blue-50 text-blue-600 border-blue-200" },
-  processed: { icon: CheckCircle2, label: "Verarbeitet", color: "bg-emerald-50 text-emerald-600 border-emerald-200" },
-  error: { icon: AlertCircle, label: "Fehler", color: "bg-red-50 text-red-600 border-red-200" },
+  pending: { icon: Clock, label: "Ausstehend", color: "bg-stone-50 text-stone-500 border-stone-200" },
+  processing: { icon: Loader2, label: "Wird verarbeitet", color: "bg-slate-50 text-slate-500 border-slate-200" },
+  processed: { icon: CheckCircle2, label: "Verarbeitet", color: "bg-stone-50 text-stone-500 border-stone-200" },
+  error: { icon: AlertCircle, label: "Fehler", color: "bg-stone-100 text-stone-600 border-stone-300" },
 };
 
 // Detect provider from email
@@ -438,16 +439,16 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
         initial="hidden"
         animate="visible"
         custom={index}
-        whileHover={{ backgroundColor: "rgba(251, 191, 36, 0.04)" }}
+        whileHover={{ backgroundColor: "rgba(120, 113, 108, 0.04)" }}
         whileTap={{ scale: 0.995 }}
         onClick={() => handleSelectEmail(email)}
         className={cn(
           "relative px-4 py-4 cursor-pointer transition-all duration-200",
           "border-l-2",
           isSelected 
-            ? "bg-gradient-to-r from-amber-50 to-transparent border-l-amber-500" 
-            : "border-l-transparent hover:border-l-amber-200",
-          isHighlighted && !isSelected && "bg-gray-50/80",
+            ? "bg-gradient-to-r from-stone-100 to-transparent border-l-stone-400" 
+            : "border-l-transparent hover:border-l-stone-300",
+          isHighlighted && !isSelected && "bg-stone-50/80",
         )}
       >
         <div className="flex items-start gap-3">
@@ -458,8 +459,8 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
               className={cn(
                 "w-11 h-11 rounded-xl flex items-center justify-center text-sm font-semibold shadow-sm",
                 isUnread 
-                  ? "bg-gradient-to-br from-amber-100 to-amber-50 text-amber-700 border border-amber-200/50" 
-                  : "bg-gradient-to-br from-gray-100 to-gray-50 text-gray-500 border border-gray-200/50"
+                  ? "bg-gradient-to-br from-stone-200 to-stone-100 text-stone-600 border border-stone-300/50" 
+                  : "bg-gradient-to-br from-stone-100 to-stone-50 text-stone-400 border border-stone-200/50"
               )}
             >
               {ProviderIcon ? (
@@ -472,7 +473,7 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
               <motion.div 
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full border-2 border-white shadow-sm"
+                className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-stone-500 rounded-full border-2 border-white shadow-sm"
               />
             )}
           </div>
@@ -535,7 +536,7 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
         {isSelected && (
           <motion.div 
             layoutId="selection"
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-gradient-to-b from-amber-500 to-amber-600 rounded-full"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-gradient-to-b from-stone-400 to-stone-500 rounded-full"
           />
         )}
       </motion.div>

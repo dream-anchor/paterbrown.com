@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { Calendar, Clock, MapPin, Car, Navigation } from "lucide-react";
+import { Calendar, Clock, MapPin, Car, Navigation, Home, Train } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { haptics } from "@/lib/haptics";
+import { differenceInDays } from "date-fns";
 
 // Event status type
 type EventStatus = "upcoming" | "today" | "past";
@@ -73,6 +74,7 @@ interface TourStationCardProps {
   distanceInfo: DistanceInfo | null;
   isLoadingDistances: boolean;
   hasNextEvent: boolean;
+  nextEventStartTime?: string; // To calculate gap days
   onSelect: (event: AdminEvent, isAlreadyActive: boolean) => void;
   isMobile?: boolean;
 }
@@ -111,10 +113,17 @@ const TourStationCard = ({
   distanceInfo,
   isLoadingDistances,
   hasNextEvent,
+  nextEventStartTime,
   onSelect,
   isMobile = false,
 }: TourStationCardProps) => {
   const colors = sourceColors[event.source] || sourceColors.unknown;
+  
+  // Calculate if there's a gap > 2 days (means traveling home first, then by train)
+  const gapDays = nextEventStartTime 
+    ? differenceInDays(new Date(nextEventStartTime), new Date(event.start_time))
+    : 0;
+  const isHomeTrip = gapDays > 2;
 
   return (
     <div>
@@ -240,20 +249,35 @@ const TourStationCard = ({
           transition={{ delay: Math.min(index * 0.03 + 0.15, 0.5) }}
           className="flex items-center justify-center py-2.5"
         >
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/60 backdrop-blur-sm rounded-full border border-gray-100 shadow-sm">
-            <div className="h-4 w-px bg-gradient-to-b from-gray-200 to-gray-300" />
-            <Car className="w-3.5 h-3.5 text-indigo-500" />
-            {distanceInfo ? (
-              <span className="text-xs font-medium text-gray-600">
-                {distanceInfo.distanceKm} km · {formatDuration(distanceInfo.durationMin)}
+          {isHomeTrip ? (
+            // Gap > 2 days: Travel home first, then by train to next venue
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-slate-50 to-stone-50 backdrop-blur-sm rounded-full border border-slate-200 shadow-sm">
+              <div className="h-4 w-px bg-gradient-to-b from-slate-200 to-slate-300" />
+              <Home className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-xs text-slate-500">via Heimat</span>
+              <Train className="w-3.5 h-3.5 text-slate-400" />
+              <span className="text-xs font-medium text-slate-500">
+                {gapDays} Tage Pause
               </span>
-            ) : isLoadingDistances ? (
-              <span className="text-xs text-gray-400">...</span>
-            ) : (
-              <span className="text-xs text-gray-400">–</span>
-            )}
-            <div className="h-4 w-px bg-gradient-to-b from-gray-300 to-gray-200" />
-          </div>
+              <div className="h-4 w-px bg-gradient-to-b from-slate-300 to-slate-200" />
+            </div>
+          ) : (
+            // Direct car travel
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/60 backdrop-blur-sm rounded-full border border-gray-100 shadow-sm">
+              <div className="h-4 w-px bg-gradient-to-b from-gray-200 to-gray-300" />
+              <Car className="w-3.5 h-3.5 text-slate-400" />
+              {distanceInfo ? (
+                <span className="text-xs font-medium text-gray-600">
+                  {distanceInfo.distanceKm} km · {formatDuration(distanceInfo.durationMin)}
+                </span>
+              ) : isLoadingDistances ? (
+                <span className="text-xs text-gray-400">...</span>
+              ) : (
+                <span className="text-xs text-gray-400">–</span>
+              )}
+              <div className="h-4 w-px bg-gradient-to-b from-gray-300 to-gray-200" />
+            </div>
+          )}
         </motion.div>
       )}
     </div>
