@@ -1,10 +1,11 @@
 import { useMemo, useState, useEffect, useCallback, useRef, type RefObject } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, Tooltip } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Calendar, Clock, MapPin, Navigation, RefreshCw, CheckCircle, 
+  Calendar, Clock, MapPin, Navigation, RefreshCw,
   AlertCircle, Car, ExternalLink, Eye, Filter, ChevronDown,
-  Sparkles, Pencil, ChevronUp
+  Sparkles, Pencil, ChevronUp, Route
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { haptics } from "@/lib/haptics";
@@ -29,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import EventEditModal, { type UniversalEvent } from "./EventEditModal";
+import TourStationCard from "./TourStationCard";
 
 // Type for driving distance between events
 interface DrivingDistance {
@@ -892,27 +894,38 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
 
   return (
     <div className="h-screen overflow-hidden flex flex-col">
-      {/* Header Section - Fixed at top */}
-      <div className="flex-shrink-0 p-3 md:p-4 border-b border-gray-200 bg-white">
-        {/* Missing Geodata Warning */}
-        {/* Missing Geodata Warning - Simplified on mobile */}
+      {/* Header Section - Premium Glassmorphism */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex-shrink-0 p-3 md:p-4 border-b border-gray-200/60 bg-white/80 backdrop-blur-xl"
+      >
+        {/* Missing Geodata Warning - Premium Card */}
         {eventsWithMissingGeodata.length > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 md:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 md:mb-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 rounded-2xl p-3 md:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 md:mb-4 shadow-sm"
+          >
             <div className="flex items-center gap-2 sm:gap-3">
-              <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-amber-600 flex-shrink-0" />
+              <div className="p-2 rounded-xl bg-amber-500/10 backdrop-blur-sm">
+                <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-amber-600" />
+              </div>
               <div>
-                <p className="font-medium text-amber-800 text-sm md:text-base">
+                <p className="font-semibold text-amber-800 text-sm md:text-base">
                   {eventsWithMissingGeodata.length} ohne Geodaten
                 </p>
-                <p className="text-xs md:text-sm text-amber-600 hidden sm:block">
+                <p className="text-xs md:text-sm text-amber-600/80 hidden sm:block">
                   KI kann fehlende Koordinaten recherchieren
                 </p>
               </div>
             </div>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleGeocodeEvents}
               disabled={isGeocoding}
-              className="px-3 py-1.5 md:px-4 md:py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors w-full sm:w-auto"
+              className="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm font-medium rounded-xl hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-500/25 w-full sm:w-auto"
             >
               {isGeocoding ? (
                 <>
@@ -927,48 +940,58 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                   <span className="sm:hidden">Ergänzen</span>
                 </>
               )}
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         )}
 
-        {/* Title & Filters - Mobile optimized */}
+        {/* Title & Filters */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 md:gap-4">
-          {/* Title section */}
+          {/* Title section with icon */}
           <div className="flex items-center justify-between md:block">
-            <div>
-              <h2 className="text-lg md:text-xl font-bold text-gray-900">Tour-Karte</h2>
-              <p className="text-gray-600 text-xs md:text-sm">
-                {eventsWithCoords.length} von {sortedEvents.length} auf der Karte
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg shadow-indigo-500/25 hidden md:flex">
+                <MapPin className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg md:text-xl font-bold text-gray-900">Tour-Karte</h2>
+                <p className="text-gray-500 text-xs md:text-sm">
+                  {eventsWithCoords.length} von {sortedEvents.length} auf der Karte
+                </p>
+              </div>
             </div>
             {/* Mobile: Quick toggle */}
             <div className="flex md:hidden items-center gap-2">
-              <button
+              <motion.button
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setShowUpcomingOnly(!showUpcomingOnly)}
                 className={cn(
-                  "px-3 py-1.5 text-xs font-medium rounded-full transition-colors",
+                  "px-3 py-1.5 text-xs font-medium rounded-full transition-all",
                   showUpcomingOnly 
-                    ? "bg-amber-500 text-white" 
-                    : "bg-gray-100 text-gray-600"
+                    ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25" 
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 )}
               >
                 Nur anstehende
-              </button>
+              </motion.button>
             </div>
           </div>
 
-          {/* Status Summary - Scrollable on mobile */}
+          {/* Status Summary - Premium badges */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-3 px-3 md:mx-0 md:px-0 md:mt-2 scrollbar-hide">
             {statusCounts.today > 0 && (
-              <span className="flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0">
+              <motion.span
+                animate={{ scale: [1, 1.02, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="flex items-center gap-1.5 text-xs font-medium text-red-700 bg-red-50/80 backdrop-blur-sm px-2.5 py-1.5 rounded-full whitespace-nowrap flex-shrink-0 border border-red-200/50"
+              >
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 {statusCounts.today} Heute
-              </span>
+              </motion.span>
             )}
-            <span className="flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50/80 backdrop-blur-sm px-2.5 py-1.5 rounded-full whitespace-nowrap flex-shrink-0 border border-amber-200/50">
               {statusCounts.upcoming} Anstehend
             </span>
-            <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-gray-100/80 backdrop-blur-sm px-2.5 py-1.5 rounded-full whitespace-nowrap flex-shrink-0 border border-gray-200/50">
               {statusCounts.past} Vergangen
             </span>
           </div>
@@ -1084,7 +1107,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Content - Full Screen Split View (Desktop) / Stacked with Sticky Map (Mobile) */}
       <div className={cn(
@@ -1347,154 +1370,111 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           </div>
         </div>
 
-        {/* Scrollable Stations List */}
+        {/* Scrollable Stations List - Premium Design */}
         <div className={cn(
-          "overflow-y-auto bg-gray-50",
+          "overflow-y-auto",
           isMobile 
-            ? "flex-1 px-4 pt-4 pb-24" 
-            : "w-1/2 h-full p-6"
+            ? "flex-1 px-4 pt-4 pb-24 bg-gradient-to-b from-gray-50 to-white" 
+            : "w-1/2 h-full p-6 bg-gradient-to-br from-gray-50 via-white to-gray-50"
         )}>
-          {/* Mobile: Expandable list header */}
-          {isMobile && (
-            <button
-              onClick={() => {
-                haptics.tap();
-                setMobileListExpanded(!mobileListExpanded);
-              }}
-              className="w-full flex items-center justify-between p-3 mb-3 bg-white rounded-xl border border-gray-200 shadow-sm active:scale-[0.98] transition-transform"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold">
-                  {sortedEvents.length}
+          {/* Premium Header - Glassmorphism */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={cn(
+              "sticky top-0 z-10 -mx-4 px-4 py-4 mb-4",
+              "bg-white/80 backdrop-blur-xl border-b border-gray-100"
+            )}
+          >
+            {isMobile ? (
+              <button
+                onClick={() => {
+                  haptics.tap();
+                  setMobileListExpanded(!mobileListExpanded);
+                }}
+                className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200/50 shadow-sm active:scale-[0.98] transition-transform"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-white flex items-center justify-center font-bold shadow-lg shadow-amber-500/25">
+                    {sortedEvents.length}
+                  </div>
+                  <div className="text-left">
+                    <span className="font-semibold text-gray-900">Stationen</span>
+                    <p className="text-xs text-gray-500">Tour-Übersicht</p>
+                  </div>
                 </div>
-                <span className="font-medium text-gray-900">Stationen</span>
-              </div>
-              <ChevronUp className={cn(
-                "w-5 h-5 text-gray-400 transition-transform",
-                mobileListExpanded && "rotate-180"
-              )} />
-            </button>
-          )}
-
-          {/* Desktop header */}
-          {!isMobile && (
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center justify-between">
-              <span>Alle Stationen · {sortedEvents.length} Termine</span>
-              {isLoadingDistances && (
-                <span className="text-amber-500 flex items-center gap-1">
-                  <RefreshCw className="w-3 h-3 animate-spin" />
-                  Routen laden...
-                </span>
-              )}
-            </h3>
-          )}
-          
-          <div className="space-y-2">
-          
-          {sortedEvents.map((event, index) => {
-            const nextEvent = sortedEvents[index + 1];
-            const distanceInfo = nextEvent ? getDistanceToNext(event.id, nextEvent.id) : null;
-            const status = getEventStatus(event.start_time);
-            const colors = statusColors[status];
-            
-            return (
-              <div key={event.id}>
-                {/* Event Card */}
-                <div
-                  id={`station-${event.id}`}
-                  className={cn(
-                    "flex items-center gap-3 p-3 bg-white rounded-xl border transition-all cursor-pointer active:scale-[0.98]",
-                    activeEventId === event.id 
-                      ? `${colors.border} ring-2 ${colors.ring} shadow-md`
-                      : `border-gray-200 hover:${colors.border} hover:shadow-sm`
-                  )}
-                  onClick={() => {
-                    haptics.tap();
-                    // Two-step interaction for ALL views (mobile + desktop):
-                    // 1st click: highlight marker/cluster (no map movement)
-                    // 2nd click (already active): open popup with details
-                    if (activeEventId === event.id) {
-                      setSelectedEventDetail(event);
-                    } else {
-                      handleStationHover(event.id);
-                      // Ensure we don't “drive around” the map when clicking the list.
-                      setFlyToCoords(null);
-                    }
-                  }}
-                >
-                  {/* Number - colored by status */}
-                  <div className={cn(
-                    "w-9 h-9 rounded-full text-sm font-bold flex items-center justify-center flex-shrink-0 shadow-sm text-white relative",
-                    colors.bg
-                  )}>
-                    {index + 1}
-                    {status === "today" && (
-                      <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-red-500 rounded-full animate-ping" />
-                    )}
+                <ChevronUp className={cn(
+                  "w-5 h-5 text-amber-600 transition-transform",
+                  mobileListExpanded && "rotate-180"
+                )} />
+              </button>
+            ) : (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 shadow-lg shadow-amber-500/25">
+                    <Route className="w-5 h-5 text-white" />
                   </div>
-                  
-                  {/* Event Details */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900 truncate">
-                        {event.location}{event.state ? ` (${event.state})` : ''}
-                      </p>
-                      {status === "today" && (
-                        <span className="text-[10px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full animate-pulse">
-                          HEUTE
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
-                      <span>{formatDate(event.start_time)}</span>
-                      <span>·</span>
-                      <span>{formatTime(event.start_time)} Uhr</span>
-                    </div>
-                    {event.venue_name && (
-                      <p className="text-xs text-gray-400 truncate mt-0.5">{event.venue_name}</p>
-                    )}
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Alle Stationen</h3>
+                    <p className="text-xs text-gray-500">{sortedEvents.length} Termine auf der Tour</p>
                   </div>
-
-                  {/* Status Badge */}
-                  <span className={cn(
-                    "text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0",
-                    colors.bgLight, colors.text
-                  )}>
-                    {status === "upcoming" ? "Anstehend" : 
-                     status === "today" ? "Heute" : "Vergangen"}
+                </div>
+                {isLoadingDistances && (
+                  <span className="text-amber-600 flex items-center gap-2 text-xs bg-amber-50 px-3 py-1.5 rounded-full">
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    Routen laden...
                   </span>
-                </div>
-
-                {/* Distance to next station */}
-                {nextEvent && (
-                  <div className="flex items-center justify-center py-2 px-4">
-                    <div className="flex items-center gap-2 text-xs text-gray-400">
-                      <div className="h-4 w-px bg-gray-300"></div>
-                      <Car className="w-3.5 h-3.5 text-indigo-500" />
-                      {distanceInfo ? (
-                        <span className="font-medium text-gray-600">
-                          {distanceInfo.distanceKm} km · {formatDuration(distanceInfo.durationMin)}
-                        </span>
-                      ) : isLoadingDistances ? (
-                        <span className="text-gray-400">...</span>
-                      ) : (
-                        <span className="text-gray-400">Route nicht verfügbar</span>
-                      )}
-                      <div className="h-4 w-px bg-gray-300"></div>
-                    </div>
-                  </div>
                 )}
               </div>
-            );
-          })}
+            )}
+          </motion.div>
+          
+          {/* Premium Station Cards */}
+          <AnimatePresence mode="popLayout">
+            <div className="space-y-1">
+              {sortedEvents.map((event, index) => {
+                const nextEvent = sortedEvents[index + 1];
+                const distanceInfo = nextEvent ? getDistanceToNext(event.id, nextEvent.id) : null;
+                const status = getEventStatus(event.start_time);
+                
+                return (
+                  <TourStationCard
+                    key={event.id}
+                    event={event}
+                    index={index}
+                    isActive={activeEventId === event.id}
+                    status={status}
+                    distanceInfo={distanceInfo}
+                    isLoadingDistances={isLoadingDistances}
+                    hasNextEvent={!!nextEvent}
+                    onSelect={(evt, isAlreadyActive) => {
+                      if (isAlreadyActive) {
+                        setSelectedEventDetail(evt);
+                      } else {
+                        handleStationHover(evt.id);
+                        setFlyToCoords(null);
+                      }
+                    }}
+                    isMobile={isMobile}
+                  />
+                );
+              })}
 
-          {sortedEvents.length === 0 && (
-            <div className="text-center py-12 text-gray-400">
-              <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Noch keine Termine vorhanden</p>
+              {sortedEvents.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-16"
+                >
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    <Calendar className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500 font-medium">Keine Termine</p>
+                  <p className="text-xs text-gray-400 mt-1">Filter anpassen oder Termine hinzufügen</p>
+                </motion.div>
+              )}
             </div>
-          )}
-          </div>
+          </AnimatePresence>
         </div>
       </div>
 

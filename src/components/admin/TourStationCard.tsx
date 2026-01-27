@@ -1,0 +1,259 @@
+import { motion } from "framer-motion";
+import { Calendar, Clock, MapPin, Car, Navigation } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { haptics } from "@/lib/haptics";
+
+// Event status type
+type EventStatus = "upcoming" | "today" | "past";
+
+// Status-based colors
+const statusColors = {
+  upcoming: {
+    gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+    bg: "bg-amber-500",
+    bgLight: "bg-amber-50",
+    text: "text-amber-700",
+    border: "border-amber-400",
+    ring: "ring-amber-200",
+    shadow: "shadow-amber-500/20",
+    glow: "hover:shadow-amber-500/15",
+  },
+  today: {
+    gradient: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+    bg: "bg-red-500",
+    bgLight: "bg-red-50",
+    text: "text-red-700",
+    border: "border-red-400",
+    ring: "ring-red-200",
+    shadow: "shadow-red-500/20",
+    glow: "hover:shadow-red-500/15",
+  },
+  past: {
+    gradient: "linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)",
+    bg: "bg-gray-400",
+    bgLight: "bg-gray-50",
+    text: "text-gray-600",
+    border: "border-gray-300",
+    ring: "ring-gray-200",
+    shadow: "shadow-gray-500/10",
+    glow: "hover:shadow-gray-500/10",
+  },
+};
+
+interface AdminEvent {
+  id: string;
+  title: string;
+  location: string;
+  state: string | null;
+  venue_name: string | null;
+  start_time: string;
+  end_time: string | null;
+  note: string | null;
+  source: "KL" | "KBA" | "unknown";
+  latitude: number | null;
+  longitude: number | null;
+}
+
+interface DistanceInfo {
+  distanceKm: number;
+  durationMin: number;
+}
+
+interface TourStationCardProps {
+  event: AdminEvent;
+  index: number;
+  isActive: boolean;
+  status: EventStatus;
+  distanceInfo: DistanceInfo | null;
+  isLoadingDistances: boolean;
+  hasNextEvent: boolean;
+  onSelect: (event: AdminEvent, isAlreadyActive: boolean) => void;
+  isMobile?: boolean;
+}
+
+// Format date
+const formatDate = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString("de-DE", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+};
+
+// Format time
+const formatTime = (dateStr: string) => {
+  return new Date(dateStr).toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Berlin",
+  });
+};
+
+// Format duration
+const formatDuration = (minutes: number): string => {
+  if (minutes < 60) return `${minutes} Min`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+};
+
+const TourStationCard = ({
+  event,
+  index,
+  isActive,
+  status,
+  distanceInfo,
+  isLoadingDistances,
+  hasNextEvent,
+  onSelect,
+  isMobile = false,
+}: TourStationCardProps) => {
+  const colors = statusColors[status];
+
+  return (
+    <div>
+      {/* Event Card */}
+      <motion.div
+        id={`station-${event.id}`}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.4) }}
+        whileHover={{ y: -2, scale: 1.01 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => {
+          haptics.tap();
+          onSelect(event, isActive);
+        }}
+        className={cn(
+          "relative overflow-hidden rounded-2xl bg-white cursor-pointer",
+          "border transition-all duration-300",
+          isActive
+            ? cn(colors.border, "ring-2", colors.ring, "shadow-lg", colors.shadow)
+            : cn("border-gray-200/60", "hover:border-gray-300", "hover:shadow-xl", colors.glow)
+        )}
+      >
+        <div className="flex items-stretch">
+          {/* Left: Station Number with Gradient */}
+          <div
+            className={cn(
+              "relative flex flex-col items-center justify-center px-4 py-4",
+              "bg-gradient-to-br text-white flex-shrink-0",
+              status === "upcoming" && "from-amber-500 to-amber-600",
+              status === "today" && "from-red-500 to-red-600",
+              status === "past" && "from-gray-400 to-gray-500"
+            )}
+          >
+            <span className="text-2xl font-bold">{index + 1}</span>
+            {status === "today" && (
+              <motion.span
+                animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="absolute top-2 right-2 w-2.5 h-2.5 bg-white rounded-full"
+              />
+            )}
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0 p-4">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-gray-900 truncate text-sm sm:text-base">
+                    {event.location}
+                  </h3>
+                  {status === "today" && (
+                    <motion.span
+                      animate={{ scale: [1, 1.05, 1] }}
+                      transition={{ duration: 0.8, repeat: Infinity }}
+                      className="text-[10px] font-bold text-red-600 bg-red-100/80 backdrop-blur-sm px-1.5 py-0.5 rounded-full whitespace-nowrap"
+                    >
+                      HEUTE
+                    </motion.span>
+                  )}
+                </div>
+                {event.state && (
+                  <p className="text-xs text-gray-400 mt-0.5">{event.state}</p>
+                )}
+              </div>
+
+              {/* Status badge - glassmorphism */}
+              <div
+                className={cn(
+                  "flex-shrink-0 px-2.5 py-1 rounded-full",
+                  "backdrop-blur-sm text-xs font-medium",
+                  colors.bgLight,
+                  colors.text
+                )}
+              >
+                {status === "upcoming"
+                  ? "Anstehend"
+                  : status === "today"
+                  ? "Heute"
+                  : "Vergangen"}
+              </div>
+            </div>
+
+            {/* Date & Time */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 mb-2">
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                {formatDate(event.start_time)}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {formatTime(event.start_time)} Uhr
+              </span>
+            </div>
+
+            {/* Venue */}
+            {event.venue_name && (
+              <p className="text-xs text-gray-400 truncate flex items-center gap-1">
+                <MapPin className="w-3 h-3 flex-shrink-0" />
+                {event.venue_name}
+              </p>
+            )}
+          </div>
+
+          {/* Right: Navigation indicator on hover */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isActive ? 1 : 0 }}
+            className="flex items-center pr-3"
+          >
+            <div className="p-2 rounded-full bg-gray-100">
+              <Navigation className="w-4 h-4 text-gray-500" />
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* Distance connector to next station */}
+      {hasNextEvent && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: Math.min(index * 0.03 + 0.15, 0.5) }}
+          className="flex items-center justify-center py-2.5"
+        >
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/60 backdrop-blur-sm rounded-full border border-gray-100 shadow-sm">
+            <div className="h-4 w-px bg-gradient-to-b from-gray-200 to-gray-300" />
+            <Car className="w-3.5 h-3.5 text-indigo-500" />
+            {distanceInfo ? (
+              <span className="text-xs font-medium text-gray-600">
+                {distanceInfo.distanceKm} km · {formatDuration(distanceInfo.durationMin)}
+              </span>
+            ) : isLoadingDistances ? (
+              <span className="text-xs text-gray-400">...</span>
+            ) : (
+              <span className="text-xs text-gray-400">–</span>
+            )}
+            <div className="h-4 w-px bg-gradient-to-b from-gray-300 to-gray-200" />
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+};
+
+export default TourStationCard;
