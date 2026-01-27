@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { motion } from "framer-motion";
 import { parseISO, isFuture, isThisYear, startOfMonth, differenceInDays } from "date-fns";
 import { Plane, Hotel, Train, Euro, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -231,14 +232,17 @@ export default function TravelStats({ bookings }: TravelStatsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {statCards.map((card, index) => (
-        <div
+        <motion.div
           key={card.title}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: index * 0.05 }}
+          whileHover={{ y: -4, scale: 1.02 }}
           className={cn(
             "relative overflow-hidden rounded-2xl p-4 bg-white border border-gray-100",
-            "shadow-sm hover:shadow-md transition-all duration-300",
-            "group"
+            "shadow-sm hover:shadow-xl transition-shadow duration-300",
+            "group cursor-default"
           )}
-          style={{ animationDelay: `${index * 50}ms` }}
         >
           {/* Gradient accent line at top */}
           <div className={cn(
@@ -248,12 +252,16 @@ export default function TravelStats({ bookings }: TravelStatsProps) {
           
           {/* Header with icon */}
           <div className="flex items-center justify-between mb-3">
-            <div className={cn(
-              "w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
-              card.iconBg
-            )}>
+            <motion.div 
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 400 }}
+              className={cn(
+                "w-10 h-10 rounded-xl flex items-center justify-center",
+                card.iconBg
+              )}
+            >
               <card.icon className={cn("w-5 h-5", card.iconColor)} />
-            </div>
+            </motion.div>
             
             {card.showSparkline ? (
               <Sparkline />
@@ -265,16 +273,21 @@ export default function TravelStats({ bookings }: TravelStatsProps) {
           </div>
           
           {/* Value */}
-          <div className="text-2xl font-bold text-gray-900 tracking-tight">
+          <motion.div 
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: index * 0.05 + 0.2 }}
+            className="text-2xl font-bold text-gray-900 tracking-tight"
+          >
             {typeof card.value === "number" ? formatNumber(card.value) : card.value}
-          </div>
+          </motion.div>
           
           {/* Title & Subtitle */}
           <div className="mt-1">
             <div className="text-sm font-medium text-gray-600">{card.title}</div>
             <div className="text-xs text-gray-400 mt-0.5">{card.subtitle}</div>
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   );

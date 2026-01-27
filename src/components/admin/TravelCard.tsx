@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { format, parseISO, formatDistanceToNow, isPast, isToday, isTomorrow } from "date-fns";
 import { de } from "date-fns/locale";
+import { motion } from "framer-motion";
 import {
   Hotel, Train, Plane, Bus, Car, Package,
   MapPin, Clock, Copy, ExternalLink, ChevronRight, ChevronDown,
@@ -336,16 +337,21 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
 
   return (
     <TooltipProvider>
-      <div
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -4, scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ duration: 0.2 }}
         onClick={() => onSelect(booking)}
         className={cn(
-          "group relative rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden",
-          "bg-white hover:scale-[1.02] hover:shadow-lg",
+          "group relative rounded-2xl border cursor-pointer overflow-hidden",
+          "bg-white shadow-sm hover:shadow-xl transition-shadow duration-300",
           isSelected 
             ? `border-gray-400 ring-2 ring-gray-200 shadow-lg` 
             : hasHighSeverityIssues 
-              ? "border-amber-200 shadow-sm" 
-              : "border-gray-100 shadow-sm hover:border-gray-200"
+              ? "border-amber-200" 
+              : "border-gray-100 hover:border-gray-200"
         )}
       >
         {/* Gradient Header based on booking type */}
@@ -633,7 +639,7 @@ export default function TravelCard({ booking, isSelected, onSelect, onViewTicket
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </TooltipProvider>
   );
 }

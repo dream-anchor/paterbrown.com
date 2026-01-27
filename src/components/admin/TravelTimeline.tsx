@@ -1,5 +1,6 @@
 import { format, parseISO, isToday, isTomorrow, isPast } from "date-fns";
 import { de } from "date-fns/locale";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Hotel, Train, Plane, Bus, Car, Package,
   MapPin, Clock, ChevronRight, Users, Coffee, QrCode,
@@ -96,14 +97,19 @@ export default function TravelTimeline({ date, bookings, selectedBookingId, onSe
   const dateBadge = getDateBadge();
 
   return (
-    <div className={cn(
-      "glass-card rounded-2xl overflow-hidden transition-all animate-fade-slide-in",
-      dateIsPast ? "opacity-60" : ""
-    )}>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={cn(
+        "glass-card rounded-2xl overflow-hidden",
+        dateIsPast ? "opacity-60" : ""
+      )}
+    >
       {/* Date Header - Sticky with Blur */}
       <div className={cn(
         "sticky top-0 z-10 px-5 py-3.5 border-b border-gray-100/50 flex items-center justify-between",
-        "sticky-blur-header"
+        "bg-white/90 backdrop-blur-xl"
       )}>
         <span className={cn(
           "font-semibold capitalize text-base",
@@ -112,34 +118,42 @@ export default function TravelTimeline({ date, bookings, selectedBookingId, onSe
           {format(parsedDate, "EEEE, d. MMMM yyyy", { locale: de })}
         </span>
         {dateBadge && (
-          <span className={cn(
-            "px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5",
-            dateBadge.className
-          )}>
+          <motion.span 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className={cn(
+              "px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5",
+              dateBadge.className
+            )}
+          >
             <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse" />
             {dateBadge.label}
-          </span>
+          </motion.span>
         )}
       </div>
 
       {/* Timeline Items */}
       <div className="relative px-5 py-4">
         {/* Modern Gradient Timeline Line */}
-        <div className="absolute left-[38px] top-4 bottom-4 w-0.5 timeline-gradient rounded-full" />
+        <div className="absolute left-[38px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-gray-200 via-gray-300 to-gray-200 rounded-full" />
 
-        <div className="space-y-1">
-          {sortedBookings.map((booking, index) => (
-            <TimelineItem
-              key={booking.id}
-              booking={booking}
-              isSelected={selectedBookingId === booking.id}
-              isLast={index === sortedBookings.length - 1}
-              onSelect={onSelect}
-            />
-          ))}
-        </div>
+        <AnimatePresence mode="popLayout">
+          <div className="space-y-1">
+            {sortedBookings.map((booking, index) => (
+              <TimelineItem
+                key={booking.id}
+                booking={booking}
+                isSelected={selectedBookingId === booking.id}
+                isLast={index === sortedBookings.length - 1}
+                onSelect={onSelect}
+                index={index}
+              />
+            ))}
+          </div>
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -148,9 +162,10 @@ interface TimelineItemProps {
   isSelected: boolean;
   isLast: boolean;
   onSelect: (booking: TravelBooking) => void;
+  index: number;
 }
 
-function TimelineItem({ booking, isSelected, isLast, onSelect }: TimelineItemProps) {
+function TimelineItem({ booking, isSelected, isLast, onSelect, index }: TimelineItemProps) {
   const typeConfig = bookingTypeConfig[booking.booking_type];
   const TypeIcon = typeConfig.icon;
   const time = formatTime(booking.start_datetime);
@@ -191,7 +206,11 @@ function TimelineItem({ booking, isSelected, isLast, onSelect }: TimelineItemPro
 
   return (
     <TooltipProvider>
-      <div
+      <motion.div
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.25, delay: Math.min(index * 0.05, 0.3) }}
+        whileHover={{ x: 4 }}
         onClick={() => onSelect(booking)}
         className={cn(
           "group relative flex items-start gap-3 p-3.5 rounded-xl cursor-pointer transition-all duration-300",
@@ -334,7 +353,7 @@ function TimelineItem({ booking, isSelected, isLast, onSelect }: TimelineItemPro
             ? "text-gray-500" 
             : "text-gray-300 group-hover:text-gray-500 group-hover:translate-x-0.5"
         )} />
-      </div>
+      </motion.div>
     </TooltipProvider>
   );
 }
