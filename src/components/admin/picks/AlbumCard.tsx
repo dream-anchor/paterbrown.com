@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Folder, Trash2, Image as ImageIcon, ChevronRight } from "lucide-react";
+import { Folder, Trash2, Image as ImageIcon, ChevronRight, Camera, Mail, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AlbumData, ImageData } from "./types";
 
@@ -24,6 +24,7 @@ const AlbumCard = ({
 }: AlbumCardProps) => {
   const isOwner = album.created_by === currentUserId;
   const hasImages = previewImages.length > 0;
+  const hasPhotographer = album.photographer_name || album.photographer_email || album.photographer_phone;
 
   return (
     <motion.div
@@ -109,11 +110,22 @@ const AlbumCard = ({
               )}>
                 {album.name}
               </h3>
-              {!hasImages && (
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {imageCount} {imageCount === 1 ? 'Bild' : 'Bilder'}
-                </p>
-              )}
+              <div className="flex items-center gap-2 mt-0.5">
+                {!hasImages && (
+                  <p className="text-xs text-gray-400">
+                    {imageCount} {imageCount === 1 ? 'Bild' : 'Bilder'}
+                  </p>
+                )}
+                {hasPhotographer && (
+                  <div className={cn(
+                    "flex items-center gap-1 text-xs",
+                    hasImages ? "text-white/80" : "text-gray-500"
+                  )}>
+                    <Camera className="w-3 h-3" />
+                    <span className="truncate max-w-[100px]">{album.photographer_name || 'Fotograf'}</span>
+                  </div>
+                )}
+              </div>
             </div>
             
             {/* Arrow indicator */}
@@ -129,6 +141,35 @@ const AlbumCard = ({
               )} />
             </div>
           </div>
+          
+          {/* Photographer contact icons */}
+          {hasPhotographer && (album.photographer_email || album.photographer_phone) && (
+            <div className={cn(
+              "flex items-center gap-2 mt-1.5",
+              hasImages ? "text-white/70" : "text-gray-400"
+            )}>
+              {album.photographer_email && (
+                <a 
+                  href={`mailto:${album.photographer_email}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="hover:text-amber-500 transition-colors"
+                  title={album.photographer_email}
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                </a>
+              )}
+              {album.photographer_phone && (
+                <a 
+                  href={`tel:${album.photographer_phone}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="hover:text-amber-500 transition-colors"
+                  title={album.photographer_phone}
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                </a>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Delete button - only visible for owner on hover */}

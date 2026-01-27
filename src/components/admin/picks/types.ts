@@ -18,6 +18,9 @@ export interface AlbumData {
   parent_id: string | null;
   created_by: string | null;
   created_at: string;
+  photographer_name: string | null;
+  photographer_email: string | null;
+  photographer_phone: string | null;
 }
 
 export type VoteStatus = 'approved' | 'unsure' | 'rejected';

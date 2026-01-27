@@ -91,6 +91,9 @@ const PicksPanel = () => {
   // New album dialog
   const [showNewAlbumDialog, setShowNewAlbumDialog] = useState(false);
   const [newAlbumName, setNewAlbumName] = useState("");
+  const [newAlbumPhotographerName, setNewAlbumPhotographerName] = useState("");
+  const [newAlbumPhotographerEmail, setNewAlbumPhotographerEmail] = useState("");
+  const [newAlbumPhotographerPhone, setNewAlbumPhotographerPhone] = useState("");
   const [isCreatingAlbum, setIsCreatingAlbum] = useState(false);
 
   // Lightbox state
@@ -326,6 +329,9 @@ const PicksPanel = () => {
           name: newAlbumName.trim(),
           parent_id: currentAlbumId,
           created_by: currentUserId,
+          photographer_name: newAlbumPhotographerName.trim() || null,
+          photographer_email: newAlbumPhotographerEmail.trim() || null,
+          photographer_phone: newAlbumPhotographerPhone.trim() || null,
         })
         .select()
         .single();
@@ -334,6 +340,9 @@ const PicksPanel = () => {
       
       setAlbums((prev) => [...prev, data as AlbumData]);
       setNewAlbumName("");
+      setNewAlbumPhotographerName("");
+      setNewAlbumPhotographerEmail("");
+      setNewAlbumPhotographerPhone("");
       setShowNewAlbumDialog(false);
       
       toast({
@@ -897,18 +906,66 @@ const PicksPanel = () => {
             <DialogHeader>
               <DialogTitle className="text-gray-900">Neues Album</DialogTitle>
             </DialogHeader>
-            <div className="py-4">
-              <Label htmlFor="album-name" className="text-gray-700">
-                Albumname
-              </Label>
-              <Input
-                id="album-name"
-                value={newAlbumName}
-                onChange={(e) => setNewAlbumName(e.target.value)}
-                placeholder="z.B. Probefotos"
-                className="mt-2 bg-white border-gray-200 text-gray-900"
-                onKeyDown={(e) => e.key === "Enter" && handleCreateAlbum()}
-              />
+            <div className="py-4 space-y-4">
+              <div>
+                <Label htmlFor="album-name" className="text-gray-700">
+                  Albumname *
+                </Label>
+                <Input
+                  id="album-name"
+                  value={newAlbumName}
+                  onChange={(e) => setNewAlbumName(e.target.value)}
+                  placeholder="z.B. Probefotos"
+                  className="mt-2 bg-white border-gray-200 text-gray-900"
+                />
+              </div>
+              
+              {/* Photographer Info Section */}
+              <div className="pt-2 border-t border-gray-100">
+                <p className="text-xs text-gray-500 mb-3">Fotograf (optional)</p>
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="photographer-name" className="text-gray-600 text-sm">
+                      Name
+                    </Label>
+                    <Input
+                      id="photographer-name"
+                      value={newAlbumPhotographerName}
+                      onChange={(e) => setNewAlbumPhotographerName(e.target.value)}
+                      placeholder="z.B. Max Mustermann"
+                      className="mt-1 bg-white border-gray-200 text-gray-900"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="photographer-email" className="text-gray-600 text-sm">
+                        E-Mail
+                      </Label>
+                      <Input
+                        id="photographer-email"
+                        type="email"
+                        value={newAlbumPhotographerEmail}
+                        onChange={(e) => setNewAlbumPhotographerEmail(e.target.value)}
+                        placeholder="foto@example.de"
+                        className="mt-1 bg-white border-gray-200 text-gray-900"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="photographer-phone" className="text-gray-600 text-sm">
+                        Telefon
+                      </Label>
+                      <Input
+                        id="photographer-phone"
+                        type="tel"
+                        value={newAlbumPhotographerPhone}
+                        onChange={(e) => setNewAlbumPhotographerPhone(e.target.value)}
+                        placeholder="+49 123 456789"
+                        className="mt-1 bg-white border-gray-200 text-gray-900"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <DialogFooter>
               <Button
