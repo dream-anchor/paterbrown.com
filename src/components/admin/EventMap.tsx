@@ -97,12 +97,9 @@ const FitBoundsToMarkers = ({
       const bounds = L.latLngBounds(coords);
 
       const getTightPadding = () => {
-        // Goal: show all cities, but keep the margins tight so the route fills the viewport.
-        // Use dynamic padding so it behaves consistently across mobile/desktop sizes.
-        const size = map.getSize();
-        const padX = Math.max(10, Math.round(size.x * 0.02));
-        const padY = Math.max(8, Math.round(size.y * 0.015));
-        return [padX, padY] as [number, number];
+        // Goal: show all cities with minimal margins so the route completely fills the viewport.
+        // Use very small padding - just enough to not clip markers at the edge.
+        return [4, 4] as [number, number];
       };
 
       // Delay slightly so Leaflet has the correct container size on mobile.
