@@ -1392,17 +1392,16 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                       ? `${colors.border} ring-2 ${colors.ring} shadow-md`
                       : `border-gray-200 hover:${colors.border} hover:shadow-sm`
                   )}
-                  onMouseEnter={() => !isMobile && handleStationHover(event.id)}
-                  onMouseLeave={() => !isMobile && handleStationHover(null)}
                   onClick={() => {
                     haptics.tap();
-                    // 1st click: highlight marker + fly to it
-                    // 2nd click (already active): open popup
+                    // Two-step interaction for ALL views (mobile + desktop):
+                    // 1st click: highlight marker + pan to it
+                    // 2nd click (already active): open popup with details
                     if (activeEventId === event.id) {
                       setSelectedEventDetail(event);
                     } else {
                       handleStationHover(event.id);
-                      // Fly to marker on map
+                      // Pan to marker on map (no zoom change)
                       const coords = getCoordinates(event);
                       if (coords) {
                         setFlyToCoords(coords);
