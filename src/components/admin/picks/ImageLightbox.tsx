@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ImageData, VoteStatus, ImageVote } from "./types";
 import { getImageOriginalUrl } from "@/lib/documentUtils";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobileLightbox from "./MobileLightbox";
 
 interface ImageLightboxProps {
   image: ImageData | null;
@@ -63,6 +65,7 @@ const ImageLightbox = ({
   onDelete,
   canDelete,
 }: ImageLightboxProps) => {
+  const isMobile = useIsMobile();
   const currentIndex = image ? images.findIndex(img => img.id === image.id) : -1;
   const hasNext = currentIndex < images.length - 1;
   const hasPrev = currentIndex > 0;
@@ -84,9 +87,9 @@ const ImageLightbox = ({
       });
   }, [image, votes, currentUserId]);
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts (desktop only)
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!image) return;
+    if (!image || isMobile) return;
     
     switch (e.key) {
       case 'Escape':
@@ -108,7 +111,7 @@ const ImageLightbox = ({
         onVote(image.id, 'rejected');
         break;
     }
-  }, [image, hasPrev, hasNext, onClose, onNavigate, onVote]);
+  }, [image, isMobile, hasPrev, hasNext, onClose, onNavigate, onVote]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -126,6 +129,24 @@ const ImageLightbox = ({
   }, [image]);
 
   if (!image) return null;
+
+  // Use mobile-optimized lightbox on small screens
+  if (isMobile) {
+    return (
+      <MobileLightbox
+        image={image}
+        images={images}
+        votes={votes}
+        currentUserId={currentUserId}
+        onClose={onClose}
+        onNavigate={onNavigate}
+        onVote={onVote}
+        onDownload={onDownload}
+        onDelete={onDelete}
+        canDelete={canDelete}
+      />
+    );
+  }
 
   // Use preview_url if available, otherwise fall back to original
   const getDisplayUrl = (img: ImageData) => {
