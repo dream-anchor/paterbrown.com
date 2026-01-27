@@ -1382,8 +1382,8 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className={cn(
-              "sticky top-0 z-10 -mx-4 px-4 py-4 mb-4",
-              "bg-white/80 backdrop-blur-xl border-b border-gray-100"
+              "sticky top-0 z-10 -mx-4 px-4 py-3",
+              "bg-white border-b border-gray-100"
             )}
           >
             {isMobile ? (
