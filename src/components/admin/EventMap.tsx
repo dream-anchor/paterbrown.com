@@ -991,16 +991,18 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         <div className={cn(
           "flex flex-col",
           isMobile 
-            ? "sticky top-0 z-10 w-full h-[55vh] min-h-[320px] max-h-[500px] flex-shrink-0 border-b border-gray-200" 
+            ? "w-full flex-shrink-0 border-b border-gray-200" 
             : "w-1/2 h-full border-r border-gray-200"
-        )}>
+        )}
+        style={isMobile ? { height: '55vh', minHeight: '320px', maxHeight: '500px' } : undefined}
+        >
           {/* Map Container */}
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 relative">
             <MapContainer
               center={germanCenter}
-              zoom={6}
+              zoom={isMobile ? 5.5 : 6}
               scrollWheelZoom={true}
-              className="h-full w-full"
+              className="absolute inset-0 h-full w-full"
             >
               <FitBoundsToMarkers coords={routeCoords} />
               <TileLayer
