@@ -76,60 +76,73 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             </span>
           </Link>
           
-          {/* User Dropdown Menu */}
+          {/* User Dropdown Menu - Premium Design */}
           <div className="flex items-center">
             {userEmail ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="group flex items-center gap-2.5 px-2.5 py-1.5 rounded-full 
-                               bg-white/60 border border-gray-200/60 
-                               hover:bg-white hover:border-amber-200 hover:shadow-sm
+                    className="group flex items-center gap-2 px-1.5 py-1.5 rounded-full 
+                               bg-white border border-gray-200/80 
+                               hover:border-gray-300 hover:shadow-md
                                transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                   >
                     {/* Gradient Initial Avatar */}
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 
-                                    flex items-center justify-center shadow-sm ring-2 ring-white">
-                      <span className="text-[10px] font-bold text-white">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 
+                                    flex items-center justify-center shadow-sm">
+                      <span className="text-xs font-bold text-white">
                         {getInitials(displayName)}
                       </span>
                     </div>
                     
-                    {/* Name (Desktop) */}
-                    <span className="hidden sm:block text-sm font-medium text-gray-900">
-                      {displayName}
-                    </span>
-                    
                     {/* Chevron */}
-                    <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                    <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors mr-1" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent 
                   align="end" 
-                  className="w-56 bg-white border-gray-200 shadow-lg"
+                  sideOffset={8}
+                  className="w-64 p-2 bg-white border border-gray-200 shadow-xl rounded-2xl"
                 >
                   {/* User Info Header */}
-                  <div className="px-3 py-2 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-900">{displayName}</p>
-                    <p className="text-xs text-gray-500 truncate">{userEmail}</p>
+                  <div className="px-3 py-3 mb-1 rounded-xl bg-gradient-to-br from-slate-50 to-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 
+                                      flex items-center justify-center shadow-sm">
+                        <span className="text-sm font-bold text-white">
+                          {getInitials(displayName)}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
+                        <p className="text-xs text-gray-500 truncate">{userEmail}</p>
+                      </div>
+                    </div>
                   </div>
                   
                   <DropdownMenuItem 
                     onClick={handleSettings}
-                    className="flex items-center gap-2 cursor-pointer"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-gray-700 hover:bg-gray-100 focus:bg-gray-100"
                   >
-                    <Settings className="w-4 h-4" />
-                    <span>Settings</span>
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                      <Settings className="w-4 h-4 text-gray-600" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium">Einstellungen</span>
+                      <p className="text-xs text-gray-500">Profil & Papierkorb</p>
+                    </div>
                   </DropdownMenuItem>
                   
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="my-2 bg-gray-100" />
                   
                   <DropdownMenuItem 
                     onClick={handleLogout}
-                    className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50 focus:text-red-600"
                   >
-                    <LogOut className="w-4 h-4" />
-                    <span>Logout</span>
+                    <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+                      <LogOut className="w-4 h-4 text-red-500" />
+                    </div>
+                    <span className="text-sm font-medium">Abmelden</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

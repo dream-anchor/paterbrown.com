@@ -2,13 +2,16 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, CloudDownload, RefreshCw, Upload, Image, FileText, 
-  Table, Presentation, Archive, File, Sparkles, FolderOpen
+  Table, Presentation, Archive, File, Sparkles, FolderOpen,
+  CheckSquare, Square, Link, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import DocumentCard from "./DocumentCard";
 import DocumentUploadModal from "./DocumentUploadModal";
+import ShareLinkDialog from "./ShareLinkDialog";
 import { getFileTypeGroup, FILE_TYPE_GROUPS, FileTypeGroup } from "@/lib/documentUtils";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +53,8 @@ const DocumentsPanel = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [pageDragActive, setPageDragActive] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // Group documents by file type
   const groupedDocuments = useMemo(() => {
@@ -278,7 +283,37 @@ const DocumentsPanel = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Selection Mode Toggle */}
+            {documents.length > 0 && (
+              <Button
+                variant={isSelectionMode ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setIsSelectionMode(!isSelectionMode);
+                  if (isSelectionMode) setSelectedIds(new Set());
+                }}
+                className={cn(
+                  "h-10 rounded-xl",
+                  isSelectionMode 
+                    ? "bg-slate-800 hover:bg-slate-900 text-white" 
+                    : "bg-white hover:bg-gray-50 text-gray-700 border-gray-200"
+                )}
+              >
+                {isSelectionMode ? (
+                  <>
+                    <X className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Abbrechen</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckSquare className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Auswählen</span>
+                  </>
+                )}
+              </Button>
+            )}
+            
             <Button
               variant="outline"
               size="sm"
@@ -302,6 +337,49 @@ const DocumentsPanel = () => {
             </Button>
           </div>
         </motion.div>
+
+        {/* Selection Action Bar */}
+        <AnimatePresence>
+          {isSelectionMode && selectedIds.size > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, y: -10, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="flex items-center justify-between gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl border border-slate-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">{selectedIds.size}</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-900">
+                      {selectedIds.size} {selectedIds.size === 1 ? "Datei" : "Dateien"} ausgewählt
+                    </p>
+                    <p className="text-xs text-slate-500">Gemeinsamen Link generieren</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    // For now, show toast - multi-file share coming soon
+                    toast({
+                      title: "Funktion in Entwicklung",
+                      description: "Multi-Datei-Links kommen bald. Für jetzt einzeln teilen.",
+                    });
+                  }}
+                  className={cn(
+                    "h-10 rounded-xl gap-2",
+                    "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700",
+                    "text-white font-medium shadow-lg shadow-amber-500/30"
+                  )}
+                >
+                  <Link className="w-4 h-4" />
+                  Link für Auswahl
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Empty State - Premium */}
         {documents.length === 0 ? (
@@ -381,19 +459,50 @@ const DocumentsPanel = () => {
                   {/* Document Cards */}
                   <div className="space-y-3">
                     {docs.map((doc, index) => (
-                      <DocumentCard
-                        key={doc.id}
-                        id={doc.id}
-                        name={doc.name}
-                        fileName={doc.file_name}
-                        filePath={doc.file_path}
-                        fileSize={doc.file_size}
-                        contentType={doc.content_type}
-                        downloadCount={doc.download_count}
-                        createdAt={doc.created_at}
-                        onDelete={handleDelete}
-                        index={groupIndex * 10 + index}
-                      />
+                      <div key={doc.id} className="relative">
+                        {/* Selection checkbox overlay */}
+                        {isSelectionMode && (
+                          <div 
+                            className="absolute left-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
+                            onClick={() => {
+                              setSelectedIds(prev => {
+                                const next = new Set(prev);
+                                if (next.has(doc.id)) {
+                                  next.delete(doc.id);
+                                } else {
+                                  next.add(doc.id);
+                                }
+                                return next;
+                              });
+                            }}
+                          >
+                            <div className={cn(
+                              "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                              selectedIds.has(doc.id)
+                                ? "bg-slate-800 border-slate-800"
+                                : "bg-white border-slate-300 hover:border-slate-400"
+                            )}>
+                              {selectedIds.has(doc.id) && (
+                                <CheckSquare className="w-4 h-4 text-white" />
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        <div className={cn(isSelectionMode && "pl-10")}>
+                          <DocumentCard
+                            id={doc.id}
+                            name={doc.name}
+                            fileName={doc.file_name}
+                            filePath={doc.file_path}
+                            fileSize={doc.file_size}
+                            contentType={doc.content_type}
+                            downloadCount={doc.download_count}
+                            createdAt={doc.created_at}
+                            onDelete={handleDelete}
+                            index={groupIndex * 10 + index}
+                          />
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </motion.div>
