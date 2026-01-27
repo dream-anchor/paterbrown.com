@@ -2,6 +2,7 @@ import { useMemo, useRef } from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { MapPin, Calendar, Clock, Users, Navigation } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AdminEvent {
   id: string;
@@ -169,8 +170,15 @@ const TourJourney = ({ events }: TourJourneyProps) => {
                     key={event.id} 
                     className="flex gap-4 items-start group"
                   >
-                    {/* Number Badge */}
-                    <div className="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-md group-hover:bg-amber-600 transition-colors">
+                                    {/* Number Badge - Source-based (KL=Amber, KBA=Green) */}
+                                    <div className={cn(
+                                      "w-10 h-10 rounded-full text-white flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-md transition-colors",
+                                      event.source === 'KL' 
+                                        ? 'bg-amber-500 group-hover:bg-amber-600' 
+                                        : event.source === 'KBA'
+                                        ? 'bg-emerald-500 group-hover:bg-emerald-600'
+                                        : 'bg-gray-400 group-hover:bg-gray-500'
+                                    )}>
                       {globalIndex}
                     </div>
                     
@@ -206,12 +214,12 @@ const TourJourney = ({ events }: TourJourneyProps) => {
                         {/* Source Badge */}
                         <div className={`px-2 py-0.5 rounded text-xs font-medium flex-shrink-0 ${
                           event.source === 'KL' 
-                            ? 'bg-blue-50 text-blue-600' 
+                            ? 'bg-amber-50 text-amber-600' 
                             : event.source === 'KBA'
-                            ? 'bg-green-50 text-green-600'
+                            ? 'bg-emerald-50 text-emerald-600'
                             : 'bg-gray-50 text-gray-500'
                         }`}>
-                          {event.source}
+                          {event.source === 'KL' ? 'Landgraf' : event.source === 'KBA' ? 'Augsburg' : event.source}
                         </div>
                       </div>
                       

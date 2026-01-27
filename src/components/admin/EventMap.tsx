@@ -202,9 +202,9 @@ const getEventStatus = (startTime: string): EventStatus => {
   return "past";
 };
 
-// Status-based colors
-const statusColors = {
-  upcoming: {
+// Source-based colors (KL = Amber, KBA = Green)
+const sourceColors = {
+  KL: {
     gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
     bg: "bg-amber-500",
     bgLight: "bg-amber-100",
@@ -213,16 +213,16 @@ const statusColors = {
     ring: "ring-amber-200",
     shadow: "rgba(245, 158, 11, 0.6)",
   },
-  today: {
-    gradient: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-    bg: "bg-red-500",
-    bgLight: "bg-red-100",
-    text: "text-red-700",
-    border: "border-red-500",
-    ring: "ring-red-200",
-    shadow: "rgba(239, 68, 68, 0.6)",
+  KBA: {
+    gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+    bg: "bg-emerald-500",
+    bgLight: "bg-emerald-100",
+    text: "text-emerald-700",
+    border: "border-emerald-500",
+    ring: "ring-emerald-200",
+    shadow: "rgba(16, 185, 129, 0.6)",
   },
-  past: {
+  unknown: {
     gradient: "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)",
     bg: "bg-gray-400",
     bgLight: "bg-gray-100",
@@ -233,13 +233,14 @@ const statusColors = {
   },
 };
 
-// Create status-based marker icon
-const createStatusIcon = (num: number, status: EventStatus) => {
-  const colors = statusColors[status];
+
+// Create source-based marker icon (KL=Amber, KBA=Green)
+const createSourceIcon = (num: number, source: "KL" | "KBA" | "unknown", status: EventStatus) => {
+  const colors = sourceColors[source] || sourceColors.unknown;
   const isPulsing = status === "today";
   
   return L.divIcon({
-    className: 'custom-status-marker',
+    className: 'custom-source-marker',
     html: `<div style="
       width: 32px;
       height: 32px;
@@ -267,9 +268,9 @@ const createStatusIcon = (num: number, status: EventStatus) => {
   });
 };
 
-// Create highlighted marker icon
-const createHighlightedStatusIcon = (num: number, status: EventStatus) => {
-  const colors = statusColors[status];
+// Create highlighted source-based marker icon
+const createHighlightedSourceIcon = (num: number, source: "KL" | "KBA" | "unknown") => {
+  const colors = sourceColors[source] || sourceColors.unknown;
   
   return L.divIcon({
     className: 'custom-highlighted-marker',
@@ -1169,8 +1170,8 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                       key={event.id} 
                       position={event.coords as [number, number]}
                       icon={activeEventId === event.id 
-                        ? createHighlightedStatusIcon(event.stationNumber, event.status) 
-                        : createStatusIcon(event.stationNumber, event.status)}
+                        ? createHighlightedSourceIcon(event.stationNumber, event.source) 
+                        : createSourceIcon(event.stationNumber, event.source, event.status)}
                       // @ts-ignore - custom property for cluster grouping
                       eventSource={event.source}
                       ref={(ref) => {
@@ -1191,20 +1192,19 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                           {/* Header */}
                           <div className={cn(
                             "flex items-center gap-2 mb-3 p-2 -m-1 rounded-lg",
-                            statusColors[event.status].bgLight
+                            sourceColors[event.source]?.bgLight || sourceColors.unknown.bgLight
                           )}>
                             <span className={cn(
                               "text-xs font-bold px-2 py-1 rounded-full text-white",
-                              statusColors[event.status].bg
+                              sourceColors[event.source]?.bg || sourceColors.unknown.bg
                             )}>
                               Station {event.stationNumber}
                             </span>
                             <span className={cn(
-                              "text-xs font-medium capitalize",
-                              statusColors[event.status].text
+                              "text-xs font-medium",
+                              sourceColors[event.source]?.text || sourceColors.unknown.text
                             )}>
-                              {event.status === "upcoming" ? "Anstehend" : 
-                               event.status === "today" ? "Heute!" : "Vergangen"}
+                              {event.source === "KL" ? "Landgraf" : event.source === "KBA" ? "Augsburg" : "Unbekannt"}
                             </span>
                           </div>
                           
@@ -1261,8 +1261,8 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                     key={event.id} 
                     position={event.coords as [number, number]}
                     icon={activeEventId === event.id 
-                      ? createHighlightedStatusIcon(event.stationNumber, event.status) 
-                      : createStatusIcon(event.stationNumber, event.status)}
+                      ? createHighlightedSourceIcon(event.stationNumber, event.source) 
+                      : createSourceIcon(event.stationNumber, event.source, event.status)}
                     eventHandlers={{
                       click: () => scrollToEvent(event.id),
                     }}
@@ -1278,20 +1278,19 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                         {/* Header */}
                         <div className={cn(
                           "flex items-center gap-2 mb-3 p-2 -m-1 rounded-lg",
-                          statusColors[event.status].bgLight
+                          sourceColors[event.source]?.bgLight || sourceColors.unknown.bgLight
                         )}>
                           <span className={cn(
                             "text-xs font-bold px-2 py-1 rounded-full text-white",
-                            statusColors[event.status].bg
+                            sourceColors[event.source]?.bg || sourceColors.unknown.bg
                           )}>
                             Station {event.stationNumber}
                           </span>
                           <span className={cn(
-                            "text-xs font-medium capitalize",
-                            statusColors[event.status].text
+                            "text-xs font-medium",
+                            sourceColors[event.source]?.text || sourceColors.unknown.text
                           )}>
-                            {event.status === "upcoming" ? "Anstehend" : 
-                             event.status === "today" ? "Heute!" : "Vergangen"}
+                            {event.source === "KL" ? "Landgraf" : event.source === "KBA" ? "Augsburg" : "Unbekannt"}
                           </span>
                         </div>
                         
@@ -1347,11 +1346,11 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           {/* Legend - below map */}
           <div className="flex-shrink-0 flex items-center justify-center gap-4 text-xs text-gray-500 py-3 bg-gray-50 border-t border-gray-200">
             <div className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
               <span>Landgraf (KL)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
               <span>Konzertbüro Augsburg (KBA)</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -1489,17 +1488,17 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           </DialogHeader>
           {selectedEventDetail && (
             <div className="space-y-4">
-              {/* Status Badge */}
+              {/* Source Badge */}
               <div className={cn(
                 "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium",
-                statusColors[getEventStatus(selectedEventDetail.start_time)].bgLight,
-                statusColors[getEventStatus(selectedEventDetail.start_time)].text
+                sourceColors[selectedEventDetail.source]?.bgLight || sourceColors.unknown.bgLight,
+                sourceColors[selectedEventDetail.source]?.text || sourceColors.unknown.text
               )}>
                 {getEventStatus(selectedEventDetail.start_time) === "today" && (
                   <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 )}
-                {getEventStatus(selectedEventDetail.start_time) === "upcoming" ? "Anstehender Termin" : 
-                 getEventStatus(selectedEventDetail.start_time) === "today" ? "Heute!" : "Vergangener Termin"}
+                {selectedEventDetail.source === "KL" ? "Konzertdirektion Landgraf" : 
+                 selectedEventDetail.source === "KBA" ? "Konzertbüro Augsburg" : "Unbekannte Quelle"}
               </div>
 
               {/* Event Info */}

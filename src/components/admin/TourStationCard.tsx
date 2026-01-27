@@ -6,9 +6,9 @@ import { haptics } from "@/lib/haptics";
 // Event status type
 type EventStatus = "upcoming" | "today" | "past";
 
-// Status-based colors
-const statusColors = {
-  upcoming: {
+// Source-based colors (KL = Amber, KBA = Green) - consistent with EventMap
+const sourceColors = {
+  KL: {
     gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
     bg: "bg-amber-500",
     bgLight: "bg-amber-50",
@@ -17,18 +17,22 @@ const statusColors = {
     ring: "ring-amber-200",
     shadow: "shadow-amber-500/20",
     glow: "hover:shadow-amber-500/15",
+    from: "from-amber-500",
+    to: "to-amber-600",
   },
-  today: {
-    gradient: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-    bg: "bg-red-500",
-    bgLight: "bg-red-50",
-    text: "text-red-700",
-    border: "border-red-400",
-    ring: "ring-red-200",
-    shadow: "shadow-red-500/20",
-    glow: "hover:shadow-red-500/15",
+  KBA: {
+    gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+    bg: "bg-emerald-500",
+    bgLight: "bg-emerald-50",
+    text: "text-emerald-700",
+    border: "border-emerald-400",
+    ring: "ring-emerald-200",
+    shadow: "shadow-emerald-500/20",
+    glow: "hover:shadow-emerald-500/15",
+    from: "from-emerald-500",
+    to: "to-emerald-600",
   },
-  past: {
+  unknown: {
     gradient: "linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)",
     bg: "bg-gray-400",
     bgLight: "bg-gray-50",
@@ -37,6 +41,8 @@ const statusColors = {
     ring: "ring-gray-200",
     shadow: "shadow-gray-500/10",
     glow: "hover:shadow-gray-500/10",
+    from: "from-gray-400",
+    to: "to-gray-500",
   },
 };
 
@@ -108,7 +114,7 @@ const TourStationCard = ({
   onSelect,
   isMobile = false,
 }: TourStationCardProps) => {
-  const colors = statusColors[status];
+  const colors = sourceColors[event.source] || sourceColors.unknown;
 
   return (
     <div>
@@ -133,14 +139,12 @@ const TourStationCard = ({
         )}
       >
         <div className="flex items-stretch">
-          {/* Left: Station Number with Gradient */}
+          {/* Left: Station Number with Source-based Gradient (KL=Amber, KBA=Green) */}
           <div
             className={cn(
               "relative flex flex-col items-center justify-center px-4 py-4",
               "bg-gradient-to-br text-white flex-shrink-0",
-              status === "upcoming" && "from-amber-500 to-amber-600",
-              status === "today" && "from-red-500 to-red-600",
-              status === "past" && "from-gray-400 to-gray-500"
+              colors.from, colors.to
             )}
           >
             <span className="text-2xl font-bold">{index + 1}</span>
@@ -177,7 +181,7 @@ const TourStationCard = ({
                 )}
               </div>
 
-              {/* Status badge - glassmorphism */}
+              {/* Source badge - glassmorphism */}
               <div
                 className={cn(
                   "flex-shrink-0 px-2.5 py-1 rounded-full",
@@ -186,11 +190,11 @@ const TourStationCard = ({
                   colors.text
                 )}
               >
-                {status === "upcoming"
-                  ? "Anstehend"
-                  : status === "today"
-                  ? "Heute"
-                  : "Vergangen"}
+                {event.source === "KL"
+                  ? "Landgraf"
+                  : event.source === "KBA"
+                  ? "Augsburg"
+                  : "Unbekannt"}
               </div>
             </div>
 
