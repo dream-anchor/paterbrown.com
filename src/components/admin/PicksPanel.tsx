@@ -127,6 +127,7 @@ const PicksPanel = () => {
         const { data } = await supabase
           .from("images")
           .select("*")
+          .is("deleted_at", null)  // Exclude soft-deleted items
           .order("created_at", { ascending: false });
         if (data) setImages(data as ImageData[]);
       };
@@ -201,8 +202,8 @@ const PicksPanel = () => {
         }
 
         const [imagesRes, albumsRes, votesRes, rolesRes, profilesRes] = await Promise.all([
-          supabase.from("images").select("*").order("created_at", { ascending: false }),
-          supabase.from("picks_folders").select("*").order("name"),
+          supabase.from("images").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
+          supabase.from("picks_folders").select("*").is("deleted_at", null).order("name"),
           supabase.from("image_votes").select("*"),
           supabase.from("user_roles").select("user_id").eq("role", "admin"),
           supabase.from("traveler_profiles").select("user_id, first_name, last_name"),
@@ -420,9 +421,11 @@ const PicksPanel = () => {
     }
   };
 
-  // Delete album (with R2 cleanup)
+  // Soft delete album (move to trash with all images)
   const handleDeleteAlbum = async (album: AlbumData) => {
     try {
+      const now = new Date().toISOString();
+      
       // 1. Get all images in this album (and recursively in subalbums)
       const getAllImagesInAlbum = async (albumId: string): Promise<ImageData[]> => {
         const albumImages = images.filter((img) => img.folder_id === albumId);
@@ -438,53 +441,54 @@ const PicksPanel = () => {
 
       const imagesToDelete = await getAllImagesInAlbum(album.id);
       
-      // 2. Delete files from R2 if there are any
+      // 2. Soft delete all images in this album
       if (imagesToDelete.length > 0) {
-        const r2FilePaths = imagesToDelete
-          .filter((img) => img.file_path.includes("r2.dev"))
-          .map((img) => img.file_path);
-
-        if (r2FilePaths.length > 0) {
-          console.log(`Deleting ${r2FilePaths.length} files from R2...`);
-          
-          const { error: deleteError } = await supabase.functions.invoke("delete-files", {
-            body: { fileKeys: r2FilePaths },
-          });
-
-          if (deleteError) {
-            console.error("R2 deletion error:", deleteError);
-          }
-        }
-
-        // 3. Delete image records from database
         const imageIds = imagesToDelete.map((img) => img.id);
-        await supabase.from("image_votes").delete().in("image_id", imageIds);
-        await supabase.from("images").delete().in("id", imageIds);
+        await supabase
+          .from("images")
+          .update({ deleted_at: now, deleted_by: currentUserId })
+          .in("id", imageIds);
         
         setImages((prev) => prev.filter((img) => !imageIds.includes(img.id)));
         setVotes((prev) => prev.filter((v) => !imageIds.includes(v.image_id)));
       }
 
-      // 4. Delete subalbums recursively
-      const deleteSubalbums = async (albumId: string) => {
+      // 3. Soft delete subalbums recursively
+      const softDeleteSubalbums = async (albumId: string) => {
         const subalbums = albums.filter((a) => a.parent_id === albumId);
         for (const subalbum of subalbums) {
-          await deleteSubalbums(subalbum.id);
-          await supabase.from("picks_folders").delete().eq("id", subalbum.id);
+          await softDeleteSubalbums(subalbum.id);
+          await supabase
+            .from("picks_folders")
+            .update({ deleted_at: now, deleted_by: currentUserId })
+            .eq("id", subalbum.id);
         }
       };
-      await deleteSubalbums(album.id);
+      await softDeleteSubalbums(album.id);
 
-      // 5. Delete the album itself
-      const { error } = await supabase.from("picks_folders").delete().eq("id", album.id);
+      // 4. Soft delete the album itself
+      const { error } = await supabase
+        .from("picks_folders")
+        .update({ deleted_at: now, deleted_by: currentUserId })
+        .eq("id", album.id);
+        
       if (error) throw error;
 
-      setAlbums((prev) => prev.filter((a) => a.id !== album.id && a.parent_id !== album.id));
+      // Remove from local state
+      const deletedAlbumIds = new Set<string>();
+      const collectDeletedAlbumIds = (parentId: string) => {
+        deletedAlbumIds.add(parentId);
+        albums.filter(a => a.parent_id === parentId).forEach(a => collectDeletedAlbumIds(a.id));
+      };
+      collectDeletedAlbumIds(album.id);
+
+      setAlbums((prev) => prev.filter((a) => !deletedAlbumIds.has(a.id)));
+      
       toast({ 
-        title: "Album gelöscht",
+        title: "In Papierkorb verschoben",
         description: imagesToDelete.length > 0 
-          ? `${imagesToDelete.length} Bild(er) wurden ebenfalls entfernt`
-          : undefined,
+          ? `Album mit ${imagesToDelete.length} Bild(ern) kann 90 Tage wiederhergestellt werden`
+          : "Kann 90 Tage lang wiederhergestellt werden",
       });
     } catch (error) {
       console.error("Error deleting album:", error);
@@ -558,55 +562,60 @@ const PicksPanel = () => {
     }
   };
 
-  // Delete single image
+  // Soft delete single image (move to trash)
   const handleDeleteImage = async (image: ImageData) => {
     try {
-      if (image.file_path.includes("r2.dev")) {
-        await supabase.functions.invoke("delete-files", {
-          body: { fileKeys: [image.file_path] },
-        });
-      } else {
-        await supabase.storage.from("picks-images").remove([image.file_path]);
-      }
+      // Soft delete: set deleted_at instead of hard delete
+      const { error } = await supabase
+        .from("images")
+        .update({ 
+          deleted_at: new Date().toISOString(),
+          deleted_by: currentUserId
+        })
+        .eq("id", image.id);
 
-      await supabase.from("image_votes").delete().eq("image_id", image.id);
-      const { error } = await supabase.from("images").delete().eq("id", image.id);
       if (error) throw error;
 
+      // Remove from local state (it's now in trash)
       setImages((prev) => prev.filter((i) => i.id !== image.id));
       setVotes((prev) => prev.filter((v) => v.image_id !== image.id));
       setLightboxImage(null);
-      toast({ title: "Gelöscht" });
+      toast({ 
+        title: "In Papierkorb", 
+        description: "Kann 90 Tage lang wiederhergestellt werden"
+      });
     } catch (error) {
       console.error("Delete error:", error);
       toast({ title: "Fehler", description: "Löschen fehlgeschlagen", variant: "destructive" });
     }
   };
 
-  // Batch delete selected images
+  // Batch soft delete selected images
   const handleBatchDelete = async () => {
     const imagesToDelete = images.filter(img => selectedImageIds.has(img.id));
     
     try {
-      const r2Paths = imagesToDelete
-        .filter(img => img.file_path.includes("r2.dev"))
-        .map(img => img.file_path);
-
-      if (r2Paths.length > 0) {
-        await supabase.functions.invoke("delete-files", {
-          body: { fileKeys: r2Paths },
-        });
-      }
-
       const imageIds = imagesToDelete.map(img => img.id);
-      await supabase.from("image_votes").delete().in("image_id", imageIds);
-      await supabase.from("images").delete().in("id", imageIds);
+      
+      // Soft delete: set deleted_at for all selected images
+      const { error } = await supabase
+        .from("images")
+        .update({ 
+          deleted_at: new Date().toISOString(),
+          deleted_by: currentUserId
+        })
+        .in("id", imageIds);
+
+      if (error) throw error;
 
       setImages(prev => prev.filter(img => !selectedImageIds.has(img.id)));
       setVotes(prev => prev.filter(v => !selectedImageIds.has(v.image_id)));
       setSelectedImageIds(new Set());
       
-      toast({ title: `${imageIds.length} Bilder gelöscht` });
+      toast({ 
+        title: `${imageIds.length} Bilder in Papierkorb`,
+        description: "Können 90 Tage lang wiederhergestellt werden"
+      });
     } catch (error) {
       console.error("Batch delete error:", error);
       toast({ title: "Fehler", description: "Batch-Löschen fehlgeschlagen", variant: "destructive" });

@@ -17,6 +17,8 @@ export type Database = {
       admin_events: {
         Row: {
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           end_time: string | null
           id: string
           latitude: number | null
@@ -36,6 +38,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           end_time?: string | null
           id?: string
           latitude?: number | null
@@ -55,6 +59,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           end_time?: string | null
           id?: string
           latitude?: number | null
@@ -219,6 +225,8 @@ export type Database = {
           all_day: boolean | null
           color: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           description: string | null
           end_datetime: string | null
           event_status: string | null
@@ -234,6 +242,8 @@ export type Database = {
           all_day?: boolean | null
           color?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           end_datetime?: string | null
           event_status?: string | null
@@ -249,6 +259,8 @@ export type Database = {
           all_day?: boolean | null
           color?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           description?: string | null
           end_datetime?: string | null
           event_status?: string | null
@@ -377,6 +389,8 @@ export type Database = {
       images: {
         Row: {
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           file_name: string
           file_path: string
           folder_id: string | null
@@ -389,6 +403,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           file_name: string
           file_path: string
           folder_id?: string | null
@@ -401,6 +417,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           file_name?: string
           file_path?: string
           folder_id?: string | null
@@ -426,6 +444,8 @@ export type Database = {
           category: Database["public"]["Enums"]["document_category"]
           content_type: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           download_count: number
           file_name: string
           file_path: string
@@ -439,6 +459,8 @@ export type Database = {
           category?: Database["public"]["Enums"]["document_category"]
           content_type?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           download_count?: number
           file_name: string
           file_path: string
@@ -452,6 +474,8 @@ export type Database = {
           category?: Database["public"]["Enums"]["document_category"]
           content_type?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           download_count?: number
           file_name?: string
           file_path?: string
@@ -491,6 +515,8 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
           id: string
           name: string
           parent_id: string | null
@@ -501,6 +527,8 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           name: string
           parent_id?: string | null
@@ -511,6 +539,8 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           name?: string
           parent_id?: string | null
@@ -646,6 +676,8 @@ export type Database = {
           booking_type: Database["public"]["Enums"]["booking_type"]
           created_at: string
           data_quality_score: number | null
+          deleted_at: string | null
+          deleted_by: string | null
           destination_city: string
           details: Json | null
           end_datetime: string | null
@@ -673,6 +705,8 @@ export type Database = {
           booking_type: Database["public"]["Enums"]["booking_type"]
           created_at?: string
           data_quality_score?: number | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           destination_city: string
           details?: Json | null
           end_datetime?: string | null
@@ -700,6 +734,8 @@ export type Database = {
           booking_type?: Database["public"]["Enums"]["booking_type"]
           created_at?: string
           data_quality_score?: number | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           destination_city?: string
           details?: Json | null
           end_datetime?: string | null
@@ -789,6 +825,8 @@ export type Database = {
       travel_trips: {
         Row: {
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           end_date: string | null
           id: string
           notes: string | null
@@ -799,6 +837,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           end_date?: string | null
           id?: string
           notes?: string | null
@@ -809,6 +849,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           end_date?: string | null
           id?: string
           notes?: string | null
@@ -896,7 +938,19 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      trash_items: {
+        Row: {
+          created_at: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          id: string | null
+          item_type: string | null
+          owner_id: string | null
+          title: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       deactivate_document_share_links: {

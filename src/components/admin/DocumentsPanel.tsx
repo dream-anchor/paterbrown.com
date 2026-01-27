@@ -142,6 +142,7 @@ const DocumentsPanel = () => {
       const { data, error } = await supabase
         .from("internal_documents")
         .select("*")
+        .is("deleted_at", null)  // Exclude soft-deleted items
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -167,28 +168,26 @@ const DocumentsPanel = () => {
     if (!doc) return;
 
     try {
-      // Delete from storage
-      const { error: storageError } = await supabase.storage
-        .from("internal-documents")
-        .remove([doc.file_path]);
-
-      if (storageError) {
-        console.warn("Storage delete warning:", storageError);
-      }
-
-      // Delete from database
+      // Get current user ID for deleted_by tracking
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Soft delete: set deleted_at instead of hard delete
       const { error: dbError } = await supabase
         .from("internal_documents")
-        .delete()
+        .update({ 
+          deleted_at: new Date().toISOString(),
+          deleted_by: user?.id || null
+        })
         .eq("id", id);
 
       if (dbError) throw dbError;
 
+      // Remove from local state (it's now in trash)
       setDocuments(prev => prev.filter(d => d.id !== id));
       
       toast({
-        title: "Dokument gelöscht",
-        description: `"${doc.name}" wurde erfolgreich gelöscht.`,
+        title: "In Papierkorb verschoben",
+        description: `"${doc.name}" kann 90 Tage lang wiederhergestellt werden.`,
       });
     } catch (error) {
       console.error("Error deleting document:", error);

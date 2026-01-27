@@ -14,8 +14,9 @@ import BottomNav from "@/components/admin/BottomNav";
 import DocumentsPanel from "@/components/admin/DocumentsPanel";
 import PicksPanel from "@/components/admin/PicksPanel";
 import SettingsPanel from "@/components/admin/SettingsPanel";
+import TrashPanel from "@/components/admin/TrashPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, MapPin, Plane, CloudDownload, Heart, Sparkles } from "lucide-react";
+import { CalendarDays, MapPin, Plane, CloudDownload, Heart, Sparkles, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface AdminEvent {
@@ -200,9 +201,9 @@ const Admin = () => {
   const fetchEvents = async () => {
     try {
       const [eventsRes, bookingsRes, calEventsRes] = await Promise.all([
-        supabase.from("admin_events").select("*").order("start_time", { ascending: true }),
-        supabase.from("travel_bookings").select("*").order("start_datetime"),
-        supabase.from("calendar_events").select("*").order("start_datetime"),
+        supabase.from("admin_events").select("*").is("deleted_at", null).order("start_time", { ascending: true }),
+        supabase.from("travel_bookings").select("*").is("deleted_at", null).order("start_datetime"),
+        supabase.from("calendar_events").select("*").is("deleted_at", null).order("start_datetime"),
       ]);
 
       if (eventsRes.error) throw eventsRes.error;
@@ -408,6 +409,13 @@ const Admin = () => {
                 <Heart className="w-4 h-4 mr-2 inline-block" />
                 <span className="hidden sm:inline">Picks</span>
               </TabsTrigger>
+              <TabsTrigger 
+                value="trash" 
+                className="relative px-4 py-2 rounded-full text-sm font-medium text-gray-500 hover:text-gray-700 transition-all duration-200 data-[state=active]:text-gray-900 data-[state=active]:bg-gray-100 data-[state=active]:shadow-sm"
+              >
+                <Trash2 className="w-4 h-4 mr-2 inline-block" />
+                <span className="hidden sm:inline">Trash</span>
+              </TabsTrigger>
             </TabsList>
             
             {/* Search Bar - Now second */}
@@ -446,6 +454,10 @@ const Admin = () => {
 
           <TabsContent value="picks" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
             <PicksPanel />
+          </TabsContent>
+
+          <TabsContent value="trash" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
+            <TrashPanel />
           </TabsContent>
 
           <TabsContent value="settings" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">

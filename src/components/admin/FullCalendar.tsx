@@ -252,9 +252,9 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: F
     setIsLoading(true);
     try {
       const [bookingsRes, eventsRes, calEventsRes] = await Promise.all([
-        supabase.from("travel_bookings").select("*").order("start_datetime"),
-        supabase.from("admin_events").select("*").order("start_time"),
-        supabase.from("calendar_events").select("*").order("start_datetime"),
+        supabase.from("travel_bookings").select("*").is("deleted_at", null).order("start_datetime"),
+        supabase.from("admin_events").select("*").is("deleted_at", null).order("start_time"),
+        supabase.from("calendar_events").select("*").is("deleted_at", null).order("start_datetime"),
       ]);
 
       if (bookingsRes.data) setTravelBookings(bookingsRes.data);

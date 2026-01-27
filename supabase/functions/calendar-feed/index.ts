@@ -20,10 +20,11 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch all events
+    // Fetch all events (excluding soft-deleted)
     const { data: events, error } = await supabase
       .from("admin_events")
       .select("*")
+      .is("deleted_at", null)
       .order("start_time", { ascending: true });
 
     if (error) {

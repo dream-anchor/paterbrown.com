@@ -142,11 +142,13 @@ export const AdminCommandPalette = ({
       supabase
         .from("admin_events")
         .select("id, title, location, start_time, source")
+        .is("deleted_at", null)
         .order("start_time", { ascending: true })
         .limit(50),
       supabase
         .from("travel_bookings")
         .select("id, booking_type, destination_city, origin_city, start_datetime, provider")
+        .is("deleted_at", null)
         .order("start_datetime", { ascending: true })
         .limit(50),
     ]);

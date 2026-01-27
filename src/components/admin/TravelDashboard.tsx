@@ -148,6 +148,7 @@ export default function TravelDashboard() {
       let query = supabase
         .from("travel_bookings")
         .select("*")
+        .is("deleted_at", null)  // Exclude soft-deleted items
         .order("start_datetime", { ascending: true });
       
       // Only limit to recent bookings if not showing past

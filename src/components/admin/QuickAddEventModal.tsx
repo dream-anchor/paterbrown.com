@@ -128,6 +128,7 @@ const QuickAddEventModal = ({ open, onClose, date, onEventAdded }: QuickAddEvent
       const { data } = await supabase
         .from("calendar_events")
         .select("id, title, location, start_datetime, event_type, tour_source, event_status")
+        .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(5);
       
