@@ -95,14 +95,25 @@ const FitBoundsToMarkers = ({
   useEffect(() => {
     if (coords.length > 0) {
       const bounds = L.latLngBounds(coords);
+
+      const getTightPadding = () => {
+        // Goal: show all cities, but keep the margins tight so the route fills the viewport.
+        // Use dynamic padding so it behaves consistently across mobile/desktop sizes.
+        const size = map.getSize();
+        const padX = Math.max(10, Math.round(size.x * 0.02));
+        const padY = Math.max(8, Math.round(size.y * 0.015));
+        return [padX, padY] as [number, number];
+      };
+
       // Delay slightly so Leaflet has the correct container size on mobile.
       // Without this, fitBounds can calculate with a too-small width (gray area issue)
       // and ends up zooming way too far out.
       const t = window.setTimeout(() => {
         map.invalidateSize();
         map.fitBounds(bounds, {
-          padding: [40, 40],
-          maxZoom: 8,
+          padding: getTightPadding(),
+          // Allow closer framing for filtered subsets while still keeping all cities visible.
+          maxZoom: 10,
         });
       }, 200);
 
