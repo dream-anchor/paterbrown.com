@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
   ChevronRight,
@@ -25,6 +26,7 @@ import {
   List,
   Download,
   FileUp,
+  Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -50,6 +52,7 @@ import EventUploader from "./EventUploader";
 import SwipeableCard from "./SwipeableCard";
 import MobileAgendaView from "./MobileAgendaView";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
@@ -503,8 +506,24 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: F
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+      <div className="flex items-center justify-center py-20">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="relative">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-xl shadow-amber-500/30">
+              <Calendar className="w-8 h-8 text-white" />
+            </div>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              className="absolute -inset-1 border-2 border-amber-500/30 border-t-amber-500 rounded-2xl"
+            />
+          </div>
+          <span className="text-sm text-gray-500 font-medium">Lade Kalender...</span>
+        </motion.div>
       </div>
     );
   }
@@ -539,31 +558,38 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: F
     };
 
     return (
-      <div
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -2, scale: 1.01 }}
+        transition={{ duration: 0.2 }}
         onClick={() => handleEventClick(entry)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className={`
-          relative p-4 rounded-xl border transition-all duration-200 cursor-pointer
-          ${isPast 
+        className={cn(
+          "relative p-4 rounded-2xl border cursor-pointer transition-all duration-300",
+          isPast 
             ? "bg-gray-50 border-gray-200" 
-            : "bg-white border-gray-200 hover:shadow-md hover:scale-[1.01]"
-          }
-        `}
+            : "bg-white border-gray-200/60 hover:border-amber-300/50 hover:shadow-xl hover:shadow-amber-500/10"
+        )}
       >
         {/* Source Icon - links oben */}
         <div className="absolute top-3 left-3 flex items-center gap-1">
-          <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-white text-[10px] font-bold ${entry.color} ${entry.isOptioned ? "opacity-60" : ""}`}>
-            {entry.metadata?.source === "KL" ? "KL" : entry.metadata?.source === "KBA" ? "KBA" : <Icon className="w-3.5 h-3.5" />}
+          <div className={cn(
+            "w-10 h-10 rounded-xl flex items-center justify-center text-white text-xs font-bold shadow-lg",
+            entry.color,
+            entry.isOptioned && "opacity-60"
+          )}>
+            {entry.metadata?.source === "KL" ? "KL" : entry.metadata?.source === "KBA" ? "KBA" : <Icon className="w-5 h-5" />}
           </div>
-          {/* Optioniert Badge */}
+          {/* Premium Optioniert Badge with glassmorphism */}
           {entry.isOptioned && (
-            <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-orange-100 text-orange-700 border border-orange-200">
+            <span className="px-2 py-0.5 text-[9px] font-semibold rounded-full bg-orange-100/80 backdrop-blur-sm text-orange-700 border border-orange-200/50">
               Optioniert
             </span>
           )}
           {entry.isCancelled && (
-            <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-red-100 text-red-700 border border-red-200">
+            <span className="px-2 py-0.5 text-[9px] font-semibold rounded-full bg-gray-100/80 backdrop-blur-sm text-gray-600 border border-gray-200/50">
               Abgesagt
             </span>
           )}
@@ -636,7 +662,7 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: F
             </p>
           )}
         </div>
-      </div>
+      </motion.div>
     );
   };
 
@@ -788,11 +814,15 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: F
 
       {/* Calendar Grid View - Hidden on mobile, show Agenda instead */}
       {viewMode === "calendar" && !isMobile && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-          {/* Day Names Header */}
-          <div className="grid grid-cols-7 border-b border-gray-100">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl border border-gray-200/60 overflow-hidden shadow-lg shadow-gray-200/50"
+        >
+          {/* Premium Day Names Header */}
+          <div className="grid grid-cols-7 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
             {dayNames.map((day) => (
-              <div key={day} className="text-center text-xs font-medium text-gray-500 uppercase tracking-wider py-3 bg-gray-50/50">
+              <div key={day} className="text-center text-xs font-semibold text-gray-600 uppercase tracking-wider py-3">
                 {day}
               </div>
             ))}
@@ -876,7 +906,7 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: F
               );
             })}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Mobile Agenda View - Shows when calendar mode is selected on mobile */}
@@ -923,41 +953,46 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: F
         />
       )}
 
-      {/* Legend */}
-      <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500">
+      {/* Premium Legend with glassmorphism */}
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-600 py-4 px-4 bg-gray-50/50 backdrop-blur-sm rounded-2xl border border-gray-200/60"
+      >
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-blue-500" />
-          <span>Reisen</span>
+          <span className="w-4 h-4 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 shadow-sm" />
+          <span className="font-medium">Reisen</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-yellow-500" />
-          <span>Tour (Landgraf)</span>
+          <span className="w-4 h-4 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-500 shadow-sm" />
+          <span className="font-medium">Landgraf (KL)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-emerald-500" />
-          <span>Tour (KBA)</span>
+          <span className="w-4 h-4 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-sm" />
+          <span className="font-medium">KBA</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-orange-500" />
-          <span>Optioniert</span>
+          <span className="w-4 h-4 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 shadow-sm border border-dashed border-orange-300" />
+          <span className="font-medium">Optioniert</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-red-600" />
-          <span>Theater</span>
+          <span className="w-4 h-4 rounded-lg bg-gradient-to-br from-red-500 to-red-700 shadow-sm" />
+          <span className="font-medium">Theater</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-purple-500" />
-          <span>Dreh</span>
+          <span className="w-4 h-4 rounded-lg bg-gradient-to-br from-purple-400 to-purple-600 shadow-sm" />
+          <span className="font-medium">Dreh</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-amber-500" />
-          <span>Meeting</span>
+          <span className="w-4 h-4 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 shadow-sm" />
+          <span className="font-medium">Meeting</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-green-500" />
-          <span>Privat</span>
+          <span className="w-4 h-4 rounded-lg bg-gradient-to-br from-green-400 to-green-600 shadow-sm" />
+          <span className="font-medium">Privat</span>
         </div>
-      </div>
+      </motion.div>
 
       {/* Quick Add Modal */}
       <QuickAddEventModal
