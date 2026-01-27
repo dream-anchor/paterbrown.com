@@ -193,16 +193,39 @@ serve(async (req) => {
     const timetableUrl = `${DB_API_BASE}/plan/${evaNumber}/${dateStr}/${hourStr}`;
     console.log('Fetching timetable:', timetableUrl);
 
-    const timetableResponse = await fetch(timetableUrl, {
-      headers: {
-        'DB-Api-Key': dbApiKey,
-        'DB-Client-Id': dbClientId,
-        'Accept': 'application/xml'
-      }
-    });
+    let timetableResponse: Response;
+    try {
+      timetableResponse = await fetch(timetableUrl, {
+        headers: {
+          'DB-Api-Key': dbApiKey,
+          'DB-Client-Id': dbClientId,
+          'Accept': 'application/xml'
+        }
+      });
+    } catch (fetchError) {
+      console.error('Timetable fetch error:', fetchError);
+      return new Response(JSON.stringify({
+        error: 'Network error fetching timetable',
+        status: {
+          train_found: false,
+          status_message: 'Netzwerkfehler beim Abrufen',
+          status_level: 'warning'
+        } as Partial<TrainStatus>
+      }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Timetable response status:', timetableResponse.status);
 
     if (!timetableResponse.ok) {
-      const errorText = await timetableResponse.text();
+      let errorText = '';
+      try {
+        errorText = await timetableResponse.text();
+      } catch (e) {
+        errorText = 'Could not read error response';
+      }
       console.error('Timetable API error:', timetableResponse.status, errorText);
       
       return new Response(JSON.stringify({
@@ -218,8 +241,46 @@ serve(async (req) => {
       });
     }
 
-    const timetableXml = await timetableResponse.text();
+    let timetableXml = '';
+    try {
+      timetableXml = await timetableResponse.text();
+    } catch (textError) {
+      console.error('Error reading timetable response body:', textError);
+      return new Response(JSON.stringify({
+        error: 'Error reading API response',
+        status: {
+          train_found: false,
+          status_message: 'Antwort konnte nicht gelesen werden',
+          status_level: 'warning'
+        } as Partial<TrainStatus>
+      }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
     console.log('Timetable response length:', timetableXml.length);
+    
+    if (!timetableXml || timetableXml.length === 0) {
+      console.log('Empty timetable response from DB API');
+      return new Response(JSON.stringify({
+        status: {
+          train_found: false,
+          delay_departure_minutes: null,
+          delay_arrival_minutes: null,
+          planned_platform: null,
+          actual_platform: null,
+          platform_changed: false,
+          is_cancelled: false,
+          next_stop: null,
+          status_message: 'Keine Fahrplandaten verfügbar',
+          status_level: 'warning',
+          last_updated: new Date().toISOString()
+        } as TrainStatus
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Find our train in the timetable
     const trainInfo = findTrainInTimetable(timetableXml, train_number);
