@@ -331,10 +331,17 @@ export default function TravelEmailInbox({ onEmailProcessed }: Props) {
     const attachments: EmailAttachment[] = [];
     if (email.attachment_urls) {
       if (Array.isArray(email.attachment_urls)) {
-        email.attachment_urls.forEach((url: string, index: number) => {
+        email.attachment_urls.forEach((item: unknown, index: number) => {
+          // Handle both string URLs and object formats
+          let fileName = `Anhang ${index + 1}`;
+          if (typeof item === 'string') {
+            fileName = item.split('/').pop() || fileName;
+          } else if (item && typeof item === 'object' && 'name' in item) {
+            fileName = String((item as { name: string }).name);
+          }
           attachments.push({
             id: `${email.id}-${index}`,
-            file_name: url.split('/').pop() || `Anhang ${index + 1}`,
+            file_name: fileName,
             content_type: null,
           });
         });
