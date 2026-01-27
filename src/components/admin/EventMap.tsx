@@ -898,7 +898,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex-shrink-0 p-3 md:p-4 border-b border-gray-200/60 bg-white/80 backdrop-blur-xl"
+        className="flex-shrink-0 p-3 md:p-4 border-b border-gray-200/60 bg-white"
       >
         {/* Missing Geodata Warning - Premium Card */}
         {eventsWithMissingGeodata.length > 0 && (
