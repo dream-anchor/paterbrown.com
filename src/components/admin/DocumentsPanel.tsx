@@ -3,10 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, CloudDownload, RefreshCw, Upload, Image, FileText, 
   Table, Presentation, Archive, File, Sparkles, FolderOpen,
-  CheckSquare, Square, Link, X
+  CheckSquare, X, Link
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import DocumentCard from "./DocumentCard";
@@ -54,7 +53,20 @@ const DocumentsPanel = () => {
   const [pageDragActive, setPageDragActive] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [showBulkShareDialog, setShowBulkShareDialog] = useState(false);
+
+  // Toggle selection for a document
+  const toggleSelection = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
 
   // Group documents by file type
   const groupedDocuments = useMemo(() => {
@@ -284,33 +296,16 @@ const DocumentsPanel = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {/* Selection Mode Toggle */}
-            {documents.length > 0 && (
+            {/* Clear Selection Button - only when items selected */}
+            {selectedIds.size > 0 && (
               <Button
-                variant={isSelectionMode ? "default" : "outline"}
+                variant="outline"
                 size="sm"
-                onClick={() => {
-                  setIsSelectionMode(!isSelectionMode);
-                  if (isSelectionMode) setSelectedIds(new Set());
-                }}
-                className={cn(
-                  "h-10 rounded-xl",
-                  isSelectionMode 
-                    ? "bg-slate-800 hover:bg-slate-900 text-white" 
-                    : "bg-white hover:bg-gray-50 text-gray-700 border-gray-200"
-                )}
+                onClick={() => setSelectedIds(new Set())}
+                className="h-10 rounded-xl bg-white hover:bg-gray-50 text-gray-700 border-gray-200"
               >
-                {isSelectionMode ? (
-                  <>
-                    <X className="w-4 h-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Abbrechen</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckSquare className="w-4 h-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Auswählen</span>
-                  </>
-                )}
+                <X className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Auswahl aufheben</span>
               </Button>
             )}
             
@@ -338,43 +333,42 @@ const DocumentsPanel = () => {
           </div>
         </motion.div>
 
-        {/* Selection Action Bar */}
+        {/* Selection Action Bar - Floating at bottom */}
         <AnimatePresence>
-          {isSelectionMode && selectedIds.size > 0 && (
+          {selectedIds.size > 0 && (
             <motion.div
-              initial={{ opacity: 0, y: -10, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: "auto" }}
-              exit={{ opacity: 0, y: -10, height: 0 }}
-              className="overflow-hidden"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40"
             >
-              <div className="flex items-center justify-between gap-3 p-4 bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl border border-slate-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center">
+              <div className="flex items-center gap-3 px-5 py-3 bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
                     <span className="text-white font-bold text-sm">{selectedIds.size}</span>
                   </div>
-                  <div>
-                    <p className="font-medium text-slate-900">
-                      {selectedIds.size} {selectedIds.size === 1 ? "Datei" : "Dateien"} ausgewählt
-                    </p>
-                    <p className="text-xs text-slate-500">Gemeinsamen Link generieren</p>
-                  </div>
+                  <span className="text-white/90 text-sm font-medium hidden sm:block">
+                    {selectedIds.size === 1 ? "Datei" : "Dateien"}
+                  </span>
                 </div>
+                <div className="w-px h-6 bg-white/20" />
                 <Button
                   onClick={() => {
-                    // For now, show toast - multi-file share coming soon
                     toast({
                       title: "Funktion in Entwicklung",
-                      description: "Multi-Datei-Links kommen bald. Für jetzt einzeln teilen.",
+                      description: "Multi-Datei-Links kommen bald.",
                     });
                   }}
+                  size="sm"
                   className={cn(
-                    "h-10 rounded-xl gap-2",
-                    "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700",
+                    "h-9 rounded-xl gap-2",
+                    "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600",
                     "text-white font-medium shadow-lg shadow-amber-500/30"
                   )}
                 >
                   <Link className="w-4 h-4" />
-                  Link für Auswahl
+                  <span className="hidden sm:inline">Link generieren</span>
+                  <span className="sm:hidden">Link</span>
                 </Button>
               </div>
             </motion.div>
@@ -456,39 +450,48 @@ const DocumentsPanel = () => {
                     </div>
                   </div>
                   
-                  {/* Document Cards */}
+                  {/* Document Cards - Clickable for selection */}
                   <div className="space-y-3">
                     {docs.map((doc, index) => (
-                      <div key={doc.id} className="relative">
-                        {/* Selection checkbox overlay */}
-                        {isSelectionMode && (
-                          <div 
-                            className="absolute left-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
-                            onClick={() => {
-                              setSelectedIds(prev => {
-                                const next = new Set(prev);
-                                if (next.has(doc.id)) {
-                                  next.delete(doc.id);
-                                } else {
-                                  next.add(doc.id);
-                                }
-                                return next;
-                              });
-                            }}
-                          >
-                            <div className={cn(
-                              "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
-                              selectedIds.has(doc.id)
-                                ? "bg-slate-800 border-slate-800"
-                                : "bg-white border-slate-300 hover:border-slate-400"
-                            )}>
-                              {selectedIds.has(doc.id) && (
+                      <div 
+                        key={doc.id} 
+                        className="relative group cursor-pointer"
+                        onClick={(e) => {
+                          // Don't toggle selection if clicking on buttons/links inside the card
+                          if ((e.target as HTMLElement).closest('button, a, [role="button"]')) {
+                            return;
+                          }
+                          toggleSelection(doc.id);
+                        }}
+                      >
+                        {/* Selection indicator - left edge */}
+                        <div className={cn(
+                          "absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl transition-all duration-200",
+                          selectedIds.has(doc.id) 
+                            ? "bg-amber-500" 
+                            : "bg-transparent group-hover:bg-gray-200"
+                        )} />
+                        
+                        {/* Selection checkmark - top right */}
+                        <AnimatePresence>
+                          {selectedIds.has(doc.id) && (
+                            <motion.div
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0, opacity: 0 }}
+                              className="absolute -top-2 -right-2 z-10"
+                            >
+                              <div className="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
                                 <CheckSquare className="w-4 h-4 text-white" />
-                              )}
-                            </div>
-                          </div>
-                        )}
-                        <div className={cn(isSelectionMode && "pl-10")}>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                        
+                        <div className={cn(
+                          "transition-all duration-200",
+                          selectedIds.has(doc.id) && "ring-2 ring-amber-500/50 rounded-2xl"
+                        )}>
                           <DocumentCard
                             id={doc.id}
                             name={doc.name}
