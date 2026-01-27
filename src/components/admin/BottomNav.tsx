@@ -1,4 +1,4 @@
-import { CalendarDays, MapPin, Plane, Heart, CloudDownload, Trash2 } from "lucide-react";
+import { CalendarDays, MapPin, Plane, Heart, CloudDownload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { haptics } from "@/lib/haptics";
 
@@ -13,7 +13,6 @@ const navItems = [
   { id: "travel", label: "Trips", icon: Plane },
   { id: "picks", label: "Picks", icon: Heart },
   { id: "documents", label: "Drops", icon: CloudDownload },
-  { id: "trash", label: "Trash", icon: Trash2 },
 ];
 
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {

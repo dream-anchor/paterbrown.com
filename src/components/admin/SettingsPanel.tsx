@@ -1,13 +1,28 @@
 import { useState, useEffect } from "react";
-import { Settings, Eye, EyeOff, Save, CheckCircle2, AlertCircle, Loader2, User, Mail, Phone, AlertTriangle, ArrowRightLeft, ImageIcon } from "lucide-react";
+import { Settings, Eye, EyeOff, Save, CheckCircle2, AlertCircle, Loader2, User, Mail, Phone, AlertTriangle, ArrowRightLeft, ImageIcon, Trash2, RotateCcw, X, Clock, Filter, FolderOpen, Image as ImageLucide, FileText, Train, Plane, MapPin, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { resizeImage, generateFilePaths } from "@/lib/imageResizer";
 import UserManagement from "./UserManagement";
+import { motion, AnimatePresence } from "framer-motion";
+import { formatDistanceToNow, differenceInDays, addDays } from "date-fns";
+import { de } from "date-fns/locale";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 interface R2Credentials {
   endpoint: string;
   accessKeyId: string;
@@ -20,6 +35,50 @@ interface UserProfile {
   email: string;
   phone: string;
 }
+
+// Trash types
+type ItemType = 'album' | 'image' | 'document' | 'booking' | 'trip' | 'calendar_event' | 'admin_event';
+
+interface TrashItem {
+  id: string;
+  item_type: ItemType;
+  title: string;
+  description: string | null;
+  deleted_at: string;
+  deleted_by: string | null;
+  owner_id: string | null;
+  created_at: string;
+}
+
+const TABLE_MAP: Record<ItemType, "picks_folders" | "images" | "internal_documents" | "travel_bookings" | "travel_trips" | "calendar_events" | "admin_events"> = {
+  album: "picks_folders",
+  image: "images",
+  document: "internal_documents",
+  booking: "travel_bookings",
+  trip: "travel_trips",
+  calendar_event: "calendar_events",
+  admin_event: "admin_events",
+};
+
+const TYPE_ICONS: Record<ItemType, React.ElementType> = {
+  album: FolderOpen,
+  image: ImageLucide,
+  document: FileText,
+  booking: Train,
+  trip: Plane,
+  calendar_event: Calendar,
+  admin_event: MapPin,
+};
+
+const TYPE_LABELS: Record<ItemType, string> = {
+  album: "Album",
+  image: "Bild",
+  document: "Dokument",
+  booking: "Buchung",
+  trip: "Reise",
+  calendar_event: "Termin",
+  admin_event: "Event",
+};
 
 interface MigrationStatus {
   isRunning: boolean;
@@ -63,6 +122,16 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
     accessKeyId: false,
     secretAccessKey: false,
   });
+  
+  // Trash state
+  const [trashItems, setTrashItems] = useState<TrashItem[]>([]);
+  const [trashLoading, setTrashLoading] = useState(false);
+  const [selectedTrashItems, setSelectedTrashItems] = useState<Set<string>>(new Set());
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<TrashItem | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
   // Migration state
   const [migration, setMigration] = useState<MigrationStatus>({
@@ -125,6 +194,8 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
           setLoading(false);
           return;
         }
+        
+        setCurrentUserId(user.id);
 
         // Load user profile from traveler_profiles
         const { data: profileData } = await supabase
@@ -184,6 +255,142 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
 
     loadSettings();
   }, [toast, isAdmin]);
+
+  // Fetch trash items
+  const fetchTrashItems = async () => {
+    setTrashLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("trash_items")
+        .select("*")
+        .order("deleted_at", { ascending: false });
+
+      if (error) throw error;
+      const typedData = (data || []).map(item => ({
+        ...item,
+        item_type: item.item_type as ItemType,
+      }));
+      setTrashItems(typedData);
+    } catch (error: any) {
+      console.error("Error fetching trash:", error);
+    } finally {
+      setTrashLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTrashItems();
+  }, []);
+
+  const getDaysRemaining = (deletedAt: string) => {
+    const deleteDate = new Date(deletedAt);
+    const expiryDate = addDays(deleteDate, 90);
+    return Math.max(0, differenceInDays(expiryDate, new Date()));
+  };
+
+  const canManageItem = (item: TrashItem) => {
+    if (isAdmin) return true;
+    if (!item.owner_id) return isAdmin;
+    return item.owner_id === currentUserId;
+  };
+
+  const restoreItem = async (item: TrashItem) => {
+    if (!canManageItem(item)) {
+      toast({ title: "Keine Berechtigung", variant: "destructive" });
+      return;
+    }
+    setIsRestoring(true);
+    try {
+      const tableName = TABLE_MAP[item.item_type];
+      const { error } = await supabase
+        .from(tableName)
+        .update({ deleted_at: null, deleted_by: null })
+        .eq("id", item.id);
+      if (error) throw error;
+      toast({ title: "Wiederhergestellt", description: `"${item.title}" wurde wiederhergestellt` });
+      setTrashItems(prev => prev.filter(i => i.id !== item.id));
+      setSelectedTrashItems(prev => { const next = new Set(prev); next.delete(item.id); return next; });
+    } catch (error: any) {
+      toast({ title: "Fehler", description: error.message, variant: "destructive" });
+    } finally {
+      setIsRestoring(false);
+    }
+  };
+
+  const restoreSelected = async () => {
+    const items = trashItems.filter(item => selectedTrashItems.has(item.id) && canManageItem(item));
+    if (items.length === 0) return;
+    setIsRestoring(true);
+    let count = 0;
+    for (const item of items) {
+      try {
+        const { error } = await supabase.from(TABLE_MAP[item.item_type]).update({ deleted_at: null, deleted_by: null }).eq("id", item.id);
+        if (!error) count++;
+      } catch {}
+    }
+    toast({ title: `${count} Element(e) wiederhergestellt` });
+    setSelectedTrashItems(new Set());
+    fetchTrashItems();
+    setIsRestoring(false);
+  };
+
+  const permanentlyDeleteItem = async (item: TrashItem) => {
+    if (!canManageItem(item)) return;
+    setIsDeleting(true);
+    try {
+      if (item.item_type === "image" || item.item_type === "album") {
+        await supabase.functions.invoke("delete-files", { body: { type: item.item_type === "album" ? "folder" : "image", id: item.id } });
+      }
+      const { error } = await supabase.from(TABLE_MAP[item.item_type]).delete().eq("id", item.id);
+      if (error) throw error;
+      toast({ title: "Endgültig gelöscht" });
+      setTrashItems(prev => prev.filter(i => i.id !== item.id));
+    } catch (error: any) {
+      toast({ title: "Fehler", description: error.message, variant: "destructive" });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+      setDeleteTarget(null);
+    }
+  };
+
+  const deleteSelected = async () => {
+    const items = trashItems.filter(item => selectedTrashItems.has(item.id) && canManageItem(item));
+    if (items.length === 0) return;
+    setIsDeleting(true);
+    let count = 0;
+    for (const item of items) {
+      try {
+        if (item.item_type === "image" || item.item_type === "album") {
+          await supabase.functions.invoke("delete-files", { body: { type: item.item_type === "album" ? "folder" : "image", id: item.id } });
+        }
+        const { error } = await supabase.from(TABLE_MAP[item.item_type]).delete().eq("id", item.id);
+        if (!error) count++;
+      } catch {}
+    }
+    toast({ title: `${count} Element(e) endgültig gelöscht` });
+    setSelectedTrashItems(new Set());
+    setShowDeleteDialog(false);
+    fetchTrashItems();
+    setIsDeleting(false);
+  };
+
+  const toggleTrashSelection = (id: string) => {
+    setSelectedTrashItems(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAllTrash = () => {
+    if (selectedTrashItems.size === trashItems.length) {
+      setSelectedTrashItems(new Set());
+    } else {
+      setSelectedTrashItems(new Set(trashItems.map(i => i.id)));
+    }
+  };
 
   const handleSaveProfile = async () => {
     setSavingProfile(true);
@@ -700,6 +907,195 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
           </div>
         </div>
       </div>
+
+      {/* Papierkorb Card */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-slate-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Papierkorb</h3>
+                <p className="text-sm text-gray-500">
+                  {trashItems.length} Element{trashItems.length !== 1 ? "e" : ""} • 90 Tage Aufbewahrung
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchTrashItems}
+              disabled={trashLoading}
+              className="rounded-xl"
+            >
+              {trashLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+            </Button>
+          </div>
+        </div>
+
+        <div className="px-6 py-5 bg-white">
+          {trashLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+            </div>
+          ) : trashItems.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                <Trash2 className="w-8 h-8 text-slate-300" />
+              </div>
+              <p className="text-sm text-slate-500">Papierkorb ist leer</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Bulk Actions */}
+              <AnimatePresence>
+                {selectedTrashItems.size > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="flex flex-wrap items-center gap-2 pb-3 border-b border-gray-100"
+                  >
+                    <Badge variant="secondary" className="rounded-full">
+                      {selectedTrashItems.size} ausgewählt
+                    </Badge>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={restoreSelected}
+                      disabled={isRestoring}
+                      className="rounded-full gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                    >
+                      {isRestoring ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
+                      Wiederherstellen
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowDeleteDialog(true)}
+                      disabled={isDeleting}
+                      className="rounded-full gap-1.5 border-red-200 text-red-700 hover:bg-red-50"
+                    >
+                      {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
+                      Löschen
+                    </Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Select All */}
+              <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50">
+                <Checkbox
+                  checked={selectedTrashItems.size === trashItems.length && trashItems.length > 0}
+                  onCheckedChange={toggleAllTrash}
+                  className="border-slate-300"
+                />
+                <span className="text-xs text-slate-600">
+                  {selectedTrashItems.size > 0 ? `${selectedTrashItems.size}/${trashItems.length}` : "Alle auswählen"}
+                </span>
+              </div>
+
+              {/* Items */}
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {trashItems.slice(0, 10).map((item) => {
+                  const Icon = TYPE_ICONS[item.item_type] || FileText;
+                  const daysRemaining = getDaysRemaining(item.deleted_at);
+                  const canManage = canManageItem(item);
+                  const isSelected = selectedTrashItems.has(item.id);
+
+                  return (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className={`group flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                        isSelected ? "border-slate-400 bg-slate-50" : "border-slate-200 hover:border-slate-300"
+                      } ${!canManage ? "opacity-60" : ""}`}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => toggleTrashSelection(item.id)}
+                        disabled={!canManage}
+                        className="border-slate-300"
+                      />
+                      <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center">
+                        <Icon className="w-4 h-4 text-slate-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 truncate">{item.title}</p>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                          <span>{TYPE_LABELS[item.item_type]}</span>
+                          <span>•</span>
+                          <span className={daysRemaining <= 7 ? "text-amber-600 font-medium" : ""}>
+                            {daysRemaining}d
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => restoreItem(item)}
+                          disabled={!canManage || isRestoring}
+                          className="h-7 w-7 rounded-full text-emerald-600 hover:bg-emerald-50"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => { setDeleteTarget(item); setShowDeleteDialog(true); }}
+                          disabled={!canManage || isDeleting}
+                          className="h-7 w-7 rounded-full text-red-600 hover:bg-red-50"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+                {trashItems.length > 10 && (
+                  <p className="text-xs text-center text-slate-400 pt-2">
+                    + {trashItems.length - 10} weitere Elemente
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="bg-white rounded-2xl">
+          <AlertDialogHeader>
+            <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center mb-2">
+              <AlertTriangle className="w-6 h-6 text-red-600" />
+            </div>
+            <AlertDialogTitle className="text-slate-900">
+              {deleteTarget ? "Endgültig löschen?" : `${selectedTrashItems.size} Elemente löschen?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-500">
+              {deleteTarget
+                ? `"${deleteTarget.title}" wird dauerhaft gelöscht.`
+                : "Die ausgewählten Elemente werden dauerhaft gelöscht."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-full">Abbrechen</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget ? permanentlyDeleteItem(deleteTarget) : deleteSelected()}
+              disabled={isDeleting}
+              className="rounded-full bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              Endgültig löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* User Management - Admin only */}
       {isAdmin && <UserManagement />}
