@@ -96,12 +96,13 @@ const PicksPanel = () => {
   const [newAlbumPhotographerPhone, setNewAlbumPhotographerPhone] = useState("");
   const [isCreatingAlbum, setIsCreatingAlbum] = useState(false);
 
-  // Edit photographer dialog
-  const [showEditPhotographerDialog, setShowEditPhotographerDialog] = useState(false);
+  // Edit album dialog
+  const [showEditAlbumDialog, setShowEditAlbumDialog] = useState(false);
+  const [editAlbumName, setEditAlbumName] = useState("");
   const [editPhotographerName, setEditPhotographerName] = useState("");
   const [editPhotographerEmail, setEditPhotographerEmail] = useState("");
   const [editPhotographerPhone, setEditPhotographerPhone] = useState("");
-  const [isSavingPhotographer, setIsSavingPhotographer] = useState(false);
+  const [isSavingAlbum, setIsSavingAlbum] = useState(false);
 
   // Lightbox state
   const [lightboxImage, setLightboxImage] = useState<ImageData | null>(null);
@@ -368,26 +369,28 @@ const PicksPanel = () => {
     }
   };
 
-  // Open edit photographer dialog
-  const openEditPhotographerDialog = () => {
+  // Open edit album dialog
+  const openEditAlbumDialog = () => {
     const currentAlbum = albums.find((a) => a.id === currentAlbumId);
     if (currentAlbum) {
+      setEditAlbumName(currentAlbum.name);
       setEditPhotographerName(currentAlbum.photographer_name || "");
       setEditPhotographerEmail(currentAlbum.photographer_email || "");
       setEditPhotographerPhone(currentAlbum.photographer_phone || "");
-      setShowEditPhotographerDialog(true);
+      setShowEditAlbumDialog(true);
     }
   };
 
-  // Save photographer info
-  const handleSavePhotographer = async () => {
-    if (!currentAlbumId) return;
+  // Save album info
+  const handleSaveAlbum = async () => {
+    if (!currentAlbumId || !editAlbumName.trim()) return;
     
-    setIsSavingPhotographer(true);
+    setIsSavingAlbum(true);
     try {
       const { data, error } = await supabase
         .from("picks_folders")
         .update({
+          name: editAlbumName.trim(),
           photographer_name: editPhotographerName.trim() || null,
           photographer_email: editPhotographerEmail.trim() || null,
           photographer_phone: editPhotographerPhone.trim() || null,
@@ -399,21 +402,21 @@ const PicksPanel = () => {
       if (error) throw error;
       
       setAlbums((prev) => prev.map((a) => a.id === currentAlbumId ? (data as AlbumData) : a));
-      setShowEditPhotographerDialog(false);
+      setShowEditAlbumDialog(false);
       
       toast({
         title: "Gespeichert",
-        description: "Fotografen-Info wurde aktualisiert",
+        description: "Album wurde aktualisiert",
       });
     } catch (error) {
-      console.error("Error updating photographer:", error);
+      console.error("Error updating album:", error);
       toast({
         title: "Fehler",
         description: "Speichern fehlgeschlagen",
         variant: "destructive",
       });
     } finally {
-      setIsSavingPhotographer(false);
+      setIsSavingAlbum(false);
     }
   };
 
@@ -893,43 +896,29 @@ const PicksPanel = () => {
               Zurück
             </Button>
             
-            {/* Photographer Info Banner */}
+            {/* Album Edit Button - Neutral style like Drops */}
             {(() => {
               const currentAlbum = albums.find((a) => a.id === currentAlbumId);
-              const hasPhotographer = currentAlbum?.photographer_name || currentAlbum?.photographer_email || currentAlbum?.photographer_phone;
+              const hasPhotographer = currentAlbum?.photographer_name;
               
               return (
                 <button
-                  onClick={openEditPhotographerDialog}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
-                    hasPhotographer 
-                      ? "bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 hover:border-amber-300" 
-                      : "bg-gray-50 border border-gray-200 hover:border-gray-300 text-gray-500"
-                  )}
-                  title="Fotografen-Info bearbeiten"
+                  onClick={openEditAlbumDialog}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all bg-slate-50 border border-slate-200 hover:border-slate-300 hover:bg-slate-100"
+                  title="Album bearbeiten"
                 >
-                  <div className={cn(
-                    "flex items-center gap-2",
-                    hasPhotographer ? "text-amber-700" : "text-gray-500"
-                  )}>
+                  <div className="flex items-center gap-2 text-slate-600">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
-                      <circle cx="12" cy="13" r="3"/>
+                      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                      <path d="m15 5 4 4"/>
                     </svg>
-                    <span className="font-medium">
-                      {currentAlbum?.photographer_name || 'Fotograf hinzufügen'}
-                    </span>
+                    <span className="font-medium">Bearbeiten</span>
                   </div>
-                  {hasPhotographer && currentAlbum?.photographer_email && (
-                    <span className="text-gray-500 hidden sm:inline">
-                      {currentAlbum.photographer_email}
+                  {hasPhotographer && (
+                    <span className="text-slate-400 hidden sm:inline text-xs">
+                      📷 {currentAlbum.photographer_name}
                     </span>
                   )}
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-                    <path d="m15 5 4 4"/>
-                  </svg>
                 </button>
               );
             })()}
@@ -1090,66 +1079,88 @@ const PicksPanel = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Edit Photographer Dialog */}
-        <Dialog open={showEditPhotographerDialog} onOpenChange={setShowEditPhotographerDialog}>
+        {/* Edit Album Dialog */}
+        <Dialog open={showEditAlbumDialog} onOpenChange={setShowEditAlbumDialog}>
           <DialogContent className="bg-white sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-gray-900">Fotografen-Info bearbeiten</DialogTitle>
+              <DialogTitle className="text-gray-900">Album bearbeiten</DialogTitle>
             </DialogHeader>
             <div className="py-4 space-y-4">
+              {/* Album Name */}
               <div>
-                <Label htmlFor="edit-photographer-name" className="text-gray-700">
-                  Name
+                <Label htmlFor="edit-album-name" className="text-gray-700">
+                  Albumname *
                 </Label>
                 <Input
-                  id="edit-photographer-name"
-                  value={editPhotographerName}
-                  onChange={(e) => setEditPhotographerName(e.target.value)}
-                  placeholder="z.B. Max Mustermann"
+                  id="edit-album-name"
+                  value={editAlbumName}
+                  onChange={(e) => setEditAlbumName(e.target.value)}
+                  placeholder="z.B. Probefotos"
                   className="mt-2 bg-white border-gray-200 text-gray-900"
                 />
               </div>
-              <div>
-                <Label htmlFor="edit-photographer-email" className="text-gray-700">
-                  E-Mail
-                </Label>
-                <Input
-                  id="edit-photographer-email"
-                  type="email"
-                  value={editPhotographerEmail}
-                  onChange={(e) => setEditPhotographerEmail(e.target.value)}
-                  placeholder="foto@example.de"
-                  className="mt-2 bg-white border-gray-200 text-gray-900"
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-photographer-phone" className="text-gray-700">
-                  Telefon
-                </Label>
-                <Input
-                  id="edit-photographer-phone"
-                  type="tel"
-                  value={editPhotographerPhone}
-                  onChange={(e) => setEditPhotographerPhone(e.target.value)}
-                  placeholder="+49 123 456789"
-                  className="mt-2 bg-white border-gray-200 text-gray-900"
-                />
+              
+              {/* Photographer Section */}
+              <div className="pt-2 border-t border-gray-100">
+                <p className="text-xs text-gray-500 mb-3">Fotograf (optional)</p>
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="edit-photographer-name" className="text-gray-600 text-sm">
+                      Name
+                    </Label>
+                    <Input
+                      id="edit-photographer-name"
+                      value={editPhotographerName}
+                      onChange={(e) => setEditPhotographerName(e.target.value)}
+                      placeholder="z.B. Max Mustermann"
+                      className="mt-1 bg-white border-gray-200 text-gray-900"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="edit-photographer-email" className="text-gray-600 text-sm">
+                        E-Mail
+                      </Label>
+                      <Input
+                        id="edit-photographer-email"
+                        type="email"
+                        value={editPhotographerEmail}
+                        onChange={(e) => setEditPhotographerEmail(e.target.value)}
+                        placeholder="foto@example.de"
+                        className="mt-1 bg-white border-gray-200 text-gray-900"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-photographer-phone" className="text-gray-600 text-sm">
+                        Telefon
+                      </Label>
+                      <Input
+                        id="edit-photographer-phone"
+                        type="tel"
+                        value={editPhotographerPhone}
+                        onChange={(e) => setEditPhotographerPhone(e.target.value)}
+                        placeholder="+49 123 456789"
+                        className="mt-1 bg-white border-gray-200 text-gray-900"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <DialogFooter>
               <Button
                 variant="outline"
-                onClick={() => setShowEditPhotographerDialog(false)}
+                onClick={() => setShowEditAlbumDialog(false)}
                 className="bg-white text-gray-700"
               >
                 Abbrechen
               </Button>
               <Button
-                onClick={handleSavePhotographer}
-                disabled={isSavingPhotographer}
+                onClick={handleSaveAlbum}
+                disabled={!editAlbumName.trim() || isSavingAlbum}
                 className="bg-gray-900 text-white hover:bg-gray-800"
               >
-                {isSavingPhotographer ? (
+                {isSavingAlbum ? (
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 ) : null}
                 Speichern
