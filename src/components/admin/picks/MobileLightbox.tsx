@@ -137,24 +137,24 @@ const MobileLightbox = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black flex flex-col"
+        className="fixed inset-0 z-[9999] bg-black flex flex-col"
       >
-        {/* Header - minimal */}
-        <div className="flex items-center justify-between px-4 py-3 safe-area-top">
+        {/* Header - minimal with safe area */}
+        <div className="flex items-center justify-between px-4 pt-3 pb-2" style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
           <button
             onClick={onClose}
-            className="p-2 -ml-2 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-2.5 -ml-2 rounded-full text-white/90 hover:text-white hover:bg-white/10 transition-colors active:bg-white/20"
           >
             <X className="w-6 h-6" />
           </button>
           
-          <span className="text-white/60 text-sm font-medium">
+          <span className="text-white/70 text-sm font-medium tabular-nums">
             {currentIndex + 1} / {images.length}
           </span>
           
           <button
             onClick={() => onDownload(image)}
-            className="p-2 -mr-2 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-2.5 -mr-2 rounded-full text-white/90 hover:text-white hover:bg-white/10 transition-colors active:bg-white/20"
           >
             <Download className="w-5 h-5" />
           </button>
@@ -190,58 +190,79 @@ const MobileLightbox = ({
           />
         </div>
 
-        {/* Bottom panel - voting and actions */}
+        {/* Bottom panel - voting and actions - ABOVE main nav */}
         <motion.div 
-          className="bg-gray-900/95 backdrop-blur-xl border-t border-white/10 safe-area-bottom"
+          className="bg-gray-900/98 backdrop-blur-2xl border-t border-white/15 shadow-2xl"
           initial={{ y: 100 }}
           animate={{ y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.1, type: "spring", damping: 25 }}
+          style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
         >
-          {/* Vote buttons - horizontal pill style */}
-          <div className="px-4 py-3">
-            <div className="flex items-center justify-center gap-3">
+          {/* Vote label */}
+          <div className="flex items-center justify-center pt-3 pb-1">
+            <span className="text-white/50 text-xs font-medium uppercase tracking-wider">Bewertung</span>
+          </div>
+          
+          {/* Vote buttons - large, clear, touch-friendly */}
+          <div className="px-4 pb-3">
+            <div className="flex items-center justify-center gap-2">
               {voteButtons.map(({ status, icon: Icon, label, activeBg, activeRing }) => (
                 <motion.button
                   key={status}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={{ scale: 0.92 }}
                   onClick={() => {
                     haptics.tap();
                     onVote(image.id, status);
                   }}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all",
+                    "flex-1 flex flex-col items-center justify-center gap-1.5 py-3 px-3 rounded-2xl transition-all min-h-[72px]",
                     currentVote === status
-                      ? cn(activeBg, "text-white shadow-lg ring-2", activeRing)
-                      : "bg-white/10 text-white/80 hover:bg-white/20"
+                      ? cn(activeBg, "text-white shadow-xl ring-2 ring-offset-1 ring-offset-black", activeRing)
+                      : "bg-white/10 text-white/80 hover:bg-white/15 active:bg-white/20"
                   )}
                 >
-                  <Icon className="w-5 h-5" strokeWidth={2} />
-                  <span className="text-sm font-medium hidden xs:inline">{label}</span>
+                  <Icon className="w-6 h-6" strokeWidth={2.5} />
+                  <span className="text-xs font-semibold">{label}</span>
                 </motion.button>
               ))}
             </div>
           </div>
 
-          {/* Team votes toggle */}
-          <button
-            onClick={() => setShowTeamVotes(!showTeamVotes)}
-            className="w-full flex items-center justify-between px-4 py-2 border-t border-white/10 text-white/60 hover:text-white/80 transition-colors"
-          >
-            <div className="flex items-center gap-2">
+          {/* Secondary actions row - Team votes + Delete */}
+          <div className="flex items-center gap-2 px-4 pb-2 border-t border-white/10 pt-2">
+            {/* Team votes toggle */}
+            <button
+              onClick={() => setShowTeamVotes(!showTeamVotes)}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-white/5 text-white/60 hover:text-white/80 hover:bg-white/10 transition-colors"
+            >
               <Users className="w-4 h-4" />
-              <span className="text-sm">Team-Entscheidungen</span>
+              <span className="text-xs font-medium">Team</span>
               {teamVotes.length > 0 && (
-                <span className="bg-white/20 text-white/80 text-xs px-1.5 py-0.5 rounded-full">
+                <span className="bg-white/20 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
                   {teamVotes.length}
                 </span>
               )}
-            </div>
-            {showTeamVotes ? (
-              <ChevronDown className="w-4 h-4" />
-            ) : (
-              <ChevronUp className="w-4 h-4" />
+              {showTeamVotes ? (
+                <ChevronDown className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronUp className="w-3.5 h-3.5" />
+              )}
+            </button>
+            
+            {/* Delete button if allowed */}
+            {canDelete && onDelete && (
+              <button
+                onClick={() => {
+                  haptics.warning();
+                  onDelete(image);
+                }}
+                className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span className="text-xs font-medium">Löschen</span>
+              </button>
             )}
-          </button>
+          </div>
 
           {/* Team votes list - expandable */}
           <AnimatePresence>
@@ -253,19 +274,19 @@ const MobileLightbox = ({
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden border-t border-white/10"
               >
-                <div className="px-4 py-3 max-h-32 overflow-y-auto">
+                <div className="px-4 py-3 max-h-28 overflow-y-auto">
                   {teamVotes.length > 0 ? (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       {teamVotes.map((vote) => (
                         <div 
                           key={vote.id}
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5"
+                          className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg bg-white/5"
                         >
-                          <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white/70 text-xs font-medium">
+                          <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/70 text-[10px] font-medium flex-shrink-0">
                             {getInitials(vote.user_first_name, vote.user_last_name, vote.user_id)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-white/80 text-sm truncate">
+                            <p className="text-white/80 text-xs truncate">
                               {vote.user_display_name || `User ${vote.user_id.slice(0, 6)}...`}
                             </p>
                           </div>
@@ -274,31 +295,14 @@ const MobileLightbox = ({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-white/40 text-sm text-center py-2">
-                      Noch keine Bewertungen von anderen
+                    <p className="text-white/40 text-xs text-center py-1">
+                      Noch keine Team-Bewertungen
                     </p>
                   )}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-
-          {/* Delete button if allowed */}
-          {canDelete && onDelete && (
-            <div className="px-4 py-3 border-t border-white/10">
-              <Button
-                onClick={() => {
-                  haptics.warning();
-                  onDelete(image);
-                }}
-                variant="ghost"
-                className="w-full border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Löschen
-              </Button>
-            </div>
-          )}
         </motion.div>
       </motion.div>
     </AnimatePresence>
