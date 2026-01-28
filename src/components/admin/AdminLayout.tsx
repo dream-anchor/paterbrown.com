@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LogOut, Settings, ChevronDown } from "lucide-react";
+import troupeLogo from "@/assets/troupe-logo.webp";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -66,14 +67,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           {/* Logo / Title - Clickable */}
           <Link 
             to="/admin"
-            className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+            className="flex items-center hover:opacity-80 transition-opacity"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center shadow-md">
-              <span className="text-amber-400 text-sm font-bold tracking-tight">T</span>
-            </div>
-            <span className="text-base font-bold text-gray-900 tracking-tight">
-              Troupe
-            </span>
+            <img 
+              src={troupeLogo} 
+              alt="Troupe" 
+              className="h-8 w-auto"
+            />
           </Link>
           
           {/* User Dropdown Menu - Premium Design */}
