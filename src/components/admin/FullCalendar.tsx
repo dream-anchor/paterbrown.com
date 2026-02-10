@@ -148,10 +148,11 @@ const eventColors: Record<string, { bg: string; text: string; border: string }> 
   flight: { bg: "bg-blue-400", text: "text-blue-700", border: "border-blue-200" },
   hotel: { bg: "bg-blue-600", text: "text-blue-700", border: "border-blue-200" },
   rental_car: { bg: "bg-blue-300", text: "text-blue-700", border: "border-blue-200" },
-  // Tour = Amber (einheitlich für KL + KBA)
-  tour_KL: { bg: "bg-amber-500", text: "text-amber-700", border: "border-amber-200" },
-  tour_KBA: { bg: "bg-amber-500", text: "text-amber-700", border: "border-amber-200" },
-  tour: { bg: "bg-amber-500", text: "text-amber-700", border: "border-amber-200" },
+  // Tour Landgraf (KL) = Orange
+  tour_KL: { bg: "bg-yellow-500", text: "text-yellow-700", border: "border-yellow-200" },
+  // Tour KBA = Grün
+  tour_KBA: { bg: "bg-emerald-500", text: "text-emerald-700", border: "border-emerald-200" },
+  tour: { bg: "bg-gray-500", text: "text-gray-700", border: "border-gray-200" }, // unknown source
   // Optioniert = Orange
   optioniert: { bg: "bg-orange-500", text: "text-orange-700", border: "border-orange-200" },
   theater: { bg: "bg-red-600", text: "text-red-700", border: "border-red-200" },
@@ -964,8 +965,12 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: F
           <span className="font-medium">Reisen</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-4 h-4 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 shadow-sm" />
-          <span className="font-medium">Tour</span>
+          <span className="w-4 h-4 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-500 shadow-sm" />
+          <span className="font-medium">Landgraf (KL)</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-4 h-4 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-sm" />
+          <span className="font-medium">KBA</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-4 h-4 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 shadow-sm border border-dashed border-orange-300" />

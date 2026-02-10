@@ -1,4 +1,6 @@
 import { useMemo, useState, useEffect, useCallback, useRef, type RefObject } from "react";
+import { differenceInDays, format } from "date-fns";
+import { de } from "date-fns/locale";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, Tooltip } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import { motion, AnimatePresence } from "framer-motion";
@@ -202,7 +204,7 @@ const getEventStatus = (startTime: string): EventStatus => {
   return "past";
 };
 
-// Unified tour colors (Amber for all sources)
+// Source-based colors (KL = Orange, KBA = Green)
 const sourceColors = {
   KL: {
     gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
@@ -214,13 +216,13 @@ const sourceColors = {
     shadow: "rgba(245, 158, 11, 0.6)",
   },
   KBA: {
-    gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-    bg: "bg-amber-500",
-    bgLight: "bg-amber-100",
-    text: "text-amber-700",
-    border: "border-amber-500",
-    ring: "ring-amber-200",
-    shadow: "rgba(245, 158, 11, 0.6)",
+    gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+    bg: "bg-emerald-500",
+    bgLight: "bg-emerald-100",
+    text: "text-emerald-700",
+    border: "border-emerald-500",
+    ring: "ring-emerald-200",
+    shadow: "rgba(16, 185, 129, 0.6)",
   },
   unknown: {
     gradient: "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)",
@@ -301,20 +303,46 @@ const createHighlightedSourceIcon = (num: number, source: "KL" | "KBA" | "unknow
   });
 };
 
-// Cluster colors - unified darker amber
+// Cluster colors by source - darker versions
 const clusterColors = {
   KL: {
     gradient: "linear-gradient(135deg, #b45309 0%, #92400e 100%)",
     shadow: "rgba(180, 83, 9, 0.5)",
   },
   KBA: {
-    gradient: "linear-gradient(135deg, #b45309 0%, #92400e 100%)",
-    shadow: "rgba(180, 83, 9, 0.5)",
+    gradient: "linear-gradient(135deg, #047857 0%, #065f46 100%)",
+    shadow: "rgba(4, 120, 87, 0.5)",
   },
   mixed: {
-    gradient: "linear-gradient(135deg, #b45309 0%, #92400e 100%)",
-    shadow: "rgba(180, 83, 9, 0.5)",
+    gradient: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+    shadow: "rgba(99, 102, 241, 0.5)",
   },
+};
+
+// Tour group types and colors
+interface TourGroup {
+  tourNumber: number;
+  events: AdminEvent[];
+  startDate: string;
+  endDate: string;
+}
+
+const tourGroupColors = [
+  { bg: "bg-indigo-500", light: "bg-indigo-50", text: "text-indigo-700", border: "border-l-indigo-400", line: "#6366f1" },
+  { bg: "bg-rose-500", light: "bg-rose-50", text: "text-rose-700", border: "border-l-rose-400", line: "#f43f5e" },
+  { bg: "bg-teal-500", light: "bg-teal-50", text: "text-teal-700", border: "border-l-teal-400", line: "#14b8a6" },
+  { bg: "bg-violet-500", light: "bg-violet-50", text: "text-violet-700", border: "border-l-violet-400", line: "#8b5cf6" },
+  { bg: "bg-sky-500", light: "bg-sky-50", text: "text-sky-700", border: "border-l-sky-400", line: "#0ea5e9" },
+  { bg: "bg-pink-500", light: "bg-pink-50", text: "text-pink-700", border: "border-l-pink-400", line: "#ec4899" },
+];
+
+const formatTourDateRange = (startDate: string, endDate: string) => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (start.getMonth() === end.getMonth()) {
+    return `${format(start, "d.", { locale: de })}–${format(end, "d. MMM", { locale: de })}`;
+  }
+  return `${format(start, "d. MMM", { locale: de })} – ${format(end, "d. MMM", { locale: de })}`;
 };
 
 // Convert number to Roman numerals (for cluster markers)
@@ -578,6 +606,55 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
       );
   }, [events, selectedYear, selectedSource, showUpcomingOnly, dateRangeValue]);
 
+  // Group events into tours (a tour = consecutive events with <= 2 day gaps)
+  const tourGroups = useMemo(() => {
+    if (sortedEvents.length === 0) return [];
+    const groups: TourGroup[] = [];
+    let currentGroup: AdminEvent[] = [];
+    let tourNumber = 1;
+
+    sortedEvents.forEach((event, index) => {
+      currentGroup.push(event);
+      const nextEvent = sortedEvents[index + 1];
+      if (nextEvent) {
+        const gapDays = differenceInDays(
+          new Date(nextEvent.start_time),
+          new Date(event.start_time)
+        );
+        if (gapDays > 2) {
+          groups.push({
+            tourNumber,
+            events: [...currentGroup],
+            startDate: currentGroup[0].start_time,
+            endDate: currentGroup[currentGroup.length - 1].start_time,
+          });
+          tourNumber++;
+          currentGroup = [];
+        }
+      } else {
+        groups.push({
+          tourNumber,
+          events: [...currentGroup],
+          startDate: currentGroup[0].start_time,
+          endDate: currentGroup[currentGroup.length - 1].start_time,
+        });
+      }
+    });
+    return groups;
+  }, [sortedEvents]);
+
+  // Build a map from event ID to its global station index (across all tour groups)
+  const eventGlobalIndex = useMemo(() => {
+    const map = new Map<string, number>();
+    let idx = 0;
+    tourGroups.forEach(group => {
+      group.events.forEach(event => {
+        map.set(event.id, idx);
+        idx++;
+      });
+    });
+    return map;
+  }, [tourGroups]);
 
   // Get coordinates for an event
   const getCoordinates = (event: AdminEvent): [number, number] | null => {
@@ -1144,16 +1221,23 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               
-              {/* Route line - dashed journey visualization */}
-              {routeCoords.length > 1 && (
-                <Polyline
-                  positions={routeCoords}
-                  color="#6366f1"
-                  weight={3}
-                  opacity={0.7}
-                  dashArray="10, 6"
-                />
-              )}
+              {/* Route lines per tour group - colored to match brackets */}
+              {tourGroups.map((group) => {
+                const coords = group.events
+                  .map(e => getCoordinates(e))
+                  .filter((c): c is [number, number] => c !== null);
+                const lineColor = tourGroupColors[(group.tourNumber - 1) % tourGroupColors.length].line;
+                return coords.length > 1 ? (
+                  <Polyline
+                    key={`tour-${group.tourNumber}`}
+                    positions={coords}
+                    color={lineColor}
+                    weight={3}
+                    opacity={0.7}
+                    dashArray="10, 6"
+                  />
+                ) : null;
+              })}
               
               {/* Markers with optional clustering */}
               {enableClustering ? (
@@ -1347,12 +1431,22 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           <div className="flex-shrink-0 flex items-center justify-center gap-4 text-xs text-gray-500 py-3 bg-gray-50 border-t border-gray-200">
             <div className="flex items-center gap-1.5">
               <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
-              <span>Pater Brown Tour</span>
+              <span>Landgraf (KL)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-6 h-0.5 bg-indigo-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #6366f1 0px, #6366f1 6px, transparent 6px, transparent 12px)' }}></div>
-              <span>Route</span>
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
+              <span>Konzertbüro Augsburg (KBA)</span>
             </div>
+            {tourGroups.length > 1 && (
+              <div className="flex items-center gap-1.5">
+                <div className="flex gap-0.5">
+                  {tourGroups.slice(0, 4).map((g) => (
+                    <div key={g.tourNumber} className="w-4 h-0.5 rounded-full" style={{ backgroundColor: tourGroupColors[(g.tourNumber - 1) % tourGroupColors.length].line }} />
+                  ))}
+                </div>
+                <span>{tourGroups.length} Touren</span>
+              </div>
+            )}
             {eventsWithCoords.length > 1 && (
               <>
                 <span className="text-gray-300">|</span>
@@ -1411,7 +1505,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900">Alle Stationen</h3>
-                    <p className="text-xs text-gray-500">{sortedEvents.length} Termine auf der Tour</p>
+                    <p className="text-xs text-gray-500">{sortedEvents.length} Termine · {tourGroups.length} {tourGroups.length === 1 ? "Tour" : "Touren"}</p>
                   </div>
                 </div>
                 {isLoadingDistances && (
@@ -1424,35 +1518,66 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
             )}
           </motion.div>
           
-          {/* Premium Station Cards */}
+          {/* Tour-Grouped Station Cards */}
           <AnimatePresence mode="popLayout">
-            <div className="space-y-1">
-              {sortedEvents.map((event, index) => {
-                const nextEvent = sortedEvents[index + 1];
-                const distanceInfo = nextEvent ? getDistanceToNext(event.id, nextEvent.id) : null;
-                const status = getEventStatus(event.start_time);
-                
+            <div className="space-y-4">
+              {tourGroups.map((group) => {
+                const color = tourGroupColors[(group.tourNumber - 1) % tourGroupColors.length];
                 return (
-                  <TourStationCard
-                    key={event.id}
-                    event={event}
-                    index={index}
-                    isActive={activeEventId === event.id}
-                    status={status}
-                    distanceInfo={distanceInfo}
-                    isLoadingDistances={isLoadingDistances}
-                    hasNextEvent={!!nextEvent}
-                    nextEventStartTime={nextEvent?.start_time}
-                    onSelect={(evt, isAlreadyActive) => {
-                      if (isAlreadyActive) {
-                        setSelectedEventDetail(evt);
-                      } else {
-                        handleStationHover(evt.id);
-                        setFlyToCoords(null);
-                      }
-                    }}
-                    isMobile={isMobile}
-                  />
+                  <div key={group.tourNumber}>
+                    {/* Tour Header */}
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className={cn("flex items-center gap-2 px-3 py-2 rounded-xl mb-2", color.light)}
+                    >
+                      <div className={cn("w-6 h-6 rounded-lg text-white text-xs font-bold flex items-center justify-center", color.bg)}>
+                        {group.tourNumber}
+                      </div>
+                      <span className={cn("text-xs font-semibold", color.text)}>
+                        Tour {group.tourNumber}
+                      </span>
+                      <span className="text-[10px] text-gray-400 ml-1">
+                        {group.events.length} {group.events.length === 1 ? "Station" : "Stationen"}
+                      </span>
+                      <span className="text-xs text-gray-400 ml-auto">
+                        {formatTourDateRange(group.startDate, group.endDate)}
+                      </span>
+                    </motion.div>
+
+                    {/* Station Cards with left border */}
+                    <div className={cn("border-l-2 pl-2 ml-3 space-y-1", color.border)}>
+                      {group.events.map((event, localIndex) => {
+                        const globalIdx = eventGlobalIndex.get(event.id) ?? localIndex;
+                        const nextEventInGroup = group.events[localIndex + 1];
+                        const distanceInfo = nextEventInGroup ? getDistanceToNext(event.id, nextEventInGroup.id) : null;
+                        const status = getEventStatus(event.start_time);
+
+                        return (
+                          <TourStationCard
+                            key={event.id}
+                            event={event}
+                            index={globalIdx}
+                            isActive={activeEventId === event.id}
+                            status={status}
+                            distanceInfo={distanceInfo}
+                            isLoadingDistances={isLoadingDistances}
+                            hasNextEvent={!!nextEventInGroup}
+                            nextEventStartTime={nextEventInGroup?.start_time}
+                            onSelect={(evt, isAlreadyActive) => {
+                              if (isAlreadyActive) {
+                                setSelectedEventDetail(evt);
+                              } else {
+                                handleStationHover(evt.id);
+                                setFlyToCoords(null);
+                              }
+                            }}
+                            isMobile={isMobile}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
 
