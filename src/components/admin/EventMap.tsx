@@ -346,12 +346,22 @@ interface TourGroup {
 }
 
 const tourGroupColors = [
-  { bg: "bg-indigo-500", light: "bg-indigo-50", text: "text-indigo-700", border: "border-l-indigo-400", line: "#6366f1", gradient: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)", shadow: "rgba(99, 102, 241, 0.6)", from: "from-indigo-500", to: "to-indigo-600", cardBorder: "border-indigo-400", ring: "ring-indigo-200", cardShadow: "shadow-indigo-500/20" },
-  { bg: "bg-rose-500", light: "bg-rose-50", text: "text-rose-700", border: "border-l-rose-400", line: "#f43f5e", gradient: "linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)", shadow: "rgba(244, 63, 94, 0.6)", from: "from-rose-500", to: "to-rose-600", cardBorder: "border-rose-400", ring: "ring-rose-200", cardShadow: "shadow-rose-500/20" },
-  { bg: "bg-teal-500", light: "bg-teal-50", text: "text-teal-700", border: "border-l-teal-400", line: "#14b8a6", gradient: "linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)", shadow: "rgba(20, 184, 166, 0.6)", from: "from-teal-500", to: "to-teal-600", cardBorder: "border-teal-400", ring: "ring-teal-200", cardShadow: "shadow-teal-500/20" },
-  { bg: "bg-violet-500", light: "bg-violet-50", text: "text-violet-700", border: "border-l-violet-400", line: "#8b5cf6", gradient: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", shadow: "rgba(139, 92, 246, 0.6)", from: "from-violet-500", to: "to-violet-600", cardBorder: "border-violet-400", ring: "ring-violet-200", cardShadow: "shadow-violet-500/20" },
-  { bg: "bg-sky-500", light: "bg-sky-50", text: "text-sky-700", border: "border-l-sky-400", line: "#0ea5e9", gradient: "linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)", shadow: "rgba(14, 165, 233, 0.6)", from: "from-sky-500", to: "to-sky-600", cardBorder: "border-sky-400", ring: "ring-sky-200", cardShadow: "shadow-sky-500/20" },
-  { bg: "bg-pink-500", light: "bg-pink-50", text: "text-pink-700", border: "border-l-pink-400", line: "#ec4899", gradient: "linear-gradient(135deg, #ec4899 0%, #db2777 100%)", shadow: "rgba(236, 72, 153, 0.6)", from: "from-pink-500", to: "to-pink-600", cardBorder: "border-pink-400", ring: "ring-pink-200", cardShadow: "shadow-pink-500/20" },
+  // 1: Blue - clearly blue, far from amber/emerald
+  { bg: "bg-blue-600", light: "bg-blue-50", text: "text-blue-700", border: "border-l-blue-500", line: "#2563eb", gradient: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)", shadow: "rgba(37, 99, 235, 0.6)", from: "from-blue-600", to: "to-blue-700", cardBorder: "border-blue-500", ring: "ring-blue-200", cardShadow: "shadow-blue-600/20" },
+  // 2: Red - unmistakable red
+  { bg: "bg-red-500", light: "bg-red-50", text: "text-red-700", border: "border-l-red-500", line: "#ef4444", gradient: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", shadow: "rgba(239, 68, 68, 0.6)", from: "from-red-500", to: "to-red-600", cardBorder: "border-red-500", ring: "ring-red-200", cardShadow: "shadow-red-500/20" },
+  // 3: Purple - rich purple, far from blue
+  { bg: "bg-purple-600", light: "bg-purple-50", text: "text-purple-700", border: "border-l-purple-500", line: "#9333ea", gradient: "linear-gradient(135deg, #9333ea 0%, #7e22ce 100%)", shadow: "rgba(147, 51, 234, 0.6)", from: "from-purple-600", to: "to-purple-700", cardBorder: "border-purple-500", ring: "ring-purple-200", cardShadow: "shadow-purple-600/20" },
+  // 4: Cyan/Teal - distinct from blue
+  { bg: "bg-cyan-600", light: "bg-cyan-50", text: "text-cyan-700", border: "border-l-cyan-500", line: "#0891b2", gradient: "linear-gradient(135deg, #0891b2 0%, #0e7490 100%)", shadow: "rgba(8, 145, 178, 0.6)", from: "from-cyan-600", to: "to-cyan-700", cardBorder: "border-cyan-500", ring: "ring-cyan-200", cardShadow: "shadow-cyan-600/20" },
+  // 5: Fuchsia/Magenta - hot pink, far from red
+  { bg: "bg-fuchsia-500", light: "bg-fuchsia-50", text: "text-fuchsia-700", border: "border-l-fuchsia-500", line: "#d946ef", gradient: "linear-gradient(135deg, #d946ef 0%, #c026d3 100%)", shadow: "rgba(217, 70, 239, 0.6)", from: "from-fuchsia-500", to: "to-fuchsia-600", cardBorder: "border-fuchsia-500", ring: "ring-fuchsia-200", cardShadow: "shadow-fuchsia-500/20" },
+  // 6: Slate - neutral dark, clearly different
+  { bg: "bg-slate-600", light: "bg-slate-100", text: "text-slate-700", border: "border-l-slate-500", line: "#475569", gradient: "linear-gradient(135deg, #475569 0%, #334155 100%)", shadow: "rgba(71, 85, 105, 0.6)", from: "from-slate-600", to: "to-slate-700", cardBorder: "border-slate-500", ring: "ring-slate-200", cardShadow: "shadow-slate-600/20" },
+  // 7: Lime - yellow-green, distinct from emerald source ring
+  { bg: "bg-lime-600", light: "bg-lime-50", text: "text-lime-700", border: "border-l-lime-500", line: "#65a30d", gradient: "linear-gradient(135deg, #65a30d 0%, #4d7c0f 100%)", shadow: "rgba(101, 163, 13, 0.6)", from: "from-lime-600", to: "to-lime-700", cardBorder: "border-lime-500", ring: "ring-lime-200", cardShadow: "shadow-lime-600/20" },
+  // 8: Rose - warm rose, between red and pink
+  { bg: "bg-rose-500", light: "bg-rose-50", text: "text-rose-700", border: "border-l-rose-500", line: "#f43f5e", gradient: "linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)", shadow: "rgba(244, 63, 94, 0.6)", from: "from-rose-500", to: "to-rose-600", cardBorder: "border-rose-500", ring: "ring-rose-200", cardShadow: "shadow-rose-500/20" },
 ];
 
 const formatTourDateRange = (startDate: string, endDate: string) => {
@@ -559,6 +569,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
   const [selectedEventDetail, setSelectedEventDetail] = useState<AdminEvent | null>(null);
   const [flyToCoords, setFlyToCoords] = useState<[number, number] | null>(null);
   const [editingEvent, setEditingEvent] = useState<UniversalEvent | null>(null);
+  const [visibleTours, setVisibleTours] = useState<Set<number> | "all">("all");
   const clusterGroupRef = useRef<any>(null);
   const markerRefs = useRef<Map<string, L.Marker>>(new Map());
   const mapViewportRef = useRef<HTMLDivElement>(null);
@@ -685,6 +696,11 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
     return map;
   }, [tourGroups]);
 
+  // Reset tour filter when tour groups change (e.g. year/source filter change)
+  useEffect(() => {
+    setVisibleTours("all");
+  }, [tourGroups.length]);
+
   // Get coordinates for an event
   const getCoordinates = (event: AdminEvent): [number, number] | null => {
     if (event.latitude && event.longitude) {
@@ -726,6 +742,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           coords: getCoordinates(event),
           stationNumber: index + 1,
           status: getEventStatus(event.start_time),
+          tourNumber: tn ?? 0,
           tourColor: tn
             ? tourGroupColors[(tn - 1) % tourGroupColors.length]
             : undefined,
@@ -733,6 +750,18 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
       })
       .filter(event => event.coords !== null);
   }, [sortedEvents]);
+
+  // Filtered events for map display (respects tour filter)
+  const filteredEventsWithCoords = useMemo(() => {
+    if (visibleTours === "all") return eventsWithCoords;
+    return eventsWithCoords.filter(e => visibleTours.has(e.tourNumber));
+  }, [eventsWithCoords, visibleTours]);
+
+  // Filtered tour groups for station list
+  const filteredTourGroups = useMemo(() => {
+    if (visibleTours === "all") return tourGroups;
+    return tourGroups.filter(g => visibleTours.has(g.tourNumber));
+  }, [tourGroups, visibleTours]);
 
   // Fetch driving distances between consecutive events with caching
   const loadDrivingDistances = useCallback(async () => {
@@ -886,10 +915,10 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
   // Germany center
   const germanCenter: [number, number] = [51.1657, 10.4515];
 
-  // Route coordinates for polyline
+  // Route coordinates for polyline (uses filtered events)
   const routeCoords = useMemo(() => {
-    return eventsWithCoords.map(e => e.coords as [number, number]);
-  }, [eventsWithCoords]);
+    return filteredEventsWithCoords.map(e => e.coords as [number, number]);
+  }, [filteredEventsWithCoords]);
 
   // Count events with missing geodata
   const eventsWithMissingGeodata = useMemo(() => {
@@ -1082,7 +1111,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
               <div>
                 <h2 className="text-lg md:text-xl font-bold text-gray-900">Tour-Karte</h2>
                 <p className="text-gray-500 text-xs md:text-sm">
-                  {eventsWithCoords.length} von {sortedEvents.length} auf der Karte
+                  {filteredEventsWithCoords.length} von {sortedEvents.length} auf der Karte
                 </p>
               </div>
             </div>
@@ -1271,7 +1300,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
               />
               
               {/* Route lines per tour group - colored to match brackets */}
-              {tourGroups.map((group) => {
+              {filteredTourGroups.map((group) => {
                 const coords = group.events
                   .map(e => getCoordinates(e))
                   .filter((c): c is [number, number] => c !== null);
@@ -1291,7 +1320,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
               {/* Markers with optional clustering */}
               {enableClustering ? (
                 <MarkerClusterGroup
-                  key={`cluster-${tourGroups.length}`}
+                  key={`cluster-${tourGroups.length}-${visibleTours === "all" ? "all" : Array.from(visibleTours).join(",")}`}
                   ref={clusterGroupRef}
                   chunkedLoading
                   iconCreateFunction={(cluster: any) => createClusterCustomIcon(cluster, false)}
@@ -1299,7 +1328,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                   spiderfyOnMaxZoom={true}
                   showCoverageOnHover={false}
                 >
-                  {eventsWithCoords.map((event) => (
+                  {filteredEventsWithCoords.map((event) => (
                     <Marker
                       key={event.id}
                       position={event.coords as [number, number]}
@@ -1390,7 +1419,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                 </MarkerClusterGroup>
               ) : (
                 // Without clustering
-                eventsWithCoords.map((event) => (
+                filteredEventsWithCoords.map((event) => (
                   <Marker
                     key={event.id}
                     position={event.coords as [number, number]}
@@ -1499,12 +1528,12 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                 <span>{tourGroups.length} Touren</span>
               </div>
             )}
-            {eventsWithCoords.length > 1 && (
+            {filteredEventsWithCoords.length > 1 && (
               <>
                 <span className="text-gray-300">|</span>
                 <div className="flex items-center gap-1.5 text-gray-500">
                   <Navigation className="w-4 h-4" />
-                  <span>{eventsWithCoords.length} Stationen</span>
+                  <span>{filteredEventsWithCoords.length} Stationen</span>
                 </div>
               </>
             )}
@@ -1556,7 +1585,9 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                     <Route className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Alle Stationen</h3>
+                    <h3 className="font-semibold text-gray-900">
+                      {visibleTours === "all" ? "Alle Stationen" : `${filteredTourGroups.length} von ${tourGroups.length} Touren`}
+                    </h3>
                     <p className="text-xs text-gray-500">{sortedEvents.length} Termine · {tourGroups.length} {tourGroups.length === 1 ? "Tour" : "Touren"}</p>
                   </div>
                 </div>
@@ -1570,10 +1601,69 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
             )}
           </motion.div>
           
+          {/* Tour Filter Chips */}
+          {tourGroups.length > 1 && (
+            <div className="flex flex-wrap items-center gap-1.5 px-1 py-3">
+              <button
+                onClick={() => setVisibleTours("all")}
+                className={cn(
+                  "px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all border",
+                  visibleTours === "all"
+                    ? "bg-gray-900 text-white border-gray-900"
+                    : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+                )}
+              >
+                Alle
+              </button>
+              {tourGroups.map((group) => {
+                const color = tourGroupColors[(group.tourNumber - 1) % tourGroupColors.length];
+                const isVisible = visibleTours === "all" || visibleTours.has(group.tourNumber);
+                return (
+                  <button
+                    key={group.tourNumber}
+                    onClick={() => {
+                      setVisibleTours(prev => {
+                        if (prev === "all") {
+                          // Switch from "all" to only this tour
+                          return new Set([group.tourNumber]);
+                        }
+                        const next = new Set(prev);
+                        if (next.has(group.tourNumber)) {
+                          next.delete(group.tourNumber);
+                          // If none selected, go back to "all"
+                          if (next.size === 0) return "all";
+                        } else {
+                          next.add(group.tourNumber);
+                          // If all selected, go back to "all"
+                          if (next.size === tourGroups.length) return "all";
+                        }
+                        return next;
+                      });
+                    }}
+                    className={cn(
+                      "flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold transition-all border",
+                      isVisible
+                        ? cn(color.light, color.text, color.cardBorder)
+                        : "bg-white text-gray-400 border-gray-200 opacity-50"
+                    )}
+                  >
+                    <div
+                      className={cn("w-3.5 h-3.5 rounded-full flex-shrink-0", isVisible ? color.bg : "bg-gray-300")}
+                    />
+                    <span>T{group.tourNumber}</span>
+                    <span className="text-[10px] opacity-60">
+                      {formatTourDateRange(group.startDate, group.endDate)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           {/* Tour-Grouped Station Cards */}
           <AnimatePresence mode="popLayout">
             <div className="space-y-4">
-              {tourGroups.map((group) => {
+              {filteredTourGroups.map((group) => {
                 const color = tourGroupColors[(group.tourNumber - 1) % tourGroupColors.length];
                 return (
                   <div key={group.tourNumber}>
