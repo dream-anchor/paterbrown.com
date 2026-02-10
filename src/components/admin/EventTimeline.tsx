@@ -231,10 +231,7 @@ const EventTimeline = ({ entries, onEventClick }: EventTimelineProps) => {
                             {entry.metadata?.source && (
                               <span className={`
                                 flex-shrink-0 px-2 py-0.5 text-[10px] font-bold rounded
-                                ${entry.metadata.source === "KL" 
-                                  ? "bg-yellow-100 text-yellow-700" 
-                                  : "bg-green-100 text-green-700"
-                                }
+                                bg-amber-100 text-amber-700
                               `}>
                                 {entry.metadata.source}
                               </span>

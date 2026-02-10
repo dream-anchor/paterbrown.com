@@ -202,7 +202,7 @@ const getEventStatus = (startTime: string): EventStatus => {
   return "past";
 };
 
-// Source-based colors (KL = Amber, KBA = Green)
+// Unified tour colors (Amber for all sources)
 const sourceColors = {
   KL: {
     gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
@@ -214,13 +214,13 @@ const sourceColors = {
     shadow: "rgba(245, 158, 11, 0.6)",
   },
   KBA: {
-    gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-    bg: "bg-emerald-500",
-    bgLight: "bg-emerald-100",
-    text: "text-emerald-700",
-    border: "border-emerald-500",
-    ring: "ring-emerald-200",
-    shadow: "rgba(16, 185, 129, 0.6)",
+    gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+    bg: "bg-amber-500",
+    bgLight: "bg-amber-100",
+    text: "text-amber-700",
+    border: "border-amber-500",
+    ring: "ring-amber-200",
+    shadow: "rgba(245, 158, 11, 0.6)",
   },
   unknown: {
     gradient: "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)",
@@ -301,19 +301,19 @@ const createHighlightedSourceIcon = (num: number, source: "KL" | "KBA" | "unknow
   });
 };
 
-// Cluster colors by source - darker versions
+// Cluster colors - unified darker amber
 const clusterColors = {
   KL: {
     gradient: "linear-gradient(135deg, #b45309 0%, #92400e 100%)",
     shadow: "rgba(180, 83, 9, 0.5)",
   },
   KBA: {
-    gradient: "linear-gradient(135deg, #047857 0%, #065f46 100%)",
-    shadow: "rgba(4, 120, 87, 0.5)",
+    gradient: "linear-gradient(135deg, #b45309 0%, #92400e 100%)",
+    shadow: "rgba(180, 83, 9, 0.5)",
   },
   mixed: {
-    gradient: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
-    shadow: "rgba(99, 102, 241, 0.5)",
+    gradient: "linear-gradient(135deg, #b45309 0%, #92400e 100%)",
+    shadow: "rgba(180, 83, 9, 0.5)",
   },
 };
 
@@ -1347,11 +1347,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           <div className="flex-shrink-0 flex items-center justify-center gap-4 text-xs text-gray-500 py-3 bg-gray-50 border-t border-gray-200">
             <div className="flex items-center gap-1.5">
               <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
-              <span>Landgraf (KL)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
-              <span>Konzertbüro Augsburg (KBA)</span>
+              <span>Pater Brown Tour</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-6 h-0.5 bg-indigo-500" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #6366f1 0px, #6366f1 6px, transparent 6px, transparent 12px)' }}></div>
