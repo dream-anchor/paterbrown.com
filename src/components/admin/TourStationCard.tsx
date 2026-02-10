@@ -66,6 +66,17 @@ interface DistanceInfo {
   durationMin: number;
 }
 
+interface TourColor {
+  bg: string;       // e.g. "bg-indigo-500"
+  light: string;    // e.g. "bg-indigo-50"
+  text: string;     // e.g. "text-indigo-700"
+  border: string;   // e.g. "border-indigo-400"
+  ring: string;     // e.g. "ring-indigo-200"
+  shadow: string;   // e.g. "shadow-indigo-500/20"
+  from: string;     // e.g. "from-indigo-500"
+  to: string;       // e.g. "to-indigo-600"
+}
+
 interface TourStationCardProps {
   event: AdminEvent;
   index: number;
@@ -77,6 +88,7 @@ interface TourStationCardProps {
   nextEventStartTime?: string; // To calculate gap days
   onSelect: (event: AdminEvent, isAlreadyActive: boolean) => void;
   isMobile?: boolean;
+  tourColor?: TourColor; // Tour group color (overrides source color for main elements)
 }
 
 // Format date
@@ -116,8 +128,11 @@ const TourStationCard = ({
   nextEventStartTime,
   onSelect,
   isMobile = false,
+  tourColor,
 }: TourStationCardProps) => {
-  const colors = sourceColors[event.source] || sourceColors.unknown;
+  const sourceColor = sourceColors[event.source] || sourceColors.unknown;
+  // Tour color overrides the main color; source color is used for the ring
+  const colors = tourColor || sourceColor;
   
   // Calculate if there's a gap > 2 days (means traveling home first, then by train)
   const gapDays = nextEventStartTime 
@@ -148,20 +163,26 @@ const TourStationCard = ({
         )}
       >
         <div className="flex items-stretch">
-          {/* Left: Station Number with Source-based Gradient (KL=Amber, KBA=Green) */}
-          <div
-            className={cn(
-              "relative flex flex-col items-center justify-center px-4 py-4",
-              "bg-gradient-to-br text-white flex-shrink-0",
-              colors.from, colors.to
-            )}
-          >
-            <span className="text-2xl font-bold">{index + 1}</span>
+          {/* Left: Station Number circle - tour color fill, source-colored ring */}
+          <div className="relative flex flex-col items-center justify-center px-3 py-4 flex-shrink-0">
+            <div
+              className={cn(
+                "w-11 h-11 rounded-full flex items-center justify-center font-bold text-lg text-white",
+                "ring-[3px]",
+                colors.bg,
+                // Source ring: amber for KL, emerald for KBA
+                tourColor
+                  ? (event.source === "KL" ? "ring-amber-400" : event.source === "KBA" ? "ring-emerald-400" : "ring-gray-300")
+                  : "ring-white/30"
+              )}
+            >
+              {index + 1}
+            </div>
             {status === "today" && (
               <motion.span
                 animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
-                className="absolute top-2 right-2 w-2.5 h-2.5 bg-white rounded-full"
+                className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"
               />
             )}
           </div>
@@ -190,13 +211,13 @@ const TourStationCard = ({
                 )}
               </div>
 
-              {/* Source badge - glassmorphism */}
+              {/* Source badge - always uses source colors (KL/KBA) */}
               <div
                 className={cn(
                   "flex-shrink-0 px-2.5 py-1 rounded-full",
                   "backdrop-blur-sm text-xs font-medium",
-                  colors.bgLight,
-                  colors.text
+                  sourceColor.bgLight,
+                  sourceColor.text
                 )}
               >
                 {event.source === "KL"

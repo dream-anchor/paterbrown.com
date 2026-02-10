@@ -328,12 +328,12 @@ interface TourGroup {
 }
 
 const tourGroupColors = [
-  { bg: "bg-indigo-500", light: "bg-indigo-50", text: "text-indigo-700", border: "border-l-indigo-400", line: "#6366f1" },
-  { bg: "bg-rose-500", light: "bg-rose-50", text: "text-rose-700", border: "border-l-rose-400", line: "#f43f5e" },
-  { bg: "bg-teal-500", light: "bg-teal-50", text: "text-teal-700", border: "border-l-teal-400", line: "#14b8a6" },
-  { bg: "bg-violet-500", light: "bg-violet-50", text: "text-violet-700", border: "border-l-violet-400", line: "#8b5cf6" },
-  { bg: "bg-sky-500", light: "bg-sky-50", text: "text-sky-700", border: "border-l-sky-400", line: "#0ea5e9" },
-  { bg: "bg-pink-500", light: "bg-pink-50", text: "text-pink-700", border: "border-l-pink-400", line: "#ec4899" },
+  { bg: "bg-indigo-500", light: "bg-indigo-50", text: "text-indigo-700", border: "border-l-indigo-400", line: "#6366f1", from: "from-indigo-500", to: "to-indigo-600", cardBorder: "border-indigo-400", ring: "ring-indigo-200", shadow: "shadow-indigo-500/20" },
+  { bg: "bg-rose-500", light: "bg-rose-50", text: "text-rose-700", border: "border-l-rose-400", line: "#f43f5e", from: "from-rose-500", to: "to-rose-600", cardBorder: "border-rose-400", ring: "ring-rose-200", shadow: "shadow-rose-500/20" },
+  { bg: "bg-teal-500", light: "bg-teal-50", text: "text-teal-700", border: "border-l-teal-400", line: "#14b8a6", from: "from-teal-500", to: "to-teal-600", cardBorder: "border-teal-400", ring: "ring-teal-200", shadow: "shadow-teal-500/20" },
+  { bg: "bg-violet-500", light: "bg-violet-50", text: "text-violet-700", border: "border-l-violet-400", line: "#8b5cf6", from: "from-violet-500", to: "to-violet-600", cardBorder: "border-violet-400", ring: "ring-violet-200", shadow: "shadow-violet-500/20" },
+  { bg: "bg-sky-500", light: "bg-sky-50", text: "text-sky-700", border: "border-l-sky-400", line: "#0ea5e9", from: "from-sky-500", to: "to-sky-600", cardBorder: "border-sky-400", ring: "ring-sky-200", shadow: "shadow-sky-500/20" },
+  { bg: "bg-pink-500", light: "bg-pink-50", text: "text-pink-700", border: "border-l-pink-400", line: "#ec4899", from: "from-pink-500", to: "to-pink-600", cardBorder: "border-pink-400", ring: "ring-pink-200", shadow: "shadow-pink-500/20" },
 ];
 
 const formatTourDateRange = (startDate: string, endDate: string) => {
@@ -1573,6 +1573,16 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                               }
                             }}
                             isMobile={isMobile}
+                            tourColor={{
+                              bg: color.bg,
+                              light: color.light,
+                              text: color.text,
+                              border: color.cardBorder,
+                              ring: color.ring,
+                              shadow: color.shadow,
+                              from: color.from,
+                              to: color.to,
+                            }}
                           />
                         );
                       })}
