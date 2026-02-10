@@ -363,6 +363,111 @@ function sanitizePayload(payload: unknown): unknown {
   return sanitized;
 }
 
+// ===== TOUR-DATE EMAIL CLASSIFICATION =====
+const TOUR_DATE_KEYWORDS = [
+  "tourdaten", "aktueller plan", "landgraf", "augsburg",
+  "tourneeplan", "spielplan", "tourplan", "terminplan",
+  "konzertdirektion", "künstlerbüro albrecht", "konzertbüro",
+  "tourtermine", "gastspieltermine", "veranstaltungstermine",
+];
+
+function isTourDateEmail(subject: string, bodyText: string): boolean {
+  const searchText = `${subject} ${bodyText}`.toLowerCase();
+  return TOUR_DATE_KEYWORDS.some(kw => searchText.includes(kw));
+}
+
+async function routeToParseEventsAndInsert(
+  supabase: ReturnType<typeof createClient>,
+  emailId: string,
+  subject: string,
+  bodyText: string,
+  htmlBody: string,
+) {
+  console.info("=== TOUR-DATE ROUTING: Sending to parse-events ===");
+  
+  // Use body text for AI parsing; fall back to stripping HTML tags
+  const content = bodyText.trim()
+    || htmlBody.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+  if (!content || content.length < 20) {
+    console.warn("TOUR-DATE: Email body too short for parsing, skipping");
+    return;
+  }
+
+  const { data, error } = await supabase.functions.invoke("parse-events", {
+    body: { content },
+  });
+
+  if (error) {
+    console.error("TOUR-DATE: parse-events invoke error:", error);
+    return;
+  }
+
+  const events = data?.events;
+  if (!Array.isArray(events) || events.length === 0) {
+    console.info("TOUR-DATE: No events extracted from email");
+    return;
+  }
+
+  console.info(`TOUR-DATE: Extracted ${events.length} events, inserting with dedup...`);
+
+  let inserted = 0;
+  let skipped = 0;
+
+  for (const evt of events) {
+    if (!evt.date || !evt.city) continue;
+
+    const startTime = evt.start_time
+      ? `${evt.date}T${evt.start_time}:00`
+      : `${evt.date}T20:00:00`;
+    const location = evt.city + (evt.state ? `, ${evt.state}` : "");
+
+    // Duplikat-Check: gleicher Ort + gleiches Datum (auf Tag genau)
+    const { data: existing } = await supabase
+      .from("admin_events")
+      .select("id")
+      .eq("location", location)
+      .gte("start_time", `${evt.date}T00:00:00`)
+      .lt("start_time", `${evt.date}T23:59:59`)
+      .is("deleted_at", null)
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      console.info(`TOUR-DATE: Skipping duplicate: ${evt.city} on ${evt.date}`);
+      skipped++;
+      continue;
+    }
+
+    const { error: insertError } = await supabase.from("admin_events").insert({
+      title: `Pater Brown – ${evt.city}`,
+      location,
+      start_time: startTime,
+      end_time: evt.end_time ? `${evt.date}T${evt.end_time}:00` : null,
+      source: evt.source || "unknown",
+      state: evt.state || null,
+      latitude: evt.latitude || null,
+      longitude: evt.longitude || null,
+      venue_name: evt.venue || null,
+      venue_address: evt.venue_address || null,
+      venue_url: evt.venue_url || null,
+      note: evt.note || null,
+    });
+
+    if (insertError) {
+      console.error(`TOUR-DATE: Insert error for ${evt.city}:`, insertError);
+    } else {
+      inserted++;
+    }
+  }
+
+  // Mark email as processed
+  await supabase.from("travel_emails")
+    .update({ status: "processed" })
+    .eq("id", emailId);
+
+  console.info(`TOUR-DATE: Done. Inserted: ${inserted}, Skipped (dupes): ${skipped}`);
+}
+
 // Shutdown handler for debugging
 addEventListener('beforeunload', (ev: Event) => {
   const detail = (ev as CustomEvent).detail;
@@ -750,6 +855,17 @@ serve(async (req) => {
         }
         
         console.info(`BACKGROUND: Uploaded ${uploadedCount}/${attachmentsWithContent.length} attachments to storage`);
+
+        // ===== CHECK IF THIS IS A TOUR-DATE EMAIL =====
+        if (isTourDateEmail(subject, textBody)) {
+          console.info("BACKGROUND: Tour-date email detected, routing to parse-events...");
+          try {
+            await routeToParseEventsAndInsert(supabase, emailData.id, subject, textBody, htmlBody);
+            console.info("BACKGROUND: ✓ Tour-date processing complete");
+          } catch (err) {
+            console.error("BACKGROUND: Tour-date processing failed:", err);
+          }
+        }
 
         // ===== AUTOMATIC FOLLOW-UP PROCESSING =====
         // If we have URL-only attachments that weren't uploaded, trigger process-attachments
