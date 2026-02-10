@@ -40,14 +40,20 @@ interface AIAnalysisResult {
   change_summary?: string;
 }
 
+// ========== HELPER: Fuzzy Match Result ==========
+interface FuzzyMatchResult {
+  matchedName: string | null;  // null if below threshold
+  bestMatch: { name: string; score: number } | null;  // best match even if below threshold
+}
+
 // ========== HELPER: Score-Based Fuzzy Match (STRICT!) ==========
-function fuzzyMatchTraveler(extractedName: string, knownTravelers: string[]): string | null {
+function fuzzyMatchTraveler(extractedName: string, knownTravelers: string[]): FuzzyMatchResult {
   const normalized = extractedName.toLowerCase().trim();
   
   // UNKNOWN sofort abweisen
   if (normalized === "unknown" || normalized === "" || normalized === "unbekannt") {
     console.log(`⚠️ Fuzzy Match: Extracted name is UNKNOWN/empty - returning null`);
-    return null;
+    return { matchedName: null, bestMatch: null };
   }
   
   console.log(`\n=== FUZZY MATCH START ===`);
@@ -117,12 +123,12 @@ function fuzzyMatchTraveler(extractedName: string, knownTravelers: string[]): st
   if (bestMatch && bestMatch.score >= MIN_MATCH_SCORE) {
     console.log(`✅ MATCHED: "${extractedName}" → "${bestMatch.name}" (Score: ${bestMatch.score})`);
     console.log(`=== FUZZY MATCH END ===\n`);
-    return bestMatch.name;
+    return { matchedName: bestMatch.name, bestMatch };
   }
   
   console.log(`⚠️ NO MATCH: "${extractedName}" - best score was ${bestMatch?.score || 0}, below threshold ${MIN_MATCH_SCORE}`);
   console.log(`=== FUZZY MATCH END ===\n`);
-  return null;
+  return { matchedName: null, bestMatch };
 }
 
 // ========== HELPER: Result Type for Traveler Identification ==========
@@ -130,8 +136,10 @@ type DocumentType = 'train_ticket' | 'flight_ticket' | 'hotel_booking' | 'seat_r
 
 interface TravelerIdentificationResult {
   matchedName: string | null;
-  extractedName: string | null;  // Der rohe Name aus dem Dokument (für Auto-Create)
+  extractedName: string | null;  // Der rohe Name aus dem Dokument
   documentType: DocumentType | null;  // Klassifizierter Dokumenttyp
+  bestMatchName: string | null;  // Bester Fuzzy-Match Name (auch unter Schwelle)
+  bestMatchScore: number;  // Bester Fuzzy-Match Score
 }
 
 // Mapping: document_type → booking_type für korrektes Attachment-Linking
@@ -173,7 +181,7 @@ async function identifyTravelerInDocument(
   knownTravelers: string[],
   lovableApiKey: string
 ): Promise<TravelerIdentificationResult> {
-  const emptyResult: TravelerIdentificationResult = { matchedName: null, extractedName: null, documentType: null };
+  const emptyResult: TravelerIdentificationResult = { matchedName: null, extractedName: null, documentType: null, bestMatchName: null, bestMatchScore: 0 };
   
   // ⚠️ ERWEITERTER PROMPT - Findet Reisenden UND klassifiziert Dokumenttyp
   const prompt = `Analysiere dieses Reisedokument und gib ZWEI Informationen zurück:
@@ -284,23 +292,30 @@ TYPE: seat_reservation`;
     if (!extractedName) {
       console.log(`⚠️ No traveler found in document`);
       console.log(`=== TRAVELER IDENTIFICATION END ===\n`);
-      return { matchedName: null, extractedName: null, documentType };
+      return { matchedName: null, extractedName: null, documentType, bestMatchName: null, bestMatchScore: 0 };
     }
     
-    // Speichere den extrahierten Namen für Auto-Create
+    // Speichere den extrahierten Namen
     const result: TravelerIdentificationResult = {
       matchedName: null,
       extractedName: extractedName,
-      documentType: documentType
+      documentType: documentType,
+      bestMatchName: null,
+      bestMatchScore: 0
     };
     
     // Score-based Fuzzy match against known travelers (nur wenn wir bekannte Reisende haben)
     if (knownTravelers.length > 0) {
-      const matchedTraveler = fuzzyMatchTraveler(extractedName, knownTravelers);
-      result.matchedName = matchedTraveler;
-      console.log(`📋 Final Match Result: "${matchedTraveler || 'NO MATCH - CANDIDATE FOR AUTO-CREATE'}"`);
+      const matchResult = fuzzyMatchTraveler(extractedName, knownTravelers);
+      result.matchedName = matchResult.matchedName;
+      result.bestMatchName = matchResult.bestMatch?.name || null;
+      result.bestMatchScore = matchResult.bestMatch?.score || 0;
+      console.log(`📋 Final Match Result: "${matchResult.matchedName || 'NO MATCH - CANDIDATE FOR PENDING APPROVAL'}"`);
+      if (matchResult.bestMatch && !matchResult.matchedName) {
+        console.log(`📋 Best match below threshold: "${matchResult.bestMatch.name}" (${matchResult.bestMatch.score}%)`);
+      }
     } else {
-      console.log(`📋 No known travelers to match against - will use Auto-Create`);
+      console.log(`📋 No known travelers to match against - will create pending approval`);
     }
     
     console.log(`📋 Document Type: ${documentType || 'unknown'}`);
@@ -312,74 +327,66 @@ TYPE: seat_reservation`;
   }
 }
 
-// ========== HELPER: Auto-Create Traveler Profile ==========
-async function autoCreateTravelerProfile(
+// ========== HELPER: Create Pending Traveler Approval ==========
+async function createPendingApproval(
   extractedName: string,
+  bestMatchName: string | null,
+  bestMatchScore: number,
+  bestMatchProfileId: string | null,
+  sourceEmailId: string | null,
+  sourceAttachmentId: string | null,
   supabase: any
-): Promise<{ fullName: string; profileId: string } | null> {
-  // Validierung: Name muss valide sein (Länge > 3, enthält Leerzeichen)
-  if (!extractedName || extractedName.length <= 3 || !extractedName.includes(' ')) {
-    console.log(`⚠️ Cannot auto-create profile: Invalid name "${extractedName}" (too short or no space)`);
-    return null;
+): Promise<void> {
+  // Validierung: Name muss valide sein
+  if (!extractedName || extractedName.length <= 1) {
+    console.log(`⚠️ Cannot create pending approval: Invalid name "${extractedName}"`);
+    return;
   }
   
   // Ignoriere ungültige/placeholder Namen
   const invalidNames = ['unknown', 'unbekannt', 'n/a', 'nicht identifiziert', 'no name', 'kein name'];
   if (invalidNames.includes(extractedName.toLowerCase().trim())) {
-    console.log(`⚠️ Cannot auto-create profile: Name is a placeholder "${extractedName}"`);
-    return null;
+    console.log(`⚠️ Cannot create pending approval: Name is a placeholder "${extractedName}"`);
+    return;
   }
   
   // Split: Alles vor dem letzten Leerzeichen = Vorname, Rest = Nachname
   const nameParts = extractedName.trim().split(/\s+/);
-  const lastName = nameParts.pop() || '';
-  const firstName = nameParts.join(' ') || '';
+  const lastName = nameParts.length > 1 ? nameParts.pop() || '' : '';
+  const firstName = nameParts.join(' ') || extractedName.trim();
   
-  if (!firstName || !lastName || firstName.length < 2 || lastName.length < 2) {
-    console.log(`⚠️ Cannot auto-create profile: Could not properly split name "${extractedName}" → first="${firstName}", last="${lastName}"`);
-    return null;
-  }
-  
-  console.log(`🔄 Auto-Create: Attempting to create profile for "${firstName} ${lastName}"`);
-  
-  // Prüfe auf Duplikate (case-insensitive)
+  // Prüfe auf existierenden Pending Approval mit gleichem Namen
   const { data: existing } = await supabase
-    .from("traveler_profiles")
-    .select("id, first_name, last_name")
-    .ilike("first_name", firstName)
-    .ilike("last_name", lastName)
+    .from("pending_traveler_approvals")
+    .select("id")
+    .eq("extracted_name", extractedName)
+    .eq("status", "pending")
     .limit(1);
   
   if (existing && existing.length > 0) {
-    console.log(`ℹ️ Profile already exists for "${firstName} ${lastName}" (ID: ${existing[0].id})`);
-    return { 
-      fullName: `${existing[0].first_name} ${existing[0].last_name}`,
-      profileId: existing[0].id 
-    };
+    console.log(`ℹ️ Pending approval already exists for "${extractedName}" - skipping`);
+    return;
   }
   
-  // Neues Profil erstellen
-  const { data: newProfile, error } = await supabase
-    .from("traveler_profiles")
+  const { error } = await supabase
+    .from("pending_traveler_approvals")
     .insert({
-      first_name: firstName,
-      last_name: lastName,
-      auto_created: true
-    })
-    .select("id, first_name, last_name")
-    .single();
+      extracted_name: extractedName,
+      extracted_first_name: firstName || null,
+      extracted_last_name: lastName || null,
+      best_match_name: bestMatchName,
+      best_match_score: bestMatchScore,
+      best_match_profile_id: bestMatchProfileId,
+      source_email_id: sourceEmailId,
+      source_attachment_id: sourceAttachmentId,
+      status: 'pending'
+    });
   
   if (error) {
-    console.error(`❌ Failed to auto-create profile for "${extractedName}":`, error);
-    return null;
+    console.error(`❌ Failed to create pending approval for "${extractedName}":`, error);
+  } else {
+    console.log(`📋 Created pending approval for: "${extractedName}" (best match: "${bestMatchName || 'none'}" @ ${bestMatchScore}%)`);
   }
-  
-  console.log(`🆕 Auto-created new profile for: ${firstName} ${lastName} (ID: ${newProfile.id})`);
-  
-  return {
-    fullName: `${newProfile.first_name} ${newProfile.last_name}`,
-    profileId: newProfile.id
-  };
 }
 
 // ========== MAIN BACKGROUND PROCESSING FUNCTION ==========
@@ -544,23 +551,32 @@ if (attachments && attachments.length > 0) {
               
               let finalTravelerName: string | null = identificationResult.matchedName;
               
-              // ========== AUTO-CREATE FALLBACK ==========
+              // ========== PENDING APPROVAL INSTEAD OF AUTO-CREATE ==========
               if (!finalTravelerName && identificationResult.extractedName) {
-                console.log(`🔄 No match found for "${identificationResult.extractedName}". Attempting auto-create...`);
+                console.log(`🔄 No match for "${identificationResult.extractedName}". Creating pending approval...`);
                 
-                const autoCreated = await autoCreateTravelerProfile(
-                  identificationResult.extractedName, 
+                // Find best match profile ID from loaded profiles
+                let bestMatchProfileId: string | null = null;
+                if (identificationResult.bestMatchName && travelerProfiles) {
+                  const matchedProfile = travelerProfiles.find(
+                    p => `${p.first_name} ${p.last_name}` === identificationResult.bestMatchName
+                  );
+                  bestMatchProfileId = matchedProfile?.id || null;
+                }
+                
+                await createPendingApproval(
+                  identificationResult.extractedName,
+                  identificationResult.bestMatchName,
+                  identificationResult.bestMatchScore,
+                  bestMatchProfileId,
+                  email_id,
+                  attachment.id,
                   supabase
                 );
                 
-                if (autoCreated) {
-                  finalTravelerName = autoCreated.fullName;
-                  
-                  // Füge neuen Namen zur lokalen Liste hinzu für spätere Attachments in dieser Session
-                  knownTravelers.push(autoCreated.fullName);
-                  
-                  console.log(`✅ Using auto-created profile: ${finalTravelerName}`);
-                }
+                // Still use the extracted name provisionally on the attachment
+                finalTravelerName = identificationResult.extractedName;
+                console.log(`📋 Using provisional name: ${finalTravelerName} (pending approval)`);
               }
               
               // ========== SPEICHERE TRAVELER + DOCUMENT_TYPE ==========
