@@ -511,6 +511,89 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_traveler_approvals: {
+        Row: {
+          best_match_name: string | null
+          best_match_profile_id: string | null
+          best_match_score: number | null
+          created_at: string
+          extracted_first_name: string | null
+          extracted_last_name: string | null
+          extracted_name: string
+          id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          resolved_profile_id: string | null
+          source_attachment_id: string | null
+          source_email_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          best_match_name?: string | null
+          best_match_profile_id?: string | null
+          best_match_score?: number | null
+          created_at?: string
+          extracted_first_name?: string | null
+          extracted_last_name?: string | null
+          extracted_name: string
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_profile_id?: string | null
+          source_attachment_id?: string | null
+          source_email_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          best_match_name?: string | null
+          best_match_profile_id?: string | null
+          best_match_score?: number | null
+          created_at?: string
+          extracted_first_name?: string | null
+          extracted_last_name?: string | null
+          extracted_name?: string
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_profile_id?: string | null
+          source_attachment_id?: string | null
+          source_email_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_traveler_approvals_best_match_profile_id_fkey"
+            columns: ["best_match_profile_id"]
+            isOneToOne: false
+            referencedRelation: "traveler_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_traveler_approvals_resolved_profile_id_fkey"
+            columns: ["resolved_profile_id"]
+            isOneToOne: false
+            referencedRelation: "traveler_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_traveler_approvals_source_attachment_id_fkey"
+            columns: ["source_attachment_id"]
+            isOneToOne: false
+            referencedRelation: "travel_attachments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_traveler_approvals_source_email_id_fkey"
+            columns: ["source_email_id"]
+            isOneToOne: false
+            referencedRelation: "travel_emails"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       picks_folders: {
         Row: {
           created_at: string
@@ -967,6 +1050,10 @@ export type Database = {
       increment_share_link_download: {
         Args: { p_token: string }
         Returns: boolean
+      }
+      replace_traveler_name_in_arrays: {
+        Args: { new_name: string; old_name: string }
+        Returns: undefined
       }
     }
     Enums: {

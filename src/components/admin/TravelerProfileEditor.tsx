@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -20,10 +21,11 @@ import {
 } from "@/components/ui/dialog";
 import { 
   User, CreditCard, Settings, Save, Loader2, 
-  FileDown, Copy, Check, Calendar, Phone, Train
+  FileDown, Copy, Check, Calendar, Phone, Train, UserPlus
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
+import PendingTravelerApprovals from "./PendingTravelerApprovals";
 
 interface TravelerProfile {
   id: string;
@@ -68,11 +70,26 @@ export default function TravelerProfileEditor() {
   const [exportProfileName, setExportProfileName] = useState("");
   const [allExportModalOpen, setAllExportModalOpen] = useState(false);
   const [allExportText, setAllExportText] = useState("");
+  const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
+  const [showApprovals, setShowApprovals] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchProfiles();
+    fetchPendingCount();
   }, []);
+
+  const fetchPendingCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from("pending_traveler_approvals" as any)
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending");
+      if (!error) setPendingApprovalsCount(count || 0);
+    } catch (e) {
+      console.error("Error fetching pending count:", e);
+    }
+  };
 
   const fetchProfiles = async () => {
     setIsLoading(true);
@@ -285,6 +302,27 @@ export default function TravelerProfileEditor() {
 
   return (
     <div className="space-y-6">
+      {/* Pending Approvals Banner */}
+      {pendingApprovalsCount > 0 && (
+        <button
+          onClick={() => setShowApprovals(true)}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-amber-200/60 bg-amber-50/40 hover:bg-amber-50/70 transition-all text-left"
+        >
+          <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center flex-shrink-0">
+            <UserPlus className="w-4 h-4" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-gray-900">
+              {pendingApprovalsCount} unbekannte{pendingApprovalsCount === 1 ? "r" : ""} Reisende{pendingApprovalsCount === 1 ? "r" : ""}
+            </p>
+            <p className="text-xs text-gray-500">Tippe zum Überprüfen</p>
+          </div>
+          <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100">
+            {pendingApprovalsCount}
+          </Badge>
+        </button>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -309,6 +347,16 @@ export default function TravelerProfileEditor() {
           </Button>
         </div>
       </div>
+
+      {/* Pending Approvals Dialog */}
+      <PendingTravelerApprovals
+        open={showApprovals}
+        onOpenChange={setShowApprovals}
+        onResolved={() => {
+          fetchPendingCount();
+          fetchProfiles();
+        }}
+      />
 
       {/* Profile Cards */}
       {profiles.length === 0 ? (

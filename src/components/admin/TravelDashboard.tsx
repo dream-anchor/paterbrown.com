@@ -9,7 +9,7 @@ import {
   Calendar, MapPin, Users, Hash, ChevronRight,
   Mail, Clock, AlertCircle, CheckCircle2, Loader2,
   Filter, Search, RefreshCw, Upload, LayoutGrid, List,
-  User, Sparkles, ChevronDown, History, Ticket
+  User, Sparkles, ChevronDown, History, Ticket, UserPlus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import TravelTimeline from "./TravelTimeline";
 import TravelerProfileEditor from "./TravelerProfileEditor";
 import QrCodeModal from "./QrCodeModal";
 import TravelStats from "./TravelStats";
+import PendingTravelerApprovals from "./PendingTravelerApprovals";
 
 interface TravelBooking {
   id: string;
@@ -127,6 +128,8 @@ export default function TravelDashboard() {
   const [selectedTravelers, setSelectedTravelers] = useState<string[]>([]);
   const [qrModalBooking, setQrModalBooking] = useState<TravelBooking | null>(null);
   const [showPastBookings, setShowPastBookings] = useState(false);
+  const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
+  const [showApprovals, setShowApprovals] = useState(false);
   const { toast } = useToast();
 
   // Get sub-tab from URL, default to "bookings"
@@ -140,7 +143,23 @@ export default function TravelDashboard() {
 
   useEffect(() => {
     fetchBookings();
+    fetchPendingApprovalsCount();
   }, [showPastBookings]);
+
+  const fetchPendingApprovalsCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from("pending_traveler_approvals" as any)
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending");
+      
+      if (!error) {
+        setPendingApprovalsCount(count || 0);
+      }
+    } catch (e) {
+      console.error("Error fetching pending approvals count:", e);
+    }
+  };
 
   const fetchBookings = async () => {
     setIsLoading(true);
@@ -445,6 +464,29 @@ export default function TravelDashboard() {
         />
 
         <TabsContent value="bookings" className="mt-6">
+          {/* Pending Approvals Banner */}
+          {pendingApprovalsCount > 0 && (
+            <button
+              onClick={() => setShowApprovals(true)}
+              className="w-full mb-4 flex items-center justify-between gap-3 px-5 py-3.5 glass-card rounded-2xl border border-amber-200/60 bg-amber-50/40 hover:bg-amber-50/70 transition-all group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center">
+                  <UserPlus className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {pendingApprovalsCount} unbekannte{pendingApprovalsCount === 1 ? "r" : ""} Reisende{pendingApprovalsCount === 1 ? "r" : ""}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Neue Namen aus Dokumenten — Profil erstellen oder zuordnen
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+            </button>
+          )}
+
           {/* Stats Dashboard */}
           <TravelStats bookings={bookings} />
           
@@ -856,13 +898,22 @@ export default function TravelDashboard() {
         qrCodeImageUrl={qrModalBooking?.qr_code_url || undefined}
         documentType={qrModalBooking?.booking_type === 'train' ? 'ticket' : undefined}
         onQrExtracted={(url) => {
-          // Update the booking in state with the new QR URL
           setBookings(prev => prev.map(b => 
             b.id === qrModalBooking?.id ? { ...b, qr_code_url: url } : b
           ));
           if (qrModalBooking) {
             setQrModalBooking({ ...qrModalBooking, qr_code_url: url });
           }
+        }}
+      />
+
+      {/* Pending Traveler Approvals Dialog */}
+      <PendingTravelerApprovals
+        open={showApprovals}
+        onOpenChange={setShowApprovals}
+        onResolved={() => {
+          fetchPendingApprovalsCount();
+          fetchBookings();
         }}
       />
     </div>
