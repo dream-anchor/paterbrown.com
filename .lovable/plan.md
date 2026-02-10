@@ -1,216 +1,88 @@
 
-# Dokumente-Bereich im Admin mit öffentlichen Download-Links
 
-## Übersicht
+# Pending Traveler Approvals System
 
-Neuer "Dokumente"-Tab im Admin-Bereich, der interne Dokumente (Dossiers, Flyer) verwaltet und **öffentlich teilbare Download-Links** generiert - ohne dass Empfänger sich anmelden müssen.
+## Ziel
+Statt automatischer Profilerstellung bei unbekannten Reisenden-Namen wird ein Genehmigungseintrag erstellt, den der Admin im Travel-Dashboard bestaetigen oder ablehnen kann.
 
-## Funktionen
+## Aenderungen
 
-### Für Admins (im Admin-Bereich)
-- **Dokumente hochladen**: Drag & Drop oder Datei-Auswahl für PDFs und andere Dateien
-- **Bestehende Dokumente verwalten**: Liste aller hochgeladenen Dokumente mit Vorschau
-- **Kategorie zuweisen**: Produktions-Dossier, Presse-Dossier, Flyer, Sonstiges
-- **Link kopieren**: Ein Klick kopiert den öffentlichen Download-Link
-- **Link teilen**: Direktes Teilen per E-Mail oder WhatsApp
-- **Dokumente ersetzen**: Neue Version hochladen, alte ersetzen
-- **Dokumente löschen**: Nicht mehr benötigte Dateien entfernen
+### 1. Datenbank-Migration
+Die bereitgestellte SQL-Migration wird ausgefuehrt:
+- Neue Tabelle `pending_traveler_approvals` mit Status-Workflow (pending, approved, linked, dismissed)
+- Fuzzy-Match-Kontext (bester Treffer, Score, Profil-ID)
+- Quell-Verknuepfung (Email, Attachment)
+- RLS-Policies fuer Admin und Service Role
+- `updated_at`-Trigger
+- Indexes auf status, extracted_name, source_email_id
+- RPC-Funktion `replace_traveler_name_in_arrays` zum Ersetzen von Namen in `traveler_names`-Arrays
 
-### Für Externe (ohne Login)
-- **Direkter Download**: Öffentlicher Link funktioniert ohne Anmeldung
-- **Download-Seite**: Schöne Seite mit Dokumentname, Größe und Download-Button
-- **Download-Tracking**: Zählt wie oft ein Dokument heruntergeladen wurde (optional)
+**Anpassung**: Der `CHECK`-Constraint auf `status` wird durch einen Validation-Trigger ersetzt (Lovable-Guideline, da CHECK-Constraints bei Restores Probleme verursachen koennen).
 
-## Warum kein PSITransfer?
+### 2. Edge Function: `analyze-travel-booking`
+Die Funktion `autoCreateTravelerProfile` wird durch `createPendingApproval` ersetzt:
 
-PSITransfer ist eine separate Node.js-Anwendung, die:
-- Auf einem eigenen Server gehostet werden müsste
-- Zusätzliche Wartung erfordert
-- Nicht nativ in Lovable/Supabase integriert ist
+- Wenn Fuzzy-Match-Score >= 70: Weiterhin automatisch zuordnen (wie bisher)
+- Wenn Score < 70 aber Name extrahiert: Statt Auto-Create wird ein Eintrag in `pending_traveler_approvals` erstellt mit:
+  - `extracted_name`, `extracted_first_name`, `extracted_last_name`
+  - `best_match_name`, `best_match_score`, `best_match_profile_id` (bester Treffer, auch wenn unter Schwelle)
+  - `source_email_id`, `source_attachment_id`
+  - Status = `pending`
+- Der Attachment-Eintrag erhaelt weiterhin den extrahierten Namen als `traveler_name` (vorlaeufig)
 
-**Bessere Lösung**: Ein **öffentlicher Storage-Bucket** mit einer schönen Download-Seite bietet dieselben Vorteile:
-- Große Dateien möglich (bis 50MB)
-- Öffentliche Links ohne Anmeldung
-- Nativ integriert, keine zusätzliche Infrastruktur
-- Schöne Branding-Seite beim Download
+### 3. UI: Approval-Banner im Travel-Dashboard
+In `TravelDashboard.tsx` wird eine Benachrichtigungs-Sektion eingebaut:
 
-## Technische Umsetzung
+- Oberhalb der Buchungen erscheint ein kompaktes Banner wenn `pending`-Approvals existieren
+- Zeigt Anzahl ausstehender Genehmigungen mit Amber-Akzent
+- Klick oeffnet den Approval-Flow
 
-### 1. Datenbank-Tabelle `internal_documents`
+### 4. Neue Komponente: `PendingTravelerApprovals.tsx`
+Modaler Dialog oder Panel im Troupe-Design mit:
 
-```text
-┌────────────────────────────────────────────────────────────┐
-│ internal_documents                                          │
-├────────────────┬───────────────────────────────────────────┤
-│ id             │ UUID (Primary Key)                        │
-│ name           │ Anzeigename (z.B. "Presse-Dossier v2.2") │
-│ category       │ "dossier_produktion" | "dossier_presse"   │
-│                │ | "flyer" | "other"                       │
-│ file_path      │ Pfad im Storage-Bucket                    │
-│ file_name      │ Originaler Dateiname                      │
-│ file_size      │ Größe in Bytes                            │
-│ content_type   │ MIME-Type (application/pdf)               │
-│ download_count │ Anzahl Downloads                          │
-│ created_at     │ Upload-Zeitpunkt                          │
-│ updated_at     │ Letztes Update                            │
-│ uploaded_by    │ User-ID des Uploaders                     │
-└────────────────┴───────────────────────────────────────────┘
-```
+- **Liste aller Pending Approvals** als Cards mit:
+  - Extrahierter Name (fett)
+  - Bester Match-Vorschlag mit Score-Anzeige (Fortschrittsbalken)
+  - Quelle (Email-Betreff oder Attachment-Name)
+  - Zeitstempel
+- **Aktionen pro Eintrag**:
+  - **"Neues Profil erstellen"** -- Erstellt Profil aus extrahiertem Namen, setzt Status auf `approved`
+  - **"Zuordnen"** -- Dropdown mit existierenden Profilen, setzt Status auf `linked`, ruft `replace_traveler_name_in_arrays` auf
+  - **"Verwerfen"** -- Setzt Status auf `dismissed`
+- **Bulk-Aktionen**: Alle mit gleichem Namen auf einmal aufloesen
 
-### 2. Storage-Bucket `internal-documents`
+### 5. Integration in Profiles-Tab
+Im `TravelerProfileEditor.tsx` wird ein kleiner Hinweis-Badge angezeigt, wenn Pending Approvals existieren, die auf die Approval-Ansicht verlinken.
 
-- **Öffentlicher Bucket**: Dateien sind ohne Authentifizierung zugänglich
-- **Direkter Download**: `https://{project}.supabase.co/storage/v1/object/public/internal-documents/{path}`
-- **Große Dateien**: Bis 50MB unterstützt
-
-### 3. Neue Dateien
+## Technische Details
 
 ```text
-src/
-├── components/admin/
-│   └── DocumentsPanel.tsx        # Hauptkomponente für Dokumente-Tab
-│   └── DocumentUploadModal.tsx   # Upload-Dialog mit Drag & Drop
-│   └── DocumentCard.tsx          # Karte für einzelnes Dokument
-│
-├── pages/
-│   └── Download.tsx              # Öffentliche Download-Seite (/download/:id)
-│
-└── lib/
-    └── documentUtils.ts          # Hilfsfunktionen (Größe formatieren, etc.)
+Ablauf bei unbekanntem Reisenden:
 
-supabase/
-└── migrations/
-    └── xxx_create_internal_documents.sql
+  Dokument-Upload
+       |
+  AI extrahiert Namen
+       |
+  Fuzzy Match gegen bekannte Profile
+       |
+  Score >= 70?
+   /        \
+ JA          NEIN
+  |            |
+Zuordnen   pending_traveler_approvals
+wie bisher   INSERT (status=pending)
+              |
+         Admin sieht Banner
+              |
+    "Neues Profil" / "Zuordnen" / "Verwerfen"
+              |
+         Status-Update + ggf. replace_traveler_name_in_arrays()
 ```
 
-### 4. UI-Design
+### Dateien die erstellt/geaendert werden:
+- **Erstellt**: Migration SQL (Tabelle + RPC + Trigger + Indexes)
+- **Erstellt**: `src/components/admin/PendingTravelerApprovals.tsx`
+- **Geaendert**: `supabase/functions/analyze-travel-booking/index.ts` (autoCreate durch Approval ersetzen)
+- **Geaendert**: `src/components/admin/TravelDashboard.tsx` (Banner + Approval-Integration)
+- **Geaendert**: `src/components/admin/TravelerProfileEditor.tsx` (Badge-Hinweis)
 
-#### Admin-Ansicht (Dokumente-Tab)
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│  📁 Dokumente                                    [+ Hochladen]  │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  📑 DOSSIERS                                                    │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │ 📄 Produktions-Dossier                          2.4 MB  │   │
-│  │    Hochgeladen: 15.01.2026                              │   │
-│  │    Downloads: 42                                        │   │
-│  │    [📋 Link kopieren] [↗ Teilen] [🗑 Löschen]           │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │ 📄 Presse-Dossier v2.2                          1.8 MB  │   │
-│  │    Hochgeladen: 20.01.2026                              │   │
-│  │    Downloads: 128                                       │   │
-│  │    [📋 Link kopieren] [↗ Teilen] [🗑 Löschen]           │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                                                 │
-│  📄 FLYER                                                       │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │ 📄 Tour-Flyer 2026                              850 KB  │   │
-│  │    Hochgeladen: 10.01.2026                              │   │
-│  │    Downloads: 67                                        │   │
-│  │    [📋 Link kopieren] [↗ Teilen] [🗑 Löschen]           │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-#### Upload-Modal
-```text
-┌─────────────────────────────────────────────────────────────┐
-│  Dokument hochladen                                     [X] │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐  │
-│  │                                                       │  │
-│  │            📁 Datei hierher ziehen                   │  │
-│  │                                                       │  │
-│  │        oder  [Datei auswählen]                       │  │
-│  │                                                       │  │
-│  │        ○ Neue Datei hochladen                        │  │
-│  │        ○ Bestehende Datei auswählen                  │  │
-│  │                                                       │  │
-│  └─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘  │
-│                                                             │
-│  Name:                                                      │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ Presse-Dossier v2.2                                 │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-│  Kategorie:                                                 │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ Presse-Dossier                               ▼      │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-│              [Abbrechen]  [Hochladen]                       │
-└─────────────────────────────────────────────────────────────┘
-```
-
-#### Öffentliche Download-Seite (`/download/:id`)
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│                    🎭 PATER BROWN                           │
-│                    Das Live-Hörspiel                        │
-│                                                             │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│                      📄                                     │
-│                                                             │
-│               Presse-Dossier v2.2                           │
-│                                                             │
-│                    PDF • 1.8 MB                             │
-│                                                             │
-│              ┌──────────────────────┐                       │
-│              │   ⬇ Herunterladen   │                       │
-│              └──────────────────────┘                       │
-│                                                             │
-│                                                             │
-│         Bereitgestellt von paterbrown.com                   │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### 5. Navigation erweitern
-
-**Desktop-Tabs** (Admin.tsx):
-- Kalender | Tour | Reisen | Upload | **Dokumente**
-
-**Mobile BottomNav** (BottomNav.tsx):
-- Da nur 4 Plätze: Upload durch Dokumente ersetzen, oder expandierbares "Mehr"-Menü
-
-### 6. Link-Sharing Optionen
-
-Beim Klick auf "Teilen":
-- **Link kopieren**: Kopiert öffentlichen Link in Zwischenablage
-- **Per E-Mail teilen**: Öffnet E-Mail-Programm mit vorausgefülltem Link
-- **Per WhatsApp teilen**: Öffnet WhatsApp mit Link
-
-Link-Format:
-```
-https://paterbrown-com.lovable.app/download/abc123
-```
-
-## Implementierungs-Schritte
-
-1. **Datenbank-Migration**: `internal_documents` Tabelle + öffentlicher Storage-Bucket
-2. **DocumentsPanel**: Hauptkomponente mit Dokumenten-Liste nach Kategorie
-3. **DocumentUploadModal**: Upload-Dialog mit Drag & Drop + Kategorie-Auswahl
-4. **DocumentCard**: Karte mit Aktionen (Link kopieren, teilen, löschen)
-5. **Download-Seite**: Öffentliche `/download/:id` Route mit Branding
-6. **Navigation**: "Dokumente"-Tab in Desktop und Mobile hinzufügen
-7. **Bestehende Datei auswählen**: Option um bereits hochgeladene Dateien erneut zu verwenden
-
-## Vorteile gegenüber PSITransfer
-
-| Feature | PSITransfer | Lovable-Lösung |
-|---------|-------------|----------------|
-| Installation | Separater Server nötig | Integriert |
-| Wartung | Updates, Backups | Automatisch |
-| Branding | Muss angepasst werden | Pater Brown Design |
-| Integration | Keine | Volle Admin-Integration |
-| Kosten | Server-Kosten | Inklusive |
-| Große Dateien | Ja | Bis 50MB |
-| Link-Ablauf | Konfigurierbar | Permanent |
