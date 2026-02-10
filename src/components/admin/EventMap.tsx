@@ -236,32 +236,45 @@ const sourceColors = {
 };
 
 
-// Create source-based marker icon (KL=Amber, KBA=Green)
-const createSourceIcon = (num: number, source: "KL" | "KBA" | "unknown", status: EventStatus) => {
-  const colors = sourceColors[source] || sourceColors.unknown;
+// Source ring hex colors for map markers
+const sourceRingColors = {
+  KL: "#f59e0b",    // amber-500
+  KBA: "#10b981",   // emerald-500
+  unknown: "#9ca3af", // gray-400
+};
+
+// Create marker icon with tour color fill + source ring
+const createSourceIcon = (num: number, source: "KL" | "KBA" | "unknown", status: EventStatus, tourColor?: { gradient: string; shadow: string }) => {
+  const srcColors = sourceColors[source] || sourceColors.unknown;
   const isPulsing = status === "today";
-  
+  const ringColor = sourceRingColors[source] || sourceRingColors.unknown;
+
+  // Use tour color for fill, source color for ring; fallback to source color for both
+  const fillGradient = tourColor ? tourColor.gradient : srcColors.gradient;
+  const shadowColor = tourColor ? tourColor.shadow : srcColors.shadow;
+  const borderColor = tourColor ? ringColor : "white";
+
   return L.divIcon({
     className: 'custom-source-marker',
     html: `<div style="
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      background: ${colors.gradient};
+      background: ${fillGradient};
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
       font-size: 13px;
-      border: 3px solid white;
-      box-shadow: 0 2px 8px ${colors.shadow};
+      border: 4px solid ${borderColor};
+      box-shadow: 0 2px 8px ${shadowColor}${tourColor ? `, 0 0 0 1px rgba(255,255,255,0.5)` : ''};
       ${isPulsing ? 'animation: marker-pulse 1s infinite;' : ''}
     ">${num}</div>
     ${isPulsing ? `<style>
       @keyframes marker-pulse {
-        0%, 100% { transform: scale(1); box-shadow: 0 2px 8px ${colors.shadow}; }
-        50% { transform: scale(1.1); box-shadow: 0 4px 20px ${colors.shadow}; }
+        0%, 100% { transform: scale(1); box-shadow: 0 2px 8px ${shadowColor}; }
+        50% { transform: scale(1.1); box-shadow: 0 4px 20px ${shadowColor}; }
       }
     </style>` : ''}`,
     iconSize: [32, 32],
@@ -270,25 +283,30 @@ const createSourceIcon = (num: number, source: "KL" | "KBA" | "unknown", status:
   });
 };
 
-// Create highlighted source-based marker icon
-const createHighlightedSourceIcon = (num: number, source: "KL" | "KBA" | "unknown") => {
-  const colors = sourceColors[source] || sourceColors.unknown;
-  
+// Create highlighted marker icon with tour color fill + source ring
+const createHighlightedSourceIcon = (num: number, source: "KL" | "KBA" | "unknown", tourColor?: { gradient: string; shadow: string }) => {
+  const srcColors = sourceColors[source] || sourceColors.unknown;
+  const ringColor = sourceRingColors[source] || sourceRingColors.unknown;
+
+  const fillGradient = tourColor ? tourColor.gradient : srcColors.gradient;
+  const shadowColor = tourColor ? tourColor.shadow : srcColors.shadow;
+  const borderColor = tourColor ? ringColor : "white";
+
   return L.divIcon({
     className: 'custom-highlighted-marker',
     html: `<div style="
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: ${colors.gradient};
+      background: ${fillGradient};
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
       font-size: 18px;
-      border: 4px solid white;
-      box-shadow: 0 0 24px ${colors.shadow}, 0 4px 16px rgba(0,0,0,0.3);
+      border: 5px solid ${borderColor};
+      box-shadow: 0 0 24px ${shadowColor}, 0 4px 16px rgba(0,0,0,0.3)${tourColor ? `, 0 0 0 2px rgba(255,255,255,0.6)` : ''};
       animation: marker-glow 1.5s infinite;
     ">${num}</div>
     <style>
@@ -328,12 +346,12 @@ interface TourGroup {
 }
 
 const tourGroupColors = [
-  { bg: "bg-indigo-500", light: "bg-indigo-50", text: "text-indigo-700", border: "border-l-indigo-400", line: "#6366f1", from: "from-indigo-500", to: "to-indigo-600", cardBorder: "border-indigo-400", ring: "ring-indigo-200", shadow: "shadow-indigo-500/20" },
-  { bg: "bg-rose-500", light: "bg-rose-50", text: "text-rose-700", border: "border-l-rose-400", line: "#f43f5e", from: "from-rose-500", to: "to-rose-600", cardBorder: "border-rose-400", ring: "ring-rose-200", shadow: "shadow-rose-500/20" },
-  { bg: "bg-teal-500", light: "bg-teal-50", text: "text-teal-700", border: "border-l-teal-400", line: "#14b8a6", from: "from-teal-500", to: "to-teal-600", cardBorder: "border-teal-400", ring: "ring-teal-200", shadow: "shadow-teal-500/20" },
-  { bg: "bg-violet-500", light: "bg-violet-50", text: "text-violet-700", border: "border-l-violet-400", line: "#8b5cf6", from: "from-violet-500", to: "to-violet-600", cardBorder: "border-violet-400", ring: "ring-violet-200", shadow: "shadow-violet-500/20" },
-  { bg: "bg-sky-500", light: "bg-sky-50", text: "text-sky-700", border: "border-l-sky-400", line: "#0ea5e9", from: "from-sky-500", to: "to-sky-600", cardBorder: "border-sky-400", ring: "ring-sky-200", shadow: "shadow-sky-500/20" },
-  { bg: "bg-pink-500", light: "bg-pink-50", text: "text-pink-700", border: "border-l-pink-400", line: "#ec4899", from: "from-pink-500", to: "to-pink-600", cardBorder: "border-pink-400", ring: "ring-pink-200", shadow: "shadow-pink-500/20" },
+  { bg: "bg-indigo-500", light: "bg-indigo-50", text: "text-indigo-700", border: "border-l-indigo-400", line: "#6366f1", gradient: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)", shadow: "rgba(99, 102, 241, 0.6)", from: "from-indigo-500", to: "to-indigo-600", cardBorder: "border-indigo-400", ring: "ring-indigo-200", cardShadow: "shadow-indigo-500/20" },
+  { bg: "bg-rose-500", light: "bg-rose-50", text: "text-rose-700", border: "border-l-rose-400", line: "#f43f5e", gradient: "linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)", shadow: "rgba(244, 63, 94, 0.6)", from: "from-rose-500", to: "to-rose-600", cardBorder: "border-rose-400", ring: "ring-rose-200", cardShadow: "shadow-rose-500/20" },
+  { bg: "bg-teal-500", light: "bg-teal-50", text: "text-teal-700", border: "border-l-teal-400", line: "#14b8a6", gradient: "linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)", shadow: "rgba(20, 184, 166, 0.6)", from: "from-teal-500", to: "to-teal-600", cardBorder: "border-teal-400", ring: "ring-teal-200", cardShadow: "shadow-teal-500/20" },
+  { bg: "bg-violet-500", light: "bg-violet-50", text: "text-violet-700", border: "border-l-violet-400", line: "#8b5cf6", gradient: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)", shadow: "rgba(139, 92, 246, 0.6)", from: "from-violet-500", to: "to-violet-600", cardBorder: "border-violet-400", ring: "ring-violet-200", cardShadow: "shadow-violet-500/20" },
+  { bg: "bg-sky-500", light: "bg-sky-50", text: "text-sky-700", border: "border-l-sky-400", line: "#0ea5e9", gradient: "linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)", shadow: "rgba(14, 165, 233, 0.6)", from: "from-sky-500", to: "to-sky-600", cardBorder: "border-sky-400", ring: "ring-sky-200", cardShadow: "shadow-sky-500/20" },
+  { bg: "bg-pink-500", light: "bg-pink-50", text: "text-pink-700", border: "border-l-pink-400", line: "#ec4899", gradient: "linear-gradient(135deg, #ec4899 0%, #db2777 100%)", shadow: "rgba(236, 72, 153, 0.6)", from: "from-pink-500", to: "to-pink-600", cardBorder: "border-pink-400", ring: "ring-pink-200", cardShadow: "shadow-pink-500/20" },
 ];
 
 const formatTourDateRange = (startDate: string, endDate: string) => {
@@ -656,6 +674,17 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
     return map;
   }, [tourGroups]);
 
+  // Build a map from event ID to tour group number (for marker coloring)
+  const eventTourNumber = useMemo(() => {
+    const map = new Map<string, number>();
+    tourGroups.forEach(group => {
+      group.events.forEach(event => {
+        map.set(event.id, group.tourNumber);
+      });
+    });
+    return map;
+  }, [tourGroups]);
+
   // Get coordinates for an event
   const getCoordinates = (event: AdminEvent): [number, number] | null => {
     if (event.latitude && event.longitude) {
@@ -673,15 +702,35 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
     return null;
   };
 
-  // Events with valid coordinates
+  // Events with valid coordinates + tour color computed inline
+  // (self-contained: computes tour number from scratch to avoid stale-dep issues)
   const eventsWithCoords = useMemo(() => {
+    // Step 1: Assign tour numbers based on >2 day gaps
+    const tourMap = new Map<string, number>();
+    let currentTourNum = 1;
+    sortedEvents.forEach((event, idx) => {
+      tourMap.set(event.id, currentTourNum);
+      const next = sortedEvents[idx + 1];
+      if (next) {
+        const gap = differenceInDays(new Date(next.start_time), new Date(event.start_time));
+        if (gap > 2) currentTourNum++;
+      }
+    });
+
+    // Step 2: Map events with coords + tour color
     return sortedEvents
-      .map((event, index) => ({
-        ...event,
-        coords: getCoordinates(event),
-        stationNumber: index + 1,
-        status: getEventStatus(event.start_time),
-      }))
+      .map((event, index) => {
+        const tn = tourMap.get(event.id);
+        return {
+          ...event,
+          coords: getCoordinates(event),
+          stationNumber: index + 1,
+          status: getEventStatus(event.start_time),
+          tourColor: tn
+            ? tourGroupColors[(tn - 1) % tourGroupColors.length]
+            : undefined,
+        };
+      })
       .filter(event => event.coords !== null);
   }, [sortedEvents]);
 
@@ -1242,6 +1291,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
               {/* Markers with optional clustering */}
               {enableClustering ? (
                 <MarkerClusterGroup
+                  key={`cluster-${tourGroups.length}`}
                   ref={clusterGroupRef}
                   chunkedLoading
                   iconCreateFunction={(cluster: any) => createClusterCustomIcon(cluster, false)}
@@ -1250,12 +1300,12 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                   showCoverageOnHover={false}
                 >
                   {eventsWithCoords.map((event) => (
-                    <Marker 
-                      key={event.id} 
+                    <Marker
+                      key={event.id}
                       position={event.coords as [number, number]}
-                      icon={activeEventId === event.id 
-                        ? createHighlightedSourceIcon(event.stationNumber, event.source) 
-                        : createSourceIcon(event.stationNumber, event.source, event.status)}
+                      icon={activeEventId === event.id
+                        ? createHighlightedSourceIcon(event.stationNumber, event.source, event.tourColor)
+                        : createSourceIcon(event.stationNumber, event.source, event.status, event.tourColor)}
                       // @ts-ignore - custom property for cluster grouping
                       eventSource={event.source}
                       ref={(ref) => {
@@ -1341,12 +1391,12 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
               ) : (
                 // Without clustering
                 eventsWithCoords.map((event) => (
-                  <Marker 
-                    key={event.id} 
+                  <Marker
+                    key={event.id}
                     position={event.coords as [number, number]}
-                    icon={activeEventId === event.id 
-                      ? createHighlightedSourceIcon(event.stationNumber, event.source) 
-                      : createSourceIcon(event.stationNumber, event.source, event.status)}
+                    icon={activeEventId === event.id
+                      ? createHighlightedSourceIcon(event.stationNumber, event.source, event.tourColor)
+                      : createSourceIcon(event.stationNumber, event.source, event.status, event.tourColor)}
                     eventHandlers={{
                       click: () => scrollToEvent(event.id),
                     }}
@@ -1428,20 +1478,22 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
           </div>
 
           {/* Legend - below map */}
-          <div className="flex-shrink-0 flex items-center justify-center gap-4 text-xs text-gray-500 py-3 bg-gray-50 border-t border-gray-200">
+          <div className="flex-shrink-0 flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500 py-3 bg-gray-50 border-t border-gray-200">
+            {/* Source ring legend */}
             <div className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
-              <span>Landgraf (KL)</span>
+              <div className="w-5 h-5 rounded-full bg-gray-400 ring-[3px] ring-amber-500" />
+              <span>Ring = Landgraf</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 text-white text-[10px] flex items-center justify-center font-bold border-2 border-white shadow">1</div>
-              <span>Konzertbüro Augsburg (KBA)</span>
+              <div className="w-5 h-5 rounded-full bg-gray-400 ring-[3px] ring-emerald-500" />
+              <span>Ring = KBA</span>
             </div>
+            {/* Tour colors legend */}
             {tourGroups.length > 1 && (
               <div className="flex items-center gap-1.5">
                 <div className="flex gap-0.5">
                   {tourGroups.slice(0, 4).map((g) => (
-                    <div key={g.tourNumber} className="w-4 h-0.5 rounded-full" style={{ backgroundColor: tourGroupColors[(g.tourNumber - 1) % tourGroupColors.length].line }} />
+                    <div key={g.tourNumber} className="w-4 h-4 rounded-full" style={{ backgroundColor: tourGroupColors[(g.tourNumber - 1) % tourGroupColors.length].line }} />
                   ))}
                 </div>
                 <span>{tourGroups.length} Touren</span>
@@ -1450,7 +1502,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
             {eventsWithCoords.length > 1 && (
               <>
                 <span className="text-gray-300">|</span>
-                <div className="flex items-center gap-1.5 text-indigo-600">
+                <div className="flex items-center gap-1.5 text-gray-500">
                   <Navigation className="w-4 h-4" />
                   <span>{eventsWithCoords.length} Stationen</span>
                 </div>
@@ -1579,7 +1631,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                               text: color.text,
                               border: color.cardBorder,
                               ring: color.ring,
-                              shadow: color.shadow,
+                              shadow: color.cardShadow,
                               from: color.from,
                               to: color.to,
                             }}

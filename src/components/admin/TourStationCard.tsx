@@ -168,12 +168,11 @@ const TourStationCard = ({
             <div
               className={cn(
                 "w-11 h-11 rounded-full flex items-center justify-center font-bold text-lg text-white",
-                "ring-[3px]",
                 colors.bg,
-                // Source ring: amber for KL, emerald for KBA
+                // Source ring: amber for KL, emerald for KBA - thick & visible
                 tourColor
-                  ? (event.source === "KL" ? "ring-amber-400" : event.source === "KBA" ? "ring-emerald-400" : "ring-gray-300")
-                  : "ring-white/30"
+                  ? cn("ring-[4px]", event.source === "KL" ? "ring-amber-500" : event.source === "KBA" ? "ring-emerald-500" : "ring-gray-400")
+                  : "ring-[3px] ring-white/30"
               )}
             >
               {index + 1}
