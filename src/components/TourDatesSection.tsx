@@ -7,11 +7,8 @@ import { LiveViewerCount } from "@/components/LiveViewerCount";
 import { getTourYearRange, getYearFromEventDate } from "@/lib/dateUtils";
 
 const generateEventSchema = (date: TourDate) => {
-  // Parse German date format DD.MM.YYYY to ISO format
   const [day, month, year] = date.date.split('.');
   const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T19:00:00`;
-  
-  // Door time is typically 30 minutes before the event
   const eventDateTime = new Date(isoDate);
   const doorTime = new Date(eventDateTime.getTime() - 30 * 60000).toISOString();
   
@@ -72,7 +69,7 @@ const generateEventSchema = (date: TourDate) => {
         "name": "Dream & Anchor",
         "url": "https://paterbrown.com"
       },
-    "offers": {
+    "offers": date.ticketUrl ? {
       "@type": "Offer",
       "url": date.ticketUrl,
       "availability": "https://schema.org/InStock",
@@ -80,7 +77,7 @@ const generateEventSchema = (date: TourDate) => {
       "priceCurrency": date.city.includes("Zürich") ? "CHF" : "EUR",
       "price": date.city.includes("Zürich") ? "45" : "35",
       "priceRange": date.city.includes("Zürich") ? "CHF 35-55" : "€25-45"
-    },
+    } : undefined,
     "inLanguage": "de-DE",
     "workPerformed": {
       "@type": "CreativeWork",
@@ -98,8 +95,8 @@ const TourDatesSection = () => {
   
   const { data: tourDates = [], isLoading, error } = useQuery({
     queryKey: ['tour-events', 'v2', new Date().toISOString().split('T')[0]],
-    staleTime: 1000 * 60 * 60, // 1 hour
-    refetchInterval: 1000 * 60 * 60, // Refetch every 60 minutes
+    staleTime: 1000 * 60 * 60,
+    refetchInterval: 1000 * 60 * 60,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tour_events')
@@ -108,7 +105,6 @@ const TourDatesSection = () => {
       
       if (error) throw error;
       
-      // Transform database format to component format and sort by event_date
       const transformed = (data || []).map(event => ({
         id: event.id,
         date: event.date,
@@ -116,7 +112,7 @@ const TourDatesSection = () => {
         city: event.city,
         venue: event.venue,
         note: event.note || undefined,
-        ticketUrl: event.ticket_url,
+        ticketUrl: event.ticket_url || undefined,
         geo: event.latitude && event.longitude ? {
           latitude: Number(event.latitude),
           longitude: Number(event.longitude)
@@ -124,15 +120,13 @@ const TourDatesSection = () => {
         eventDate: event.event_date
       })) as (TourDate & { eventDate: string })[];
       
-      // Get current date in German timezone (Europe/Berlin)
       const today = new Date().toLocaleDateString('de-DE', { 
         timeZone: 'Europe/Berlin',
         year: 'numeric',
         month: '2-digit',
         day: '2-digit'
-      }).split('.').reverse().join('-'); // Convert DD.MM.YYYY → YYYY-MM-DD
+      }).split('.').reverse().join('-');
       
-      // Filter out past events and sort by event_date chronologically
       return transformed
         .filter(event => event.eventDate >= today)
         .sort((a, b) => 
@@ -160,7 +154,6 @@ const TourDatesSection = () => {
           </p>
         </div>
 
-        {/* Live Viewer Count - FOMO Element */}
         {isBlackWeek && <LiveViewerCount />}
         
         {isLoading && (
@@ -221,7 +214,7 @@ const TourDatesSection = () => {
               </div>
             <div className="flex flex-col items-end gap-1">
               {date.ticketUrl ? (
-                <a
+                <a 
                   href={date.ticketUrl}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -231,11 +224,11 @@ const TourDatesSection = () => {
                   Tickets <span aria-hidden="true">→</span>
                 </a>
               ) : (
-                <span className="text-muted-foreground/60 font-medium uppercase tracking-[0.15em] text-base pb-1">
+                <span className="text-muted-foreground font-medium uppercase tracking-[0.15em] text-base pb-1">
                   Tickets folgen
                 </span>
               )}
-              {isBlackWeek && date.ticketUrl && (
+              {isBlackWeek && (
                       <span className="text-xs text-gold font-semibold">
                         Jetzt 30% Rabatt sichern
                       </span>
