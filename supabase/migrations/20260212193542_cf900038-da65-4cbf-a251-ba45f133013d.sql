@@ -1,0 +1,2 @@
+ALTER TABLE admin_events ADD COLUMN IF NOT EXISTS ticket_info TEXT;
+ALTER TABLE admin_events ADD COLUMN IF NOT EXISTS ticket_type TEXT;
