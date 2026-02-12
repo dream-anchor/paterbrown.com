@@ -1726,6 +1726,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                               border: color.cardBorder,
                               ring: color.ring,
                               shadow: color.cardShadow,
+                              glow: `hover:${color.cardShadow}`,
                               from: color.from,
                               to: color.to,
                             }}
