@@ -29,7 +29,7 @@ export type Database = {
           start_time: string
           state: string | null
           ticket_url: string | null
-          ticket_url_approved: boolean
+          ticket_url_approved: boolean | null
           title: string
           updated_at: string
           venue_address: string | null
@@ -52,7 +52,7 @@ export type Database = {
           start_time: string
           state?: string | null
           ticket_url?: string | null
-          ticket_url_approved?: boolean
+          ticket_url_approved?: boolean | null
           title: string
           updated_at?: string
           venue_address?: string | null
@@ -75,7 +75,7 @@ export type Database = {
           start_time?: string
           state?: string | null
           ticket_url?: string | null
-          ticket_url_approved?: boolean
+          ticket_url_approved?: boolean | null
           title?: string
           updated_at?: string
           venue_address?: string | null
@@ -661,7 +661,7 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           note: string | null
-          source: string
+          source: string | null
           ticket_url: string
           venue: string
         }
@@ -678,7 +678,7 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           note?: string | null
-          source?: string
+          source?: string | null
           ticket_url: string
           venue: string
         }
@@ -695,7 +695,7 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           note?: string | null
-          source?: string
+          source?: string | null
           ticket_url?: string
           venue?: string
         }
