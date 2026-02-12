@@ -25,6 +25,8 @@ interface AdminEvent {
   state: string | null;
   venue_name: string | null;
   venue_url: string | null;
+  ticket_url: string | null;
+  ticket_url_approved: boolean;
   start_time: string;
   end_time: string | null;
   note: string | null;
@@ -43,6 +45,7 @@ const Admin = () => {
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const [travelBookings, setTravelBookings] = useState<any[]>([]);
   const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
+  const [dataVersion, setDataVersion] = useState(0);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [selectedSearchEvent, setSelectedSearchEvent] = useState<any>(null);
   const navigate = useNavigate();
@@ -212,6 +215,7 @@ const Admin = () => {
       setEvents(eventsRes.data || []);
       setTravelBookings(bookingsRes.data || []);
       setCalendarEvents(calEventsRes.data || []);
+      setDataVersion(v => v + 1);
     } catch (error) {
       console.error("Error fetching events:", error);
       toast({
@@ -417,7 +421,7 @@ const Admin = () => {
 
         <div className="mt-6">
           <TabsContent value="calendar" className="mt-0 focus-visible:outline-none">
-            <FullCalendar 
+            <FullCalendar
               onNavigateToTravel={(bookingId) => {
                 setSearchParams({ tab: "travel" });
               }}
@@ -425,6 +429,7 @@ const Admin = () => {
                 setSearchParams({ tab: "map", activeEventId: eventId });
               }}
               onEventsAdded={fetchEvents}
+              refreshTrigger={dataVersion}
             />
           </TabsContent>
 

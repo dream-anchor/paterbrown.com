@@ -366,14 +366,15 @@ Antworte NUR mit JSON-Array!`
       return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
     };
 
-    // Mark all existing events as inactive
+    // Mark existing KBA events as inactive (KL events managed separately)
     const { error: deactivateError } = await supabase
       .from('tour_events')
       .update({ is_active: false })
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .or('source.is.null,source.eq.KBA');
 
     if (deactivateError) {
-      console.error('Error deactivating events:', deactivateError);
+      console.error('Error deactivating KBA events:', deactivateError);
     }
 
     let insertedCount = 0;
@@ -470,22 +471,133 @@ Antworte NUR mit JSON-Array!`
       }
     }
 
-    console.log('=== Sync Complete ===');
-    console.log(`Total: ${validEvents.length}`);
+    console.log('=== KBA Sync Complete ===');
+    console.log(`KBA Total: ${validEvents.length}`);
     console.log(`🔒 Protected: ${protectedCount}`);
     console.log(`🔍 Google Found: ${googleFoundCount}`);
     console.log(`📝 Inserted: ${insertedCount}`);
     console.log(`🔄 Updated: ${updatedCount}`);
 
+    // === Step 4: Sync KL events from admin_events ===
+    console.log('Step 4: Syncing KL events from admin_events...');
+
+    let klInserted = 0;
+    let klUpdated = 0;
+    let klDeactivated = 0;
+
+    // Deactivate all existing KL tour_events first
+    const { error: klDeactivateError } = await supabase
+      .from('tour_events')
+      .update({ is_active: false })
+      .eq('source', 'KL')
+      .eq('is_active', true);
+
+    if (klDeactivateError) {
+      console.error('Error deactivating KL events:', klDeactivateError);
+    }
+
+    // Fetch all active KL events from admin_events
+    const { data: klEvents, error: klFetchError } = await supabase
+      .from('admin_events')
+      .select('*')
+      .eq('source', 'KL')
+      .is('deleted_at', null)
+      .order('start_time', { ascending: true });
+
+    if (klFetchError) {
+      console.error('Error fetching KL events:', klFetchError);
+    } else if (klEvents && klEvents.length > 0) {
+      console.log(`Found ${klEvents.length} KL events in admin_events`);
+
+      const dayNames: Record<string, string> = {
+        '0': 'Sonntag', '1': 'Montag', '2': 'Dienstag', '3': 'Mittwoch',
+        '4': 'Donnerstag', '5': 'Freitag', '6': 'Samstag',
+      };
+
+      for (const klEvent of klEvents) {
+        const startDate = new Date(klEvent.start_time);
+        const eventDate = startDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        const dd = String(startDate.getDate()).padStart(2, '0');
+        const mm = String(startDate.getMonth() + 1).padStart(2, '0');
+        const yyyy = startDate.getFullYear();
+        const dateStr = `${dd}.${mm}.${yyyy}`;
+        const dayName = dayNames[String(startDate.getDay())];
+        const hours = String(startDate.getHours()).padStart(2, '0');
+        const mins = String(startDate.getMinutes()).padStart(2, '0');
+        const dayDisplay = `${dayName.substring(0, 2)}. ${hours}:${mins}`;
+
+        // Only use ticket_url if approved, otherwise fall back to venue_url
+        const ticketUrl = (klEvent.ticket_url_approved && klEvent.ticket_url)
+          ? klEvent.ticket_url
+          : (klEvent.venue_url || '');
+
+        const tourEventData = {
+          date: dateStr,
+          day: dayDisplay,
+          city: klEvent.location,
+          venue: klEvent.venue_name || klEvent.location,
+          note: klEvent.note || null,
+          ticket_url: ticketUrl,
+          event_date: eventDate,
+          is_active: true,
+          source: 'KL',
+          latitude: klEvent.latitude,
+          longitude: klEvent.longitude,
+          last_synced_at: new Date().toISOString(),
+        };
+
+        // Check if this KL event already exists in tour_events
+        const { data: existingKl } = await supabase
+          .from('tour_events')
+          .select('id')
+          .eq('event_date', eventDate)
+          .eq('city', klEvent.location)
+          .eq('source', 'KL')
+          .maybeSingle();
+
+        if (existingKl) {
+          const { error: updateErr } = await supabase
+            .from('tour_events')
+            .update(tourEventData)
+            .eq('id', existingKl.id);
+          if (!updateErr) {
+            klUpdated++;
+            console.log(`KL Updated: ${klEvent.location} - ${dateStr}`);
+          }
+        } else {
+          const { error: insertErr } = await supabase
+            .from('tour_events')
+            .insert(tourEventData);
+          if (!insertErr) {
+            klInserted++;
+            console.log(`KL Inserted: ${klEvent.location} - ${dateStr}`);
+          }
+        }
+      }
+    } else {
+      console.log('No KL events found in admin_events');
+    }
+
+    console.log('=== Full Sync Complete ===');
+    console.log(`KBA: ${validEvents.length} (${insertedCount} new, ${updatedCount} updated, ${protectedCount} protected)`);
+    console.log(`KL: ${klEvents?.length || 0} (${klInserted} new, ${klUpdated} updated)`);
+
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Synced ${validEvents.length} events (${insertedCount} new, ${updatedCount} updated, ${protectedCount} protected)`,
-        eventsFound: validEvents.length,
-        inserted: insertedCount,
-        updated: updatedCount,
-        protected: protectedCount,
-        googleFound: googleFoundCount,
+        message: `Synced ${validEvents.length} KBA + ${klEvents?.length || 0} KL events`,
+        kba: {
+          eventsFound: validEvents.length,
+          inserted: insertedCount,
+          updated: updatedCount,
+          protected: protectedCount,
+          googleFound: googleFoundCount,
+        },
+        kl: {
+          eventsFound: klEvents?.length || 0,
+          inserted: klInserted,
+          updated: klUpdated,
+        },
         events: validEvents,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -19,6 +19,10 @@ import {
   Trash2,
   X,
   AlertCircle,
+  Ticket,
+  ExternalLink,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -69,6 +73,9 @@ const EventEditModal = ({
   const [allDay, setAllDay] = useState(false);
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
+  const [ticketUrl, setTicketUrl] = useState("");
+  const [ticketUrlApproved, setTicketUrlApproved] = useState(false);
+  const [isResearching, setIsResearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -119,6 +126,8 @@ const EventEditModal = ({
       setAllDay(event.allDay || false);
       setLocation(event.location || "");
       setDescription(event.description || "");
+      setTicketUrl(event.metadata?.ticket_url || "");
+      setTicketUrlApproved(event.metadata?.ticket_url_approved || false);
       setErrors({});
     }
   }, [event]);
@@ -211,6 +220,8 @@ const EventEditModal = ({
             end_time: endDatetime?.toISOString() || null,
             location: location.trim() || "",
             note: description.trim() || null,
+            ticket_url: ticketUrl.trim() || null,
+            ticket_url_approved: ticketUrlApproved,
           })
           .eq("id", event.id);
 
@@ -299,6 +310,46 @@ const EventEditModal = ({
         year: "numeric",
       })
     : "";
+
+  const handleResearchTicketUrl = async () => {
+    if (!event) return;
+    setIsResearching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("research-ticket-url", {
+        body: {
+          event_id: event.id,
+          venue_name: event.metadata?.venue_name || "",
+          city: location,
+          venue_url: event.metadata?.venue_url || "",
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.ticket_url) {
+        setTicketUrl(data.ticket_url);
+        toast({
+          title: "Ticket-Link gefunden",
+          description: data.source_description || `Konfidenz: ${data.confidence}`,
+        });
+      } else {
+        toast({
+          title: "Kein Link gefunden",
+          description: "Die KI konnte keinen passenden Ticket-Link finden",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      console.error("Research error:", error);
+      toast({
+        title: "Recherche fehlgeschlagen",
+        description: error.message || "Ticket-Link konnte nicht recherchiert werden",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResearching(false);
+    }
+  };
 
   const selectedType = getEventTypeByValue(eventType);
   const selectedSource = getTourSourceByValue(tourSource);
@@ -542,6 +593,77 @@ const EventEditModal = ({
               className="mt-1 bg-white border-gray-200 resize-none"
             />
           </div>
+
+          {/* Ticket URL (for tour events) */}
+          {eventType === "tour" && event?.source === "admin_events" && (
+            <div>
+              <Label htmlFor="edit-ticket-url" className="flex items-center gap-1">
+                <Ticket className="w-3.5 h-3.5" />
+                Ticket-Link (VVK)
+              </Label>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="relative flex-1">
+                  <Input
+                    id="edit-ticket-url"
+                    value={ticketUrl}
+                    onChange={(e) => setTicketUrl(e.target.value)}
+                    placeholder="https://theater.de/tickets/pater-brown"
+                    className="bg-white border-gray-200 pr-8"
+                  />
+                  {ticketUrl && (
+                    <a
+                      href={ticketUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-amber-600"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResearchTicketUrl}
+                  disabled={isResearching}
+                  className="flex-shrink-0 text-xs border-gray-200 hover:border-amber-300 hover:bg-amber-50"
+                >
+                  {isResearching ? (
+                    <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-3.5 h-3.5 mr-1" />
+                  )}
+                  {isResearching ? "Sucht..." : "AI Recherche"}
+                </Button>
+              </div>
+              {ticketUrl && (
+                <label className="flex items-center gap-2 mt-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={ticketUrlApproved}
+                    onChange={(e) => setTicketUrlApproved(e.target.checked)}
+                    className="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500"
+                  />
+                  <span className={cn(
+                    "text-xs font-medium",
+                    ticketUrlApproved ? "text-emerald-600" : "text-gray-500"
+                  )}>
+                    {ticketUrlApproved ? "Freigegeben für Website" : "Freigeben für Website"}
+                  </span>
+                  {!ticketUrlApproved && (
+                    <span className="text-[10px] text-gray-400">(Link wird noch nicht auf der Website angezeigt)</span>
+                  )}
+                </label>
+              )}
+              {!ticketUrl && tourSource === "KL" && (
+                <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  Kein Ticket-Link hinterlegt
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-4 border-t border-gray-100">

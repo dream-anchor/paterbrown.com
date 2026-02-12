@@ -4,10 +4,10 @@ import { de } from "date-fns/locale";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, Tooltip } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
+import {
   Calendar, Clock, MapPin, Navigation, RefreshCw,
   AlertCircle, Car, ExternalLink, Eye, Filter, ChevronDown,
-  Sparkles, Pencil, ChevronUp, Route
+  Sparkles, Pencil, ChevronUp, Route, Ticket
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { haptics } from "@/lib/haptics";
@@ -539,6 +539,8 @@ interface AdminEvent {
   location: string;
   state: string | null;
   venue_name: string | null;
+  ticket_url: string | null;
+  ticket_url_approved: boolean;
   start_time: string;
   end_time: string | null;
   note: string | null;
@@ -562,7 +564,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
   const [routesLoaded, setRoutesLoaded] = useState(false);
   const [selectedYear, setSelectedYear] = useState<string>("all");
   const [selectedSource, setSelectedSource] = useState<string>("all");
-  const [showUpcomingOnly, setShowUpcomingOnly] = useState(false);
+  const [showUpcomingOnly, setShowUpcomingOnly] = useState(true);
   const [enableClustering, setEnableClustering] = useState(true);
   const [dateRangeValue, setDateRangeValue] = useState<number[]>([0, 100]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -1024,6 +1026,8 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         venue_name: event.venue_name,
         state: event.state,
         source: event.source,
+        ticket_url: event.ticket_url,
+        ticket_url_approved: event.ticket_url_approved,
       },
     };
   };
@@ -1803,6 +1807,26 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
                     <p className="text-sm text-gray-600">{selectedEventDetail.note}</p>
                   </div>
                 )}
+
+                {/* Ticket URL */}
+                {selectedEventDetail.ticket_url ? (
+                  <div className="flex items-center gap-3">
+                    <Ticket className="w-5 h-5 text-emerald-500" />
+                    <a
+                      href={selectedEventDetail.ticket_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline truncate"
+                    >
+                      {selectedEventDetail.ticket_url}
+                    </a>
+                  </div>
+                ) : selectedEventDetail.source === "KL" ? (
+                  <div className="flex items-center gap-3 text-amber-500">
+                    <Ticket className="w-5 h-5" />
+                    <span className="text-sm">Kein Ticket-Link hinterlegt</span>
+                  </div>
+                ) : null}
               </div>
 
               {/* Actions */}

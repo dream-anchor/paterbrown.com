@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -138,6 +138,7 @@ interface FullCalendarProps {
   onNavigateToTravel?: (bookingId: string) => void;
   onNavigateToTour?: (eventId: string) => void;
   onEventsAdded?: () => void;
+  refreshTrigger?: number;
 }
 
 // Color schemes for different event types
@@ -182,7 +183,7 @@ const getEventIcon = (type: string, bookingType?: string): typeof Train => {
   }
 };
 
-const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: FullCalendarProps) => {
+const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded, refreshTrigger }: FullCalendarProps) => {
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   
@@ -276,6 +277,15 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded }: F
   useEffect(() => {
     loadData();
   }, []);
+
+  // Reload when parent data changes (e.g. edits in EventMap)
+  const refreshRef = useRef(refreshTrigger);
+  useEffect(() => {
+    if (refreshTrigger !== undefined && refreshTrigger !== refreshRef.current) {
+      refreshRef.current = refreshTrigger;
+      loadData();
+    }
+  }, [refreshTrigger]);
 
   // Combine all events into unified CalendarEntry format
   const allEntries = useMemo((): CalendarEntry[] => {

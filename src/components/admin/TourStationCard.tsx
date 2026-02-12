@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Calendar, Clock, MapPin, Car, Navigation, Home, Train } from "lucide-react";
+import { Calendar, Clock, MapPin, Car, Navigation, Home, Train, Ticket, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { haptics } from "@/lib/haptics";
 import { differenceInDays } from "date-fns";
@@ -53,6 +53,8 @@ interface AdminEvent {
   location: string;
   state: string | null;
   venue_name: string | null;
+  ticket_url: string | null;
+  ticket_url_approved: boolean;
   start_time: string;
   end_time: string | null;
   note: string | null;
@@ -239,13 +241,37 @@ const TourStationCard = ({
               </span>
             </div>
 
-            {/* Venue */}
-            {event.venue_name && (
-              <p className="text-xs text-gray-400 truncate flex items-center gap-1">
-                <MapPin className="w-3 h-3 flex-shrink-0" />
-                {event.venue_name}
-              </p>
-            )}
+            {/* Venue + Ticket indicator */}
+            <div className="flex items-center gap-2">
+              {event.venue_name && (
+                <p className="text-xs text-gray-400 truncate flex items-center gap-1 flex-1 min-w-0">
+                  <MapPin className="w-3 h-3 flex-shrink-0" />
+                  {event.venue_name}
+                </p>
+              )}
+              {event.ticket_url ? (
+                <a
+                  href={event.ticket_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className={cn(
+                    "flex-shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium transition-colors",
+                    event.ticket_url_approved
+                      ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                      : "bg-yellow-50 text-yellow-600 hover:bg-yellow-100 border border-yellow-200 border-dashed"
+                  )}
+                >
+                  <Ticket className="w-2.5 h-2.5" />
+                  {event.ticket_url_approved ? "VVK" : "Entwurf"}
+                </a>
+              ) : event.source === "KL" ? (
+                <span className="flex-shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-500 text-[10px]">
+                  <AlertTriangle className="w-2.5 h-2.5" />
+                  Kein VVK
+                </span>
+              ) : null}
+            </div>
           </div>
 
           {/* Right: Navigation indicator on hover */}

@@ -28,6 +28,8 @@ export type Database = {
           source: Database["public"]["Enums"]["event_source"]
           start_time: string
           state: string | null
+          ticket_url: string | null
+          ticket_url_approved: boolean
           title: string
           updated_at: string
           venue_address: string | null
@@ -49,6 +51,8 @@ export type Database = {
           source?: Database["public"]["Enums"]["event_source"]
           start_time: string
           state?: string | null
+          ticket_url?: string | null
+          ticket_url_approved?: boolean
           title: string
           updated_at?: string
           venue_address?: string | null
@@ -70,6 +74,8 @@ export type Database = {
           source?: Database["public"]["Enums"]["event_source"]
           start_time?: string
           state?: string | null
+          ticket_url?: string | null
+          ticket_url_approved?: boolean
           title?: string
           updated_at?: string
           venue_address?: string | null
@@ -655,6 +661,7 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           note: string | null
+          source: string
           ticket_url: string
           venue: string
         }
@@ -671,6 +678,7 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           note?: string | null
+          source?: string
           ticket_url: string
           venue: string
         }
@@ -687,6 +695,7 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           note?: string | null
+          source?: string
           ticket_url?: string
           venue?: string
         }
