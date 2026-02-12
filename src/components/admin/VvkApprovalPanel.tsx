@@ -73,7 +73,7 @@ const VvkApprovalPanel = ({ onApprovalChanged, standalone = false }: VvkApproval
       console.error("VVK fetch error:", error);
       return;
     }
-    setEvents(data || []);
+    setEvents((data as KlEvent[]) || []);
     setIsLoading(false);
   };
 
