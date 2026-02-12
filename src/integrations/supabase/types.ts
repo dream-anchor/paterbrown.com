@@ -28,6 +28,8 @@ export type Database = {
           source: Database["public"]["Enums"]["event_source"]
           start_time: string
           state: string | null
+          ticket_info: string | null
+          ticket_type: string | null
           ticket_url: string | null
           ticket_url_approved: boolean | null
           title: string
@@ -51,6 +53,8 @@ export type Database = {
           source?: Database["public"]["Enums"]["event_source"]
           start_time: string
           state?: string | null
+          ticket_info?: string | null
+          ticket_type?: string | null
           ticket_url?: string | null
           ticket_url_approved?: boolean | null
           title: string
@@ -74,6 +78,8 @@ export type Database = {
           source?: Database["public"]["Enums"]["event_source"]
           start_time?: string
           state?: string | null
+          ticket_info?: string | null
+          ticket_type?: string | null
           ticket_url?: string | null
           ticket_url_approved?: boolean | null
           title?: string
