@@ -73,23 +73,61 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`[Research] ═══ Start: ${searchVenue} in ${searchCity} ═══`);
+    // ── Log available API keys ──
+    console.log(`[Research] ═══ Start: "${searchVenue}" in "${searchCity}" ═══`);
+    console.log(`[Research] venue_url: ${searchVenueUrl || "EMPTY"}`);
+    console.log(`[Research] API keys: Firecrawl=${firecrawlApiKey ? "YES" : "NO"} | Google=${googleSearchApiKey ? "YES" : "NO"} | AI=${lovableApiKey ? "YES" : "NO"}`);
 
     let result: ResearchResult | null = null;
 
+    // ══════════════════════════════════════════════════════════════
+    // PRE-STEP: Website Discovery — find venue URL if missing
+    // ══════════════════════════════════════════════════════════════
+    if (!searchVenueUrl && firecrawlApiKey && lovableApiKey) {
+      console.log(`[Research] Pre-Step — Website Discovery: venue_url is empty, searching...`);
+      const discoveredUrl = await discoverVenueWebsite(searchVenue || "", searchCity || "", firecrawlApiKey, lovableApiKey, googleSearchApiKey, googleSearchEngineId);
+      if (discoveredUrl) {
+        searchVenueUrl = discoveredUrl;
+        console.log(`[Research] ✓ Discovered venue URL: ${discoveredUrl}`);
+        // Save discovered URL to DB for future runs
+        const { error: urlSaveError } = await supabase
+          .from("admin_events")
+          .update({ venue_url: discoveredUrl })
+          .eq("id", event_id);
+        if (urlSaveError) {
+          console.log(`[Research] Could not save venue_url: ${urlSaveError.message}`);
+        } else {
+          console.log(`[Research] Saved venue_url to DB`);
+        }
+      } else {
+        console.log(`[Research] ✗ Pre-Step — Could not find venue website`);
+      }
+    } else if (!searchVenueUrl) {
+      console.log(`[Research] Pre-Step — SKIPPED: venue_url empty AND missing API keys (Firecrawl=${firecrawlApiKey ? "YES" : "NO"}, AI=${lovableApiKey ? "YES" : "NO"})`);
+    }
+
     // ── Strategy 0: Firecrawl + AI (Game-Changer) ──
-    // Firecrawl renders JS, returns Markdown. AI reads the content.
     if (!result && searchVenueUrl && firecrawlApiKey && lovableApiKey) {
       console.log(`[Research] Strategy 0 — Firecrawl + AI: ${searchVenueUrl}`);
       try {
         result = await firecrawlStrategy(searchVenueUrl, searchVenue || "", searchCity || "", firecrawlApiKey, lovableApiKey);
-        if (result) console.log(`[Research] ✓ Strategy 0 found: ${result.ticket_url} (${result.confidence})`);
+        if (result) {
+          console.log(`[Research] ✓ Strategy 0 found: ${result.ticket_url} (${result.confidence}, type=${result.ticket_type})`);
+        } else {
+          console.log(`[Research] ✗ Strategy 0 — no result`);
+        }
       } catch (e) {
-        console.log(`[Research] ✗ Strategy 0 failed: ${e}`);
+        console.log(`[Research] ✗ Strategy 0 EXCEPTION: ${e}`);
       }
+    } else if (!result) {
+      const reasons: string[] = [];
+      if (!searchVenueUrl) reasons.push("no venue_url");
+      if (!firecrawlApiKey) reasons.push("no FIRECRAWL_API_KEY");
+      if (!lovableApiKey) reasons.push("no LOVABLE_API_KEY");
+      console.log(`[Research] Strategy 0 — SKIPPED: ${reasons.join(", ")}`);
     }
 
-    // ── Strategy 1: Google site-specific search (loosened) ──
+    // ── Strategy 1: Google site-specific search ──
     if (!result && searchVenueUrl && googleSearchApiKey && googleSearchEngineId) {
       try {
         const domain = new URL(searchVenueUrl).hostname;
@@ -98,7 +136,6 @@ Deno.serve(async (req) => {
 
         const url = await googleSearch(query, googleSearchApiKey, googleSearchEngineId);
         if (url) {
-          // Found a page on the venue site mentioning PB — scrape it with Firecrawl for details
           if (firecrawlApiKey && lovableApiKey) {
             const detailed = await firecrawlAnalyzeSinglePage(url, searchVenue || "", searchCity || "", firecrawlApiKey, lovableApiKey);
             if (detailed) {
@@ -110,32 +147,53 @@ Deno.serve(async (req) => {
             result = { ticket_url: url, ticket_info: null, ticket_type: "unbekannt", confidence: "medium", source_description: `Gefunden auf ${domain}` };
           }
           console.log(`[Research] ✓ Strategy 1 found: ${result.ticket_url}`);
+        } else {
+          console.log(`[Research] ✗ Strategy 1 — no Google results`);
         }
       } catch (e) {
-        console.log(`[Research] ✗ Strategy 1 failed: ${e}`);
+        console.log(`[Research] ✗ Strategy 1 EXCEPTION: ${e}`);
       }
+    } else if (!result) {
+      const reasons: string[] = [];
+      if (!searchVenueUrl) reasons.push("no venue_url");
+      if (!googleSearchApiKey) reasons.push("no GOOGLE_SEARCH_API_KEY");
+      if (!googleSearchEngineId) reasons.push("no GOOGLE_SEARCH_ENGINE_ID");
+      console.log(`[Research] Strategy 1 — SKIPPED: ${reasons.join(", ")}`);
     }
 
-    // ── Strategy 2: General Google search (loosened — no double quotes) ──
+    // ── Strategy 2: General Google search ──
     if (!result && googleSearchApiKey && googleSearchEngineId) {
       const query = `Pater Brown Live-Hörspiel ${searchVenue} ${searchCity}`;
       console.log(`[Research] Strategy 2 — General search: ${query}`);
 
       const url = await googleSearch(query, googleSearchApiKey, googleSearchEngineId);
       if (url) {
-        result = { ticket_url: url, ticket_info: null, ticket_type: "unbekannt", confidence: "medium", source_description: "Gefunden via Google-Suche" };
-        console.log(`[Research] ✓ Strategy 2 found: ${url}`);
+        // Also try to scrape this result with Firecrawl for details
+        if (firecrawlApiKey && lovableApiKey) {
+          const detailed = await firecrawlAnalyzeSinglePage(url, searchVenue || "", searchCity || "", firecrawlApiKey, lovableApiKey);
+          if (detailed) {
+            result = detailed;
+            result.source_description = "Gefunden via Google-Suche + AI-Analyse";
+          }
+        }
+        if (!result) {
+          result = { ticket_url: url, ticket_info: null, ticket_type: "unbekannt", confidence: "medium", source_description: "Gefunden via Google-Suche" };
+        }
+        console.log(`[Research] ✓ Strategy 2 found: ${result.ticket_url}`);
+      } else {
+        console.log(`[Research] ✗ Strategy 2 — no Google results`);
       }
+    } else if (!result) {
+      console.log(`[Research] Strategy 2 — SKIPPED: no GOOGLE_SEARCH_API_KEY or GOOGLE_SEARCH_ENGINE_ID`);
     }
 
-    // ── Strategy 3: Venue program search (loosened, with year) ──
+    // ── Strategy 3: Venue program search ──
     if (!result && googleSearchApiKey && googleSearchEngineId) {
       const query = `${searchVenue} ${searchCity} Spielplan 2026`;
       console.log(`[Research] Strategy 3 — Program search: ${query}`);
 
       const url = await googleSearch(query, googleSearchApiKey, googleSearchEngineId);
       if (url) {
-        // Scrape the program page with Firecrawl to check if PB is mentioned
         if (firecrawlApiKey && lovableApiKey) {
           const detailed = await firecrawlAnalyzeSinglePage(url, searchVenue || "", searchCity || "", firecrawlApiKey, lovableApiKey);
           if (detailed) {
@@ -147,7 +205,11 @@ Deno.serve(async (req) => {
           result = { ticket_url: url, ticket_info: null, ticket_type: "unbekannt", confidence: "low", source_description: "Spielplan/VVK-Seite des Venues" };
         }
         console.log(`[Research] ✓ Strategy 3 found: ${result.ticket_url}`);
+      } else {
+        console.log(`[Research] ✗ Strategy 3 — no Google results`);
       }
+    } else if (!result) {
+      console.log(`[Research] Strategy 3 — SKIPPED: no Google API keys`);
     }
 
     // ── Strategy 4: AI analysis of Google search results ──
@@ -162,8 +224,17 @@ Deno.serve(async (req) => {
         if (aiResult) {
           result = { ticket_url: aiResult, ticket_info: null, ticket_type: "unbekannt", confidence: "medium", source_description: "AI-Analyse der Suchergebnisse" };
           console.log(`[Research] ✓ Strategy 4 found: ${aiResult}`);
+        } else {
+          console.log(`[Research] ✗ Strategy 4 — AI found nothing`);
         }
+      } else {
+        console.log(`[Research] ✗ Strategy 4 — no Google results to analyze`);
       }
+    } else if (!result) {
+      const reasons: string[] = [];
+      if (!lovableApiKey) reasons.push("no LOVABLE_API_KEY");
+      if (!googleSearchApiKey) reasons.push("no GOOGLE_SEARCH_API_KEY");
+      console.log(`[Research] Strategy 4 — SKIPPED: ${reasons.join(", ")}`);
     }
 
     // ── Save results to DB ──
@@ -184,7 +255,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`[Research] ═══ Done: ${result ? result.confidence : "not found"} ═══`);
+    console.log(`[Research] ═══ Done: ${result ? `${result.confidence} — ${result.ticket_type}` : "NOT FOUND"} ═══`);
 
     return new Response(
       JSON.stringify({
@@ -205,6 +276,94 @@ Deno.serve(async (req) => {
     );
   }
 });
+
+// ═══════════════════════════════════════════════════════════════
+// WEBSITE DISCOVERY: Find venue URL when venue_url is empty
+// Uses Google Search or Firecrawl to find the official website
+// ═══════════════════════════════════════════════════════════════
+async function discoverVenueWebsite(
+  venueName: string,
+  city: string,
+  firecrawlApiKey: string,
+  aiApiKey: string,
+  googleApiKey?: string | null,
+  googleEngineId?: string | null
+): Promise<string | null> {
+  // Blocked domains — these are NOT venue websites
+  const blockedDomains = [
+    "facebook.com", "instagram.com", "twitter.com", "youtube.com",
+    "wikipedia.org", "landgraf.de", "eventim.de", "reservix.de",
+    "ticketmaster.de", "paterbrown.com",
+  ];
+
+  // Strategy A: Google Search for venue website
+  if (googleApiKey && googleEngineId) {
+    const query = `"${venueName}" ${city} offizielle Website`;
+    console.log(`[Discovery] Google search: ${query}`);
+    try {
+      const searchUrl = new URL("https://www.googleapis.com/customsearch/v1");
+      searchUrl.searchParams.set("key", googleApiKey);
+      searchUrl.searchParams.set("cx", googleEngineId);
+      searchUrl.searchParams.set("q", query);
+      searchUrl.searchParams.set("num", "5");
+
+      const response = await fetch(searchUrl.toString());
+      if (response.ok) {
+        const data = await response.json();
+        const items = data.items || [];
+        console.log(`[Discovery] Google returned ${items.length} results`);
+
+        for (const item of items) {
+          const link = item.link || "";
+          if (blockedDomains.some((d) => link.includes(d))) continue;
+          // Check if the result looks like a venue homepage (not a subpage deep in some portal)
+          try {
+            const parsed = new URL(link);
+            const pathParts = parsed.pathname.split("/").filter(Boolean);
+            if (pathParts.length <= 2) {
+              console.log(`[Discovery] Found via Google: ${link}`);
+              return parsed.origin + (pathParts.length > 0 ? "/" + pathParts[0] : "");
+            }
+          } catch { /* skip invalid URLs */ }
+        }
+        // Fallback: first non-blocked result
+        for (const item of items) {
+          if (!blockedDomains.some((d) => item.link?.includes(d))) {
+            console.log(`[Discovery] Fallback Google result: ${item.link}`);
+            return item.link;
+          }
+        }
+      }
+    } catch (e) {
+      console.log(`[Discovery] Google search error: ${e}`);
+    }
+  }
+
+  // Strategy B: AI-assisted discovery via Firecrawl Google search page
+  // Scrape a Google search result page via Firecrawl (renders JS)
+  console.log(`[Discovery] Trying Firecrawl-based search...`);
+  try {
+    const searchQuery = encodeURIComponent(`${venueName} ${city} Theater Spielplan`);
+    const googleUrl = `https://www.google.com/search?q=${searchQuery}`;
+    const searchPage = await firecrawlScrape(googleUrl, firecrawlApiKey, true);
+    if (searchPage && searchPage.links.length > 0) {
+      console.log(`[Discovery] Firecrawl Google: found ${searchPage.links.length} links`);
+      for (const link of searchPage.links) {
+        if (blockedDomains.some((d) => link.includes(d))) continue;
+        if (link.includes("google.com")) continue;
+        try {
+          const parsed = new URL(link);
+          console.log(`[Discovery] Found via Firecrawl Google: ${parsed.origin}`);
+          return parsed.origin;
+        } catch { /* skip */ }
+      }
+    }
+  } catch (e) {
+    console.log(`[Discovery] Firecrawl search error: ${e}`);
+  }
+
+  return null;
+}
 
 // ═══════════════════════════════════════════════════════════════
 // FIRECRAWL: Scrape a URL, get rendered Markdown back
