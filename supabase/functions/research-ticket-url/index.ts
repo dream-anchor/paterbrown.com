@@ -12,10 +12,17 @@ interface ResearchRequest {
   venue_url?: string;
 }
 
-/**
- * Research ticket URL for a KL event using Google Search + AI analysis.
- * Searches for the venue's ticket page for Pater Brown.
- */
+interface ResearchResult {
+  ticket_url: string | null;
+  ticket_info: string | null;
+  ticket_type: "online" | "telefon" | "vor_ort" | "abendkasse" | "email" | "gemischt" | "unbekannt";
+  confidence: "high" | "medium" | "low";
+  source_description: string;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Main handler
+// ═══════════════════════════════════════════════════════════════
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -34,12 +41,13 @@ Deno.serve(async (req) => {
     const googleSearchApiKey = Deno.env.get("GOOGLE_SEARCH_API_KEY");
     const googleSearchEngineId = Deno.env.get("GOOGLE_SEARCH_ENGINE_ID");
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+    const firecrawlApiKey = Deno.env.get("FIRECRAWL_API_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // If no venue_name/city provided, fetch from DB
+    // Fetch event data from DB if not provided
     let searchVenue = venue_name;
     let searchCity = city;
     let searchVenueUrl = venue_url;
@@ -65,113 +73,127 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`[Research] Searching ticket URL for: ${searchVenue} in ${searchCity}`);
+    console.log(`[Research] ═══ Start: ${searchVenue} in ${searchCity} ═══`);
 
-    let foundUrl: string | null = null;
-    let confidence: "high" | "medium" | "low" = "low";
-    let sourceDescription = "";
+    let result: ResearchResult | null = null;
 
-    // Strategy 0: Direkt die Venue-Website crawlen und nach Pater Brown Links suchen
-    if (searchVenueUrl && !foundUrl) {
+    // ── Strategy 0: Firecrawl + AI (Game-Changer) ──
+    // Firecrawl renders JS, returns Markdown. AI reads the content.
+    if (!result && searchVenueUrl && firecrawlApiKey && lovableApiKey) {
+      console.log(`[Research] Strategy 0 — Firecrawl + AI: ${searchVenueUrl}`);
       try {
-        console.log(`[Research] Strategy 0 - Direct venue crawl: ${searchVenueUrl}`);
-        const crawlResult = await crawlVenueWebsite(searchVenueUrl);
-        if (crawlResult) {
-          foundUrl = crawlResult;
-          confidence = "high";
-          sourceDescription = `Direkt auf Venue-Website gefunden`;
-          console.log(`[Research] Found via direct crawl: ${foundUrl}`);
-        }
+        result = await firecrawlStrategy(searchVenueUrl, searchVenue || "", searchCity || "", firecrawlApiKey, lovableApiKey);
+        if (result) console.log(`[Research] ✓ Strategy 0 found: ${result.ticket_url} (${result.confidence})`);
       } catch (e) {
-        console.log(`[Research] Direct crawl failed: ${e}`);
+        console.log(`[Research] ✗ Strategy 0 failed: ${e}`);
       }
     }
 
-    // Strategy 1: Search venue website directly if venue_url is available
-    if (!foundUrl && searchVenueUrl && googleSearchApiKey && googleSearchEngineId) {
+    // ── Strategy 1: Google site-specific search (loosened) ──
+    if (!result && searchVenueUrl && googleSearchApiKey && googleSearchEngineId) {
       try {
         const domain = new URL(searchVenueUrl).hostname;
-        const query = `site:${domain} "Pater Brown" Tickets`;
-        console.log(`[Research] Strategy 1 - Site search: ${query}`);
+        const query = `site:${domain} Pater Brown`;
+        console.log(`[Research] Strategy 1 — Site search: ${query}`);
 
-        const result = await googleSearch(query, googleSearchApiKey, googleSearchEngineId);
-        if (result) {
-          foundUrl = result;
-          confidence = "high";
-          sourceDescription = `Gefunden auf ${domain}`;
-          console.log(`[Research] Found via site search: ${foundUrl}`);
+        const url = await googleSearch(query, googleSearchApiKey, googleSearchEngineId);
+        if (url) {
+          // Found a page on the venue site mentioning PB — scrape it with Firecrawl for details
+          if (firecrawlApiKey && lovableApiKey) {
+            const detailed = await firecrawlAnalyzeSinglePage(url, searchVenue || "", searchCity || "", firecrawlApiKey, lovableApiKey);
+            if (detailed) {
+              result = detailed;
+              result.source_description = `Gefunden auf ${domain} via Google`;
+            }
+          }
+          if (!result) {
+            result = { ticket_url: url, ticket_info: null, ticket_type: "unbekannt", confidence: "medium", source_description: `Gefunden auf ${domain}` };
+          }
+          console.log(`[Research] ✓ Strategy 1 found: ${result.ticket_url}`);
         }
       } catch (e) {
-        console.log(`[Research] Site search failed: ${e}`);
+        console.log(`[Research] ✗ Strategy 1 failed: ${e}`);
       }
     }
 
-    // Strategy 2: General Google search for Pater Brown at venue
-    if (!foundUrl && googleSearchApiKey && googleSearchEngineId) {
-      const query = `"Pater Brown" "${searchVenue}" "${searchCity}" Tickets Karten`;
-      console.log(`[Research] Strategy 2 - General search: ${query}`);
+    // ── Strategy 2: General Google search (loosened — no double quotes) ──
+    if (!result && googleSearchApiKey && googleSearchEngineId) {
+      const query = `Pater Brown Live-Hörspiel ${searchVenue} ${searchCity}`;
+      console.log(`[Research] Strategy 2 — General search: ${query}`);
 
-      const result = await googleSearch(query, googleSearchApiKey, googleSearchEngineId);
-      if (result) {
-        foundUrl = result;
-        confidence = "medium";
-        sourceDescription = "Gefunden via Google-Suche";
-        console.log(`[Research] Found via general search: ${foundUrl}`);
+      const url = await googleSearch(query, googleSearchApiKey, googleSearchEngineId);
+      if (url) {
+        result = { ticket_url: url, ticket_info: null, ticket_type: "unbekannt", confidence: "medium", source_description: "Gefunden via Google-Suche" };
+        console.log(`[Research] ✓ Strategy 2 found: ${url}`);
       }
     }
 
-    // Strategy 3: Search for venue's Spielplan/Vorverkauf
-    if (!foundUrl && googleSearchApiKey && googleSearchEngineId) {
-      const query = `"${searchVenue}" "${searchCity}" Spielplan Vorverkauf Tickets`;
-      console.log(`[Research] Strategy 3 - Venue program search: ${query}`);
+    // ── Strategy 3: Venue program search (loosened, with year) ──
+    if (!result && googleSearchApiKey && googleSearchEngineId) {
+      const query = `${searchVenue} ${searchCity} Spielplan 2026`;
+      console.log(`[Research] Strategy 3 — Program search: ${query}`);
 
-      const result = await googleSearch(query, googleSearchApiKey, googleSearchEngineId);
-      if (result) {
-        foundUrl = result;
-        confidence = "low";
-        sourceDescription = "Spielplan/VVK-Seite des Venues gefunden";
-        console.log(`[Research] Found via program search: ${foundUrl}`);
+      const url = await googleSearch(query, googleSearchApiKey, googleSearchEngineId);
+      if (url) {
+        // Scrape the program page with Firecrawl to check if PB is mentioned
+        if (firecrawlApiKey && lovableApiKey) {
+          const detailed = await firecrawlAnalyzeSinglePage(url, searchVenue || "", searchCity || "", firecrawlApiKey, lovableApiKey);
+          if (detailed) {
+            result = detailed;
+            result.source_description = "Spielplan-Seite des Venues";
+          }
+        }
+        if (!result) {
+          result = { ticket_url: url, ticket_info: null, ticket_type: "unbekannt", confidence: "low", source_description: "Spielplan/VVK-Seite des Venues" };
+        }
+        console.log(`[Research] ✓ Strategy 3 found: ${result.ticket_url}`);
       }
     }
 
-    // Strategy 4: Use AI to analyze search results and pick best URL
-    if (!foundUrl && lovableApiKey && googleSearchApiKey && googleSearchEngineId) {
-      console.log("[Research] Strategy 4 - AI analysis of search results");
+    // ── Strategy 4: AI analysis of Google search results ──
+    if (!result && lovableApiKey && googleSearchApiKey && googleSearchEngineId) {
+      console.log("[Research] Strategy 4 — AI analysis of search results");
 
-      const query = `"Pater Brown" Live-Hörspiel "${searchCity}" Tickets`;
+      const query = `Pater Brown Live-Hörspiel ${searchCity} Tickets`;
       const searchResults = await googleSearchFull(query, googleSearchApiKey, googleSearchEngineId);
 
       if (searchResults.length > 0) {
-        const aiResult = await aiAnalyzeResults(searchResults, searchVenue!, searchCity!, lovableApiKey);
+        const aiResult = await aiAnalyzeSearchResults(searchResults, searchVenue!, searchCity!, lovableApiKey);
         if (aiResult) {
-          foundUrl = aiResult;
-          confidence = "medium";
-          sourceDescription = "AI-Analyse der Suchergebnisse";
-          console.log(`[Research] AI found: ${foundUrl}`);
+          result = { ticket_url: aiResult, ticket_info: null, ticket_type: "unbekannt", confidence: "medium", source_description: "AI-Analyse der Suchergebnisse" };
+          console.log(`[Research] ✓ Strategy 4 found: ${aiResult}`);
         }
       }
     }
 
-    // Save to admin_events if found
-    if (foundUrl) {
+    // ── Save results to DB ──
+    if (result && result.ticket_url) {
+      const updateData: Record<string, unknown> = { ticket_url: result.ticket_url };
+      if (result.ticket_info) updateData.ticket_info = result.ticket_info;
+      if (result.ticket_type && result.ticket_type !== "unbekannt") updateData.ticket_type = result.ticket_type;
+
       const { error: updateError } = await supabase
         .from("admin_events")
-        .update({ ticket_url: foundUrl })
+        .update(updateData)
         .eq("id", event_id);
 
       if (updateError) {
-        console.error("[Research] Error saving ticket_url:", updateError);
+        console.error("[Research] DB save error:", updateError);
       } else {
-        console.log(`[Research] Saved ticket_url for event ${event_id}`);
+        console.log(`[Research] Saved to DB for event ${event_id}`);
       }
     }
+
+    console.log(`[Research] ═══ Done: ${result ? result.confidence : "not found"} ═══`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        ticket_url: foundUrl,
-        confidence,
-        source_description: sourceDescription || (foundUrl ? "Gefunden" : "Kein Ticket-Link gefunden"),
+        ticket_url: result?.ticket_url || null,
+        ticket_info: result?.ticket_info || null,
+        ticket_type: result?.ticket_type || "unbekannt",
+        confidence: result?.confidence || "low",
+        source_description: result?.source_description || "Kein Ticket-Link gefunden",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -184,76 +206,219 @@ Deno.serve(async (req) => {
   }
 });
 
-/**
- * Google Custom Search - returns first relevant URL
- */
-async function googleSearch(query: string, apiKey: string, engineId: string): Promise<string | null> {
-  const searchUrl = new URL("https://www.googleapis.com/customsearch/v1");
-  searchUrl.searchParams.set("key", apiKey);
-  searchUrl.searchParams.set("cx", engineId);
-  searchUrl.searchParams.set("q", query);
-  searchUrl.searchParams.set("num", "5");
+// ═══════════════════════════════════════════════════════════════
+// FIRECRAWL: Scrape a URL, get rendered Markdown back
+// ═══════════════════════════════════════════════════════════════
+async function firecrawlScrape(
+  url: string,
+  apiKey: string,
+  includeLinks = true
+): Promise<{ markdown: string; links: string[] } | null> {
+  try {
+    console.log(`[Firecrawl] Scraping: ${url}`);
+    const response = await fetch("https://api.firecrawl.dev/v1/scrape", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        url,
+        formats: includeLinks ? ["markdown", "links"] : ["markdown"],
+        onlyMainContent: true,
+        waitFor: 3000,
+      }),
+    });
 
-  const response = await fetch(searchUrl.toString());
-  if (!response.ok) return null;
-
-  const data = await response.json();
-  const items = data.items || [];
-
-  // Prefer URLs with ticket/karten/vorverkauf in the path
-  const ticketKeywords = ["/ticket", "/karten", "/vorverkauf", "/veranstaltung", "/event", "/programm"];
-  for (const item of items) {
-    const url = item.link?.toLowerCase() || "";
-    if (ticketKeywords.some((kw) => url.includes(kw))) {
-      return item.link;
+    if (!response.ok) {
+      console.log(`[Firecrawl] HTTP ${response.status} for ${url}`);
+      return null;
     }
+
+    const data = await response.json();
+    if (!data.success) {
+      console.log(`[Firecrawl] API error: ${data.error}`);
+      return null;
+    }
+
+    const markdown = data.data?.markdown || "";
+    const links = data.data?.links || [];
+    console.log(`[Firecrawl] Got ${markdown.length} chars markdown, ${links.length} links`);
+    return { markdown, links };
+  } catch (e) {
+    console.log(`[Firecrawl] Exception: ${e}`);
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STRATEGY 0: Firecrawl + AI — The main strategy
+// 1. Scrape venue homepage with Firecrawl
+// 2. If PB found → send to AI for ticket info extraction
+// 3. If not → find promising subpages from links, scrape those (max 3 total)
+// 4. AI analyzes all collected content
+// ═══════════════════════════════════════════════════════════════
+const PATER_BROWN_KEYWORDS = ["pater brown", "pater-brown", "paterbrown", "live-hörspiel", "live-hoerspiel", "live hörspiel"];
+
+const SUBPAGE_KEYWORDS = [
+  "programm", "spielplan", "veranstaltung", "event", "ticket", "karten",
+  "vorverkauf", "kalender", "aktuell", "vorschau", "termine", "spielzeit",
+  "saison", "kulturprogramm", "theaterprogram", "buehne", "bühne",
+];
+
+async function firecrawlStrategy(
+  venueUrl: string,
+  venueName: string,
+  city: string,
+  firecrawlApiKey: string,
+  aiApiKey: string
+): Promise<ResearchResult | null> {
+  let firecrawlCalls = 0;
+  const maxFirecrawlCalls = 3;
+
+  // ── Step 1: Scrape homepage ──
+  const homepage = await firecrawlScrape(venueUrl, firecrawlApiKey, true);
+  firecrawlCalls++;
+  if (!homepage) return null;
+
+  const homepageLower = homepage.markdown.toLowerCase();
+  const pbOnHomepage = PATER_BROWN_KEYWORDS.some((kw) => homepageLower.includes(kw));
+
+  if (pbOnHomepage) {
+    console.log(`[Strategy0] Pater Brown found on homepage!`);
+    const aiResult = await aiExtractTicketInfo(homepage.markdown, venueUrl, venueName, city, aiApiKey);
+    if (aiResult && aiResult.confidence !== "low") return aiResult;
+    // Low confidence on homepage → keep searching subpages
   }
 
-  // Fallback: return first result if it's from a theater/venue domain
-  if (items.length > 0 && !items[0].link?.includes("facebook.com") && !items[0].link?.includes("wikipedia.org")) {
-    return items[0].link;
+  // ── Step 2: Find promising subpages from links ──
+  const origin = new URL(venueUrl).origin;
+  const candidateLinks = homepage.links
+    .filter((link: string) => {
+      try {
+        const parsed = new URL(link);
+        return parsed.origin === origin; // internal links only
+      } catch {
+        return false;
+      }
+    })
+    .filter((link: string) => {
+      const lower = link.toLowerCase();
+      // Skip assets
+      if (/\.(jpg|jpeg|png|gif|svg|css|js|pdf|doc|zip|ico|woff|woff2|ttf|eot)(\?|$)/i.test(lower)) return false;
+      // Skip homepage itself
+      if (link.replace(/\/+$/, "") === venueUrl.replace(/\/+$/, "")) return false;
+      return true;
+    })
+    .map((link: string) => {
+      const lower = link.toLowerCase();
+      let score = 0;
+      // Direct PB mention in URL = top priority
+      if (PATER_BROWN_KEYWORDS.some((kw) => lower.includes(kw.replace(/\s+/g, "-")))) score += 100;
+      if (PATER_BROWN_KEYWORDS.some((kw) => lower.includes(kw.replace(/\s+/g, "")))) score += 100;
+      // Subpage keywords
+      for (const kw of SUBPAGE_KEYWORDS) {
+        if (lower.includes(kw)) score += 3;
+      }
+      return { url: link, score };
+    })
+    .filter((l: { score: number }) => l.score > 0)
+    .sort((a: { score: number }, b: { score: number }) => b.score - a.score)
+    .slice(0, 8); // Keep top 8 candidates but will only scrape up to maxFirecrawlCalls
+
+  if (candidateLinks.length > 0) {
+    console.log(`[Strategy0] Top subpage candidates: ${candidateLinks.slice(0, 5).map((l: { url: string; score: number }) => `${l.url} (${l.score})`).join(" | ")}`);
+  }
+
+  // ── Step 3: Scrape subpages ──
+  for (const candidate of candidateLinks) {
+    if (firecrawlCalls >= maxFirecrawlCalls) {
+      console.log(`[Strategy0] Firecrawl limit reached (${maxFirecrawlCalls})`);
+      break;
+    }
+
+    const subpage = await firecrawlScrape(candidate.url, firecrawlApiKey, false);
+    firecrawlCalls++;
+    if (!subpage) continue;
+
+    const subLower = subpage.markdown.toLowerCase();
+    if (!PATER_BROWN_KEYWORDS.some((kw) => subLower.includes(kw))) {
+      console.log(`[Strategy0] No PB on: ${candidate.url}`);
+      continue;
+    }
+
+    console.log(`[Strategy0] Pater Brown found on: ${candidate.url}`);
+    const aiResult = await aiExtractTicketInfo(subpage.markdown, candidate.url, venueName, city, aiApiKey);
+    if (aiResult) return aiResult;
+  }
+
+  // If PB was found on homepage but AI returned low confidence, return that as fallback
+  if (pbOnHomepage) {
+    const fallback = await aiExtractTicketInfo(homepage.markdown, venueUrl, venueName, city, aiApiKey);
+    if (fallback) return fallback;
   }
 
   return null;
 }
 
-/**
- * Google Custom Search - returns full results for AI analysis
- */
-async function googleSearchFull(
-  query: string,
-  apiKey: string,
-  engineId: string
-): Promise<Array<{ title: string; link: string; snippet: string }>> {
-  const searchUrl = new URL("https://www.googleapis.com/customsearch/v1");
-  searchUrl.searchParams.set("key", apiKey);
-  searchUrl.searchParams.set("cx", engineId);
-  searchUrl.searchParams.set("q", query);
-  searchUrl.searchParams.set("num", "10");
+// ═══════════════════════════════════════════════════════════════
+// Firecrawl: Scrape a single page and analyze with AI
+// Used by Strategy 1+3 when Google finds a URL
+// ═══════════════════════════════════════════════════════════════
+async function firecrawlAnalyzeSinglePage(
+  pageUrl: string,
+  venueName: string,
+  city: string,
+  firecrawlApiKey: string,
+  aiApiKey: string
+): Promise<ResearchResult | null> {
+  const page = await firecrawlScrape(pageUrl, firecrawlApiKey, false);
+  if (!page) return null;
 
-  const response = await fetch(searchUrl.toString());
-  if (!response.ok) return [];
+  const lower = page.markdown.toLowerCase();
+  if (!PATER_BROWN_KEYWORDS.some((kw) => lower.includes(kw))) return null;
 
-  const data = await response.json();
-  return (data.items || []).map((item: any) => ({
-    title: item.title || "",
-    link: item.link || "",
-    snippet: item.snippet || "",
-  }));
+  return await aiExtractTicketInfo(page.markdown, pageUrl, venueName, city, aiApiKey);
 }
 
-/**
- * Use AI to analyze search results and pick the best ticket URL
- */
-async function aiAnalyzeResults(
-  results: Array<{ title: string; link: string; snippet: string }>,
-  venue: string,
+// ═══════════════════════════════════════════════════════════════
+// AI: Extract ticket info from Markdown page content
+// This is the core AI function — reads text and finds ticket info
+// ═══════════════════════════════════════════════════════════════
+async function aiExtractTicketInfo(
+  markdown: string,
+  pageUrl: string,
+  venueName: string,
   city: string,
   apiKey: string
-): Promise<string | null> {
-  const resultsText = results
-    .map((r, i) => `${i + 1}. [${r.title}](${r.link})\n   ${r.snippet}`)
-    .join("\n\n");
+): Promise<ResearchResult | null> {
+  // Extract sections around PB mentions (max 4000 chars to stay within token limits)
+  const lower = markdown.toLowerCase();
+  const sections: string[] = [];
+  let searchFrom = 0;
+
+  while (searchFrom < lower.length && sections.length < 3) {
+    const idx = lower.indexOf("pater brown", searchFrom);
+    if (idx === -1) break;
+    const start = Math.max(0, idx - 1000);
+    const end = Math.min(markdown.length, idx + 1500);
+    sections.push(markdown.substring(start, end));
+    searchFrom = idx + 200;
+  }
+
+  // Fallback: if PB keywords found but not "pater brown" literally, take first 3000 chars
+  if (sections.length === 0) {
+    sections.push(markdown.substring(0, 3000));
+  }
+
+  const prompt = `Finde Ticket-/VVK-Informationen für "Pater Brown - Das Live-Hörspiel" im "${venueName}" in "${city}".
+
+Seiten-URL: ${pageUrl}
+
+Seiteninhalt (Markdown):
+---
+${sections.join("\n---\n")}
+---`;
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -266,135 +431,221 @@ async function aiAnalyzeResults(
       messages: [
         {
           role: "system",
-          content: `Du bist ein Assistent der Ticket-Links für Theaterveranstaltungen findet.
-Analysiere die Suchergebnisse und finde die URL, über die man Tickets für "Pater Brown - Das Live-Hörspiel" kaufen kann.
+          content: `Du bist Recherche-Assistent für eine Theatertournee.
+
+Deine Aufgabe: Finde auf dieser Webseite heraus, wie Besucher an Tickets für "Pater Brown - Das Live-Hörspiel" kommen.
+
+WICHTIG: Jeder Spielort handhabt den Kartenverkauf anders! Das kann ALLES sein:
+- Online-Ticketshop (Eventim, Reservix, Ticketregional, ADticket, ProTicket, eigener Webshop)
+- Telefonnummer für telefonischen VVK
+- Lokaler Vorverkauf (Tabak-Laden, Bücherei, Tourist-Info, Rathaus, Buchhandlung)
+- Theaterkasse oder Abendkasse
+- Reservierungsformular oder E-Mail-Adresse
+- PDF-Flyer mit VVK-Infos
+- Externer Ticket-Anbieter
+- Oder irgendetwas anderes
+
+LIES GENAU: Der VVK-Hinweis steht oft versteckt im Fließtext, in der Beschreibung, in einer Seitenleiste oder im Footer. Manchmal steht da nur "Karten an der Abendkasse" oder "VVK bei Schreibwaren Müller" oder "Reservierung unter 06123/4567".
+
+Antworte im JSON-Format:
+{"ticket_url": "https://...", "ticket_info": "...", "ticket_type": "..."}
+
+Felder:
+- "ticket_url": Der BESTE Link. Wenn ein direkter Kauf-Link existiert, nimm den. Wenn nur die Event-Seite existiert, nimm deren URL. Wenn nur Tel/Adresse: nimm die Seiten-URL.
+- "ticket_info": Gib WÖRTLICH wieder, was die Quelle über den Kartenverkauf sagt. Nicht interpretieren, sondern zitieren. Z.B. "Karten ab 25€ bei der Tourist-Info, Tel. 06124/1234" oder "Online über www.ticketregional.de"
+- "ticket_type": Einer von: "online" | "telefon" | "vor_ort" | "abendkasse" | "email" | "gemischt" | "unbekannt"
 
 Regeln:
-- Bevorzuge direkte Ticket-/Karten-Links (mit /ticket, /karten, /vorverkauf im Pfad)
-- Bevorzuge die offizielle Venue-Website gegenüber Drittanbietern
-- Ignoriere Social-Media-Links, Wikipedia, News-Artikel
-- Antworte NUR mit der URL, nichts anderes
-- Wenn kein passender Link gefunden wird, antworte mit "NONE"`,
+- Antworte NUR mit dem JSON-Objekt
+- Wenn keine Ticket-Info gefunden: {"ticket_url": null, "ticket_info": null, "ticket_type": "unbekannt"}`,
         },
-        {
-          role: "user",
-          content: `Finde den Ticket-Link für "Pater Brown" im "${venue}" in "${city}".\n\nSuchergebnisse:\n${resultsText}`,
-        },
+        { role: "user", content: prompt },
       ],
       temperature: 0.1,
+      max_tokens: 400,
     }),
   });
 
-  if (!response.ok) return null;
+  if (!response.ok) {
+    console.log(`[AI] HTTP ${response.status}`);
+    return null;
+  }
 
   const data = await response.json();
   const answer = data.choices?.[0]?.message?.content?.trim() || "";
+  console.log(`[AI] Response: ${answer}`);
 
-  if (answer === "NONE" || !answer.startsWith("http")) return null;
-  return answer;
+  try {
+    const jsonStr = answer.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    const parsed = JSON.parse(jsonStr);
+
+    const ticketUrl = parsed.ticket_url && parsed.ticket_url !== "null" ? parsed.ticket_url : pageUrl;
+    const ticketInfo = parsed.ticket_info && parsed.ticket_info !== "null" ? parsed.ticket_info : null;
+    const ticketType = parsed.ticket_type || "unbekannt";
+
+    // Determine confidence based on what we found
+    let confidence: "high" | "medium" | "low" = "low";
+    if (parsed.ticket_url && parsed.ticket_url !== "null" && parsed.ticket_url !== pageUrl) {
+      confidence = "high"; // Direct ticket URL found
+    } else if (ticketInfo) {
+      confidence = "medium"; // VVK info found but maybe no direct link
+    }
+
+    if (!ticketInfo && (!parsed.ticket_url || parsed.ticket_url === "null")) {
+      return null; // AI found nothing useful
+    }
+
+    return {
+      ticket_url: ticketUrl,
+      ticket_info: ticketInfo,
+      ticket_type: ticketType,
+      confidence,
+      source_description: ticketInfo || "AI-Analyse der Venue-Website",
+    };
+  } catch {
+    // JSON parse failed — try to extract URL
+    const urlMatch = answer.match(/https?:\/\/[^\s"'<>)]+/);
+    if (urlMatch) {
+      return {
+        ticket_url: urlMatch[0],
+        ticket_info: null,
+        ticket_type: "unbekannt",
+        confidence: "medium",
+        source_description: "AI-Analyse (URL extrahiert)",
+      };
+    }
+    return null;
+  }
 }
 
-/**
- * Direkt die Venue-Website crawlen und nach Pater Brown Ticket-Links suchen.
- * Sucht auf der Hauptseite und typischen Unterseiten (Programm, Spielplan, Veranstaltungen).
- */
-async function crawlVenueWebsite(venueUrl: string): Promise<string | null> {
-  const baseUrl = new URL(venueUrl);
-  const origin = baseUrl.origin;
+// ═══════════════════════════════════════════════════════════════
+// Google Custom Search — returns first relevant URL
+// ═══════════════════════════════════════════════════════════════
+async function googleSearch(query: string, apiKey: string, engineId: string): Promise<string | null> {
+  try {
+    const searchUrl = new URL("https://www.googleapis.com/customsearch/v1");
+    searchUrl.searchParams.set("key", apiKey);
+    searchUrl.searchParams.set("cx", engineId);
+    searchUrl.searchParams.set("q", query);
+    searchUrl.searchParams.set("num", "5");
 
-  // Seiten die wir crawlen: Startseite + typische Programmseiten
-  const pagesToCrawl = [
-    venueUrl,
-    `${origin}/programm`,
-    `${origin}/spielplan`,
-    `${origin}/veranstaltungen`,
-    `${origin}/tickets`,
-    `${origin}/vorverkauf`,
-    `${origin}/events`,
-    `${origin}/kalender`,
-  ];
-
-  const paterBrownKeywords = ["pater brown", "pater-brown", "paterbrown", "live-hörspiel", "live-hoerspiel"];
-  const ticketKeywords = ["ticket", "karten", "vorverkauf", "reserv", "bestell", "kauf", "buchen"];
-
-  for (const pageUrl of pagesToCrawl) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
-
-      const response = await fetch(pageUrl, {
-        signal: controller.signal,
-        headers: {
-          "User-Agent": "Mozilla/5.0 (compatible; PaterBrownBot/1.0)",
-          "Accept": "text/html",
-        },
-        redirect: "follow",
-      });
-      clearTimeout(timeout);
-
-      if (!response.ok) continue;
-
-      const html = await response.text();
-      const htmlLower = html.toLowerCase();
-
-      // Prüfe ob Pater Brown überhaupt auf der Seite erwähnt wird
-      const hasPaterBrown = paterBrownKeywords.some((kw) => htmlLower.includes(kw));
-      if (!hasPaterBrown) continue;
-
-      console.log(`[Research] Pater Brown found on: ${pageUrl}`);
-
-      // Links extrahieren und nach Ticket-Links filtern
-      const linkRegex = /href=["']([^"']+)["']/gi;
-      let match;
-      const candidateLinks: string[] = [];
-
-      while ((match = linkRegex.exec(html)) !== null) {
-        const href = match[1];
-        if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("javascript:")) continue;
-
-        // Absolute URL bauen
-        let absoluteUrl: string;
-        try {
-          absoluteUrl = new URL(href, pageUrl).toString();
-        } catch {
-          continue;
-        }
-
-        const hrefLower = absoluteUrl.toLowerCase();
-
-        // Link muss entweder Pater Brown ODER Ticket-Keywords enthalten
-        const hasTicketKw = ticketKeywords.some((kw) => hrefLower.includes(kw));
-        const hasPBInLink = paterBrownKeywords.some((kw) => hrefLower.includes(kw));
-
-        if (hasTicketKw || hasPBInLink) {
-          candidateLinks.push(absoluteUrl);
-        }
-      }
-
-      if (candidateLinks.length === 0) continue;
-
-      // Bevorzuge Links die BEIDES haben (Pater Brown + Ticket)
-      const bestLinks = candidateLinks.filter((url) => {
-        const urlLower = url.toLowerCase();
-        return paterBrownKeywords.some((kw) => urlLower.includes(kw)) &&
-               ticketKeywords.some((kw) => urlLower.includes(kw));
-      });
-
-      if (bestLinks.length > 0) return bestLinks[0];
-
-      // Sonst Links die Pater Brown im Pfad haben
-      const pbLinks = candidateLinks.filter((url) =>
-        paterBrownKeywords.some((kw) => url.toLowerCase().includes(kw))
-      );
-      if (pbLinks.length > 0) return pbLinks[0];
-
-      // Fallback: erster Ticket-Link auf einer Seite die Pater Brown erwähnt
-      return candidateLinks[0];
-    } catch (e) {
-      // Seite nicht erreichbar - weiter zur nächsten
-      continue;
+    const response = await fetch(searchUrl.toString());
+    if (!response.ok) {
+      console.log(`[Google] HTTP ${response.status}`);
+      return null;
     }
-  }
 
-  return null;
+    const data = await response.json();
+    const items = data.items || [];
+    console.log(`[Google] ${items.length} results for: ${query}`);
+
+    // Prefer ticket/event pages
+    const ticketKeywords = ["/ticket", "/karten", "/vorverkauf", "/veranstaltung", "/event", "/programm", "/spielplan"];
+    for (const item of items) {
+      const url = item.link?.toLowerCase() || "";
+      if (ticketKeywords.some((kw) => url.includes(kw))) {
+        return item.link;
+      }
+    }
+
+    // Fallback: first non-social-media result
+    const blocked = ["facebook.com", "wikipedia.org", "instagram.com", "twitter.com", "youtube.com"];
+    for (const item of items) {
+      if (!blocked.some((b) => item.link?.includes(b))) {
+        return item.link;
+      }
+    }
+
+    return null;
+  } catch (e) {
+    console.log(`[Google] Error: ${e}`);
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Google Custom Search — returns full results for AI analysis
+// ═══════════════════════════════════════════════════════════════
+async function googleSearchFull(
+  query: string,
+  apiKey: string,
+  engineId: string
+): Promise<Array<{ title: string; link: string; snippet: string }>> {
+  try {
+    const searchUrl = new URL("https://www.googleapis.com/customsearch/v1");
+    searchUrl.searchParams.set("key", apiKey);
+    searchUrl.searchParams.set("cx", engineId);
+    searchUrl.searchParams.set("q", query);
+    searchUrl.searchParams.set("num", "10");
+
+    const response = await fetch(searchUrl.toString());
+    if (!response.ok) return [];
+
+    const data = await response.json();
+    return (data.items || []).map((item: any) => ({
+      title: item.title || "",
+      link: item.link || "",
+      snippet: item.snippet || "",
+    }));
+  } catch {
+    return [];
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AI: Analyze Google search results — pick best URL
+// Now also accepts non-direct-ticket pages (Spielplan etc.)
+// ═══════════════════════════════════════════════════════════════
+async function aiAnalyzeSearchResults(
+  results: Array<{ title: string; link: string; snippet: string }>,
+  venue: string,
+  city: string,
+  apiKey: string
+): Promise<string | null> {
+  const resultsText = results.map((r, i) => `${i + 1}. [${r.title}](${r.link})\n   ${r.snippet}`).join("\n\n");
+
+  try {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          {
+            role: "system",
+            content: `Du findest Ticket-Links für Theaterveranstaltungen.
+Analysiere die Suchergebnisse und finde die BESTE URL für "Pater Brown - Das Live-Hörspiel".
+
+Prioritäten:
+1. Direkte Ticket-/Karten-Kauf-Seite (Eventim, Reservix, etc.)
+2. Event-Detailseite auf der Venue-Website
+3. Spielplan/Programm-Seite des Venues (dort steht oft der VVK-Hinweis)
+4. Jede andere relevante Seite
+
+Ignoriere: Social Media, Wikipedia, News-Artikel, Podcast-Seiten
+Antworte NUR mit der URL. Wenn nichts passt: "NONE"`,
+          },
+          {
+            role: "user",
+            content: `Ticket-Link für "Pater Brown" im "${venue}" in "${city}":\n\n${resultsText}`,
+          },
+        ],
+        temperature: 0.1,
+      }),
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const answer = data.choices?.[0]?.message?.content?.trim() || "";
+    console.log(`[AI-Search] Response: ${answer}`);
+
+    if (answer === "NONE" || !answer.startsWith("http")) return null;
+    return answer;
+  } catch {
+    return null;
+  }
 }

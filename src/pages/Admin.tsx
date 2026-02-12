@@ -15,8 +15,10 @@ import DocumentsPanel from "@/components/admin/DocumentsPanel";
 import PicksPanel from "@/components/admin/PicksPanel";
 import SettingsPanel from "@/components/admin/SettingsPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, MapPin, Plane, CloudDownload, Heart, Sparkles } from "lucide-react";
+import { CalendarDays, MapPin, Plane, CloudDownload, Heart, Sparkles, Ticket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import VvkApprovalPanel from "@/components/admin/VvkApprovalPanel";
+import { cn } from "@/lib/utils";
 
 interface AdminEvent {
   id: string;
@@ -48,6 +50,7 @@ const Admin = () => {
   const [dataVersion, setDataVersion] = useState(0);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [selectedSearchEvent, setSelectedSearchEvent] = useState<any>(null);
+  const [mapSubTab, setMapSubTab] = useState<"karte" | "vvk">("karte");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -434,11 +437,42 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="map" className="mt-0 focus-visible:outline-none">
-            <EventMap 
-              events={events} 
-              onEventsUpdated={fetchEvents}
-              initialActiveEventId={searchParams.get("activeEventId") || undefined}
-            />
+            {/* Sub-tab navigation: Karte / VVK-Freigabe */}
+            <div className="flex items-center gap-1 px-4 py-2 bg-white border-b border-gray-100">
+              <button
+                onClick={() => setMapSubTab("karte")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all",
+                  mapSubTab === "karte"
+                    ? "bg-gray-100 text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                )}
+              >
+                <MapPin className="w-4 h-4" />
+                Karte
+              </button>
+              <button
+                onClick={() => setMapSubTab("vvk")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all",
+                  mapSubTab === "vvk"
+                    ? "bg-amber-50 text-amber-700 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                )}
+              >
+                <Ticket className="w-4 h-4" />
+                VVK-Freigabe
+              </button>
+            </div>
+            {mapSubTab === "karte" ? (
+              <EventMap
+                events={events}
+                onEventsUpdated={fetchEvents}
+                initialActiveEventId={searchParams.get("activeEventId") || undefined}
+              />
+            ) : (
+              <VvkApprovalPanel onApprovalChanged={fetchEvents} standalone />
+            )}
           </TabsContent>
 
           <TabsContent value="travel" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
