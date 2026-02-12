@@ -71,8 +71,24 @@ Deno.serve(async (req) => {
     let confidence: "high" | "medium" | "low" = "low";
     let sourceDescription = "";
 
+    // Strategy 0: Direkt die Venue-Website crawlen und nach Pater Brown Links suchen
+    if (searchVenueUrl && !foundUrl) {
+      try {
+        console.log(`[Research] Strategy 0 - Direct venue crawl: ${searchVenueUrl}`);
+        const crawlResult = await crawlVenueWebsite(searchVenueUrl);
+        if (crawlResult) {
+          foundUrl = crawlResult;
+          confidence = "high";
+          sourceDescription = `Direkt auf Venue-Website gefunden`;
+          console.log(`[Research] Found via direct crawl: ${foundUrl}`);
+        }
+      } catch (e) {
+        console.log(`[Research] Direct crawl failed: ${e}`);
+      }
+    }
+
     // Strategy 1: Search venue website directly if venue_url is available
-    if (searchVenueUrl && googleSearchApiKey && googleSearchEngineId) {
+    if (!foundUrl && searchVenueUrl && googleSearchApiKey && googleSearchEngineId) {
       try {
         const domain = new URL(searchVenueUrl).hostname;
         const query = `site:${domain} "Pater Brown" Tickets`;
@@ -276,4 +292,109 @@ Regeln:
 
   if (answer === "NONE" || !answer.startsWith("http")) return null;
   return answer;
+}
+
+/**
+ * Direkt die Venue-Website crawlen und nach Pater Brown Ticket-Links suchen.
+ * Sucht auf der Hauptseite und typischen Unterseiten (Programm, Spielplan, Veranstaltungen).
+ */
+async function crawlVenueWebsite(venueUrl: string): Promise<string | null> {
+  const baseUrl = new URL(venueUrl);
+  const origin = baseUrl.origin;
+
+  // Seiten die wir crawlen: Startseite + typische Programmseiten
+  const pagesToCrawl = [
+    venueUrl,
+    `${origin}/programm`,
+    `${origin}/spielplan`,
+    `${origin}/veranstaltungen`,
+    `${origin}/tickets`,
+    `${origin}/vorverkauf`,
+    `${origin}/events`,
+    `${origin}/kalender`,
+  ];
+
+  const paterBrownKeywords = ["pater brown", "pater-brown", "paterbrown", "live-hörspiel", "live-hoerspiel"];
+  const ticketKeywords = ["ticket", "karten", "vorverkauf", "reserv", "bestell", "kauf", "buchen"];
+
+  for (const pageUrl of pagesToCrawl) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+
+      const response = await fetch(pageUrl, {
+        signal: controller.signal,
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; PaterBrownBot/1.0)",
+          "Accept": "text/html",
+        },
+        redirect: "follow",
+      });
+      clearTimeout(timeout);
+
+      if (!response.ok) continue;
+
+      const html = await response.text();
+      const htmlLower = html.toLowerCase();
+
+      // Prüfe ob Pater Brown überhaupt auf der Seite erwähnt wird
+      const hasPaterBrown = paterBrownKeywords.some((kw) => htmlLower.includes(kw));
+      if (!hasPaterBrown) continue;
+
+      console.log(`[Research] Pater Brown found on: ${pageUrl}`);
+
+      // Links extrahieren und nach Ticket-Links filtern
+      const linkRegex = /href=["']([^"']+)["']/gi;
+      let match;
+      const candidateLinks: string[] = [];
+
+      while ((match = linkRegex.exec(html)) !== null) {
+        const href = match[1];
+        if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("javascript:")) continue;
+
+        // Absolute URL bauen
+        let absoluteUrl: string;
+        try {
+          absoluteUrl = new URL(href, pageUrl).toString();
+        } catch {
+          continue;
+        }
+
+        const hrefLower = absoluteUrl.toLowerCase();
+
+        // Link muss entweder Pater Brown ODER Ticket-Keywords enthalten
+        const hasTicketKw = ticketKeywords.some((kw) => hrefLower.includes(kw));
+        const hasPBInLink = paterBrownKeywords.some((kw) => hrefLower.includes(kw));
+
+        if (hasTicketKw || hasPBInLink) {
+          candidateLinks.push(absoluteUrl);
+        }
+      }
+
+      if (candidateLinks.length === 0) continue;
+
+      // Bevorzuge Links die BEIDES haben (Pater Brown + Ticket)
+      const bestLinks = candidateLinks.filter((url) => {
+        const urlLower = url.toLowerCase();
+        return paterBrownKeywords.some((kw) => urlLower.includes(kw)) &&
+               ticketKeywords.some((kw) => urlLower.includes(kw));
+      });
+
+      if (bestLinks.length > 0) return bestLinks[0];
+
+      // Sonst Links die Pater Brown im Pfad haben
+      const pbLinks = candidateLinks.filter((url) =>
+        paterBrownKeywords.some((kw) => url.toLowerCase().includes(kw))
+      );
+      if (pbLinks.length > 0) return pbLinks[0];
+
+      // Fallback: erster Ticket-Link auf einer Seite die Pater Brown erwähnt
+      return candidateLinks[0];
+    } catch (e) {
+      // Seite nicht erreichbar - weiter zur nächsten
+      continue;
+    }
+  }
+
+  return null;
 }

@@ -526,10 +526,10 @@ Antworte NUR mit JSON-Array!`
         const mins = String(startDate.getMinutes()).padStart(2, '0');
         const dayDisplay = `${dayName.substring(0, 2)}. ${hours}:${mins}`;
 
-        // Only use ticket_url if approved, otherwise fall back to venue_url
+        // Nur freigegebene ticket_url verwenden - kein Fallback auf venue_url
         const ticketUrl = (klEvent.ticket_url_approved && klEvent.ticket_url)
           ? klEvent.ticket_url
-          : (klEvent.venue_url || '');
+          : null;
 
         const tourEventData = {
           date: dateStr,

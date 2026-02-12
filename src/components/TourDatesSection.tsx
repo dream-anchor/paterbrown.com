@@ -220,16 +220,22 @@ const TourDatesSection = () => {
                 )}
               </div>
             <div className="flex flex-col items-end gap-1">
-              <a 
-                href={date.ticketUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-foreground hover:text-gold transition-all duration-300 font-medium uppercase tracking-[0.15em] text-base border-b-2 border-transparent hover:border-gold pb-1 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background"
-                aria-label={`Tickets kaufen für ${date.city} am ${date.date}`}
-              >
-                Tickets <span aria-hidden="true">→</span>
-              </a>
-              {isBlackWeek && (
+              {date.ticketUrl ? (
+                <a
+                  href={date.ticketUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground hover:text-gold transition-all duration-300 font-medium uppercase tracking-[0.15em] text-base border-b-2 border-transparent hover:border-gold pb-1 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background"
+                  aria-label={`Tickets kaufen für ${date.city} am ${date.date}`}
+                >
+                  Tickets <span aria-hidden="true">→</span>
+                </a>
+              ) : (
+                <span className="text-muted-foreground/60 font-medium uppercase tracking-[0.15em] text-base pb-1">
+                  Tickets folgen
+                </span>
+              )}
+              {isBlackWeek && date.ticketUrl && (
                       <span className="text-xs text-gold font-semibold">
                         Jetzt 30% Rabatt sichern
                       </span>
