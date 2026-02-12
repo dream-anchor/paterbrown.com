@@ -33,6 +33,7 @@ import {
 import { Button } from "@/components/ui/button";
 import EventEditModal, { type UniversalEvent } from "./EventEditModal";
 import TourStationCard from "./TourStationCard";
+import VvkApprovalPanel from "./VvkApprovalPanel";
 
 // Type for driving distance between events
 interface DrivingDistance {
@@ -1103,6 +1104,9 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
             </motion.button>
           </motion.div>
         )}
+
+        {/* VVK Approval Panel */}
+        <VvkApprovalPanel onApprovalChanged={onEventsUpdated} />
 
         {/* Title & Filters */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 md:gap-4">
