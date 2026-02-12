@@ -50,3 +50,9 @@ verify_jwt = false
 
 [functions.admin-sync-profiles]
 verify_jwt = false
+
+[functions.research-ticket-url]
+verify_jwt = true
+
+[functions.extract-docx-events]
+verify_jwt = true
