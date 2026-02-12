@@ -496,11 +496,13 @@ Antworte NUR mit JSON-Array!`
       console.error('Error deactivating KL events:', klDeactivateError);
     }
 
-    // Fetch all active KL events from admin_events
+    // Nur KL-Events mit freigegebenem Ticket-Link auf die Website synchen
     const { data: klEvents, error: klFetchError } = await supabase
       .from('admin_events')
       .select('*')
       .eq('source', 'KL')
+      .eq('ticket_url_approved', true)
+      .not('ticket_url', 'is', null)
       .is('deleted_at', null)
       .order('start_time', { ascending: true });
 

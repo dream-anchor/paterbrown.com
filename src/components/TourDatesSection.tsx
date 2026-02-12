@@ -212,9 +212,9 @@ const TourDatesSection = () => {
                   </span>
                 )}
               </div>
-            <div className="flex flex-col items-end gap-1">
-              {date.ticketUrl ? (
-                <a 
+            {date.ticketUrl && (
+              <div className="flex flex-col items-end gap-1">
+                <a
                   href={date.ticketUrl}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -223,17 +223,13 @@ const TourDatesSection = () => {
                 >
                   Tickets <span aria-hidden="true">→</span>
                 </a>
-              ) : (
-                <span className="text-muted-foreground font-medium uppercase tracking-[0.15em] text-base pb-1">
-                  Tickets folgen
-                </span>
-              )}
-              {isBlackWeek && (
-                      <span className="text-xs text-gold font-semibold">
-                        Jetzt 30% Rabatt sichern
-                      </span>
-              )}
-            </div>
+                {isBlackWeek && (
+                  <span className="text-xs text-gold font-semibold">
+                    Jetzt 30% Rabatt sichern
+                  </span>
+                )}
+              </div>
+            )}
             </article>
           ))}
         </div>
