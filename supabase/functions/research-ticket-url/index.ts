@@ -225,7 +225,7 @@ async function firecrawlScrape(
       body: JSON.stringify({
         url,
         formats: includeLinks ? ["markdown", "links"] : ["markdown"],
-        onlyMainContent: true,
+        onlyMainContent: !includeLinks, // false for homepage (need nav links), true for subpages
         waitFor: 3000,
       }),
     });
