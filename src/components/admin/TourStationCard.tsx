@@ -75,6 +75,7 @@ interface TourColor {
   border: string;   // e.g. "border-indigo-400"
   ring: string;     // e.g. "ring-indigo-200"
   shadow: string;   // e.g. "shadow-indigo-500/20"
+  glow: string;     // e.g. "hover:shadow-indigo-500/15"
   from: string;     // e.g. "from-indigo-500"
   to: string;       // e.g. "to-indigo-600"
 }
