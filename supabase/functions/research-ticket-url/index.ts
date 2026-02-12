@@ -266,6 +266,13 @@ const SUBPAGE_KEYWORDS = [
   "saison", "kulturprogramm", "theaterprogram", "buehne", "bühne",
 ];
 
+// Keywords that identify generic VVK/ticket info pages (even without PB mention)
+const VVK_PAGE_KEYWORDS = [
+  "vorverkauf", "vvk", "ticket", "karten", "kartenverkauf", "eintritt",
+  "reservierung", "reservieren", "bestell", "abendkasse", "theaterkasse",
+  "ticketregional", "reservix", "eventim", "adticket", "proticket",
+];
+
 async function firecrawlStrategy(
   venueUrl: string,
   venueName: string,
@@ -274,7 +281,7 @@ async function firecrawlStrategy(
   aiApiKey: string
 ): Promise<ResearchResult | null> {
   let firecrawlCalls = 0;
-  const maxFirecrawlCalls = 3;
+  const maxFirecrawlCalls = 4;
 
   // ── Step 1: Scrape homepage ──
   const homepage = await firecrawlScrape(venueUrl, firecrawlApiKey, true);
@@ -330,7 +337,9 @@ async function firecrawlStrategy(
     console.log(`[Strategy0] Top subpage candidates: ${candidateLinks.slice(0, 5).map((l: { url: string; score: number }) => `${l.url} (${l.score})`).join(" | ")}`);
   }
 
-  // ── Step 3: Scrape subpages ──
+  // ── Step 3: Scrape subpages — look for PB AND generic VVK pages ──
+  let genericVvkPages: Array<{ url: string; markdown: string }> = [];
+
   for (const candidate of candidateLinks) {
     if (firecrawlCalls >= maxFirecrawlCalls) {
       console.log(`[Strategy0] Firecrawl limit reached (${maxFirecrawlCalls})`);
@@ -342,21 +351,42 @@ async function firecrawlStrategy(
     if (!subpage) continue;
 
     const subLower = subpage.markdown.toLowerCase();
-    if (!PATER_BROWN_KEYWORDS.some((kw) => subLower.includes(kw))) {
-      console.log(`[Strategy0] No PB on: ${candidate.url}`);
-      continue;
+
+    // Check if PB is explicitly mentioned on this subpage
+    if (PATER_BROWN_KEYWORDS.some((kw) => subLower.includes(kw))) {
+      console.log(`[Strategy0] Pater Brown found on: ${candidate.url}`);
+      const aiResult = await aiExtractTicketInfo(subpage.markdown, candidate.url, venueName, city, aiApiKey);
+      if (aiResult) return aiResult;
     }
 
-    console.log(`[Strategy0] Pater Brown found on: ${candidate.url}`);
-    const aiResult = await aiExtractTicketInfo(subpage.markdown, candidate.url, venueName, city, aiApiKey);
-    if (aiResult) return aiResult;
+    // Collect generic VVK/ticket pages for fallback analysis
+    const isTicketPage = VVK_PAGE_KEYWORDS.some((kw) => subLower.includes(kw) || candidate.url.toLowerCase().includes(kw));
+    if (isTicketPage) {
+      console.log(`[Strategy0] Generic VVK page found: ${candidate.url}`);
+      genericVvkPages.push({ url: candidate.url, markdown: subpage.markdown });
+    }
   }
 
-  // If PB was found on homepage but AI returned low confidence, return that as fallback
+  // ── Step 4: Analyze generic VVK pages (no PB keyword required) ──
+  // The venue is CONFIRMED to host PB (it's in our DB), so generic ticket info is useful
+  if (genericVvkPages.length > 0) {
+    console.log(`[Strategy0] Analyzing ${genericVvkPages.length} generic VVK page(s)...`);
+    for (const page of genericVvkPages) {
+      const aiResult = await aiExtractGenericVVKInfo(page.markdown, page.url, venueName, city, aiApiKey);
+      if (aiResult) return aiResult;
+    }
+  }
+
+  // ── Step 5: Fallback — analyze homepage for generic VVK info ──
+  // Even the homepage may have "Karten: 0123/456789" in footer etc.
   if (pbOnHomepage) {
     const fallback = await aiExtractTicketInfo(homepage.markdown, venueUrl, venueName, city, aiApiKey);
     if (fallback) return fallback;
   }
+
+  // Last resort: check homepage for generic VVK info (footer, sidebar, etc.)
+  const homepageVvk = await aiExtractGenericVVKInfo(homepage.markdown, venueUrl, venueName, city, aiApiKey);
+  if (homepageVvk) return homepageVvk;
 
   return null;
 }
@@ -376,9 +406,14 @@ async function firecrawlAnalyzeSinglePage(
   if (!page) return null;
 
   const lower = page.markdown.toLowerCase();
-  if (!PATER_BROWN_KEYWORDS.some((kw) => lower.includes(kw))) return null;
 
-  return await aiExtractTicketInfo(page.markdown, pageUrl, venueName, city, aiApiKey);
+  // If PB is mentioned, use the PB-specific AI
+  if (PATER_BROWN_KEYWORDS.some((kw) => lower.includes(kw))) {
+    return await aiExtractTicketInfo(page.markdown, pageUrl, venueName, city, aiApiKey);
+  }
+
+  // Fallback: analyze as generic VVK page (PB is confirmed in our DB)
+  return await aiExtractGenericVVKInfo(page.markdown, pageUrl, venueName, city, aiApiKey);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -514,6 +549,141 @@ Regeln:
         source_description: "AI-Analyse (URL extrahiert)",
       };
     }
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AI: Extract GENERIC ticket/VVK info (NO Pater Brown mention required)
+// Used when venue is confirmed (in our DB) but PB not on their website yet.
+// Asks: "How does this venue generally sell tickets?"
+// ═══════════════════════════════════════════════════════════════
+async function aiExtractGenericVVKInfo(
+  markdown: string,
+  pageUrl: string,
+  venueName: string,
+  city: string,
+  apiKey: string
+): Promise<ResearchResult | null> {
+  // Take relevant sections — focus on ticket-related content (max 4000 chars)
+  const lower = markdown.toLowerCase();
+  const sections: string[] = [];
+
+  // Find sections around VVK keywords
+  for (const kw of VVK_PAGE_KEYWORDS) {
+    if (sections.length >= 3) break;
+    let searchFrom = 0;
+    while (searchFrom < lower.length && sections.length < 3) {
+      const idx = lower.indexOf(kw, searchFrom);
+      if (idx === -1) break;
+      const start = Math.max(0, idx - 500);
+      const end = Math.min(markdown.length, idx + 1000);
+      const section = markdown.substring(start, end);
+      // Avoid duplicate sections
+      if (!sections.some((s) => s.includes(section.substring(idx - start, idx - start + 50)))) {
+        sections.push(section);
+      }
+      searchFrom = idx + 200;
+    }
+  }
+
+  // Fallback: first 3000 chars if no keyword sections found
+  if (sections.length === 0) {
+    sections.push(markdown.substring(0, 3000));
+  }
+
+  const prompt = `Finde die GENERELLEN Ticket-/VVK-Informationen für das Venue "${venueName}" in "${city}".
+
+KONTEXT: Wir wissen, dass "Pater Brown - Das Live-Hörspiel" an diesem Venue gastiert. Das Event ist eventuell noch nicht auf der Website gelistet. Wir brauchen die ALLGEMEINEN Infos, wie man an diesem Venue Karten kaufen kann.
+
+Seiten-URL: ${pageUrl}
+
+Seiteninhalt:
+---
+${sections.join("\n---\n")}
+---`;
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        {
+          role: "system",
+          content: `Du bist Recherche-Assistent für eine Theatertournee.
+
+Deine Aufgabe: Finde heraus, wie dieses Venue GENERELL Tickets verkauft. Das Event "Pater Brown" muss NICHT auf der Seite erwähnt sein — wir wissen bereits, dass es dort stattfindet.
+
+Suche nach JEDER Art von Ticket-Verkaufs-Information:
+- Online-Ticketshops (Eventim, Reservix, Ticketregional, ADticket, ProTicket, eigener Shop)
+- Telefonnummern für VVK oder Theaterkasse
+- Lokale Vorverkaufsstellen (Tabak, Buchhandlung, Tourist-Info, Rathaus, etc.)
+- Abendkasse-Infos
+- Reservierungsformulare, E-Mail-Adressen
+- Öffnungszeiten der Theaterkasse
+- Links zu externen Ticket-Systemen
+
+LIES GENAU: Die Info steht oft im Footer, in Seitenleisten, unter "Service", "Kontakt", "Tickets", "Vorverkauf", "Karten".
+
+Antworte im JSON-Format:
+{"ticket_url": "https://...", "ticket_info": "...", "ticket_type": "..."}
+
+Felder:
+- "ticket_url": Bester Link für Ticketkauf. Wenn es einen Ticketshop-Link gibt, nimm den. Sonst die Seiten-URL.
+- "ticket_info": WÖRTLICH die gefundenen VVK-Infos. Z.B. "VVK über Ticket Regional: Tel. 0651/9790777. Lokaler VVK: Papiertruhe Schwalbach, Ringstraße 23, Tel. 06196/5235191" oder "Theaterkasse: Mo-Fr 10-13 Uhr, Tel. 0421/336699"
+- "ticket_type": "online" | "telefon" | "vor_ort" | "abendkasse" | "email" | "gemischt" | "unbekannt"
+
+WICHTIG:
+- Antworte NUR mit dem JSON-Objekt
+- "gemischt" wenn mehrere Verkaufswege existieren (z.B. Online + lokaler Laden)
+- Wenn KEINERLEI Ticket-Info gefunden: {"ticket_url": null, "ticket_info": null, "ticket_type": "unbekannt"}`,
+        },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.1,
+      max_tokens: 500,
+    }),
+  });
+
+  if (!response.ok) {
+    console.log(`[AI-Generic] HTTP ${response.status}`);
+    return null;
+  }
+
+  const data = await response.json();
+  const answer = data.choices?.[0]?.message?.content?.trim() || "";
+  console.log(`[AI-Generic] Response: ${answer}`);
+
+  try {
+    const jsonStr = answer.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    const parsed = JSON.parse(jsonStr);
+
+    const ticketUrl = parsed.ticket_url && parsed.ticket_url !== "null" ? parsed.ticket_url : pageUrl;
+    const ticketInfo = parsed.ticket_info && parsed.ticket_info !== "null" ? parsed.ticket_info : null;
+    const ticketType = parsed.ticket_type || "unbekannt";
+
+    if (!ticketInfo && (!parsed.ticket_url || parsed.ticket_url === "null")) {
+      return null;
+    }
+
+    // Generic VVK info = medium confidence (we know the venue is correct, but PB not explicitly confirmed on their site)
+    let confidence: "high" | "medium" | "low" = "medium";
+    if (parsed.ticket_url && parsed.ticket_url !== "null" && parsed.ticket_url !== pageUrl) {
+      confidence = "high"; // Found a direct ticket shop link
+    }
+
+    return {
+      ticket_url: ticketUrl,
+      ticket_info: ticketInfo,
+      ticket_type: ticketType,
+      confidence,
+      source_description: `Generelle VVK-Info von ${new URL(pageUrl).hostname}`,
+    };
+  } catch {
     return null;
   }
 }
