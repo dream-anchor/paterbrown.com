@@ -1,0 +1,1 @@
+ALTER TABLE tour_events ALTER COLUMN ticket_url DROP NOT NULL;

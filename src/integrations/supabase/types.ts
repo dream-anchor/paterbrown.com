@@ -662,7 +662,7 @@ export type Database = {
           longitude: number | null
           note: string | null
           source: string | null
-          ticket_url: string
+          ticket_url: string | null
           venue: string
         }
         Insert: {
@@ -679,7 +679,7 @@ export type Database = {
           longitude?: number | null
           note?: string | null
           source?: string | null
-          ticket_url: string
+          ticket_url?: string | null
           venue: string
         }
         Update: {
@@ -696,7 +696,7 @@ export type Database = {
           longitude?: number | null
           note?: string | null
           source?: string | null
-          ticket_url?: string
+          ticket_url?: string | null
           venue?: string
         }
         Relationships: []
