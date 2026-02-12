@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Ticket, ExternalLink, Sparkles, Loader2, Check, X,
-  AlertTriangle, Search, Globe, Link2, MapPin, Phone, Store, Mail, Info
+  AlertTriangle, Search, Globe, Link2, MapPin, Phone, Store, Mail, Info, Clock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-type TicketType = "online" | "telefon" | "vor_ort" | "abendkasse" | "email" | "gemischt" | "unbekannt";
+type TicketType = "online" | "telefon" | "vor_ort" | "abendkasse" | "email" | "gemischt" | "pending" | "unbekannt";
 
 interface KlEvent {
   id: string;
@@ -32,6 +32,7 @@ const TICKET_TYPE_CONFIG: Record<TicketType, { label: string; icon: typeof Globe
   abendkasse: { label: "Abendkasse", icon: Ticket, color: "text-gray-500 bg-gray-50" },
   email: { label: "E-Mail", icon: Mail, color: "text-teal-500 bg-teal-50" },
   gemischt: { label: "Gemischt", icon: Info, color: "text-amber-500 bg-amber-50" },
+  pending: { label: "VVK noch nicht online", icon: Clock, color: "text-yellow-600 bg-yellow-50" },
   unbekannt: { label: "Unbekannt", icon: Search, color: "text-gray-400 bg-gray-50" },
 };
 
@@ -141,11 +142,11 @@ const VvkApprovalPanel = ({ onApprovalChanged, standalone = false }: VvkApproval
 
       if (error) throw error;
 
-      if (data?.ticket_url) {
+      if (data?.ticket_url || data?.ticket_info) {
         setEvents(prev => prev.map(e =>
           e.id === event.id ? {
             ...e,
-            ticket_url: data.ticket_url,
+            ticket_url: data.ticket_url || e.ticket_url,
             ticket_url_approved: false,
             ticket_info: data.ticket_info || e.ticket_info,
             ticket_type: data.ticket_type || e.ticket_type,
@@ -154,9 +155,12 @@ const VvkApprovalPanel = ({ onApprovalChanged, standalone = false }: VvkApproval
         if (data.source_description) {
           setResearchNotes(prev => new Map(prev).set(event.id, data.source_description));
         }
+        const isPending = data.ticket_type === "pending";
         toast({
-          title: "Ticket-Link gefunden",
-          description: `${data.ticket_info || data.source_description} (${data.confidence})`,
+          title: isPending ? "Kontaktdaten gefunden" : "Ticket-Link gefunden",
+          description: isPending
+            ? `${data.ticket_info?.substring(0, 100)}...`
+            : `${data.ticket_info || data.source_description} (${data.confidence})`,
         });
       } else {
         toast({ title: "Kein Link gefunden", description: event.venue_name || event.location, variant: "destructive" });
@@ -383,23 +387,38 @@ const VvkApprovalPanel = ({ onApprovalChanged, standalone = false }: VvkApproval
                         ) : null}
 
                         {/* Ticket info — shows HOW tickets are sold */}
-                        {(event.ticket_info || researchNotes.get(event.id)) && (
-                          <div className="mt-1.5 flex items-start gap-2">
-                            {event.ticket_type && event.ticket_type !== "unbekannt" && (() => {
-                              const cfg = TICKET_TYPE_CONFIG[event.ticket_type as TicketType];
-                              const TypeIcon = cfg.icon;
-                              return (
-                                <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0", cfg.color)}>
-                                  <TypeIcon className="w-3 h-3" />
-                                  {cfg.label}
-                                </span>
-                              );
-                            })()}
-                            <p className="text-xs text-amber-700 bg-amber-50 px-2 py-1 rounded-md max-w-md leading-relaxed">
-                              {event.ticket_info || researchNotes.get(event.id)}
-                            </p>
-                          </div>
-                        )}
+                        {(event.ticket_info || researchNotes.get(event.id)) && (() => {
+                          const infoText = event.ticket_info || researchNotes.get(event.id) || "";
+                          const isPending = event.ticket_type === "pending";
+                          const bgColor = isPending ? "text-yellow-800 bg-yellow-50 border border-yellow-200" : "text-amber-700 bg-amber-50";
+
+                          return (
+                            <div className="mt-1.5 flex items-start gap-2">
+                              {event.ticket_type && event.ticket_type !== "unbekannt" && (() => {
+                                const cfg = TICKET_TYPE_CONFIG[event.ticket_type as TicketType];
+                                if (!cfg) return null;
+                                const TypeIcon = cfg.icon;
+                                return (
+                                  <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0", cfg.color)}
+                                    title={isPending ? "Pater Brown noch nicht im Programm – allgemeine VVK-Kontaktdaten" : undefined}
+                                  >
+                                    <TypeIcon className="w-3 h-3" />
+                                    {cfg.label}
+                                  </span>
+                                );
+                              })()}
+                              <p className={cn("text-xs px-2 py-1 rounded-md max-w-md leading-relaxed", bgColor)}
+                                dangerouslySetInnerHTML={{
+                                  __html: infoText
+                                    // Make phone numbers clickable
+                                    .replace(/((?:\+49|0)\s*[\d\s/\-().]{6,20}\d)/g, '<a href="tel:$1" class="underline text-purple-600 hover:text-purple-800">$1</a>')
+                                    // Make email addresses clickable
+                                    .replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '<a href="mailto:$1" class="underline text-teal-600 hover:text-teal-800">$1</a>')
+                                }}
+                              />
+                            </div>
+                          );
+                        })()}
 
                         {/* Manual URL input (prominent, for missing events) */}
                         {isManualInput && (

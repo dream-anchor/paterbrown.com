@@ -15,7 +15,7 @@ interface ResearchRequest {
 interface ResearchResult {
   ticket_url: string | null;
   ticket_info: string | null;
-  ticket_type: "online" | "telefon" | "vor_ort" | "abendkasse" | "email" | "gemischt" | "unbekannt";
+  ticket_type: "online" | "telefon" | "vor_ort" | "abendkasse" | "email" | "gemischt" | "pending" | "unbekannt";
   confidence: "high" | "medium" | "low";
   source_description: string;
 }
@@ -751,9 +751,9 @@ async function aiExtractGenericVVKInfo(
     sections.push(markdown.substring(0, 3000));
   }
 
-  const prompt = `Finde die GENERELLEN Ticket-/VVK-Informationen für das Venue "${venueName}" in "${city}".
+  const prompt = `Finde die ALLGEMEINEN Kontaktdaten für den Kartenvorverkauf des Venues "${venueName}" in "${city}".
 
-KONTEXT: Wir wissen, dass "Pater Brown - Das Live-Hörspiel" an diesem Venue gastiert. Das Event ist eventuell noch nicht auf der Website gelistet. Wir brauchen die ALLGEMEINEN Infos, wie man an diesem Venue Karten kaufen kann.
+WICHTIG: "Pater Brown" ist NICHT auf dieser Seite. Wir suchen die GENERELLEN Kontaktdaten der Theaterkasse / des Kartenvorverkaufs.
 
 Seiten-URL: ${pageUrl}
 
@@ -775,31 +775,29 @@ ${sections.join("\n---\n")}
           role: "system",
           content: `Du bist Recherche-Assistent für eine Theatertournee.
 
-Deine Aufgabe: Finde heraus, wie dieses Venue GENERELL Tickets verkauft. Das Event "Pater Brown" muss NICHT auf der Seite erwähnt sein — wir wissen bereits, dass es dort stattfindet.
+SITUATION: "Pater Brown - Das Live-Hörspiel" gastiert an diesem Venue, ist aber NOCH NICHT auf deren Website gelistet. Wir brauchen die ALLGEMEINEN Kontaktdaten der Theaterkasse / des Kartenvorverkaufs.
 
-Suche nach JEDER Art von Ticket-Verkaufs-Information:
-- Online-Ticketshops (Eventim, Reservix, Ticketregional, ADticket, ProTicket, eigener Shop)
-- Telefonnummern für VVK oder Theaterkasse
-- Lokale Vorverkaufsstellen (Tabak, Buchhandlung, Tourist-Info, Rathaus, etc.)
-- Abendkasse-Infos
-- Reservierungsformulare, E-Mail-Adressen
-- Öffnungszeiten der Theaterkasse
-- Links zu externen Ticket-Systemen
+Suche nach diesen Informationen:
+- Telefonnummer der Theaterkasse / des Kartenservice (oft unter "Kasse", "Theaterkasse", "Vorverkauf", "Tickets", "Kartenservice")
+- E-Mail-Adresse für Reservierungen / Kartenbestellungen
+- Link zur allgemeinen Tickets/Vorverkauf/Spielplan-Seite
+- Adresse und Öffnungszeiten der Vorverkaufsstelle / Theaterkasse
+- Externe VVK-Partner (z.B. "Tickets bei der Tourist-Info", "VVK im Bürgerbüro")
+- Online-Ticketportale die das Venue nutzt (Reservix, Ticketregional, ADticket, ProTicket)
 
-LIES GENAU: Die Info steht oft im Footer, in Seitenleisten, unter "Service", "Kontakt", "Tickets", "Vorverkauf", "Karten".
+LIES GENAU: Die Info steht oft im Footer, in Seitenleisten, unter "Service", "Kontakt", "Tickets", "Vorverkauf", "Karten", "Anfahrt & Tickets".
 
 Antworte im JSON-Format:
-{"ticket_url": "https://...", "ticket_info": "...", "ticket_type": "..."}
+{"ticket_url": "https://...", "ticket_info": "..."}
 
 Felder:
-- "ticket_url": Bester Link für Ticketkauf. Wenn es einen Ticketshop-Link gibt, nimm den. Sonst die Seiten-URL.
-- "ticket_info": WÖRTLICH die gefundenen VVK-Infos. Z.B. "VVK über Ticket Regional: Tel. 0651/9790777. Lokaler VVK: Papiertruhe Schwalbach, Ringstraße 23, Tel. 06196/5235191" oder "Theaterkasse: Mo-Fr 10-13 Uhr, Tel. 0421/336699"
-- "ticket_type": "online" | "telefon" | "vor_ort" | "abendkasse" | "email" | "gemischt" | "unbekannt"
+- "ticket_url": Link zur allgemeinen Ticket/Spielplan/VVK-Seite. Wenn kein spezifischer Link: die Seiten-URL. NIEMALS einen Link zu einer ANDEREN Veranstaltung!
+- "ticket_info": Fasse die Kontaktinfos als kurzen, lesbaren Text zusammen. Z.B. "Theaterkasse: Tel. 05731/130051, Mo-Fr 10-16 Uhr. E-Mail: kasse@theater.de" oder "VVK über Ticket Regional: Tel. 0651/9790777. Lokaler VVK: Papiertruhe, Ringstraße 23"
 
 WICHTIG:
 - Antworte NUR mit dem JSON-Objekt
-- "gemischt" wenn mehrere Verkaufswege existieren (z.B. Online + lokaler Laden)
-- Wenn KEINERLEI Ticket-Info gefunden: {"ticket_url": null, "ticket_info": null, "ticket_type": "unbekannt"}`,
+- Wenn KEINERLEI Kontaktdaten gefunden: {"ticket_url": null, "ticket_info": null}
+- KEINE Links zu spezifischen anderen Events zurückgeben!`,
         },
         { role: "user", content: prompt },
       ],
@@ -823,24 +821,18 @@ WICHTIG:
 
     const ticketUrl = parsed.ticket_url && parsed.ticket_url !== "null" ? parsed.ticket_url : pageUrl;
     const ticketInfo = parsed.ticket_info && parsed.ticket_info !== "null" ? parsed.ticket_info : null;
-    const ticketType = parsed.ticket_type || "unbekannt";
 
     if (!ticketInfo && (!parsed.ticket_url || parsed.ticket_url === "null")) {
       return null;
     }
 
-    // Generic VVK info = medium confidence (we know the venue is correct, but PB not explicitly confirmed on their site)
-    let confidence: "high" | "medium" | "low" = "medium";
-    if (parsed.ticket_url && parsed.ticket_url !== "null" && parsed.ticket_url !== pageUrl) {
-      confidence = "high"; // Found a direct ticket shop link
-    }
-
+    // Generic VVK info = always "pending" type (PB not on their site yet)
     return {
       ticket_url: ticketUrl,
       ticket_info: ticketInfo,
-      ticket_type: ticketType,
-      confidence,
-      source_description: `Generelle VVK-Info von ${new URL(pageUrl).hostname}`,
+      ticket_type: "pending" as const,
+      confidence: "medium",
+      source_description: `Allgemeine VVK-Kontaktdaten von ${new URL(pageUrl).hostname}`,
     };
   } catch {
     return null;
