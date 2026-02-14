@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Ticket, ExternalLink, Sparkles, Loader2, Check, X,
-  AlertTriangle, Search, Globe, Link2, MapPin, Phone, Store, Mail, Info, Clock
+  AlertTriangle, Search, Globe, Link2, MapPin, Phone, Store, Mail, Info, Clock, Send
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -60,6 +60,7 @@ const VvkApprovalPanel = ({ onApprovalChanged, standalone = false }: VvkApproval
   const [manualInputId, setManualInputId] = useState<string | null>(null);
   const [manualUrlValue, setManualUrlValue] = useState("");
   const [researchNotes, setResearchNotes] = useState<Map<string, string>>(new Map());
+  const [publishingIds, setPublishingIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   const fetchEvents = async () => {
@@ -173,6 +174,43 @@ const VvkApprovalPanel = ({ onApprovalChanged, standalone = false }: VvkApproval
         next.delete(event.id);
         return next;
       });
+    }
+  };
+
+  const handlePublishToCreatorOS = async (event: KlEvent) => {
+    setPublishingIds(prev => new Set(prev).add(event.id));
+    try {
+      const creatorOsUrl = "https://utecdkwvjraucimdflnw.supabase.co/functions/v1/create-draft-external";
+      const response = await fetch(creatorOsUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-external-api-key": import.meta.env.VITE_CREATOROS_API_KEY || "",
+        },
+        body: JSON.stringify({
+          venue_name: event.venue_name || "",
+          city: event.location,
+          event_date: event.start_time,
+          ticket_url: event.ticket_url,
+          ticket_info: event.ticket_info,
+          ticket_type: event.ticket_type,
+          venue_url: event.venue_url,
+          source_system: "troups",
+          source_event_id: event.id,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "CreatorOS API error");
+
+      toast({
+        title: "Draft erstellt",
+        description: `Post-Draft in CreatorOS angelegt (${data.caption_preview}...)`,
+      });
+    } catch (err: any) {
+      toast({ title: "CreatorOS Fehler", description: err.message, variant: "destructive" });
+    } finally {
+      setPublishingIds(prev => { const next = new Set(prev); next.delete(event.id); return next; });
     }
   };
 
@@ -507,6 +545,19 @@ const VvkApprovalPanel = ({ onApprovalChanged, standalone = false }: VvkApproval
                           >
                             <X className="w-3.5 h-3.5" />
                             Zurückziehen
+                          </button>
+                        )}
+
+                        {/* Publish to CreatorOS */}
+                        {event.ticket_url_approved && (
+                          <button
+                            onClick={() => handlePublishToCreatorOS(event)}
+                            disabled={publishingIds.has(event.id)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-200/50 transition-all disabled:opacity-50"
+                            title="Draft in CreatorOS erstellen"
+                          >
+                            {publishingIds.has(event.id) ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                            CreatorOS
                           </button>
                         )}
 
