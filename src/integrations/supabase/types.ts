@@ -316,6 +316,78 @@ export type Database = {
         }
         Relationships: []
       }
+      document_bundle_items: {
+        Row: {
+          bundle_id: string
+          created_at: string | null
+          document_id: string
+          id: string
+        }
+        Insert: {
+          bundle_id: string
+          created_at?: string | null
+          document_id: string
+          id?: string
+        }
+        Update: {
+          bundle_id?: string
+          created_at?: string | null
+          document_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_bundle_items_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "document_share_bundles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_bundle_items_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "internal_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_share_bundles: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          download_count: number | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_downloads: number | null
+          password_hash: string | null
+          token: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          download_count?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_downloads?: number | null
+          password_hash?: string | null
+          token: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          download_count?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_downloads?: number | null
+          password_hash?: string | null
+          token?: string
+        }
+        Relationships: []
+      }
       document_share_links: {
         Row: {
           created_at: string
@@ -1062,6 +1134,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_bundle_download: { Args: { p_token: string }; Returns: boolean }
       increment_share_link_download: {
         Args: { p_token: string }
         Returns: boolean
