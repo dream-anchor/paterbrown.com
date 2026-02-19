@@ -335,9 +335,9 @@ const DocumentsPanel = () => {
               <p className="text-sm text-gray-500">
                 {documents.length} {documents.length === 1 ? 'Datei' : 'Dateien'} bereit zum Teilen
               </p>
-              {documents.length > 0 && selectedIds.size === 0 && (
+              {documents.length > 0 && selectedIds.size === 0 && picksImages.length === 0 && (
                 <p className="text-xs text-gray-400 mt-0.5">
-                  Dateien antippen → Paket-Link generieren
+                  ○ links antippen → Paket-Link generieren
                 </p>
               )}
             </div>
@@ -574,13 +574,13 @@ const DocumentsPanel = () => {
                             : "bg-transparent group-hover:bg-gray-200"
                         )} />
 
-                        {/* Checkbox - always visible on hover, filled when selected */}
+                        {/* Checkbox - always visible */}
                         <div
                           className={cn(
                             "absolute top-1/2 -translate-y-1/2 left-3 z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200",
                             selectedIds.has(doc.id)
-                              ? "bg-amber-500 border-amber-500 shadow-md opacity-100"
-                              : "bg-white border-gray-300 opacity-0 group-hover:opacity-100"
+                              ? "bg-amber-500 border-amber-500 shadow-md"
+                              : "bg-white border-gray-300 opacity-40 hover:opacity-100"
                           )}
                           onClick={(e) => { e.stopPropagation(); toggleSelection(doc.id); }}
                         >
