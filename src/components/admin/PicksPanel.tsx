@@ -53,6 +53,7 @@ import ImageLightbox from "./picks/ImageLightbox";
 import FloatingActionBar from "./picks/FloatingActionBar";
 import MoveToAlbumDialog from "./picks/MoveToAlbumDialog";
 import JustifiedGallery from "./picks/JustifiedGallery";
+import BulkShareLinkDialog from "./BulkShareLinkDialog";
 
 const PicksPanel = () => {
   const { toast } = useToast();
@@ -88,6 +89,7 @@ const PicksPanel = () => {
   
   // Selection state
   const [selectedImageIds, setSelectedImageIds] = useState<Set<string>>(new Set());
+  const [showPicksBulkShare, setShowPicksBulkShare] = useState(false);
   
   // New album dialog
   const [showNewAlbumDialog, setShowNewAlbumDialog] = useState(false);
@@ -1290,11 +1292,7 @@ const PicksPanel = () => {
         onBatchMove={() => setShowMoveDialog(true)}
         onClearSelection={() => setSelectedImageIds(new Set())}
         canDelete={canDeleteSelected}
-        onSendViaDrops={selectedImageIds.size > 0 ? () => {
-          sessionStorage.setItem("picksToSend", JSON.stringify(Array.from(selectedImageIds)));
-          window.dispatchEvent(new CustomEvent("picksToSend"));
-          setSearchParams({ tab: "documents" });
-        } : undefined}
+        onSendViaDrops={selectedImageIds.size > 0 ? () => setShowPicksBulkShare(true) : undefined}
       />
 
       {/* Lightbox */}
@@ -1309,6 +1307,19 @@ const PicksPanel = () => {
         onDownload={handleDownloadImage}
         onDelete={(img) => setDeleteConfirmation({ type: 'image', item: img })}
         canDelete={lightboxImage ? canDeleteItem(lightboxImage) : false}
+      />
+
+      {/* Bundle Share Dialog — opens directly from Picks */}
+      <BulkShareLinkDialog
+        open={showPicksBulkShare}
+        onOpenChange={setShowPicksBulkShare}
+        documentIds={[]}
+        documentNames={[]}
+        imageIds={Array.from(selectedImageIds)}
+        imageNames={Array.from(selectedImageIds).map((id) => {
+          const img = images.find((i) => i.id === id);
+          return img?.file_name || id;
+        })}
       />
     </>
   );
