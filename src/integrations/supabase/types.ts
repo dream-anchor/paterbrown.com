@@ -359,6 +359,7 @@ export type Database = {
           download_count: number | null
           expires_at: string | null
           id: string
+          image_ids: string[] | null
           is_active: boolean | null
           max_downloads: number | null
           password_hash: string | null
@@ -370,6 +371,7 @@ export type Database = {
           download_count?: number | null
           expires_at?: string | null
           id?: string
+          image_ids?: string[] | null
           is_active?: boolean | null
           max_downloads?: number | null
           password_hash?: string | null
@@ -381,6 +383,7 @@ export type Database = {
           download_count?: number | null
           expires_at?: string | null
           id?: string
+          image_ids?: string[] | null
           is_active?: boolean | null
           max_downloads?: number | null
           password_hash?: string | null
@@ -1126,6 +1129,14 @@ export type Database = {
       deactivate_document_share_links: {
         Args: { p_document_id: string }
         Returns: number
+      }
+      get_admin_user_names: {
+        Args: never
+        Returns: {
+          display_name: string
+          email: string
+          user_id: string
+        }[]
       }
       has_role: {
         Args: {
