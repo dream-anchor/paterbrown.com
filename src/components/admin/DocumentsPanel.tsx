@@ -71,25 +71,33 @@ const DocumentsPanel = () => {
     [documents, selectedIds]
   );
 
-  // Load picks images from sessionStorage (set by PicksPanel "Via Drops senden")
-  // sessionStorage is reliable — URL params can be wiped by any tab navigation
+  // Load picks images — triggered on mount AND via custom event from PicksPanel.
+  // Custom event is needed because DocumentsPanel may already be mounted
+  // (Shadcn Tabs keeps tabs mounted, just hidden). useEffect([], []) alone
+  // only runs once and misses subsequent "Via Drops senden" calls.
   useEffect(() => {
-    const stored = sessionStorage.getItem("picksToSend");
-    if (!stored) return;
-    let ids: string[] = [];
-    try { ids = JSON.parse(stored); } catch { return; }
-    if (ids.length === 0) return;
+    const loadPicksFromStorage = () => {
+      const stored = sessionStorage.getItem("picksToSend");
+      if (!stored) return;
+      let ids: string[] = [];
+      try { ids = JSON.parse(stored); } catch { return; }
+      if (ids.length === 0) return;
 
-    sessionStorage.removeItem("picksToSend"); // Clear immediately (sync, before fetch)
-    setPicksLoading(true);
-    supabase
-      .from("images")
-      .select("id, file_name, file_path, file_size, thumbnail_url")
-      .in("id", ids)
-      .then(({ data }) => {
-        setPicksImages((data as PicksImage[]) || []);
-        setPicksLoading(false);
-      });
+      sessionStorage.removeItem("picksToSend");
+      setPicksLoading(true);
+      supabase
+        .from("images")
+        .select("id, file_name, file_path, file_size, thumbnail_url")
+        .in("id", ids)
+        .then(({ data }) => {
+          setPicksImages((data as PicksImage[]) || []);
+          setPicksLoading(false);
+        });
+    };
+
+    loadPicksFromStorage(); // Check on first mount
+    window.addEventListener("picksToSend", loadPicksFromStorage);
+    return () => window.removeEventListener("picksToSend", loadPicksFromStorage);
   }, []);
 
   // Toggle selection for a document
