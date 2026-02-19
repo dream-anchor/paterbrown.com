@@ -77,7 +77,9 @@ const DocumentsPanel = () => {
   useEffect(() => {
     const picksParam = searchParams.get("picksImages");
     if (!picksParam) {
-      setPicksImages([]);
+      // Don't clear picksImages here — URL param gets removed after fetch,
+      // which would immediately wipe the just-loaded images (race condition).
+      // Clearing happens via X button or dialog close.
       return;
     }
     const ids = picksParam.split(",").filter(Boolean);
@@ -574,17 +576,20 @@ const DocumentsPanel = () => {
                             : "bg-transparent group-hover:bg-gray-200"
                         )} />
 
-                        {/* Checkbox - always visible */}
+                        {/* Large tap zone over left icon area (no buttons there) */}
                         <div
-                          className={cn(
-                            "absolute top-1/2 -translate-y-1/2 left-3 z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200",
-                            selectedIds.has(doc.id)
-                              ? "bg-amber-500 border-amber-500 shadow-md"
-                              : "bg-white border-gray-300 opacity-40 hover:opacity-100"
-                          )}
+                          className="absolute inset-y-0 left-0 w-20 z-10 cursor-pointer"
                           onClick={(e) => { e.stopPropagation(); toggleSelection(doc.id); }}
                         >
-                          {selectedIds.has(doc.id) && <Check className="w-3 h-3 text-white" />}
+                          {/* Checkbox indicator centered in tap zone */}
+                          <div className={cn(
+                            "absolute top-1/2 -translate-y-1/2 left-3 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200",
+                            selectedIds.has(doc.id)
+                              ? "bg-amber-500 border-amber-500 shadow-lg"
+                              : "bg-white/80 border-white shadow-md"
+                          )}>
+                            {selectedIds.has(doc.id) && <Check className="w-3.5 h-3.5 text-white" />}
+                          </div>
                         </div>
                         
                         <div className={cn(
