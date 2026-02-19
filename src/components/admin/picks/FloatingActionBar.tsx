@@ -1,11 +1,12 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Check, 
-  HelpCircle, 
-  XCircle, 
-  Trash2, 
+import {
+  Check,
+  HelpCircle,
+  XCircle,
+  Trash2,
   FolderInput,
-  X
+  X,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VoteStatus } from "./types";
@@ -17,6 +18,7 @@ interface FloatingActionBarProps {
   onBatchMove: () => void;
   onClearSelection: () => void;
   canDelete: boolean;
+  onSendViaDrops?: () => void;
 }
 
 const FloatingActionBar = ({
@@ -26,6 +28,7 @@ const FloatingActionBar = ({
   onBatchMove,
   onClearSelection,
   canDelete,
+  onSendViaDrops,
 }: FloatingActionBarProps) => {
   return (
     <AnimatePresence>
@@ -94,6 +97,20 @@ const FloatingActionBar = ({
                 <Trash2 className="w-4 h-4 mr-1" />
                 Löschen
               </Button>
+            )}
+
+            {onSendViaDrops && (
+              <>
+                <div className="w-px h-8 bg-gray-700" />
+                <Button
+                  onClick={onSendViaDrops}
+                  size="sm"
+                  className="bg-amber-500 hover:bg-amber-600 text-white font-medium"
+                >
+                  <Send className="w-4 h-4 mr-1" />
+                  Via Drops senden
+                </Button>
+              </>
             )}
 
             <div className="w-px h-8 bg-gray-700" />

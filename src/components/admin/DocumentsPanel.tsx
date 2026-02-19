@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Plus, CloudDownload, RefreshCw, Upload, Image, FileText, 
+import {
+  Plus, CloudDownload, RefreshCw, Upload, Image as ImageIcon, FileText,
   Table, Presentation, Archive, File, Sparkles, FolderOpen,
-  CheckSquare, X, Link
+  CheckSquare, Check, X, Link, Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -11,8 +12,17 @@ import { supabase } from "@/integrations/supabase/client";
 import DocumentCard from "./DocumentCard";
 import DocumentUploadModal from "./DocumentUploadModal";
 import ShareLinkDialog from "./ShareLinkDialog";
-import { getFileTypeGroup, FILE_TYPE_GROUPS, FileTypeGroup } from "@/lib/documentUtils";
+import BulkShareLinkDialog from "./BulkShareLinkDialog";
+import { getFileTypeGroup, FILE_TYPE_GROUPS, FileTypeGroup, getImageOriginalUrl } from "@/lib/documentUtils";
 import { cn } from "@/lib/utils";
+
+interface PicksImage {
+  id: string;
+  file_name: string;
+  file_path: string;
+  file_size: number;
+  thumbnail_url: string | null;
+}
 
 interface Document {
   id: string;
@@ -26,7 +36,7 @@ interface Document {
 }
 
 const GROUP_ICONS: Record<FileTypeGroup, React.ReactNode> = {
-  images: <Image className="w-4 h-4" />,
+  images: <ImageIcon className="w-4 h-4" />,
   pdfs: <FileText className="w-4 h-4" />,
   documents: <FileText className="w-4 h-4" />,
   spreadsheets: <Table className="w-4 h-4" />,
@@ -47,6 +57,7 @@ const GROUP_COLORS: Record<FileTypeGroup, string> = {
 
 const DocumentsPanel = () => {
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -54,6 +65,38 @@ const DocumentsPanel = () => {
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkShareDialog, setShowBulkShareDialog] = useState(false);
+  const [picksImages, setPicksImages] = useState<PicksImage[]>([]);
+  const [picksLoading, setPicksLoading] = useState(false);
+
+  const selectedDocuments = useMemo(
+    () => documents.filter((d) => selectedIds.has(d.id)),
+    [documents, selectedIds]
+  );
+
+  // Load picks images from URL param (set by PicksPanel "Via Drops senden")
+  useEffect(() => {
+    const picksParam = searchParams.get("picksImages");
+    if (!picksParam) {
+      setPicksImages([]);
+      return;
+    }
+    const ids = picksParam.split(",").filter(Boolean);
+    if (ids.length === 0) return;
+
+    setPicksLoading(true);
+    supabase
+      .from("images")
+      .select("id, file_name, file_path, file_size, thumbnail_url")
+      .in("id", ids)
+      .then(({ data }) => {
+        setPicksImages((data as PicksImage[]) || []);
+        setPicksLoading(false);
+        // Clear param from URL without triggering navigation
+        const next = new URLSearchParams(searchParams);
+        next.delete("picksImages");
+        setSearchParams(next, { replace: true });
+      });
+  }, [searchParams.get("picksImages")]);
 
   // Toggle selection for a document
   const toggleSelection = useCallback((id: string) => {
@@ -292,6 +335,11 @@ const DocumentsPanel = () => {
               <p className="text-sm text-gray-500">
                 {documents.length} {documents.length === 1 ? 'Datei' : 'Dateien'} bereit zum Teilen
               </p>
+              {documents.length > 0 && selectedIds.size === 0 && (
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Dateien antippen → Paket-Link generieren
+                </p>
+              )}
             </div>
           </div>
 
@@ -353,12 +401,7 @@ const DocumentsPanel = () => {
                 </div>
                 <div className="w-px h-6 bg-white/20" />
                 <Button
-                  onClick={() => {
-                    toast({
-                      title: "Funktion in Entwicklung",
-                      description: "Multi-Datei-Links kommen bald.",
-                    });
-                  }}
+                  onClick={() => setShowBulkShareDialog(true)}
                   size="sm"
                   className={cn(
                     "h-9 rounded-xl gap-2",
@@ -367,10 +410,70 @@ const DocumentsPanel = () => {
                   )}
                 >
                   <Link className="w-4 h-4" />
-                  <span className="hidden sm:inline">Link generieren</span>
+                  <span className="hidden sm:inline">Paket-Link generieren</span>
                   <span className="sm:hidden">Link</span>
                 </Button>
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Picks Auswahl Banner */}
+        <AnimatePresence>
+          {(picksImages.length > 0 || picksLoading) && (
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              className="rounded-2xl border-2 border-amber-400 bg-amber-50 p-4"
+            >
+              <div className="flex items-center justify-between gap-4 mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
+                    <Send className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-amber-900">
+                      {picksLoading ? "Lade Picks…" : `${picksImages.length} Foto${picksImages.length !== 1 ? "s" : ""} aus Picks`}
+                    </p>
+                    <p className="text-xs text-amber-700">Paket-Link für diese Fotos generieren</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl"
+                    disabled={picksLoading || picksImages.length === 0}
+                    onClick={() => setShowBulkShareDialog(true)}
+                  >
+                    <Link className="w-4 h-4 mr-1.5" />
+                    Paket-Link generieren
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-amber-700 hover:text-amber-900 hover:bg-amber-100 rounded-xl"
+                    onClick={() => setPicksImages([])}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              {!picksLoading && picksImages.length > 0 && (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {picksImages.map((img) => (
+                    <div key={img.id} className="shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-amber-100 border border-amber-200">
+                      {img.thumbnail_url ? (
+                        <img src={img.thumbnail_url} alt={img.file_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ImageIcon className="w-6 h-6 text-amber-400" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -453,11 +556,10 @@ const DocumentsPanel = () => {
                   {/* Document Cards - Clickable for selection */}
                   <div className="space-y-3">
                     {docs.map((doc, index) => (
-                      <div 
-                        key={doc.id} 
+                      <div
+                        key={doc.id}
                         className="relative group cursor-pointer"
                         onClick={(e) => {
-                          // Don't toggle selection if clicking on buttons/links inside the card
                           if ((e.target as HTMLElement).closest('button, a, [role="button"]')) {
                             return;
                           }
@@ -467,26 +569,23 @@ const DocumentsPanel = () => {
                         {/* Selection indicator - left edge */}
                         <div className={cn(
                           "absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl transition-all duration-200",
-                          selectedIds.has(doc.id) 
-                            ? "bg-amber-500" 
+                          selectedIds.has(doc.id)
+                            ? "bg-amber-500"
                             : "bg-transparent group-hover:bg-gray-200"
                         )} />
-                        
-                        {/* Selection checkmark - top right */}
-                        <AnimatePresence>
-                          {selectedIds.has(doc.id) && (
-                            <motion.div
-                              initial={{ scale: 0, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              exit={{ scale: 0, opacity: 0 }}
-                              className="absolute -top-2 -right-2 z-10"
-                            >
-                              <div className="w-7 h-7 rounded-full bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
-                                <CheckSquare className="w-4 h-4 text-white" />
-                              </div>
-                            </motion.div>
+
+                        {/* Checkbox - always visible on hover, filled when selected */}
+                        <div
+                          className={cn(
+                            "absolute top-1/2 -translate-y-1/2 left-3 z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200",
+                            selectedIds.has(doc.id)
+                              ? "bg-amber-500 border-amber-500 shadow-md opacity-100"
+                              : "bg-white border-gray-300 opacity-0 group-hover:opacity-100"
                           )}
-                        </AnimatePresence>
+                          onClick={(e) => { e.stopPropagation(); toggleSelection(doc.id); }}
+                        >
+                          {selectedIds.has(doc.id) && <Check className="w-3 h-3 text-white" />}
+                        </div>
                         
                         <div className={cn(
                           "transition-all duration-200",
@@ -520,6 +619,19 @@ const DocumentsPanel = () => {
           onOpenChange={handleModalOpenChange}
           onSuccess={fetchDocuments}
           initialFiles={droppedFiles}
+        />
+
+        {/* Bulk Share Dialog */}
+        <BulkShareLinkDialog
+          open={showBulkShareDialog}
+          onOpenChange={(open) => {
+            setShowBulkShareDialog(open);
+            if (!open && picksImages.length > 0) setPicksImages([]);
+          }}
+          documentIds={selectedDocuments.map((d) => d.id)}
+          documentNames={selectedDocuments.map((d) => d.name)}
+          imageIds={picksImages.map((img) => img.id)}
+          imageNames={picksImages.map((img) => img.file_name)}
         />
       </div>
     </>

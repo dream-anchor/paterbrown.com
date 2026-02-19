@@ -9,7 +9,8 @@ import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080,
+    port: 5173,
+    allowedHosts: ["tunnel.schrittmacher.ai"],
   },
   plugins: [
     react(), 

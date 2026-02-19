@@ -438,6 +438,78 @@ export type Database = {
           },
         ]
       }
+      document_bundle_items: {
+        Row: {
+          bundle_id: string
+          document_id: string
+          id: string
+        }
+        Insert: {
+          bundle_id: string
+          document_id: string
+          id?: string
+        }
+        Update: {
+          bundle_id?: string
+          document_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_bundle_items_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "document_share_bundles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_bundle_items_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "internal_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_share_bundles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          download_count: number
+          expires_at: string | null
+          id: string
+          image_ids: string[]
+          is_active: boolean
+          max_downloads: number | null
+          password_hash: string | null
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          download_count?: number
+          expires_at?: string | null
+          id?: string
+          image_ids?: string[]
+          is_active?: boolean
+          max_downloads?: number | null
+          password_hash?: string | null
+          token: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          download_count?: number
+          expires_at?: string | null
+          id?: string
+          image_ids?: string[]
+          is_active?: boolean
+          max_downloads?: number | null
+          password_hash?: string | null
+          token?: string
+        }
+        Relationships: []
+      }
       image_votes: {
         Row: {
           created_at: string
@@ -1126,6 +1198,10 @@ export type Database = {
       }
     }
     Functions: {
+      get_admin_user_names: {
+        Args: Record<string, never>
+        Returns: { user_id: string; display_name: string; email: string }[]
+      }
       deactivate_document_share_links: {
         Args: { p_document_id: string }
         Returns: number
@@ -1145,7 +1221,10 @@ export type Database = {
         }
         Returns: boolean
       }
-      increment_bundle_download: { Args: { p_token: string }; Returns: boolean }
+      increment_bundle_download: {
+        Args: { p_token: string }
+        Returns: boolean
+      }
       increment_share_link_download: {
         Args: { p_token: string }
         Returns: boolean

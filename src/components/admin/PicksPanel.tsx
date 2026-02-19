@@ -70,6 +70,7 @@ const PicksPanel = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [minApprovals, setMinApprovals] = useState<number>(0);
   
   // Current album from URL (null = root)
   const currentAlbumId = urlAlbumId || null;
@@ -201,35 +202,35 @@ const PicksPanel = () => {
           setCurrentUserId(session.user.id);
         }
 
-        const [imagesRes, albumsRes, votesRes, rolesRes, profilesRes] = await Promise.all([
+        const [imagesRes, albumsRes, votesRes, adminNamesRes] = await Promise.all([
           supabase.from("images").select("*").is("deleted_at", null).order("created_at", { ascending: false }),
           supabase.from("picks_folders").select("*").is("deleted_at", null).order("name"),
           supabase.from("image_votes").select("*"),
-          supabase.from("user_roles").select("user_id").eq("role", "admin"),
-          supabase.from("traveler_profiles").select("user_id, first_name, last_name"),
+          supabase.rpc("get_admin_user_names"),
         ]);
 
         if (imagesRes.error) throw imagesRes.error;
         if (albumsRes.error) throw albumsRes.error;
         // votes table might not exist yet, so we handle that gracefully
         if (votesRes.error && !votesRes.error.message.includes("does not exist")) throw votesRes.error;
-        if (rolesRes.error) throw rolesRes.error;
-        // profiles might not have entries for all users
-        const profiles = profilesRes.data || [];
+
+        // Build name map from RPC result
+        const adminNameMap = new Map<string, string>();
+        (adminNamesRes.data || []).forEach((row: any) => {
+          adminNameMap.set(row.user_id, row.display_name || row.email || "Unbekannt");
+        });
 
         setImages((imagesRes.data || []) as ImageData[]);
         setAlbums((albumsRes.data || []) as AlbumData[]);
-        
-        // Enrich votes with user display names from traveler_profiles
+
+        // Enrich votes with user display names from admin name map
         const enrichedVotes: ImageVote[] = (votesRes.data || []).map((vote: any) => {
-          const profile = profiles.find((p: any) => p.user_id === vote.user_id);
+          const displayName = adminNameMap.get(vote.user_id) || null;
           return {
             ...vote,
-            user_first_name: profile?.first_name || null,
-            user_last_name: profile?.last_name || null,
-            user_display_name: profile 
-              ? `${profile.first_name} ${profile.last_name}`.trim() 
-              : null,
+            user_first_name: null,
+            user_last_name: null,
+            user_display_name: displayName,
           };
         });
         setVotes(enrichedVotes as ImageVote[]);
@@ -247,18 +248,12 @@ const PicksPanel = () => {
           }
         });
 
-        // Build user profiles with real names from traveler_profiles
-        const userProfiles: UserProfile[] = (rolesRes.data || []).map((role) => {
-          const profile = profiles.find((p: any) => p.user_id === role.user_id);
-          const displayName = profile 
-            ? `${profile.first_name} ${profile.last_name}`.trim()
-            : role.user_id.slice(0, 8) + "...";
-          return {
-            id: role.user_id,
-            email: role.user_id,
-            displayName: displayName,
-          };
-        });
+        // Build user list from admin names (unique users who appear in votes OR in admin role)
+        const userProfiles: UserProfile[] = Array.from(adminNameMap.entries()).map(([userId, displayName]) => ({
+          id: userId,
+          email: userId,
+          displayName,
+        }));
         setUsers(userProfiles);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -303,16 +298,31 @@ const PicksPanel = () => {
     return images.filter((img) => img.folder_id === currentAlbumId);
   }, [images, currentAlbumId]);
 
-  // Filter images based on selected users (vote-based)
+  // Filter images based on selected users and/or minimum approval count
   const filteredImages = useMemo(() => {
-    if (selectedUserIds.length === 0) return currentImages;
+    let result = currentImages;
 
-    return currentImages.filter((image) => {
-      return selectedUserIds.every((userId) =>
-        votes.some((v) => v.image_id === image.id && v.user_id === userId && v.vote_status === 'approved')
+    // Per-user intersection filter (all selected users must have approved)
+    if (selectedUserIds.length > 0) {
+      result = result.filter((image) =>
+        selectedUserIds.every((userId) =>
+          votes.some((v) => v.image_id === image.id && v.user_id === userId && v.vote_status === 'approved')
+        )
       );
-    });
-  }, [currentImages, votes, selectedUserIds]);
+    }
+
+    // Minimum approvals threshold (count across ALL admin users)
+    if (minApprovals > 0) {
+      result = result.filter((image) => {
+        const approvalCount = votes.filter(
+          (v) => v.image_id === image.id && v.vote_status === 'approved'
+        ).length;
+        return approvalCount >= minApprovals;
+      });
+    }
+
+    return result;
+  }, [currentImages, votes, selectedUserIds, minApprovals]);
 
   // Check if current user can delete an item
   const canDeleteItem = useCallback((item: ImageData | AlbumData) => {
@@ -786,6 +796,37 @@ const PicksPanel = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Schnittmenge Threshold Buttons */}
+            <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
+              <button
+                onClick={() => setMinApprovals(0)}
+                className={cn(
+                  "px-3 py-1.5 transition-colors",
+                  minApprovals === 0 ? "bg-gray-900 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
+                )}
+              >
+                Alle
+              </button>
+              <button
+                onClick={() => setMinApprovals(2)}
+                className={cn(
+                  "px-3 py-1.5 border-l border-gray-200 transition-colors",
+                  minApprovals === 2 ? "bg-amber-500 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
+                )}
+              >
+                2+ ✓
+              </button>
+              <button
+                onClick={() => setMinApprovals(users.length || 3)}
+                className={cn(
+                  "px-3 py-1.5 border-l border-gray-200 transition-colors",
+                  minApprovals > 2 ? "bg-green-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
+                )}
+              >
+                Alle ✓
+              </button>
+            </div>
+
             {/* User Filter */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -939,7 +980,15 @@ const PicksPanel = () => {
           <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
             <Filter className="w-4 h-4 text-green-600" />
             <span className="text-sm text-green-800">
-              Zeige {filteredImages.length} Bild{filteredImages.length !== 1 ? "er" : ""} mit Freigabe von {selectedUserIds.length} Nutzer(n)
+              Schnittmenge:{" "}
+              <strong>
+                {users
+                  .filter((u) => selectedUserIds.includes(u.id))
+                  .map((u) => u.displayName)
+                  .join(" & ")}
+              </strong>
+              {" — "}
+              {filteredImages.length} {filteredImages.length !== 1 ? "Fotos" : "Foto"}
             </span>
           </div>
         )}
@@ -1241,6 +1290,10 @@ const PicksPanel = () => {
         onBatchMove={() => setShowMoveDialog(true)}
         onClearSelection={() => setSelectedImageIds(new Set())}
         canDelete={canDeleteSelected}
+        onSendViaDrops={selectedImageIds.size > 0 ? () => {
+          const ids = Array.from(selectedImageIds).join(",");
+          setSearchParams({ tab: "documents", picksImages: ids });
+        } : undefined}
       />
 
       {/* Lightbox */}

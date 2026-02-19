@@ -1,24 +1,29 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/admin/AdminLayout";
-import EventUploader from "@/components/admin/EventUploader";
-import FullCalendar from "@/components/admin/FullCalendar";
-import EventMap from "@/components/admin/EventMap";
-import CalendarExport from "@/components/admin/CalendarExport";
-import TravelDashboard from "@/components/admin/TravelDashboard";
+import BottomNav from "@/components/admin/BottomNav";
 import AdminCommandPalette from "@/components/admin/AdminCommandPalette";
 import AdminSearchBar from "@/components/admin/AdminSearchBar";
-import CalendarEventDetail from "@/components/admin/CalendarEventDetail";
-import BottomNav from "@/components/admin/BottomNav";
-import DocumentsPanel from "@/components/admin/DocumentsPanel";
-import PicksPanel from "@/components/admin/PicksPanel";
-import SettingsPanel from "@/components/admin/SettingsPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, MapPin, Plane, CloudDownload, Heart, Sparkles, Ticket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import VvkApprovalPanel from "@/components/admin/VvkApprovalPanel";
 import { cn } from "@/lib/utils";
+
+// Lazy-load heavy tab components — only loaded when the tab is first visited
+const FullCalendar = lazy(() => import("@/components/admin/FullCalendar"));
+const EventMap = lazy(() => import("@/components/admin/EventMap"));
+const VvkApprovalPanel = lazy(() => import("@/components/admin/VvkApprovalPanel"));
+const TravelDashboard = lazy(() => import("@/components/admin/TravelDashboard"));
+const DocumentsPanel = lazy(() => import("@/components/admin/DocumentsPanel"));
+const PicksPanel = lazy(() => import("@/components/admin/PicksPanel"));
+const SettingsPanel = lazy(() => import("@/components/admin/SettingsPanel"));
+
+const TabFallback = () => (
+  <div className="flex items-center justify-center py-20">
+    <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 interface AdminEvent {
   id: string;
@@ -424,16 +429,18 @@ const Admin = () => {
 
         <div className="mt-6">
           <TabsContent value="calendar" className="mt-0 focus-visible:outline-none">
-            <FullCalendar
-              onNavigateToTravel={(bookingId) => {
-                setSearchParams({ tab: "travel" });
-              }}
-              onNavigateToTour={(eventId) => {
-                setSearchParams({ tab: "map", activeEventId: eventId });
-              }}
-              onEventsAdded={fetchEvents}
-              refreshTrigger={dataVersion}
-            />
+            <Suspense fallback={<TabFallback />}>
+              <FullCalendar
+                onNavigateToTravel={(bookingId) => {
+                  setSearchParams({ tab: "travel" });
+                }}
+                onNavigateToTour={(eventId) => {
+                  setSearchParams({ tab: "map", activeEventId: eventId });
+                }}
+                onEventsAdded={fetchEvents}
+                refreshTrigger={dataVersion}
+              />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="map" className="mt-0 focus-visible:outline-none">
@@ -464,31 +471,41 @@ const Admin = () => {
                 VVK-Freigabe
               </button>
             </div>
-            {mapSubTab === "karte" ? (
-              <EventMap
-                events={events}
-                onEventsUpdated={fetchEvents}
-                initialActiveEventId={searchParams.get("activeEventId") || undefined}
-              />
-            ) : (
-              <VvkApprovalPanel onApprovalChanged={fetchEvents} standalone />
-            )}
+            <Suspense fallback={<TabFallback />}>
+              {mapSubTab === "karte" ? (
+                <EventMap
+                  events={events}
+                  onEventsUpdated={fetchEvents}
+                  initialActiveEventId={searchParams.get("activeEventId") || undefined}
+                />
+              ) : (
+                <VvkApprovalPanel onApprovalChanged={fetchEvents} standalone />
+              )}
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="travel" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
-            <TravelDashboard />
+            <Suspense fallback={<TabFallback />}>
+              <TravelDashboard />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="documents" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
-            <DocumentsPanel />
+            <Suspense fallback={<TabFallback />}>
+              <DocumentsPanel />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="picks" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
-            <PicksPanel />
+            <Suspense fallback={<TabFallback />}>
+              <PicksPanel />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="settings" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
-            <SettingsPanel isAdmin={isAdmin} />
+            <Suspense fallback={<TabFallback />}>
+              <SettingsPanel isAdmin={isAdmin} />
+            </Suspense>
           </TabsContent>
         </div>
       </Tabs>

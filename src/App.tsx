@@ -18,6 +18,7 @@ const Datenschutz = lazy(() => import("./pages/Datenschutz"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Download = lazy(() => import("./pages/Download"));
 const ShareDownload = lazy(() => import("./pages/ShareDownload"));
+const BundleDownload = lazy(() => import("./pages/BundleDownload"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,6 +59,7 @@ const App = () => (
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/download/:id" element={<Download />} />
                 <Route path="/dl/:token" element={<ShareDownload />} />
+                <Route path="/bundle/:token" element={<BundleDownload />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
