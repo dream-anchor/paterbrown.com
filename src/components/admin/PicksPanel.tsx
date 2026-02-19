@@ -1291,8 +1291,10 @@ const PicksPanel = () => {
         onClearSelection={() => setSelectedImageIds(new Set())}
         canDelete={canDeleteSelected}
         onSendViaDrops={selectedImageIds.size > 0 ? () => {
-          const ids = Array.from(selectedImageIds).join(",");
-          setSearchParams({ tab: "documents", picksImages: ids });
+          // sessionStorage is more reliable than URL params —
+          // URL params can be wiped by any setSearchParams call during tab switch
+          sessionStorage.setItem("picksToSend", JSON.stringify(Array.from(selectedImageIds)));
+          setSearchParams({ tab: "documents" });
         } : undefined}
       />
 

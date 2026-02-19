@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, CloudDownload, RefreshCw, Upload, Image as ImageIcon, FileText,
@@ -57,7 +56,6 @@ const GROUP_COLORS: Record<FileTypeGroup, string> = {
 
 const DocumentsPanel = () => {
   const { toast } = useToast();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -73,18 +71,16 @@ const DocumentsPanel = () => {
     [documents, selectedIds]
   );
 
-  // Load picks images from URL param (set by PicksPanel "Via Drops senden")
+  // Load picks images from sessionStorage (set by PicksPanel "Via Drops senden")
+  // sessionStorage is reliable — URL params can be wiped by any tab navigation
   useEffect(() => {
-    const picksParam = searchParams.get("picksImages");
-    if (!picksParam) {
-      // Don't clear picksImages here — URL param gets removed after fetch,
-      // which would immediately wipe the just-loaded images (race condition).
-      // Clearing happens via X button or dialog close.
-      return;
-    }
-    const ids = picksParam.split(",").filter(Boolean);
+    const stored = sessionStorage.getItem("picksToSend");
+    if (!stored) return;
+    let ids: string[] = [];
+    try { ids = JSON.parse(stored); } catch { return; }
     if (ids.length === 0) return;
 
+    sessionStorage.removeItem("picksToSend"); // Clear immediately (sync, before fetch)
     setPicksLoading(true);
     supabase
       .from("images")
@@ -93,12 +89,8 @@ const DocumentsPanel = () => {
       .then(({ data }) => {
         setPicksImages((data as PicksImage[]) || []);
         setPicksLoading(false);
-        // Clear param from URL without triggering navigation
-        const next = new URLSearchParams(searchParams);
-        next.delete("picksImages");
-        setSearchParams(next, { replace: true });
       });
-  }, [searchParams.get("picksImages")]);
+  }, []);
 
   // Toggle selection for a document
   const toggleSelection = useCallback((id: string) => {
