@@ -56,6 +56,7 @@ const Admin = () => {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [selectedSearchEvent, setSelectedSearchEvent] = useState<any>(null);
   const [mapSubTab, setMapSubTab] = useState<"karte" | "vvk">("karte");
+  const [picksForDrops, setPicksForDrops] = useState<string[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -78,6 +79,22 @@ const Admin = () => {
   const handleTabChange = (value: string) => {
     setSearchParams({ tab: value });
   };
+
+  // Picks → Drops bridge: Admin.tsx is always mounted, so it reliably
+  // catches the event from PicksPanel and passes IDs as prop to DocumentsPanel.
+  useEffect(() => {
+    const handler = () => {
+      const stored = sessionStorage.getItem("picksToSend");
+      if (!stored) return;
+      try {
+        const ids: string[] = JSON.parse(stored);
+        sessionStorage.removeItem("picksToSend");
+        setPicksForDrops(ids);
+      } catch {}
+    };
+    window.addEventListener("picksToSend", handler);
+    return () => window.removeEventListener("picksToSend", handler);
+  }, []);
 
   // Mark admin route on <body> so CSS can target cookie widgets reliably
   useEffect(() => {
@@ -492,7 +509,7 @@ const Admin = () => {
 
           <TabsContent value="documents" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
             <Suspense fallback={<TabFallback />}>
-              <DocumentsPanel />
+              <DocumentsPanel picksForDrops={picksForDrops} onPicksConsumed={() => setPicksForDrops([])} />
             </Suspense>
           </TabsContent>
 

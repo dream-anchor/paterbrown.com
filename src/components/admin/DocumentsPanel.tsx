@@ -54,7 +54,12 @@ const GROUP_COLORS: Record<FileTypeGroup, string> = {
   other: "from-gray-500 to-slate-600",
 };
 
-const DocumentsPanel = () => {
+interface DocumentsPanelProps {
+  picksForDrops?: string[];
+  onPicksConsumed?: () => void;
+}
+
+const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelProps) => {
   const { toast } = useToast();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,34 +76,20 @@ const DocumentsPanel = () => {
     [documents, selectedIds]
   );
 
-  // Load picks images — triggered on mount AND via custom event from PicksPanel.
-  // Custom event is needed because DocumentsPanel may already be mounted
-  // (Shadcn Tabs keeps tabs mounted, just hidden). useEffect([], []) alone
-  // only runs once and misses subsequent "Via Drops senden" calls.
+  // Picks → Drops: Admin.tsx passes IDs as prop (reliable, no timing issues).
   useEffect(() => {
-    const loadPicksFromStorage = () => {
-      const stored = sessionStorage.getItem("picksToSend");
-      if (!stored) return;
-      let ids: string[] = [];
-      try { ids = JSON.parse(stored); } catch { return; }
-      if (ids.length === 0) return;
-
-      sessionStorage.removeItem("picksToSend");
-      setPicksLoading(true);
-      supabase
-        .from("images")
-        .select("id, file_name, file_path, file_size, thumbnail_url")
-        .in("id", ids)
-        .then(({ data }) => {
-          setPicksImages((data as PicksImage[]) || []);
-          setPicksLoading(false);
-        });
-    };
-
-    loadPicksFromStorage(); // Check on first mount
-    window.addEventListener("picksToSend", loadPicksFromStorage);
-    return () => window.removeEventListener("picksToSend", loadPicksFromStorage);
-  }, []);
+    if (picksForDrops.length === 0) return;
+    setPicksLoading(true);
+    onPicksConsumed?.(); // Tell Admin.tsx to clear — allows re-sending same set later
+    supabase
+      .from("images")
+      .select("id, file_name, file_path, file_size, thumbnail_url")
+      .in("id", picksForDrops)
+      .then(({ data, error }) => {
+        if (!error) setPicksImages((data as PicksImage[]) || []);
+        setPicksLoading(false);
+      });
+  }, [picksForDrops]);
 
   // Toggle selection for a document
   const toggleSelection = useCallback((id: string) => {
