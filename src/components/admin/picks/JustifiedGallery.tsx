@@ -272,7 +272,7 @@ const JustifiedImageItem = ({
         )}>
           <Checkbox
             checked={isSelected}
-            onCheckedChange={() => onSelect(image.id, false)}
+            onCheckedChange={() => onSelect(image.id, true)}
             className={cn(
               "border-white/50 bg-white/20 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500",
               isMobile ? "h-3.5 w-3.5" : "h-4 w-4"

@@ -164,8 +164,8 @@ const MasonryImageCard = ({
     }
   };
 
-  const handleCheckboxChange = (checked: boolean) => {
-    onSelect(image.id, false);
+  const handleCheckboxChange = () => {
+    onSelect(image.id, true);
   };
 
   return (
