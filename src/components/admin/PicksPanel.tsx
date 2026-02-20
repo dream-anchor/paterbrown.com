@@ -565,7 +565,8 @@ const PicksPanel = () => {
             .select()
             .single();
           if (error) throw error;
-          setVotes((prev) => prev.map((v) => v.id === existingVote.id ? (data as ImageVote) : v));
+          // Preserve enriched fields (user_display_name etc.) from existing vote
+          setVotes((prev) => prev.map((v) => v.id === existingVote.id ? { ...existingVote, vote_status: status } : v));
         }
       } else {
         // Create new vote
@@ -575,7 +576,9 @@ const PicksPanel = () => {
           .select()
           .single();
         if (error) throw error;
-        setVotes((prev) => [...prev, data as ImageVote]);
+        // Enrich with display name so vote list shows real name instead of UUID
+        const myProfile = users.find(u => u.id === currentUserId);
+        setVotes((prev) => [...prev, { ...(data as ImageVote), user_display_name: myProfile?.displayName || null }]);
       }
     } catch (error) {
       console.error("Vote error:", error);
