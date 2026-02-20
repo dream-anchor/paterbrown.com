@@ -216,7 +216,7 @@ const MasonryImageCard = ({
             src={getDisplayUrl()}
             alt={image.title || image.file_name}
             className={cn(
-              "w-full object-cover transition-transform duration-300",
+              "w-full object-cover object-top transition-transform duration-300",
               isHovered && "scale-105",
               !imageLoaded && "absolute inset-0 opacity-0"
             )}

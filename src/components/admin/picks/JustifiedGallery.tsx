@@ -237,7 +237,7 @@ const JustifiedImageItem = ({
           src={getDisplayUrl()}
           alt={image.title || image.file_name}
           className={cn(
-            "w-full h-full object-cover transition-transform duration-300",
+            "w-full h-full object-cover object-top transition-transform duration-300",
             isHovered && "scale-[1.03]",
             !imageLoaded && "opacity-0"
           )}

@@ -53,7 +53,7 @@ const AlbumCard = ({
               <img
                 src={previewImages[0].thumbnail_url || previewImages[0].file_path}
                 alt=""
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
                 loading="lazy"
               />
               
