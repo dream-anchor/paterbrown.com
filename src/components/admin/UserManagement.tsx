@@ -1,10 +1,17 @@
 import { useState, useEffect } from "react";
-import { Users, RefreshCw, Key, CheckCircle2, AlertCircle, Loader2, Shield, UserCheck, UserX, Link2, Eye, EyeOff } from "lucide-react";
+import { Users, RefreshCw, Key, CheckCircle2, AlertCircle, Loader2, Shield, UserCheck, UserX, Link2, Eye, EyeOff, Unlink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   ResponsiveDialog,
   ResponsiveDialogHeader,
@@ -45,7 +52,8 @@ const UserManagement = () => {
   const [authUsers, setAuthUsers] = useState<AuthUser[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [syncResults, setSyncResults] = useState<SyncResults | null>(null);
-  
+  const [linkingProfileId, setLinkingProfileId] = useState<string | null>(null);
+
   // Password reset modal state
   const [passwordModal, setPasswordModal] = useState<{
     open: boolean;
@@ -64,13 +72,9 @@ const UserManagement = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setCurrentUserId(user.id);
-      }
+      if (user) setCurrentUserId(user.id);
 
-      // Load profiles
       const { data: profileData, error: profileError } = await supabase
         .from("traveler_profiles")
         .select("id, first_name, last_name, user_id, phone_number")
@@ -78,7 +82,6 @@ const UserManagement = () => {
 
       if (profileError) throw profileError;
       setProfiles(profileData || []);
-
     } catch (error) {
       console.error("Error loading data:", error);
       toast({
@@ -91,22 +94,28 @@ const UserManagement = () => {
     }
   };
 
+  // Load auth users via sync endpoint (needed for email list)
+  const loadAuthUsers = async () => {
+    if (authUsers.length > 0) return; // already loaded
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-sync-profiles");
+      if (error) throw error;
+      if (data?.allUsers) setAuthUsers(data.allUsers);
+    } catch (error) {
+      console.error("Failed to load auth users:", error);
+    }
+  };
+
   const handleSync = async () => {
     setSyncing(true);
     setSyncResults(null);
     try {
       const { data, error } = await supabase.functions.invoke("admin-sync-profiles");
-
       if (error) throw error;
-
-      if (!data.success) {
-        throw new Error(data.error || "Sync fehlgeschlagen");
-      }
+      if (!data.success) throw new Error(data.error || "Sync fehlgeschlagen");
 
       setSyncResults(data.results);
       setAuthUsers(data.allUsers || []);
-
-      // Reload profiles to show updated links
       await loadData();
 
       toast({
@@ -122,6 +131,58 @@ const UserManagement = () => {
       });
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const handleManualLink = async (profileId: string, userId: string) => {
+    setLinkingProfileId(profileId);
+    try {
+      const { error } = await supabase
+        .from("traveler_profiles")
+        .update({ user_id: userId })
+        .eq("id", profileId);
+
+      if (error) throw error;
+
+      const linkedUser = authUsers.find(u => u.id === userId);
+      const profile = profiles.find(p => p.id === profileId);
+      toast({
+        title: "Profil verknüpft",
+        description: `${profile?.first_name} ${profile?.last_name} → ${linkedUser?.email}`,
+      });
+      await loadData();
+    } catch (error) {
+      console.error("Link error:", error);
+      toast({
+        title: "Fehler",
+        description: error instanceof Error ? error.message : "Verknüpfung fehlgeschlagen",
+        variant: "destructive",
+      });
+    } finally {
+      setLinkingProfileId(null);
+    }
+  };
+
+  const handleUnlink = async (profileId: string) => {
+    setLinkingProfileId(profileId);
+    try {
+      const { error } = await supabase
+        .from("traveler_profiles")
+        .update({ user_id: null })
+        .eq("id", profileId);
+
+      if (error) throw error;
+      toast({ title: "Verknüpfung aufgehoben" });
+      await loadData();
+    } catch (error) {
+      console.error("Unlink error:", error);
+      toast({
+        title: "Fehler",
+        description: "Verknüpfung konnte nicht aufgehoben werden",
+        variant: "destructive",
+      });
+    } finally {
+      setLinkingProfileId(null);
     }
   };
 
@@ -146,18 +207,13 @@ const UserManagement = () => {
       const { data, error } = await supabase.functions.invoke("admin-update-password", {
         body: { userId: passwordModal.userId, newPassword },
       });
-
       if (error) throw error;
-
-      if (!data.success) {
-        throw new Error(data.error || "Passwort konnte nicht geändert werden");
-      }
+      if (!data.success) throw new Error(data.error || "Passwort konnte nicht geändert werden");
 
       toast({
         title: "Passwort geändert",
         description: `Das Passwort für ${passwordModal.userName} wurde erfolgreich geändert.`,
       });
-
       setPasswordModal({ open: false, userId: "", userName: "" });
       setNewPassword("");
     } catch (error) {
@@ -172,12 +228,16 @@ const UserManagement = () => {
     }
   };
 
-  // Get user email for a profile
   const getUserEmail = (userId: string | null): string | null => {
     if (!userId) return null;
     const user = authUsers.find(u => u.id === userId);
     return user?.email || null;
   };
+
+  // Get user IDs that are already linked to a profile
+  const linkedUserIds = new Set(profiles.filter(p => p.user_id).map(p => p.user_id!));
+  // Available auth users = not yet linked to any profile
+  const availableAuthUsers = authUsers.filter(u => !linkedUserIds.has(u.id));
 
   if (loading) {
     return (
@@ -228,7 +288,7 @@ const UserManagement = () => {
           <ul className="list-disc list-inside text-xs space-y-0.5 text-purple-700">
             <li>Profile werden mit Auth-Accounts anhand der E-Mail/Namen verknüpft</li>
             <li>Bereits verknüpfte Profile bleiben unverändert</li>
-            <li>Avatare und Namen werden dann beim Voting korrekt angezeigt</li>
+            <li>Nicht automatisch erkannte Profile können manuell zugeordnet werden</li>
           </ul>
         </div>
       </div>
@@ -245,9 +305,7 @@ const UserManagement = () => {
                 <span className="font-medium">{syncResults.synced.length} Profile verknüpft:</span>
                 <ul className="mt-1 text-xs space-y-0.5">
                   {syncResults.synced.map(s => (
-                    <li key={s.profileId}>
-                      {s.name} → {s.email}
-                    </li>
+                    <li key={s.profileId}>{s.name} → {s.email}</li>
                   ))}
                 </ul>
               </div>
@@ -278,9 +336,7 @@ const UserManagement = () => {
           {syncResults.errors.length > 0 && (
             <div className="flex items-start gap-2 text-red-700 text-sm">
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <div>
-                <span className="font-medium">{syncResults.errors.length} Fehler</span>
-              </div>
+              <span className="font-medium">{syncResults.errors.length} Fehler</span>
             </div>
           )}
         </div>
@@ -298,67 +354,115 @@ const UserManagement = () => {
             const isLinked = !!profile.user_id;
             const email = getUserEmail(profile.user_id);
             const fullName = `${profile.first_name} ${profile.last_name}`;
+            const isLinking = linkingProfileId === profile.id;
 
             return (
               <div
                 key={profile.id}
-                className={`px-6 py-4 flex items-center justify-between ${
-                  isCurrentUser ? "bg-amber-50/50" : ""
-                }`}
+                className={`px-6 py-4 ${isCurrentUser ? "bg-amber-50/50" : ""}`}
               >
-                <div className="flex items-center gap-3">
-                  {/* Avatar */}
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${
-                    isLinked 
-                      ? "bg-gradient-to-br from-green-400 to-emerald-500 text-white" 
-                      : "bg-gray-200 text-gray-500"
-                  }`}>
-                    {profile.first_name?.[0]}{profile.last_name?.[0]}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {/* Avatar */}
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${
+                      isLinked 
+                        ? "bg-gradient-to-br from-green-400 to-emerald-500 text-white" 
+                        : "bg-gray-200 text-gray-500"
+                    }`}>
+                      {profile.first_name?.[0]}{profile.last_name?.[0]}
+                    </div>
+                    
+                    {/* Info */}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-900">{fullName}</span>
+                        {isCurrentUser && (
+                          <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
+                            Du
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {isLinked ? (
+                          <span className="text-xs text-green-600 flex items-center gap-1">
+                            <Link2 className="w-3 h-3" />
+                            {email || "Verknüpft"}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">Nicht verknüpft</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  
-                  {/* Info */}
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">{fullName}</span>
-                      {isCurrentUser && (
-                        <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
-                          Du
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      {isLinked ? (
-                        <span className="text-xs text-green-600 flex items-center gap-1">
-                          <Link2 className="w-3 h-3" />
-                          {email || "Verknüpft"}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">Nicht verknüpft</span>
-                      )}
-                    </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    {isLinked && !isCurrentUser && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleUnlink(profile.id)}
+                          disabled={isLinking}
+                          className="gap-1.5 text-gray-400 hover:text-red-600 h-8 px-2"
+                          title="Verknüpfung aufheben"
+                        >
+                          {isLinking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Unlink className="w-3.5 h-3.5" />}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openPasswordModal(profile.user_id!, fullName)}
+                          className="gap-1.5 text-amber-700 border-amber-200 hover:bg-amber-50"
+                        >
+                          <Key className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Passwort</span>
+                        </Button>
+                      </>
+                    )}
+                    {isCurrentUser && (
+                      <div className="flex items-center gap-1.5 text-amber-600 text-xs">
+                        <Shield className="w-3.5 h-3.5" />
+                        Admin
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                  {isLinked && !isCurrentUser && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openPasswordModal(profile.user_id!, fullName)}
-                      className="gap-1.5 text-amber-700 border-amber-200 hover:bg-amber-50"
-                    >
-                      <Key className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Passwort</span>
-                    </Button>
-                  )}
-                  {isCurrentUser && (
-                    <div className="flex items-center gap-1.5 text-amber-600 text-xs">
-                      <Shield className="w-3.5 h-3.5" />
-                      Admin
+                {/* Manual Link Dropdown for unlinked profiles */}
+                {!isLinked && (
+                  <div className="mt-3 ml-13 pl-13">
+                    <div className="flex items-center gap-2 ml-[52px]">
+                      <Select
+                        onOpenChange={(open) => { if (open) loadAuthUsers(); }}
+                        onValueChange={(userId) => handleManualLink(profile.id, userId)}
+                        disabled={isLinking}
+                      >
+                        <SelectTrigger className="h-8 text-xs w-full max-w-[280px] bg-white border-gray-200">
+                          <SelectValue placeholder={isLinking ? "Verknüpfe..." : "Auth-Account zuordnen…"} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
+                          {availableAuthUsers.length === 0 && authUsers.length === 0 ? (
+                            <div className="px-3 py-2 text-xs text-gray-500">
+                              <Loader2 className="w-3 h-3 animate-spin inline mr-1" />
+                              Lade Auth-Accounts…
+                            </div>
+                          ) : availableAuthUsers.length === 0 ? (
+                            <div className="px-3 py-2 text-xs text-gray-500">
+                              Alle Accounts bereits verknüpft
+                            </div>
+                          ) : (
+                            availableAuthUsers.map((user) => (
+                              <SelectItem key={user.id} value={user.id} className="text-xs">
+                                {user.email}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             );
           })
