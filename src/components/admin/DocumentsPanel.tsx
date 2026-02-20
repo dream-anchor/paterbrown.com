@@ -698,13 +698,8 @@ const DocumentsPanel = () => {
         {/* Bulk Share Dialog */}
         <BulkShareLinkDialog
           open={showBulkShareDialog}
-          onOpenChange={async (open) => {
-            setShowBulkShareDialog(open);
-            // When dialog closes and we had a pending drop → mark as sent
-            if (!open && pendingDrop) {
-              await markPendingDropSent();
-            }
-          }}
+          onOpenChange={(open) => setShowBulkShareDialog(open)}
+          onSuccess={pendingDrop ? markPendingDropSent : undefined}
           documentIds={selectedDocuments.map((d) => d.id)}
           documentNames={selectedDocuments.map((d) => d.name)}
           imageIds={pendingDrop?.image_ids || []}

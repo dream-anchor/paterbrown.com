@@ -24,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface BulkShareLinkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
   documentIds: string[];
   documentNames: string[];
   imageIds?: string[];
@@ -55,6 +56,7 @@ function generateSecurePassword(length = 20): string {
 const BulkShareLinkDialog = ({
   open,
   onOpenChange,
+  onSuccess,
   documentIds,
   documentNames,
   imageIds = [],
@@ -139,6 +141,7 @@ const BulkShareLinkDialog = ({
         description: `${totalItems} ${totalItems === 1 ? "Datei" : "Dateien"}${settings.length ? ` · ${settings.join(", ")}` : ""}`,
       });
 
+      onSuccess?.();
       handleOpenChange(false);
     } catch (error) {
       console.error("Error creating bundle:", error);
