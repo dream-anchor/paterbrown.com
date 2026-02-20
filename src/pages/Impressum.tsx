@@ -62,7 +62,7 @@ const Impressum = () => {
 
             {/* Kontakt */}
             <div className="space-y-4">
-              <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+              <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold break-words">
                 Kontakt
               </h2>
               <p className="text-foreground/80 leading-relaxed">
@@ -73,7 +73,7 @@ const Impressum = () => {
 
             {/* Geschäftsführer */}
             <div className="space-y-4">
-              <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+              <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold break-words">
                 Vertretungsberechtigter Geschäftsführer
               </h2>
               <p className="text-foreground/80 leading-relaxed">
@@ -86,7 +86,7 @@ const Impressum = () => {
             {/* Rechtliches */}
             <div className="space-y-8">
               <div className="space-y-4">
-                <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+                <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold break-words">
                   Registereintrag
                 </h2>
                 <p className="text-foreground/80 leading-relaxed">
@@ -96,7 +96,7 @@ const Impressum = () => {
               </div>
 
               <div className="space-y-4">
-                <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+                <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold break-words">
                   Umsatzsteuer-Identifikationsnummer
                 </h2>
                 <p className="text-foreground/80 leading-relaxed">
@@ -105,7 +105,7 @@ const Impressum = () => {
               </div>
 
               <div className="space-y-4">
-                <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+                <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold break-words">
                   EU-Streitschlichtung
                 </h2>
                 <p className="text-foreground/80 leading-relaxed">
@@ -117,7 +117,7 @@ const Impressum = () => {
               </div>
 
               <div className="space-y-4">
-                <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+                <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold break-words">
                   Verbraucherstreitbeilegung/Universalschlichtungsstelle
                 </h2>
                 <p className="text-foreground/80 leading-relaxed">
@@ -130,7 +130,7 @@ const Impressum = () => {
 
             {/* Social Media */}
             <div className="space-y-4">
-              <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+              <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold break-words">
                 Dieses Impressum gilt auch für folgende Social-Media-Profile
               </h2>
               <p className="text-foreground/80 leading-relaxed">
@@ -143,7 +143,7 @@ const Impressum = () => {
 
             {/* Credits */}
             <div className="space-y-4">
-              <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold">
+              <h2 className="text-gold uppercase tracking-[0.2em] text-lg font-semibold break-words">
                 Quellenangaben für verwendete Bilder
               </h2>
               <p className="text-foreground/80 leading-relaxed">
