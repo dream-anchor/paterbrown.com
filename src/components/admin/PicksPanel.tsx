@@ -1356,14 +1356,19 @@ const PicksPanel = () => {
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) return;
 
-          // Credits aus dem Album des ersten ausgewählten Fotos ermitteln
-          const firstImage = images.find(img => selectedImageIds.has(img.id));
-          const sourceAlbum = firstImage?.folder_id
-            ? albums.find(a => a.id === firstImage.folder_id)
-            : null;
-          const photographerName = sourceAlbum?.photographer_name || "";
-          const projectName = sourceAlbum?.project_name || "Pater Brown – Das Live-Hörspiel";
-          const contactEmail = sourceAlbum?.contact_email || "info@pater-brown.live";
+          // Credits: alle Fotografen aller beteiligten Alben aggregieren
+          const selectedImageList = images.filter(img => selectedImageIds.has(img.id));
+          const uniqueAlbumIds = [...new Set(
+            selectedImageList.map(img => img.folder_id).filter((id): id is string => !!id)
+          )];
+          const photographerName = [...new Set(
+            uniqueAlbumIds
+              .map(id => albums.find(a => a.id === id)?.photographer_name)
+              .filter((name): name is string => !!name)
+          )].join(", ");
+          const firstAlbum = uniqueAlbumIds.length > 0 ? albums.find(a => a.id === uniqueAlbumIds[0]) : null;
+          const projectName = firstAlbum?.project_name || "Pater Brown – Das Live-Hörspiel";
+          const contactEmail = firstAlbum?.contact_email || "info@pater-brown.live";
 
           await supabase
             .from("pending_drops")

@@ -22,6 +22,7 @@ interface BundleImage {
   file_name: string;
   file_path: string;
   thumbnail_url: string | null;
+  folder_id: string | null;
 }
 
 interface BundleData {
@@ -80,6 +81,7 @@ const BundleDownloadPage = () => {
   const { token } = useParams<{ token: string }>();
   const [bundle, setBundle] = useState<BundleData | null>(null);
   const [uploaderName, setUploaderName] = useState<string | null>(null);
+  const [albumPhotographers, setAlbumPhotographers] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ErrorType | null>(null);
   const [password, setPassword] = useState("");
@@ -130,9 +132,24 @@ const BundleDownloadPage = () => {
         if (imageIds.length > 0) {
           const { data: imagesData } = await supabase
             .from("images")
-            .select("id, file_name, file_path, thumbnail_url")
+            .select("id, file_name, file_path, thumbnail_url, folder_id")
             .in("id", imageIds);
           bundleImages = (imagesData as BundleImage[]) || [];
+
+          // Fotografen-Namen aus den Albums der Bilder aggregieren
+          const folderIds = [...new Set(
+            bundleImages.map(img => img.folder_id).filter(Boolean) as string[]
+          )];
+          if (folderIds.length > 0) {
+            const { data: folders } = await supabase
+              .from("picks_folders")
+              .select("photographer_name")
+              .in("id", folderIds);
+            const photographers = [...new Set(
+              (folders || []).map((f: { photographer_name: string | null }) => f.photographer_name).filter(Boolean) as string[]
+            )];
+            setAlbumPhotographers(photographers);
+          }
         }
 
         setBundle({ ...bundleData, documents, images: bundleImages });
@@ -234,7 +251,12 @@ const BundleDownloadPage = () => {
         const year = bundle.created_at
           ? new Date(bundle.created_at).getFullYear()
           : new Date().getFullYear();
-        const photographer = bundle.photographer_name || uploaderName || "Fotograf";
+        // Fotografen aus Album-Lookup + Bundle-Feld aggregieren (dedupliziert)
+        const photographerSources = [
+          ...albumPhotographers,
+          ...(bundle.photographer_name ? bundle.photographer_name.split(", ") : []),
+        ];
+        const photographer = [...new Set(photographerSources.filter(Boolean))].join(", ") || "Fotograf";
         const project = bundle.project_name || "Pater Brown – Das Live-Hörspiel";
         const contact = bundle.contact_email || "info@pater-brown.live";
 
