@@ -75,6 +75,7 @@ const DocumentsPanel = () => {
 
   // ── Pending Drop from Supabase (replaces all client-state hacks) ────────
   const [pendingDrop, setPendingDrop] = useState<PendingDrop | null>(null);
+  const [linkGenerated, setLinkGenerated] = useState(false);
 
   const fetchPendingDrop = useCallback(async () => {
     try {
@@ -494,34 +495,67 @@ const DocumentsPanel = () => {
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
-              className="rounded-2xl border-2 border-amber-400 bg-amber-50 p-4"
+              className={cn(
+                "rounded-2xl border-2 p-4",
+                linkGenerated
+                  ? "border-green-400 bg-green-50"
+                  : "border-amber-400 bg-amber-50"
+              )}
             >
               <div className="flex items-center justify-between gap-4 mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
-                    <Send className="w-4 h-4 text-white" />
+                  <div className={cn(
+                    "w-8 h-8 rounded-lg flex items-center justify-center",
+                    linkGenerated ? "bg-green-500" : "bg-amber-500"
+                  )}>
+                    {linkGenerated
+                      ? <Check className="w-4 h-4 text-white" />
+                      : <Send className="w-4 h-4 text-white" />
+                    }
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-amber-900">
+                    <p className={cn("text-sm font-semibold", linkGenerated ? "text-green-900" : "text-amber-900")}>
                       {pendingDrop.images.length} Foto{pendingDrop.images.length !== 1 ? "s" : ""} aus Picks
                     </p>
-                    <p className="text-xs text-amber-700">Paket-Link für diese Fotos generieren</p>
+                    <p className={cn("text-xs", linkGenerated ? "text-green-700" : "text-amber-700")}>
+                      {linkGenerated ? "✓ Link erstellt & kopiert" : "Paket-Link für diese Fotos generieren"}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl"
-                    onClick={() => setShowBulkShareDialog(true)}
-                  >
-                    <Link className="w-4 h-4 mr-1.5" />
-                    Paket-Link generieren
-                  </Button>
+                  {!linkGenerated && (
+                    <Button
+                      size="sm"
+                      className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl"
+                      onClick={() => setShowBulkShareDialog(true)}
+                    >
+                      <Link className="w-4 h-4 mr-1.5" />
+                      Paket-Link generieren
+                    </Button>
+                  )}
+                  {linkGenerated && (
+                    <Button
+                      size="sm"
+                      className="bg-green-500 hover:bg-green-600 text-white rounded-xl"
+                      onClick={() => setShowBulkShareDialog(true)}
+                    >
+                      <Link className="w-4 h-4 mr-1.5" />
+                      Neuen Link erstellen
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="text-amber-700 hover:text-amber-900 hover:bg-amber-100 rounded-xl"
-                    onClick={dismissPendingDrop}
+                    className={cn(
+                      "rounded-xl",
+                      linkGenerated
+                        ? "text-green-700 hover:text-green-900 hover:bg-green-100"
+                        : "text-amber-700 hover:text-amber-900 hover:bg-amber-100"
+                    )}
+                    onClick={async () => {
+                      await dismissPendingDrop();
+                      setLinkGenerated(false);
+                    }}
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -699,8 +733,9 @@ const DocumentsPanel = () => {
         <BulkShareLinkDialog
           open={showBulkShareDialog}
           onOpenChange={(open) => setShowBulkShareDialog(open)}
-          onSuccess={async () => {
-            if (pendingDrop) await markPendingDropSent();
+          onSuccess={() => {
+            // Pending drop stays visible — user removes it with X when done
+            setLinkGenerated(true);
           }}
           documentIds={selectedDocuments.map((d) => d.id)}
           documentNames={selectedDocuments.map((d) => d.name)}

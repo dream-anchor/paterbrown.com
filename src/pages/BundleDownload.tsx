@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Download, AlertCircle, FileText, ArrowLeft, Lock, Clock, Hash, Ban, Package, Image as ImageIcon } from "lucide-react";
+import { Download, AlertCircle, FileText, ArrowLeft, Lock, Clock, Hash, Ban, Package, Image as ImageIcon, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { formatFileSize, getFileExtension, getPublicDownloadUrl, getImageOriginalUrl } from "@/lib/documentUtils";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 interface BundleDocument {
   id: string;
@@ -162,38 +164,89 @@ const BundleDownloadPage = () => {
     }
   };
 
-  const triggerDownload = (url: string, fileName: string) => {
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    a.target = "_blank";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const triggerDownload = async (url: string, fileName: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      saveAs(blob, fileName);
+    } catch {
+      // Fallback: open in new tab
+      window.open(url, "_blank");
+    }
   };
 
   const handleDownloadAll = async () => {
     if (!bundle || !token) return;
+    const totalFiles = bundle.documents.length + bundle.images.length;
+
+    // Single file → direct download (no ZIP needed)
+    if (totalFiles === 1) {
+      setDownloadingId("all");
+      try {
+        await supabase.rpc("increment_bundle_download", { p_token: token });
+        const item = bundle.documents[0] || bundle.images[0];
+        const url = bundle.documents[0]
+          ? getPublicDownloadUrl(bundle.documents[0].file_path)
+          : getImageOriginalUrl("picks-images", bundle.images[0].file_path);
+        await triggerDownload(url, item.file_name);
+        setDownloaded(true);
+      } catch (err) {
+        console.error("Download error:", err);
+      } finally {
+        setDownloadingId(null);
+      }
+      return;
+    }
+
+    // Multiple files → ZIP download
     setDownloadingId("all");
     try {
       await supabase.rpc("increment_bundle_download", { p_token: token });
-      bundle.documents.forEach((doc) => triggerDownload(getPublicDownloadUrl(doc.file_path), doc.file_name));
-      bundle.images.forEach((img) => triggerDownload(getImageOriginalUrl("picks-images", img.file_path), img.file_name));
+      const zip = new JSZip();
+
+      // Fetch all files in parallel
+      const fetchPromises: Promise<void>[] = [];
+
+      for (const doc of bundle.documents) {
+        fetchPromises.push(
+          fetch(getPublicDownloadUrl(doc.file_path))
+            .then(r => r.blob())
+            .then(blob => { zip.file(doc.file_name, blob); })
+        );
+      }
+
+      for (const img of bundle.images) {
+        fetchPromises.push(
+          fetch(getImageOriginalUrl("picks-images", img.file_path))
+            .then(r => r.blob())
+            .then(blob => { zip.file(img.file_name, blob); })
+        );
+      }
+
+      await Promise.all(fetchPromises);
+
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      saveAs(zipBlob, `paket-${token.slice(0, 8)}.zip`);
       setDownloaded(true);
     } catch (err) {
-      console.error("Download error:", err);
+      console.error("ZIP download error:", err);
     } finally {
       setDownloadingId(null);
     }
   };
 
-  const handleDownloadSingle = (item: BundleDocument | BundleImage) => {
+  const handleDownloadSingle = async (item: BundleDocument | BundleImage) => {
     setDownloadingId(item.id);
-    const url = "content_type" in item
-      ? getPublicDownloadUrl(item.file_path)
-      : getImageOriginalUrl("picks-images", item.file_path);
-    triggerDownload(url, item.file_name);
-    setTimeout(() => setDownloadingId(null), 1000);
+    try {
+      const url = "content_type" in item
+        ? getPublicDownloadUrl(item.file_path)
+        : getImageOriginalUrl("picks-images", item.file_path);
+      await triggerDownload(url, item.file_name);
+    } catch (err) {
+      console.error("Download error:", err);
+    } finally {
+      setTimeout(() => setDownloadingId(null), 500);
+    }
   };
 
   if (loading) {
@@ -368,7 +421,7 @@ const BundleDownloadPage = () => {
               {downloadingId === "all" ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Downloads starten...
+                  {totalCount > 1 ? "ZIP wird erstellt..." : "Download läuft..."}
                 </>
               ) : downloaded ? (
                 <>
@@ -378,7 +431,10 @@ const BundleDownloadPage = () => {
               ) : (
                 <>
                   <Download className="w-5 h-5 mr-2" />
-                  Alle {totalCount} Dateien herunterladen
+                  {totalCount > 1
+                    ? `Alle ${totalCount} Dateien als ZIP herunterladen`
+                    : "Datei herunterladen"
+                  }
                 </>
               )}
             </Button>
