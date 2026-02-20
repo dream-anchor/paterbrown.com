@@ -6,13 +6,13 @@
 
 import { chromium, Browser, Page } from "playwright";
 import { createClient } from "@supabase/supabase-js";
+import { exec } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
-import * as https from "https";
 
 // ── Konfiguration ──────────────────────────────────────────────────────────
 
-const BASE_URL = "http://localhost:5173";
+const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
 const SUPABASE_URL = "https://ymfujbhonvvabivjnnyj.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltZnVqYmhvbnZ2YWJpdmpubnlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyMTY5NTgsImV4cCI6MjA3Njc5Mjk1OH0.3koIYLAKW0RqAt9gG-Zvvy2-yImduZAsfI2ZIsTaxAE";
@@ -193,10 +193,9 @@ async function runLighthouse(url: string, outputBase: string) {
     const outFile = path.join(SCREENSHOTS_DIR, `lighthouse-${slug}.json`);
 
     // lhci is heavy — use lighthouse CLI directly via npx if available
-    const { exec } = require("child_process");
     const cmd = `npx lighthouse "${url}" --output=json --output-path="${outFile}" --preset=mobile --chrome-flags="--headless --no-sandbox" --quiet 2>&1`;
     console.log(`  🔦 Lighthouse: ${url}`);
-    exec(cmd, { timeout: 60000 }, (err: Error | null, stdout: string) => {
+    exec(cmd, { timeout: 60000 }, (err: Error | null) => {
       if (err) {
         console.log(`  ⚠️  Lighthouse fehlgeschlagen für ${url}: ${err.message.slice(0, 80)}`);
       } else {
@@ -342,18 +341,11 @@ async function main() {
     await browser.close();
   }
 
-  // Lighthouse (nur öffentliche Routen)
-  console.log("\n🔦 Lighthouse-Analyse (öffentliche Routen):\n");
-  for (const route of PUBLIC_ROUTES) {
-    await runLighthouse(`${BASE_URL}${route}`, SCREENSHOTS_DIR);
-  }
-
-  // Report generieren
+  // Report generieren (vor Lighthouse, damit er auch bei LH-Fehler existiert)
   const report = generateReport(allResults);
   const reportPath = path.join(SCREENSHOTS_DIR, "RESPONSIVE_REPORT.md");
   fs.writeFileSync(reportPath, report, "utf-8");
 
-  // Zusammenfassung
   const totalFindings = allResults.flatMap((r) => r.viewportResults.flatMap((v) => v.findings));
   const critical = totalFindings.filter((f) => f.severity === "Critical").length;
   const major = totalFindings.filter((f) => f.severity === "Major").length;
@@ -367,6 +359,12 @@ async function main() {
   console.log(`   📄 Report:   ${reportPath}`);
   console.log(`   📸 Screenshots: ${SCREENSHOTS_DIR}`);
   console.log(`${"═".repeat(50)}\n`);
+
+  // Lighthouse (nur öffentliche Routen) — optional, nach Report
+  console.log("🔦 Lighthouse-Analyse (öffentliche Routen):\n");
+  for (const route of PUBLIC_ROUTES) {
+    await runLighthouse(`${BASE_URL}${route}`, SCREENSHOTS_DIR);
+  }
 }
 
 main().catch((err) => {
