@@ -19,7 +19,6 @@ interface BundleImage {
   id: string;
   file_name: string;
   file_path: string;
-  file_size: number;
   thumbnail_url: string | null;
 }
 
@@ -102,7 +101,7 @@ const BundleDownloadPage = () => {
 
         if (bundleData.password_hash && !passwordVerified) {
           setError("password_required");
-          setBundle({ ...bundleData, documents: [] });
+          setBundle({ ...bundleData, documents: [], images: [] });
           setLoading(false);
           return;
         }
@@ -125,7 +124,7 @@ const BundleDownloadPage = () => {
         if (imageIds.length > 0) {
           const { data: imagesData } = await supabase
             .from("images")
-            .select("id, file_name, file_path, file_size, thumbnail_url")
+            .select("id, file_name, file_path, thumbnail_url")
             .in("id", imageIds);
           bundleImages = (imagesData as BundleImage[]) || [];
         }
@@ -262,10 +261,7 @@ const BundleDownloadPage = () => {
     );
   }
 
-  const totalSize = [
-    ...bundle.documents.map((d) => d.file_size),
-    ...bundle.images.map((i) => i.file_size),
-  ].reduce((sum, s) => sum + s, 0);
+  const totalSize = bundle.documents.map((d) => d.file_size).reduce((sum, s) => sum + s, 0);
   const totalCount = bundle.documents.length + bundle.images.length;
 
   return (
@@ -306,7 +302,7 @@ const BundleDownloadPage = () => {
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">{img.file_name}</p>
                     <p className="text-xs text-gray-400">
-                      {getFileExtension(img.file_name)?.toUpperCase()} · {formatFileSize(img.file_size)}
+                      {getFileExtension(img.file_name)?.toUpperCase()}
                     </p>
                   </div>
                 </div>
