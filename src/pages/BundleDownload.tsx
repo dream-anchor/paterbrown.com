@@ -225,6 +225,20 @@ const BundleDownloadPage = () => {
 
       await Promise.all(fetchPromises);
 
+      // README mit Copyright-Hinweis
+      const year = new Date().getFullYear();
+      const photographer = uploaderName || "Pater Brown";
+      const readmeContent = [
+        `Copyright © ${year} ${photographer} – Pater Brown - Das Live-Hörspiel`,
+        ``,
+        `Fotograf: ${photographer}`,
+        `Projekt: Pater Brown - Das Live-Hörspiel`,
+        ``,
+        `Alle Rechte vorbehalten.`,
+        `Die Fotos dürfen nur für den vereinbarten Zweck verwendet werden.`,
+      ].join("\n");
+      zip.file("README.txt", readmeContent);
+
       const zipBlob = await zip.generateAsync({ type: "blob" });
       const label = bundle.images.length > 0 && bundle.documents.length === 0
         ? "Fotos"
