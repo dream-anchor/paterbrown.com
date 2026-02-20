@@ -319,7 +319,7 @@ const BundleDownloadPage = () => {
     );
   }
 
-  const totalSize = bundle.documents.map((d) => d.file_size).reduce((sum, s) => sum + s, 0);
+  const totalDocSize = bundle.documents.reduce((sum, d) => sum + (d.file_size || 0), 0);
   const totalCount = bundle.documents.length + bundle.images.length;
 
   return (
@@ -334,7 +334,7 @@ const BundleDownloadPage = () => {
             <div>
               <h1 className="text-white font-bold text-lg">Paket bereit</h1>
               <p className="text-white/80 text-sm">
-                {totalCount} {totalCount === 1 ? "Datei" : "Dateien"} · {formatFileSize(totalSize)}
+                {totalCount} {totalCount === 1 ? "Datei" : "Dateien"}{totalDocSize > 0 ? ` · ${formatFileSize(totalDocSize)}` : ""}
               </p>
             </div>
           </div>
