@@ -15,7 +15,8 @@ import BulkShareLinkDialog from "./BulkShareLinkDialog";
 import { getFileTypeGroup, FILE_TYPE_GROUPS, FileTypeGroup, getImageOriginalUrl } from "@/lib/documentUtils";
 import { cn } from "@/lib/utils";
 
-interface PicksImage {
+// ── Pending Drop from Supabase ──────────────────────────────────────────────
+interface PendingDropImage {
   id: string;
   file_name: string;
   file_path: string;
@@ -23,6 +24,14 @@ interface PicksImage {
   thumbnail_url: string | null;
 }
 
+interface PendingDrop {
+  id: string;
+  image_ids: string[];
+  label: string;
+  images: PendingDropImage[];
+}
+
+// ── Document types ──────────────────────────────────────────────────────────
 interface Document {
   id: string;
   name: string;
@@ -54,12 +63,8 @@ const GROUP_COLORS: Record<FileTypeGroup, string> = {
   other: "from-gray-500 to-slate-600",
 };
 
-interface DocumentsPanelProps {
-  picksForDrops?: string[];
-  onPicksConsumed?: () => void;
-}
-
-const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelProps) => {
+// ── No props needed — DocumentsPanel is fully self-contained ────────────────
+const DocumentsPanel = () => {
   const { toast } = useToast();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,28 +73,105 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkShareDialog, setShowBulkShareDialog] = useState(false);
-  const [picksImages, setPicksImages] = useState<PicksImage[]>([]);
-  const [picksLoading, setPicksLoading] = useState(false);
+
+  // ── Pending Drop from Supabase (replaces all client-state hacks) ────────
+  const [pendingDrop, setPendingDrop] = useState<PendingDrop | null>(null);
+
+  const fetchPendingDrop = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: drops } = await supabase
+        .from("pending_drops")
+        .select("*")
+        .eq("created_by", user.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (!drops || drops.length === 0) {
+        setPendingDrop(null);
+        return;
+      }
+
+      const drop = drops[0];
+      const imageIds: string[] = drop.image_ids || [];
+
+      if (imageIds.length === 0) {
+        setPendingDrop(null);
+        return;
+      }
+
+      // Bild-Metadaten laden
+      const { data: images } = await supabase
+        .from("images")
+        .select("id, file_name, file_path, file_size, thumbnail_url")
+        .in("id", imageIds);
+
+      setPendingDrop({
+        id: drop.id,
+        image_ids: imageIds,
+        label: drop.label || "Picks-Auswahl",
+        images: (images as PendingDropImage[]) || [],
+      });
+    } catch (err) {
+      console.error("Error fetching pending drop:", err);
+    }
+  }, []);
+
+  // Fetch on mount
+  useEffect(() => {
+    fetchPendingDrop();
+  }, [fetchPendingDrop]);
+
+  // Re-fetch when window gains focus (covers tab switches)
+  useEffect(() => {
+    const onFocus = () => fetchPendingDrop();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [fetchPendingDrop]);
+
+  // Supabase Realtime — reacts instantly when PicksPanel inserts a pending_drop
+  useEffect(() => {
+    const channel = supabase
+      .channel("pending-drops-realtime")
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "pending_drops",
+      }, () => {
+        fetchPendingDrop();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchPendingDrop]);
+
+  // ── Dismiss pending drop (cancel) ────────────────────────────────────────
+  const dismissPendingDrop = useCallback(async () => {
+    if (!pendingDrop) return;
+    await supabase
+      .from("pending_drops")
+      .update({ status: "cancelled" })
+      .eq("id", pendingDrop.id);
+    setPendingDrop(null);
+  }, [pendingDrop]);
+
+  // ── Mark pending drop as sent (after bundle link generated) ──────────────
+  const markPendingDropSent = useCallback(async () => {
+    if (!pendingDrop) return;
+    await supabase
+      .from("pending_drops")
+      .update({ status: "sent" })
+      .eq("id", pendingDrop.id);
+    setPendingDrop(null);
+  }, [pendingDrop]);
 
   const selectedDocuments = useMemo(
     () => documents.filter((d) => selectedIds.has(d.id)),
     [documents, selectedIds]
   );
-
-  // Picks → Drops: Admin.tsx passes IDs as prop (reliable, no timing issues).
-  useEffect(() => {
-    if (picksForDrops.length === 0) return;
-    setPicksLoading(true);
-    onPicksConsumed?.(); // Tell Admin.tsx to clear — allows re-sending same set later
-    supabase
-      .from("images")
-      .select("id, file_name, file_path, file_size, thumbnail_url")
-      .in("id", picksForDrops)
-      .then(({ data, error }) => {
-        if (!error) setPicksImages((data as PicksImage[]) || []);
-        setPicksLoading(false);
-      });
-  }, [picksForDrops]);
 
   // Toggle selection for a document
   const toggleSelection = useCallback((id: string) => {
@@ -121,7 +203,6 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
       groups[group].push(doc);
     });
 
-    // Sort groups by order and filter empty ones
     return Object.entries(groups)
       .filter(([, docs]) => docs.length > 0)
       .sort(([a], [b]) => FILE_TYPE_GROUPS[a as FileTypeGroup].order - FILE_TYPE_GROUPS[b as FileTypeGroup].order)
@@ -195,7 +276,7 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
       const { data, error } = await supabase
         .from("internal_documents")
         .select("*")
-        .is("deleted_at", null)  // Exclude soft-deleted items
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -221,13 +302,11 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
     if (!doc) return;
 
     try {
-      // Get current user ID for deleted_by tracking
       const { data: { user } } = await supabase.auth.getUser();
-      
-      // Soft delete: set deleted_at instead of hard delete
+
       const { error: dbError } = await supabase
         .from("internal_documents")
-        .update({ 
+        .update({
           deleted_at: new Date().toISOString(),
           deleted_by: user?.id || null
         })
@@ -235,9 +314,8 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
 
       if (dbError) throw dbError;
 
-      // Remove from local state (it's now in trash)
       setDocuments(prev => prev.filter(d => d.id !== id));
-      
+
       toast({
         title: "In Papierkorb verschoben",
         description: `"${doc.name}" kann 90 Tage lang wiederhergestellt werden.`,
@@ -278,7 +356,7 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
 
   return (
     <>
-      {/* Page-level drop overlay - Premium glassmorphism */}
+      {/* Page-level drop overlay */}
       <AnimatePresence>
         {pageDragActive && (
           <motion.div
@@ -328,7 +406,7 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
               <p className="text-sm text-gray-500">
                 {documents.length} {documents.length === 1 ? 'Datei' : 'Dateien'} bereit zum Teilen
               </p>
-              {documents.length > 0 && selectedIds.size === 0 && picksImages.length === 0 && (
+              {documents.length > 0 && selectedIds.size === 0 && !pendingDrop && (
                 <p className="text-xs text-gray-400 mt-0.5">
                   ○ links antippen → Paket-Link generieren
                 </p>
@@ -337,7 +415,6 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {/* Clear Selection Button - only when items selected */}
             {selectedIds.size > 0 && (
               <Button
                 variant="outline"
@@ -349,7 +426,7 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
                 <span className="hidden sm:inline">Auswahl aufheben</span>
               </Button>
             )}
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -411,9 +488,9 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
           )}
         </AnimatePresence>
 
-        {/* Picks Auswahl Banner */}
+        {/* ── Pending Drop Banner (from Supabase — persistent!) ──────────── */}
         <AnimatePresence>
-          {(picksImages.length > 0 || picksLoading) && (
+          {pendingDrop && pendingDrop.images.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -427,7 +504,7 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-amber-900">
-                      {picksLoading ? "Lade Picks…" : `${picksImages.length} Foto${picksImages.length !== 1 ? "s" : ""} aus Picks`}
+                      {pendingDrop.images.length} Foto{pendingDrop.images.length !== 1 ? "s" : ""} aus Picks
                     </p>
                     <p className="text-xs text-amber-700">Paket-Link für diese Fotos generieren</p>
                   </div>
@@ -436,7 +513,6 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
                   <Button
                     size="sm"
                     className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl"
-                    disabled={picksLoading || picksImages.length === 0}
                     onClick={() => setShowBulkShareDialog(true)}
                   >
                     <Link className="w-4 h-4 mr-1.5" />
@@ -446,32 +522,36 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
                     size="sm"
                     variant="ghost"
                     className="text-amber-700 hover:text-amber-900 hover:bg-amber-100 rounded-xl"
-                    onClick={() => setPicksImages([])}
+                    onClick={dismissPendingDrop}
                   >
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
-              {!picksLoading && picksImages.length > 0 && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {picksImages.map((img) => (
-                    <div key={img.id} className="shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-amber-100 border border-amber-200">
-                      {img.thumbnail_url ? (
-                        <img src={img.thumbnail_url} alt={img.file_name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ImageIcon className="w-6 h-6 text-amber-400" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Thumbnail preview */}
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {pendingDrop.images.slice(0, 8).map((img) => (
+                  <div key={img.id} className="shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-amber-100 border border-amber-200">
+                    {img.thumbnail_url ? (
+                      <img src={img.thumbnail_url} alt={img.file_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageIcon className="w-6 h-6 text-amber-400" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {pendingDrop.images.length > 8 && (
+                  <div className="shrink-0 w-16 h-16 rounded-lg bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700 text-sm font-medium">
+                    +{pendingDrop.images.length - 8}
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Empty State - Premium */}
+        {/* Empty State */}
         {documents.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -495,7 +575,7 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
                 <Plus className="w-4 h-4 text-white" />
               </motion.div>
             </motion.div>
-            
+
             <h3 className="font-bold text-xl text-gray-900 mb-2">Noch keine Drops</h3>
             <p className="text-gray-500 mb-6 max-w-sm mx-auto">
               Erstelle deinen ersten Drop, um Dateien schnell und sicher mit anderen zu teilen.
@@ -524,7 +604,7 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ delay: groupIndex * 0.1 }}
                 >
-                  {/* Premium Group Header */}
+                  {/* Group Header */}
                   <div className="flex items-center gap-3 mb-4">
                     <div className={cn(
                       "w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-md",
@@ -545,8 +625,8 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
                       </span>
                     </div>
                   </div>
-                  
-                  {/* Document Cards - Clickable for selection */}
+
+                  {/* Document Cards */}
                   <div className="space-y-3">
                     {docs.map((doc, index) => (
                       <div
@@ -567,12 +647,11 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
                             : "bg-transparent group-hover:bg-gray-200"
                         )} />
 
-                        {/* Large tap zone over left icon area (no buttons there) */}
+                        {/* Large tap zone over left icon area */}
                         <div
                           className="absolute inset-y-0 left-0 w-20 z-10 cursor-pointer"
                           onClick={(e) => { e.stopPropagation(); toggleSelection(doc.id); }}
                         >
-                          {/* Checkbox indicator centered in tap zone */}
                           <div className={cn(
                             "absolute top-1/2 -translate-y-1/2 left-3 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200",
                             selectedIds.has(doc.id)
@@ -582,7 +661,7 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
                             {selectedIds.has(doc.id) && <Check className="w-3.5 h-3.5 text-white" />}
                           </div>
                         </div>
-                        
+
                         <div className={cn(
                           "transition-all duration-200",
                           selectedIds.has(doc.id) && "ring-2 ring-amber-500/50 rounded-2xl"
@@ -620,14 +699,17 @@ const DocumentsPanel = ({ picksForDrops = [], onPicksConsumed }: DocumentsPanelP
         {/* Bulk Share Dialog */}
         <BulkShareLinkDialog
           open={showBulkShareDialog}
-          onOpenChange={(open) => {
+          onOpenChange={async (open) => {
             setShowBulkShareDialog(open);
-            if (!open && picksImages.length > 0) setPicksImages([]);
+            // When dialog closes and we had a pending drop → mark as sent
+            if (!open && pendingDrop) {
+              await markPendingDropSent();
+            }
           }}
           documentIds={selectedDocuments.map((d) => d.id)}
           documentNames={selectedDocuments.map((d) => d.name)}
-          imageIds={picksImages.map((img) => img.id)}
-          imageNames={picksImages.map((img) => img.file_name)}
+          imageIds={pendingDrop?.image_ids || []}
+          imageNames={pendingDrop?.images.map((i) => i.file_name) || []}
         />
       </div>
     </>

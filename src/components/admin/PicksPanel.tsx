@@ -53,7 +53,6 @@ import ImageLightbox from "./picks/ImageLightbox";
 import FloatingActionBar from "./picks/FloatingActionBar";
 import MoveToAlbumDialog from "./picks/MoveToAlbumDialog";
 import JustifiedGallery from "./picks/JustifiedGallery";
-import BulkShareLinkDialog from "./BulkShareLinkDialog";
 
 const PicksPanel = () => {
   const { toast } = useToast();
@@ -89,8 +88,6 @@ const PicksPanel = () => {
   
   // Selection state
   const [selectedImageIds, setSelectedImageIds] = useState<Set<string>>(new Set());
-  const [showPicksBulkShare, setShowPicksBulkShare] = useState(false);
-  
   // New album dialog
   const [showNewAlbumDialog, setShowNewAlbumDialog] = useState(false);
   const [newAlbumName, setNewAlbumName] = useState("");
@@ -1292,7 +1289,33 @@ const PicksPanel = () => {
         onBatchMove={() => setShowMoveDialog(true)}
         onClearSelection={() => setSelectedImageIds(new Set())}
         canDelete={canDeleteSelected}
-        onSendViaDrops={selectedImageIds.size > 0 ? () => setShowPicksBulkShare(true) : undefined}
+        onSendViaDrops={selectedImageIds.size > 0 ? async () => {
+          const ids = Array.from(selectedImageIds);
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          await supabase
+            .from("pending_drops")
+            .delete()
+            .eq("created_by", user.id)
+            .eq("status", "pending");
+
+          const { error } = await supabase
+            .from("pending_drops")
+            .insert({
+              created_by: user.id,
+              image_ids: ids,
+              label: `${ids.length} Fotos aus Picks`,
+            });
+
+          if (error) {
+            toast({ title: "Fehler", description: "Paket konnte nicht erstellt werden.", variant: "destructive" });
+            return;
+          }
+
+          toast({ title: `✓ ${ids.length} Fotos als Paket vorbereitet`, description: "Wechsle zu Drops…" });
+          setSearchParams({ tab: "documents" });
+        } : undefined}
       />
 
       {/* Lightbox */}
@@ -1309,18 +1332,6 @@ const PicksPanel = () => {
         canDelete={lightboxImage ? canDeleteItem(lightboxImage) : false}
       />
 
-      {/* Bundle Share Dialog — opens directly from Picks */}
-      <BulkShareLinkDialog
-        open={showPicksBulkShare}
-        onOpenChange={setShowPicksBulkShare}
-        documentIds={[]}
-        documentNames={[]}
-        imageIds={Array.from(selectedImageIds)}
-        imageNames={Array.from(selectedImageIds).map((id) => {
-          const img = images.find((i) => i.id === id);
-          return img?.file_name || id;
-        })}
-      />
     </>
   );
 };

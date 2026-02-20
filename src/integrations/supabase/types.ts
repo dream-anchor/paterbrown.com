@@ -471,6 +471,33 @@ export type Database = {
           },
         ]
       }
+      pending_drops: {
+        Row: {
+          id: string
+          created_by: string
+          image_ids: string[]
+          label: string
+          status: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          created_by: string
+          image_ids?: string[]
+          label?: string
+          status?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          created_by?: string
+          image_ids?: string[]
+          label?: string
+          status?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       document_share_bundles: {
         Row: {
           created_at: string
