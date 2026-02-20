@@ -1,15 +1,16 @@
 import { useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  X, 
-  Download, 
-  ChevronLeft, 
+import {
+  X,
+  Download,
+  ChevronLeft,
   ChevronRight,
   Check,
   HelpCircle,
   XCircle,
   Trash2,
-  Users
+  Users,
+  Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,8 @@ interface ImageLightboxProps {
   onDownload: (image: ImageData) => void;
   onDelete?: (image: ImageData) => void;
   canDelete: boolean;
+  selectedImageIds?: Set<string>;
+  onToggleDrops?: (imageId: string) => void;
 }
 
 // Helper to get initials from name
@@ -64,6 +67,8 @@ const ImageLightbox = ({
   onDownload,
   onDelete,
   canDelete,
+  selectedImageIds,
+  onToggleDrops,
 }: ImageLightboxProps) => {
   const isMobile = useIsMobile();
   const currentIndex = image ? images.findIndex(img => img.id === image.id) : -1;
@@ -110,8 +115,12 @@ const ImageLightbox = ({
       case '3':
         onVote(image.id, 'rejected');
         break;
+      case 'd':
+      case 'D':
+        onToggleDrops?.(image.id);
+        break;
     }
-  }, [image, isMobile, hasPrev, hasNext, onClose, onNavigate, onVote]);
+  }, [image, isMobile, hasPrev, hasNext, onClose, onNavigate, onVote, onToggleDrops]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -144,6 +153,8 @@ const ImageLightbox = ({
         onDownload={onDownload}
         onDelete={onDelete}
         canDelete={canDelete}
+        selectedImageIds={selectedImageIds}
+        onToggleDrops={onToggleDrops}
       />
     );
   }
@@ -313,6 +324,21 @@ const ImageLightbox = ({
 
           {/* Action buttons */}
           <div className="space-y-3 pt-6 border-t border-white/10">
+            {onToggleDrops && (
+              <Button
+                onClick={() => onToggleDrops(image.id)}
+                variant="ghost"
+                className={cn(
+                  "w-full border",
+                  selectedImageIds?.has(image.id)
+                    ? "border-amber-500/60 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"
+                    : "border-white/20 bg-white/10 text-white hover:bg-white/20"
+                )}
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {selectedImageIds?.has(image.id) ? "✓ Für Drops ausgewählt" : "Für Drops markieren"}
+              </Button>
+            )}
             <Button
               onClick={() => onDownload(image)}
               variant="ghost"
@@ -336,7 +362,7 @@ const ImageLightbox = ({
 
           {/* Keyboard hint */}
           <p className="text-white/40 text-xs mt-4 text-center">
-            Pfeiltasten für Navigation · ESC zum Schließen
+            Pfeiltasten · ESC · D = Drops
           </p>
         </motion.div>
       </motion.div>

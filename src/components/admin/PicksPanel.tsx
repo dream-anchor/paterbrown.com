@@ -1330,6 +1330,12 @@ const PicksPanel = () => {
         onDownload={handleDownloadImage}
         onDelete={(img) => setDeleteConfirmation({ type: 'image', item: img })}
         canDelete={lightboxImage ? canDeleteItem(lightboxImage) : false}
+        selectedImageIds={selectedImageIds}
+        onToggleDrops={(id) => setSelectedImageIds(prev => {
+          const next = new Set(prev);
+          if (next.has(id)) { next.delete(id); } else { next.add(id); }
+          return next;
+        })}
       />
 
     </>

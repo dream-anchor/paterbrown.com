@@ -1,9 +1,9 @@
 import { useEffect, useCallback, useMemo, useState } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { 
-  X, 
-  Download, 
-  ChevronLeft, 
+import {
+  X,
+  Download,
+  ChevronLeft,
   ChevronRight,
   Check,
   HelpCircle,
@@ -11,7 +11,8 @@ import {
   Trash2,
   Users,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,8 @@ interface MobileLightboxProps {
   onDownload: (image: ImageData) => void;
   onDelete?: (image: ImageData) => void;
   canDelete: boolean;
+  selectedImageIds?: Set<string>;
+  onToggleDrops?: (imageId: string) => void;
 }
 
 // Helper to get initials from name
@@ -65,6 +68,8 @@ const MobileLightbox = ({
   onDownload,
   onDelete,
   canDelete,
+  selectedImageIds,
+  onToggleDrops,
 }: MobileLightboxProps) => {
   const [showTeamVotes, setShowTeamVotes] = useState(false);
   const currentIndex = image ? images.findIndex(img => img.id === image.id) : -1;
@@ -228,8 +233,26 @@ const MobileLightbox = ({
             </div>
           </div>
 
-          {/* Secondary actions row - Team votes + Delete */}
+          {/* Secondary actions row - Drops + Team votes + Delete */}
           <div className="flex items-center gap-2 px-4 pb-2 border-t border-white/10 pt-2">
+            {/* Drops toggle */}
+            {onToggleDrops && (
+              <motion.button
+                whileTap={{ scale: 0.92 }}
+                onClick={() => { haptics.tap(); onToggleDrops(image.id); }}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl transition-colors",
+                  selectedImageIds?.has(image.id)
+                    ? "bg-amber-500/30 text-amber-300"
+                    : "bg-white/5 text-white/60 hover:text-white/80 hover:bg-white/10"
+                )}
+              >
+                <Send className="w-4 h-4" />
+                <span className="text-xs font-medium">
+                  {selectedImageIds?.has(image.id) ? "✓ Drops" : "Drops"}
+                </span>
+              </motion.button>
+            )}
             {/* Team votes toggle */}
             <button
               onClick={() => setShowTeamVotes(!showTeamVotes)}
