@@ -79,13 +79,15 @@ const ImageLightbox = ({
     v => v.image_id === image?.id && v.user_id === currentUserId
   )?.vote_status;
 
-  // Get team votes (excluding current user)
+  // Get all votes for this image (including current user)
   const teamVotes = useMemo(() => {
     if (!image) return [];
     return votes
-      .filter(v => v.image_id === image.id && v.user_id !== currentUserId)
+      .filter(v => v.image_id === image.id)
       .sort((a, b) => {
-        // Sort by name if available
+        // Current user first, then sort by name
+        if (a.user_id === currentUserId) return -1;
+        if (b.user_id === currentUserId) return 1;
         const nameA = a.user_display_name || '';
         const nameB = b.user_display_name || '';
         return nameA.localeCompare(nameB);
@@ -281,40 +283,42 @@ const ImageLightbox = ({
             ))}
           </div>
 
-          {/* Team Decisions Section - always show, even if empty */}
+          {/* Freigaben Section - always show, even if empty */}
           <div className="mt-6 pt-6 border-t border-white/10">
             <div className="flex items-center gap-2 mb-4">
               <Users className="w-4 h-4 text-white/60" />
-              <h4 className="text-white/80 text-sm font-medium">Team-Entscheidungen</h4>
+              <h4 className="text-white/80 text-sm font-medium">Freigaben</h4>
             </div>
             
             {teamVotes.length > 0 ? (
               <div className="space-y-2">
-                {teamVotes.map((vote) => (
-                  <div 
-                    key={vote.id}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5"
-                  >
-                    {/* Avatar / Initials */}
-                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 text-xs font-medium">
-                      {getInitials(vote.user_first_name, vote.user_last_name, vote.user_id)}
+                {teamVotes.map((vote) => {
+                  const isMe = vote.user_id === currentUserId;
+                  return (
+                    <div 
+                      key={vote.id}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg",
+                        isMe ? "bg-white/10 ring-1 ring-white/15" : "bg-white/5"
+                      )}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 text-xs font-medium">
+                        {getInitials(vote.user_first_name, vote.user_last_name, vote.user_id)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white/80 text-sm truncate">
+                          {vote.user_display_name || vote.user_id.slice(0, 8)}
+                          {isMe && <span className="ml-1.5 text-xs text-amber-400/80">(Du)</span>}
+                        </p>
+                      </div>
+                      <VoteStatusIcon status={vote.vote_status} />
                     </div>
-                    
-                    {/* Name */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white/80 text-sm truncate">
-                        {vote.user_display_name || `User ${vote.user_id.slice(0, 6)}...`}
-                      </p>
-                    </div>
-                    
-                    {/* Vote Status Icon */}
-                    <VoteStatusIcon status={vote.vote_status} />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-white/40 text-sm text-center py-4">
-                Noch keine Bewertungen von anderen
+                Noch keine Bewertungen
               </p>
             )}
           </div>

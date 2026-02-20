@@ -80,12 +80,14 @@ const MobileLightbox = ({
     v => v.image_id === image?.id && v.user_id === currentUserId
   )?.vote_status;
 
-  // Get team votes (excluding current user)
+  // Get all votes for this image (including current user)
   const teamVotes = useMemo(() => {
     if (!image) return [];
     return votes
-      .filter(v => v.image_id === image.id && v.user_id !== currentUserId)
+      .filter(v => v.image_id === image.id)
       .sort((a, b) => {
+        if (a.user_id === currentUserId) return -1;
+        if (b.user_id === currentUserId) return 1;
         const nameA = a.user_display_name || '';
         const nameB = b.user_display_name || '';
         return nameA.localeCompare(nameB);
@@ -259,7 +261,7 @@ const MobileLightbox = ({
               className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-white/5 text-white/60 hover:text-white/80 hover:bg-white/10 transition-colors"
             >
               <Users className="w-4 h-4" />
-              <span className="text-xs font-medium">Team</span>
+              <span className="text-xs font-medium">Freigaben</span>
               {teamVotes.length > 0 && (
                 <span className="bg-white/20 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
                   {teamVotes.length}
@@ -300,26 +302,33 @@ const MobileLightbox = ({
                 <div className="px-4 py-3 max-h-28 overflow-y-auto">
                   {teamVotes.length > 0 ? (
                     <div className="space-y-1.5">
-                      {teamVotes.map((vote) => (
-                        <div 
-                          key={vote.id}
-                          className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg bg-white/5"
-                        >
-                          <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/70 text-[10px] font-medium flex-shrink-0">
-                            {getInitials(vote.user_first_name, vote.user_last_name, vote.user_id)}
+                      {teamVotes.map((vote) => {
+                        const isMe = vote.user_id === currentUserId;
+                        return (
+                          <div 
+                            key={vote.id}
+                            className={cn(
+                              "flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg",
+                              isMe ? "bg-white/10 ring-1 ring-white/15" : "bg-white/5"
+                            )}
+                          >
+                            <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/70 text-[10px] font-medium flex-shrink-0">
+                              {getInitials(vote.user_first_name, vote.user_last_name, vote.user_id)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-white/80 text-xs truncate">
+                                {vote.user_display_name || vote.user_id.slice(0, 8)}
+                                {isMe && <span className="ml-1 text-amber-400/80">(Du)</span>}
+                              </p>
+                            </div>
+                            <VoteStatusIcon status={vote.vote_status} />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-white/80 text-xs truncate">
-                              {vote.user_display_name || `User ${vote.user_id.slice(0, 6)}...`}
-                            </p>
-                          </div>
-                          <VoteStatusIcon status={vote.vote_status} />
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-white/40 text-xs text-center py-1">
-                      Noch keine Team-Bewertungen
+                      Noch keine Bewertungen
                     </p>
                   )}
                 </div>
