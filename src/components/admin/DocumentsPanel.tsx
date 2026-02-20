@@ -509,10 +509,10 @@ const DocumentsPanel = () => {
                   : "border-amber-400 bg-amber-50"
               )}
             >
-              <div className="flex items-center justify-between gap-4 mb-3">
+              <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                 <div className="flex items-center gap-2">
                   <div className={cn(
-                    "w-8 h-8 rounded-lg flex items-center justify-center",
+                    "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
                     linkGenerated ? "bg-green-500" : "bg-amber-500"
                   )}>
                     {linkGenerated
@@ -529,7 +529,7 @@ const DocumentsPanel = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   {!linkGenerated && (
                     <Button
                       size="sm"

@@ -315,24 +315,24 @@ export default function TravelDashboard() {
       {/* Sub-Navigation - Apple Segmented Control Style */}
       <Tabs value={activeTab} onValueChange={handleSubTabChange}>
         <div className="flex items-center justify-between gap-4 flex-wrap">
-        <TabsList className="inline-flex p-1 glass-card rounded-xl gap-0.5 border-0 focus-visible:ring-0">
+        <TabsList className="inline-flex p-1 glass-card rounded-xl gap-0.5 border-0 focus-visible:ring-0 overflow-x-auto max-w-full">
             <TabsTrigger
-              value="bookings" 
-              className="px-5 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
+              value="bookings"
+              className="px-3 sm:px-5 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none whitespace-nowrap"
             >
               <Calendar className="w-4 h-4 mr-2" />
               Buchungen
             </TabsTrigger>
-            <TabsTrigger 
-              value="inbox" 
-              className="px-5 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
+            <TabsTrigger
+              value="inbox"
+              className="px-3 sm:px-5 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none whitespace-nowrap"
             >
               <Mail className="w-4 h-4 mr-2" />
               Posteingang
             </TabsTrigger>
-            <TabsTrigger 
-              value="profiles" 
-              className="px-5 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
+            <TabsTrigger
+              value="profiles"
+              className="px-3 sm:px-5 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none whitespace-nowrap"
             >
               <User className="w-4 h-4 mr-2" />
               Profile
