@@ -19,26 +19,25 @@ const navItems = [
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   const navRef = useRef<HTMLElement>(null);
 
-  // Fix iOS Chrome: sync nav position with visual viewport so it follows
-  // the browser toolbar when it slides in/out on scroll
+  // Fix iOS Chrome: unlike iOS Safari, Chrome doesn't auto-keep fixed elements
+  // above browser chrome. window.innerHeight == vv.height on iOS Chrome, so
+  // the old visualViewport approach always returned 0 — useless.
+  //
+  // Correct fix: apply a CSS calc transform that the browser re-evaluates
+  // continuously as dvh (dynamic viewport) changes relative to lvh (large viewport).
+  //   calc(100dvh - 100lvh) = current_visible_height - max_visible_height
+  //                         = -(browser_chrome_height)  [negative → nav moves up]
+  // This keeps the nav exactly at the top edge of the browser toolbar at all times.
+  // On iOS Safari (which already handles fixed-bottom correctly) we skip this.
   useEffect(() => {
     const nav = navRef.current;
-    const vv = window.visualViewport;
-    if (!nav || !vv) return;
-
-    const update = () => {
-      const offset = Math.max(0, window.innerHeight - vv.offsetTop - vv.height);
-      nav.style.bottom = `${offset}px`;
-    };
-
-    vv.addEventListener("resize", update);
-    vv.addEventListener("scroll", update);
-    update();
-
-    return () => {
-      vv.removeEventListener("resize", update);
-      vv.removeEventListener("scroll", update);
-    };
+    if (!nav) return;
+    // CriOS = iOS Chrome; FxiOS = Firefox iOS; EdgiOS = Edge iOS (all have this bug)
+    const isAffected = /CriOS|FxiOS|EdgiOS/.test(navigator.userAgent);
+    if (!isAffected) return;
+    // Verify the browser supports dvh + lvh before applying
+    if (!CSS.supports("height", "1dvh") || !CSS.supports("height", "1lvh")) return;
+    nav.style.transform = "translateY(calc(100dvh - 100lvh))";
   }, []);
 
   return (
