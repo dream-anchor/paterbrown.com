@@ -226,7 +226,12 @@ const BundleDownloadPage = () => {
       await Promise.all(fetchPromises);
 
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      saveAs(zipBlob, "PaterBrown.zip");
+      const label = bundle.images.length > 0 && bundle.documents.length === 0
+        ? "Fotos"
+        : bundle.documents.length > 0 && bundle.images.length === 0
+          ? "Dokumente"
+          : "Paket";
+      saveAs(zipBlob, `PaterBrown-${label}.zip`);
       setDownloaded(true);
     } catch (err) {
       console.error("ZIP download error:", err);
