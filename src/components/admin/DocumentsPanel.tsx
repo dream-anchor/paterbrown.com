@@ -20,7 +20,6 @@ interface PendingDropImage {
   id: string;
   file_name: string;
   file_path: string;
-  file_size: number;
   thumbnail_url: string | null;
 }
 
@@ -106,7 +105,7 @@ const DocumentsPanel = () => {
       // Bild-Metadaten laden
       const { data: images } = await supabase
         .from("images")
-        .select("id, file_name, file_path, file_size, thumbnail_url")
+        .select("id, file_name, file_path, thumbnail_url")
         .in("id", imageIds);
 
       setPendingDrop({
