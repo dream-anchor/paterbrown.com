@@ -226,7 +226,7 @@ const BundleDownloadPage = () => {
       await Promise.all(fetchPromises);
 
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      saveAs(zipBlob, `paket-${token.slice(0, 8)}.zip`);
+      saveAs(zipBlob, "PaterBrown.zip");
       setDownloaded(true);
     } catch (err) {
       console.error("ZIP download error:", err);
