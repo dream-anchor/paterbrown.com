@@ -14,7 +14,7 @@ const ShowConceptSection = memo(() => {
           <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">
             Zwei Kriminalfälle an einem Abend
           </p>
-          <h2 id="program-heading" className="text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase">
+          <h2 id="program-heading" className="text-4xl sm:text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase">
             Das Programm
           </h2>
         </div>

@@ -70,8 +70,8 @@ const HeroSection = () => {
         <div 
           className="absolute inset-0 bg-cover bg-top bg-no-repeat" 
           style={{
-            backgroundImage: `url(${heroBackground})`,
-            backgroundPositionY: '-200px'
+          backgroundImage: `url(${heroBackground})`,
+            backgroundPositionY: 'clamp(-200px, -15vw, 0px)'
           }} 
           role="img" 
           aria-label="Atmosphärischer Hintergrund für Pater Brown Live-Hörspiel" 
@@ -82,9 +82,14 @@ const HeroSection = () => {
         <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pb-20 pt-8">
           <div className="w-full max-w-4xl mb-12 cinematic-enter relative h-[180px]">
             <div 
-              className={`absolute w-full ${logoAnimating ? 'fixed top-3 left-6 max-w-[210px] z-[200]' : 'relative'} ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`} 
+              className={`absolute w-full ${logoAnimating ? 'fixed z-[200]' : 'relative'} ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`} 
               style={{
-                transition: 'opacity 0.7s ease-in-out'
+                ...(logoAnimating ? {
+                  top: 'calc(0.75rem + env(safe-area-inset-top, 0px))',
+                  left: 'calc(1.5rem + env(safe-area-inset-left, 0px))',
+                  maxWidth: '210px',
+                } : {}),
+                transition: 'opacity 0.7s ease-in-out',
               }}
               data-testid="hero-logo"
             >
@@ -108,7 +113,7 @@ const HeroSection = () => {
               opacity: 0.3
             }}
           >
-            <div className="w-[200px] md:w-[280px] h-auto relative group">
+            <div className="w-[140px] sm:w-[200px] md:w-[280px] h-auto relative group">
               <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-background/60 pointer-events-none rounded-lg" />
               <img 
                 src={antoineHeaderBg} 
@@ -125,7 +130,7 @@ const HeroSection = () => {
                 height={400}
               />
             </div>
-            <div className="w-[200px] md:w-[280px] h-auto relative group">
+            <div className="w-[140px] sm:w-[200px] md:w-[280px] h-auto relative group">
               <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-background/60 pointer-events-none rounded-lg" />
               <img 
                 src={wanjaHeaderBg} 

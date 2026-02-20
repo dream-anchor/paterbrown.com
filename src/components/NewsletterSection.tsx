@@ -51,7 +51,7 @@ const NewsletterSection = () => {
             <Bell className="w-8 h-8 text-gold" />
           </div>
           
-          <h2 id="newsletter-heading" className="text-4xl md:text-5xl font-heading tracking-wider text-foreground uppercase">
+          <h2 id="newsletter-heading" className="text-3xl sm:text-4xl md:text-5xl font-heading tracking-wider text-foreground uppercase">
             Verpasse keine neuen Termine
           </h2>
           
@@ -163,7 +163,7 @@ const NewsletterSection = () => {
             {/* GDPR Consent Checkbox */}
             <div>
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" className="mt-1 h-4 w-4 shrink-0 rounded-sm border-2 border-gold/30 bg-transparent checked:bg-gold checked:border-gold focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 cursor-pointer" value="1" id="OPT_IN" name="OPT_IN" required />
+                <input type="checkbox" className="mt-0.5 h-5 w-5 min-h-[44px] min-w-[44px] shrink-0 rounded-sm border-2 border-gold/30 bg-transparent checked:bg-gold checked:border-gold focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 cursor-pointer appearance-none relative after:content-['✓'] after:absolute after:inset-0 after:flex after:items-center after:justify-center after:text-background after:font-bold after:opacity-0 checked:after:opacity-100" value="1" id="OPT_IN" name="OPT_IN" required />
                 <span className="text-sm text-muted-foreground leading-relaxed">Ich möchte den Newsletter erhalten und akzeptiere die Datenschutzerklärung.</span>
               </label>
               <p className="text-xs text-muted-foreground/70 leading-relaxed mt-2 ml-7">

@@ -17,7 +17,7 @@ const CastSection = () => {
       <div className="container mx-auto max-w-7xl">
         <div className="text-center mb-24">
           <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Die Stars</p>
-          <h2 id="cast-heading" className="text-6xl md:text-8xl lg:text-9xl font-heading tracking-wider text-foreground uppercase">
+          <h2 id="cast-heading" className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-heading tracking-wider text-foreground uppercase">
             Cast
           </h2>
         </div>
@@ -83,7 +83,7 @@ const CastSection = () => {
           <article className="mt-40 max-w-4xl mx-auto">
             <div className="premium-card p-0 overflow-hidden">
               <div className="grid md:grid-cols-2 gap-0">
-                <div className="relative overflow-hidden bg-gradient-to-br from-card to-background h-full min-h-[500px] md:min-h-[650px]">
+                <div className="relative overflow-hidden bg-gradient-to-br from-card to-background h-full min-h-[350px] sm:min-h-[500px] md:min-h-[650px]">
                   <ResponsiveImage 
                     src={marvelin.image}
                     alt={`${marvelin.name} - ${marvelin.role}`}
@@ -95,7 +95,7 @@ const CastSection = () => {
                   />
                 </div>
                 
-                <div className="p-8 md:p-12 flex flex-col justify-between space-y-6 h-full min-h-[500px] md:min-h-[650px]">
+                <div className="p-6 sm:p-8 md:p-12 flex flex-col justify-between space-y-6 h-full min-h-[350px] sm:min-h-[500px] md:min-h-[650px]">
                   <div>
                     <h3 className="text-4xl md:text-5xl font-heading tracking-wider text-foreground mb-2">
                       {marvelin.name.toUpperCase()}

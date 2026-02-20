@@ -145,7 +145,7 @@ const TourDatesSection = () => {
       <div className="container mx-auto max-w-5xl">
         <div className="text-center mb-24">
           <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Termine & Tickets {getTourYearRange(tourDates)}</p>
-          <h2 id="tour-dates-heading" className="text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase mb-8">
+          <h2 id="tour-dates-heading" className="text-4xl sm:text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase mb-8">
             Termine
           </h2>
           <p className="text-xl md:text-2xl text-foreground/80 font-light leading-relaxed max-w-2xl mx-auto mt-6">
@@ -207,7 +207,7 @@ const TourDatesSection = () => {
                   </span>
                 </div>
                 {date.note && (
-                  <span className="self-start px-4 py-1.5 bg-gold/10 text-gold text-xs uppercase tracking-[0.2em] font-bold border border-gold/30">
+                  <span className="self-start px-3 py-1.5 bg-gold/10 text-gold text-[10px] sm:text-xs uppercase tracking-[0.15em] sm:tracking-[0.2em] font-bold border border-gold/30 whitespace-nowrap">
                     {date.note}
                   </span>
                 )}
@@ -218,7 +218,7 @@ const TourDatesSection = () => {
                   href={date.ticketUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-foreground hover:text-gold transition-all duration-300 font-medium uppercase tracking-[0.15em] text-base border-b-2 border-transparent hover:border-gold pb-1 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background"
+                  className="text-foreground hover:text-gold active:text-gold transition-all duration-300 font-medium uppercase tracking-[0.15em] text-base border-b-2 border-transparent hover:border-gold pb-1 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background inline-flex items-center min-h-[44px]"
                   aria-label={`Tickets kaufen für ${date.city} am ${date.date}`}
                 >
                   Tickets <span aria-hidden="true">→</span>

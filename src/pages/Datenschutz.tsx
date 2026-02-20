@@ -20,7 +20,7 @@ const Datenschutz = () => {
         className="relative bg-cover bg-top bg-no-repeat min-h-[300px]"
         style={{ 
           backgroundImage: `url(${heroBackground})`,
-          backgroundPositionY: '-200px'
+          backgroundPositionY: 'clamp(-200px, -15vw, 0px)'
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
@@ -44,7 +44,7 @@ const Datenschutz = () => {
               <p className="text-gold uppercase tracking-[0.3em] text-sm font-light">
                 Rechtliches
               </p>
-              <h1 className="text-6xl md:text-8xl font-heading tracking-wider text-gold mb-12 uppercase">
+              <h1 className="text-4xl sm:text-6xl md:text-8xl font-heading tracking-wider text-gold mb-12 uppercase">
                 Datenschutz
               </h1>
             </div>

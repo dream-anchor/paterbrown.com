@@ -35,7 +35,7 @@ export const SocialProofSection = () => {
           </p>
           <h2 
             id="testimonials-heading" 
-            className="text-4xl md:text-6xl font-heading tracking-wider text-foreground uppercase"
+            className="text-3xl sm:text-4xl md:text-6xl font-heading tracking-wider text-foreground uppercase"
           >
             Das sagen unsere Besucher
           </h2>

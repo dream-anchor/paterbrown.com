@@ -13,7 +13,7 @@ const TrailerSection = memo(() => {
           <p className="text-gold text-sm uppercase tracking-[0.3em] font-medium">
             Exklusiver Einblick
           </p>
-          <h2 id="trailer-heading" className="text-5xl md:text-7xl font-heading tracking-wider text-foreground uppercase">
+          <h2 id="trailer-heading" className="text-4xl sm:text-5xl md:text-7xl font-heading tracking-wider text-foreground uppercase">
             Erlebe Pater Brown
           </h2>
           <div className="divider-gold w-32 mx-auto" aria-hidden="true" />

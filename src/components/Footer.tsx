@@ -71,10 +71,10 @@ const Footer = () => {
             </h3>
             <nav aria-label="Rechtliche Links">
               <div className="flex flex-col gap-2 text-sm">
-                <a href="/impressum" className="text-foreground/80 hover:text-gold transition-colors focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded">
+                <a href="/impressum" className="text-foreground/80 hover:text-gold active:text-gold transition-colors focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded py-2 inline-block min-h-[44px] flex items-center">
                   Impressum
                 </a>
-              <a href="/datenschutz" className="text-foreground/80 hover:text-gold transition-colors focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded">
+              <a href="/datenschutz" className="text-foreground/80 hover:text-gold active:text-gold transition-colors focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded py-2 inline-block min-h-[44px] flex items-center">
                   Datenschutz
                 </a>
               </div>
@@ -127,7 +127,7 @@ const Footer = () => {
           <div className="mt-4">
             <a 
               href="/admin" 
-              className="text-muted-foreground/50 hover:text-foreground/60 transition-colors text-xs"
+              className="text-muted-foreground/50 hover:text-foreground/60 transition-colors text-xs inline-block py-3 px-4 min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
               Admin
             </a>

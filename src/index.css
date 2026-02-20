@@ -134,7 +134,12 @@ All colors MUST be HSL.
   .premium-card:hover {
     border-color: hsl(28 100% 55% / 0.3);
     box-shadow: var(--shadow-gold);
-    transform: translateY(-4px);
+  }
+
+  @media (hover: hover) {
+    .premium-card:hover {
+      transform: translateY(-4px);
+    }
   }
 
   .premium-card:hover::before {
@@ -201,9 +206,11 @@ All colors MUST be HSL.
     transition: left 0.6s ease;
   }
 
-  .btn-premium:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 40px hsl(28 100% 55% / 0.5);
+  @media (hover: hover) {
+    .btn-premium:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px hsl(28 100% 55% / 0.5);
+    }
   }
 
   .btn-premium:hover::before {
@@ -418,6 +425,7 @@ All colors MUST be HSL.
   position: relative;
   overflow: visible;
   transform: rotate(-5deg);
+  transform-origin: center center;
   transition: all 0.3s ease;
   max-width: 100%;
   contain: layout;
