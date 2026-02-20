@@ -812,7 +812,7 @@ const PicksPanel = () => {
               <button
                 onClick={() => setMinApprovals(0)}
                 className={cn(
-                  "px-3 py-1.5 transition-colors",
+                  "px-3 py-1.5 transition-colors min-h-[44px]",
                   minApprovals === 0 ? "bg-gray-900 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
                 )}
               >
@@ -821,7 +821,7 @@ const PicksPanel = () => {
               <button
                 onClick={() => setMinApprovals(2)}
                 className={cn(
-                  "px-3 py-1.5 border-l border-gray-200 transition-colors",
+                  "px-3 py-1.5 border-l border-gray-200 transition-colors min-h-[44px]",
                   minApprovals === 2 ? "bg-amber-500 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
                 )}
               >
@@ -830,7 +830,7 @@ const PicksPanel = () => {
               <button
                 onClick={() => setMinApprovals(users.length || 3)}
                 className={cn(
-                  "px-3 py-1.5 border-l border-gray-200 transition-colors",
+                  "px-3 py-1.5 border-l border-gray-200 transition-colors min-h-[44px]",
                   minApprovals > 2 ? "bg-green-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50"
                 )}
               >
@@ -1059,7 +1059,7 @@ const PicksPanel = () => {
 
         {/* New Album Dialog */}
         <Dialog open={showNewAlbumDialog} onOpenChange={setShowNewAlbumDialog}>
-          <DialogContent className="bg-white sm:max-w-md">
+          <DialogContent className="bg-white sm:max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-gray-900">Neues Album</DialogTitle>
             </DialogHeader>
@@ -1093,7 +1093,7 @@ const PicksPanel = () => {
                       className="mt-1 bg-white border-gray-200 text-gray-900"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <Label htmlFor="photographer-email" className="text-gray-600 text-sm">
                         E-Mail
@@ -1175,7 +1175,7 @@ const PicksPanel = () => {
 
         {/* Edit Album Dialog */}
         <Dialog open={showEditAlbumDialog} onOpenChange={setShowEditAlbumDialog}>
-          <DialogContent className="bg-white sm:max-w-md">
+          <DialogContent className="bg-white sm:max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-gray-900">Album bearbeiten</DialogTitle>
             </DialogHeader>

@@ -464,7 +464,8 @@ const DocumentsPanel = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40"
+              className="fixed left-1/2 -translate-x-1/2 z-40"
+              style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}
             >
               <div className="flex items-center gap-3 px-5 py-3 bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10">
                 <div className="flex items-center gap-2">

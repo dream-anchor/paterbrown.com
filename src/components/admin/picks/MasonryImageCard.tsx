@@ -241,7 +241,7 @@ const MasonryImageCard = ({
           </div>
         )}
 
-        {/* Selection checkbox - top left */}
+        {/* Selection checkbox - top left — 44px touch target */}
         <div
           className={cn(
             "absolute top-2 left-2 transition-opacity",
@@ -249,7 +249,7 @@ const MasonryImageCard = ({
           )}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="bg-white rounded-md shadow-lg">
+          <div className="bg-white rounded-md shadow-lg flex items-center justify-center min-h-[44px] min-w-[44px]">
             <Checkbox
               checked={isSelected}
               onCheckedChange={handleCheckboxChange}

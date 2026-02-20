@@ -340,12 +340,12 @@ export default function TravelDashboard() {
           </TabsList>
 
           {activeTab === "bookings" && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {/* View Mode Toggle - 3 options now */}
               <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
                 <button
                   onClick={() => setViewMode("timeline")}
-                  className={`p-1.5 rounded-md transition-colors ${
+                  className={`p-2 rounded-md transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${
                     viewMode === "timeline" 
                       ? "bg-white text-gray-900 shadow-sm" 
                       : "text-gray-500 hover:text-gray-700"
@@ -356,7 +356,7 @@ export default function TravelDashboard() {
                 </button>
                 <button
                   onClick={() => setViewMode("cards")}
-                  className={`p-1.5 rounded-md transition-colors ${
+                  className={`p-2 rounded-md transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${
                     viewMode === "cards" 
                       ? "bg-white text-gray-900 shadow-sm" 
                       : "text-gray-500 hover:text-gray-700"
@@ -367,7 +367,7 @@ export default function TravelDashboard() {
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-1.5 rounded-md transition-colors ${
+                  className={`p-2 rounded-md transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${
                     viewMode === "list" 
                       ? "bg-white text-gray-900 shadow-sm" 
                       : "text-gray-500 hover:text-gray-700"
@@ -384,14 +384,14 @@ export default function TravelDashboard() {
                   placeholder="Suchen..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 w-56 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-lg focus:ring-1 focus:ring-gray-300 focus:border-gray-300 transition-all h-9"
+                  className="pl-9 w-full sm:w-56 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 rounded-lg focus:ring-1 focus:ring-gray-300 focus:border-gray-300 transition-all h-9"
                 />
               </div>
               <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={fetchBookings}
-                className="h-9 w-9 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                className="h-9 w-9 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 min-h-[44px] min-w-[44px]"
               >
                 <RefreshCw className="w-4 h-4" />
               </Button>
@@ -399,7 +399,7 @@ export default function TravelDashboard() {
               <Button
                 variant="ghost"
                 onClick={() => setShowPastBookings((v) => !v)}
-                className="h-9 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 gap-2"
+                className="h-9 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 gap-2 min-h-[44px]"
                 title={showPastBookings ? "Nur aktuelle Reisen" : "Vergangene Reisen"}
               >
                 <History className="w-4 h-4" />
@@ -411,7 +411,7 @@ export default function TravelDashboard() {
               <Button 
                 variant="ghost"
                 onClick={() => setIsImportModalOpen(true)}
-                className="h-9 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 gap-2"
+                className="h-9 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 gap-2 min-h-[44px]"
               >
                 <Ticket className="w-4 h-4" />
                 <span className="hidden sm:inline">Ticket importieren</span>
@@ -429,7 +429,7 @@ export default function TravelDashboard() {
             </span>
             <button
               onClick={() => setSelectedTravelers([])}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all min-h-[44px] ${
                 selectedTravelers.length === 0
                   ? "bg-blue-600 text-white"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -441,7 +441,7 @@ export default function TravelDashboard() {
               <button
                 key={traveler}
                 onClick={() => toggleTraveler(traveler)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all min-h-[44px] ${
                   selectedTravelers.includes(traveler)
                     ? "bg-blue-600 text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"

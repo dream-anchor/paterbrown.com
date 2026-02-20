@@ -166,7 +166,7 @@ const BulkShareLinkDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-white sm:max-w-md">
+      <DialogContent className="bg-white sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-gray-900 flex items-center gap-2">
             <Package className="w-5 h-5" />

@@ -691,15 +691,15 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded, ref
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Left side: Navigation */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <Button variant="apple" size="sm" onClick={goToToday} className="rounded-lg text-xs sm:text-sm">
+          <Button variant="apple" size="sm" onClick={goToToday} className="rounded-lg text-xs sm:text-sm min-h-[44px]">
             Heute
           </Button>
           <div className="flex items-center">
-            <button onClick={prevMonth} className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition-colors">
-              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+            <button onClick={prevMonth} className="p-2 rounded-full hover:bg-gray-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
+              <ChevronLeft className="w-5 h-5 text-gray-600" />
             </button>
-            <button onClick={nextMonth} className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition-colors">
-              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+            <button onClick={nextMonth} className="p-2 rounded-full hover:bg-gray-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
+              <ChevronRight className="w-5 h-5 text-gray-600" />
             </button>
           </div>
           <h2 className="text-base sm:text-xl font-semibold text-gray-800 ml-1 sm:ml-2">
@@ -871,7 +871,7 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded, ref
                     {/* Quick Add Button */}
                     <button
                       onClick={() => handleQuickAdd(day)}
-                      className={`w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all
+                      className={`w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all
                         ${isHovered ? "opacity-100" : "opacity-0"}`}
                     >
                       <Plus className="w-4 h-4" />
@@ -886,7 +886,7 @@ const FullCalendar = ({ onNavigateToTravel, onNavigateToTour, onEventsAdded, ref
                         <button
                           key={entry.id}
                           onClick={() => handleEventClick(entry)}
-                          className={`w-full px-1.5 py-0.5 rounded text-[10px] font-medium text-white truncate flex items-center gap-1
+                          className={`w-full px-1.5 py-1 rounded text-[10px] font-medium text-white truncate flex items-center gap-1 min-h-[24px]
                             ${entry.color} hover:opacity-90 transition-opacity text-left
                             ${entry.isOptioned ? "opacity-60 border border-dashed border-white/50" : ""}
                             ${entry.isCancelled ? "line-through opacity-50" : ""}`}

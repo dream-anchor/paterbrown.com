@@ -267,15 +267,15 @@ const JustifiedImageItem = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className={cn(
-          "bg-black/30 backdrop-blur-xl rounded-full shadow-lg ring-1 ring-white/20",
-          isMobile ? "p-1" : "p-1.5"
+          "bg-black/30 backdrop-blur-xl rounded-full shadow-lg ring-1 ring-white/20 flex items-center justify-center",
+          isMobile ? "min-h-[44px] min-w-[44px]" : "p-1.5"
         )}>
           <Checkbox
             checked={isSelected}
             onCheckedChange={() => onSelect(image.id, true)}
             className={cn(
               "border-white/50 bg-white/20 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500",
-              isMobile ? "h-3.5 w-3.5" : "h-4 w-4"
+              isMobile ? "h-5 w-5" : "h-4 w-4"
             )}
           />
         </div>
