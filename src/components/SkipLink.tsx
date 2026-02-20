@@ -5,7 +5,7 @@ const SkipLink = () => {
         <li>
           <a 
             href="#main-content" 
-            className="block bg-gold text-background px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
+            className="flex items-center min-h-[44px] bg-gold text-background px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
             onClick={(e) => {
               e.preventDefault();
               const el = document.getElementById('main-content');
@@ -21,7 +21,7 @@ const SkipLink = () => {
         <li>
           <a 
             href="#cast-heading" 
-            className="block bg-gold text-background px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
+            className="flex items-center min-h-[44px] bg-gold text-background px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
             onClick={(e) => {
               e.preventDefault();
               const el = document.getElementById('cast-heading');
@@ -36,7 +36,7 @@ const SkipLink = () => {
         <li>
           <a 
             href="#tour-dates-heading" 
-            className="block bg-gold text-background px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
+            className="flex items-center min-h-[44px] bg-gold text-background px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
             onClick={(e) => {
               e.preventDefault();
               const el = document.getElementById('tour-dates-heading');
@@ -51,7 +51,7 @@ const SkipLink = () => {
         <li>
           <a 
             href="#newsletter-heading" 
-            className="block bg-gold text-background px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
+            className="flex items-center min-h-[44px] bg-gold text-background px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
             onClick={(e) => {
               e.preventDefault();
               const el = document.getElementById('newsletter-heading');

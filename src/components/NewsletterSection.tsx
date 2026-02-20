@@ -46,7 +46,7 @@ const NewsletterSection = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-transparent to-transparent pointer-events-none" />
       
       <div className="container mx-auto max-w-3xl relative z-10">
-        <div className="premium-card p-12 md:p-16 text-center space-y-8">
+        <div className="premium-card p-6 sm:p-12 md:p-16 text-center space-y-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gold/10 border border-gold/30 mb-4">
             <Bell className="w-8 h-8 text-gold" />
           </div>
