@@ -792,7 +792,7 @@ const SettingsPanel = ({ isAdmin = false }: SettingsPanelProps) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-[calc(5rem+env(safe-area-inset-bottom))]">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-sm">

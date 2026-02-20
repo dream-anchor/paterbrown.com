@@ -269,7 +269,7 @@ const UserManagement = () => {
             disabled={syncing}
             variant="outline"
             size="sm"
-            className="gap-2"
+            className="gap-2 flex-shrink-0"
           >
             {syncing ? (
               <Loader2 className="w-4 h-4 animate-spin" />

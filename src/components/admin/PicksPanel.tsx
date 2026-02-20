@@ -806,7 +806,7 @@ const PicksPanel = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Schnittmenge Threshold Buttons */}
             <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
               <button

@@ -1105,7 +1105,7 @@ const EventMap = ({ events, onEventsUpdated, initialActiveEventId }: EventMapPro
         )}
 
         {/* Title & Filters */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 md:gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
           {/* Title section with icon */}
           <div className="flex items-center justify-between md:block">
             <div className="flex items-center gap-3">
