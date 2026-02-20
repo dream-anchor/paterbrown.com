@@ -94,6 +94,8 @@ const PicksPanel = () => {
   const [newAlbumPhotographerName, setNewAlbumPhotographerName] = useState("");
   const [newAlbumPhotographerEmail, setNewAlbumPhotographerEmail] = useState("");
   const [newAlbumPhotographerPhone, setNewAlbumPhotographerPhone] = useState("");
+  const [newAlbumProjectName, setNewAlbumProjectName] = useState("Pater Brown – Das Live-Hörspiel");
+  const [newAlbumContactEmail, setNewAlbumContactEmail] = useState("info@pater-brown.live");
   const [isCreatingAlbum, setIsCreatingAlbum] = useState(false);
 
   // Edit album dialog
@@ -102,6 +104,8 @@ const PicksPanel = () => {
   const [editPhotographerName, setEditPhotographerName] = useState("");
   const [editPhotographerEmail, setEditPhotographerEmail] = useState("");
   const [editPhotographerPhone, setEditPhotographerPhone] = useState("");
+  const [editProjectName, setEditProjectName] = useState("");
+  const [editContactEmail, setEditContactEmail] = useState("");
   const [isSavingAlbum, setIsSavingAlbum] = useState(false);
 
   // Lightbox state
@@ -350,17 +354,21 @@ const PicksPanel = () => {
           photographer_name: newAlbumPhotographerName.trim() || null,
           photographer_email: newAlbumPhotographerEmail.trim() || null,
           photographer_phone: newAlbumPhotographerPhone.trim() || null,
+          project_name: newAlbumProjectName.trim() || null,
+          contact_email: newAlbumContactEmail.trim() || null,
         })
         .select()
         .single();
 
       if (error) throw error;
-      
+
       setAlbums((prev) => [...prev, data as AlbumData]);
       setNewAlbumName("");
       setNewAlbumPhotographerName("");
       setNewAlbumPhotographerEmail("");
       setNewAlbumPhotographerPhone("");
+      setNewAlbumProjectName("Pater Brown – Das Live-Hörspiel");
+      setNewAlbumContactEmail("info@pater-brown.live");
       setShowNewAlbumDialog(false);
       
       toast({
@@ -387,6 +395,8 @@ const PicksPanel = () => {
       setEditPhotographerName(currentAlbum.photographer_name || "");
       setEditPhotographerEmail(currentAlbum.photographer_email || "");
       setEditPhotographerPhone(currentAlbum.photographer_phone || "");
+      setEditProjectName(currentAlbum.project_name || "Pater Brown – Das Live-Hörspiel");
+      setEditContactEmail(currentAlbum.contact_email || "info@pater-brown.live");
       setShowEditAlbumDialog(true);
     }
   };
@@ -404,6 +414,8 @@ const PicksPanel = () => {
           photographer_name: editPhotographerName.trim() || null,
           photographer_email: editPhotographerEmail.trim() || null,
           photographer_phone: editPhotographerPhone.trim() || null,
+          project_name: editProjectName.trim() || null,
+          contact_email: editContactEmail.trim() || null,
         })
         .eq("id", currentAlbumId)
         .select()
@@ -1109,6 +1121,31 @@ const PicksPanel = () => {
                       />
                     </div>
                   </div>
+                  <div>
+                    <Label htmlFor="project-name" className="text-gray-600 text-sm">
+                      Projekt
+                    </Label>
+                    <Input
+                      id="project-name"
+                      value={newAlbumProjectName}
+                      onChange={(e) => setNewAlbumProjectName(e.target.value)}
+                      placeholder="Pater Brown – Das Live-Hörspiel"
+                      className="mt-1 bg-white border-gray-200 text-gray-900"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="contact-email" className="text-gray-600 text-sm">
+                      Kontakt-E-Mail (Bildrechte)
+                    </Label>
+                    <Input
+                      id="contact-email"
+                      type="email"
+                      value={newAlbumContactEmail}
+                      onChange={(e) => setNewAlbumContactEmail(e.target.value)}
+                      placeholder="info@pater-brown.live"
+                      className="mt-1 bg-white border-gray-200 text-gray-900"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1200,6 +1237,31 @@ const PicksPanel = () => {
                         className="mt-1 bg-white border-gray-200 text-gray-900"
                       />
                     </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-project-name" className="text-gray-600 text-sm">
+                      Projekt
+                    </Label>
+                    <Input
+                      id="edit-project-name"
+                      value={editProjectName}
+                      onChange={(e) => setEditProjectName(e.target.value)}
+                      placeholder="Pater Brown – Das Live-Hörspiel"
+                      className="mt-1 bg-white border-gray-200 text-gray-900"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-contact-email" className="text-gray-600 text-sm">
+                      Kontakt-E-Mail (Bildrechte)
+                    </Label>
+                    <Input
+                      id="edit-contact-email"
+                      type="email"
+                      value={editContactEmail}
+                      onChange={(e) => setEditContactEmail(e.target.value)}
+                      placeholder="info@pater-brown.live"
+                      className="mt-1 bg-white border-gray-200 text-gray-900"
+                    />
                   </div>
                 </div>
               </div>
@@ -1294,6 +1356,15 @@ const PicksPanel = () => {
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) return;
 
+          // Credits aus dem Album des ersten ausgewählten Fotos ermitteln
+          const firstImage = images.find(img => selectedImageIds.has(img.id));
+          const sourceAlbum = firstImage?.folder_id
+            ? albums.find(a => a.id === firstImage.folder_id)
+            : null;
+          const photographerName = sourceAlbum?.photographer_name || "";
+          const projectName = sourceAlbum?.project_name || "Pater Brown – Das Live-Hörspiel";
+          const contactEmail = sourceAlbum?.contact_email || "info@pater-brown.live";
+
           await supabase
             .from("pending_drops")
             .delete()
@@ -1306,6 +1377,9 @@ const PicksPanel = () => {
               created_by: user.id,
               image_ids: ids,
               label: `${ids.length} Fotos aus Picks`,
+              photographer_name: photographerName,
+              project_name: projectName,
+              contact_email: contactEmail,
             });
 
           if (error) {

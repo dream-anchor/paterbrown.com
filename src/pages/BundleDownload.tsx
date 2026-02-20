@@ -33,6 +33,10 @@ interface BundleData {
   download_count: number;
   is_active: boolean;
   created_by: string | null;
+  created_at: string | null;
+  photographer_name: string | null;
+  project_name: string | null;
+  contact_email: string | null;
   documents: BundleDocument[];
   images: BundleImage[];
 }
@@ -91,7 +95,7 @@ const BundleDownloadPage = () => {
         // 1. Bundle laden
         const { data: bundleData, error: bundleError } = await supabase
           .from("document_share_bundles")
-          .select("id, token, expires_at, password_hash, max_downloads, download_count, is_active, created_by, image_ids")
+          .select("id, token, expires_at, password_hash, max_downloads, download_count, is_active, created_by, created_at, image_ids, photographer_name, project_name, contact_email")
           .eq("token", token)
           .maybeSingle();
 
@@ -225,19 +229,75 @@ const BundleDownloadPage = () => {
 
       await Promise.all(fetchPromises);
 
-      // README mit Copyright-Hinweis
-      const year = new Date().getFullYear();
-      const photographer = uploaderName || "Pater Brown";
-      const readmeContent = [
-        `Copyright © ${year} ${photographer} – Pater Brown - Das Live-Hörspiel`,
-        ``,
-        `Fotograf: ${photographer}`,
-        `Projekt: Pater Brown - Das Live-Hörspiel`,
-        ``,
-        `Alle Rechte vorbehalten.`,
-        `Die Fotos dürfen nur für den vereinbarten Zweck verwendet werden.`,
-      ].join("\n");
-      zip.file("README.txt", readmeContent);
+      // BILDRECHTE.txt — nur wenn Fotos im Paket
+      if (bundle.images.length > 0) {
+        const year = bundle.created_at
+          ? new Date(bundle.created_at).getFullYear()
+          : new Date().getFullYear();
+        const photographer = bundle.photographer_name || uploaderName || "Fotograf";
+        const project = bundle.project_name || "Pater Brown – Das Live-Hörspiel";
+        const contact = bundle.contact_email || "info@pater-brown.live";
+
+        const bildrechteContent = [
+          `════════════════════════════════════════════════════`,
+          `  BILDRECHTE & NUTZUNGSBEDINGUNGEN`,
+          `════════════════════════════════════════════════════`,
+          ``,
+          `  Projekt:    ${project}`,
+          `  Copyright:  © ${year} ${photographer}`,
+          `              ${project}`,
+          ``,
+          `════════════════════════════════════════════════════`,
+          ``,
+          `  FREIGABE ZUR VERÖFFENTLICHUNG`,
+          ``,
+          `  Die in diesem Paket enthaltenen Fotos sind zur`,
+          `  redaktionellen und werblichen Nutzung freigegeben,`,
+          `  insbesondere für:`,
+          ``,
+          `  • Presseberichterstattung und Rezensionen`,
+          `  • Social Media (Instagram, Facebook, etc.)`,
+          `  • Webseiten und Blogs`,
+          `  • Programmhefte und Veranstaltungshinweise`,
+          `  • Plakate und Flyer`,
+          ``,
+          `════════════════════════════════════════════════════`,
+          ``,
+          `  PFLICHT-QUELLENANGABE`,
+          ``,
+          `  Bei jeder Veröffentlichung ist folgender`,
+          `  Copyright-Vermerk anzugeben:`,
+          ``,
+          `     © ${photographer}`,
+          `     ${project}`,
+          ``,
+          `════════════════════════════════════════════════════`,
+          ``,
+          `  EINSCHRÄNKUNGEN`,
+          ``,
+          `  • Keine Bearbeitung, die den Bildinhalt verfälscht`,
+          `    (Farb- und Formatanpassung ist erlaubt)`,
+          `  • Keine Nutzung in diffamierendem Kontext`,
+          `  • Keine Weitergabe der Originaldateien an Dritte`,
+          `    ohne Genehmigung`,
+          `  • Keine kommerzielle Sublizenzierung`,
+          `    (z. B. Verkauf über Stockfoto-Plattformen)`,
+          ``,
+          `════════════════════════════════════════════════════`,
+          ``,
+          `  RECHTSGRUNDLAGE`,
+          ``,
+          `  Die Fotos sind urheberrechtlich geschützt nach`,
+          `  §§ 2, 72 UrhG. Die Freigabe erfolgt als einfaches`,
+          `  Nutzungsrecht gemäß § 31 Abs. 2 UrhG.`,
+          ``,
+          `  Bei Fragen: ${contact}`,
+          ``,
+          `════════════════════════════════════════════════════`,
+        ].join("\n");
+
+        zip.file("BILDRECHTE.txt", bildrechteContent);
+      }
 
       const zipBlob = await zip.generateAsync({ type: "blob" });
       const label = bundle.images.length > 0 && bundle.documents.length === 0

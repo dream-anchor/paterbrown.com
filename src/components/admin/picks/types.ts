@@ -21,6 +21,8 @@ export interface AlbumData {
   photographer_name: string | null;
   photographer_email: string | null;
   photographer_phone: string | null;
+  project_name: string | null;
+  contact_email: string | null;
 }
 
 export type VoteStatus = 'approved' | 'unsure' | 'rejected';

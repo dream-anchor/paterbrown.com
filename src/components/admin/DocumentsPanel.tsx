@@ -28,6 +28,9 @@ interface PendingDrop {
   image_ids: string[];
   label: string;
   images: PendingDropImage[];
+  photographer_name: string | null;
+  project_name: string | null;
+  contact_email: string | null;
 }
 
 // ── Document types ──────────────────────────────────────────────────────────
@@ -114,6 +117,9 @@ const DocumentsPanel = () => {
         image_ids: imageIds,
         label: drop.label || "Picks-Auswahl",
         images: (images as PendingDropImage[]) || [],
+        photographer_name: drop.photographer_name || null,
+        project_name: drop.project_name || null,
+        contact_email: drop.contact_email || null,
       });
     } catch (err) {
       console.error("Error fetching pending drop:", err);
@@ -741,6 +747,9 @@ const DocumentsPanel = () => {
           documentNames={selectedDocuments.map((d) => d.name)}
           imageIds={pendingDrop?.image_ids || []}
           imageNames={pendingDrop?.images.map((i) => i.file_name) || []}
+          photographerName={pendingDrop?.photographer_name || ""}
+          projectName={pendingDrop?.project_name || "Pater Brown – Das Live-Hörspiel"}
+          contactEmail={pendingDrop?.contact_email || "info@pater-brown.live"}
         />
       </div>
     </>

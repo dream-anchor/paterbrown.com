@@ -29,6 +29,9 @@ interface BulkShareLinkDialogProps {
   documentNames: string[];
   imageIds?: string[];
   imageNames?: string[];
+  photographerName?: string;
+  projectName?: string;
+  contactEmail?: string;
 }
 
 type ExpirationOption = "never" | "7days" | "30days";
@@ -61,6 +64,9 @@ const BulkShareLinkDialog = ({
   documentNames,
   imageIds = [],
   imageNames = [],
+  photographerName = "",
+  projectName = "",
+  contactEmail = "",
 }: BulkShareLinkDialogProps) => {
   const { toast } = useToast();
   const [expiration, setExpiration] = useState<ExpirationOption>("never");
@@ -109,6 +115,9 @@ const BulkShareLinkDialog = ({
           max_downloads: useMaxDownloads ? parseInt(maxDownloads, 10) : null,
           created_by: user?.id ?? null,
           image_ids: imageIds.length > 0 ? imageIds : [],
+          photographer_name: photographerName || null,
+          project_name: projectName || null,
+          contact_email: contactEmail || null,
         })
         .select()
         .single();

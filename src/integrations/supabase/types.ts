@@ -354,6 +354,7 @@ export type Database = {
       }
       document_share_bundles: {
         Row: {
+          contact_email: string | null
           created_at: string | null
           created_by: string | null
           download_count: number | null
@@ -363,9 +364,12 @@ export type Database = {
           is_active: boolean | null
           max_downloads: number | null
           password_hash: string | null
+          photographer_name: string | null
+          project_name: string | null
           token: string
         }
         Insert: {
+          contact_email?: string | null
           created_at?: string | null
           created_by?: string | null
           download_count?: number | null
@@ -375,9 +379,12 @@ export type Database = {
           is_active?: boolean | null
           max_downloads?: number | null
           password_hash?: string | null
+          photographer_name?: string | null
+          project_name?: string | null
           token: string
         }
         Update: {
+          contact_email?: string | null
           created_at?: string | null
           created_by?: string | null
           download_count?: number | null
@@ -387,6 +394,8 @@ export type Database = {
           is_active?: boolean | null
           max_downloads?: number | null
           password_hash?: string | null
+          photographer_name?: string | null
+          project_name?: string | null
           token?: string
         }
         Relationships: []
@@ -600,27 +609,36 @@ export type Database = {
       }
       pending_drops: {
         Row: {
+          contact_email: string | null
           created_at: string | null
           created_by: string
           id: string
           image_ids: string[]
           label: string | null
+          photographer_name: string | null
+          project_name: string | null
           status: string
         }
         Insert: {
+          contact_email?: string | null
           created_at?: string | null
           created_by: string
           id?: string
           image_ids?: string[]
           label?: string | null
+          photographer_name?: string | null
+          project_name?: string | null
           status?: string
         }
         Update: {
+          contact_email?: string | null
           created_at?: string | null
           created_by?: string
           id?: string
           image_ids?: string[]
           label?: string | null
+          photographer_name?: string | null
+          project_name?: string | null
           status?: string
         }
         Relationships: []
@@ -710,6 +728,7 @@ export type Database = {
       }
       picks_folders: {
         Row: {
+          contact_email: string | null
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -720,8 +739,10 @@ export type Database = {
           photographer_email: string | null
           photographer_name: string | null
           photographer_phone: string | null
+          project_name: string | null
         }
         Insert: {
+          contact_email?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -732,8 +753,10 @@ export type Database = {
           photographer_email?: string | null
           photographer_name?: string | null
           photographer_phone?: string | null
+          project_name?: string | null
         }
         Update: {
+          contact_email?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -744,6 +767,7 @@ export type Database = {
           photographer_email?: string | null
           photographer_name?: string | null
           photographer_phone?: string | null
+          project_name?: string | null
         }
         Relationships: [
           {
