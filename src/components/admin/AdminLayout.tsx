@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, Settings, ChevronDown } from "lucide-react";
+import { LogOut, Settings, ChevronDown, Bell, Check, AlertCircle, Info } from "lucide-react";
 import troupeLogo from "@/assets/troupe-logo.webp";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +11,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { useNotifications, AppNotification } from "@/contexts/NotificationContext";
+
+const formatRelativeTime = (timestamp: number): string => {
+  const diff = Date.now() - timestamp;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Gerade eben";
+  if (mins < 60) return `Vor ${mins} Min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `Vor ${hours} Std`;
+  return new Date(timestamp).toLocaleDateString("de-DE", { day: "numeric", month: "short" });
+};
+
+const NotifIcon = ({ type }: { type: AppNotification["type"] }) => {
+  if (type === "success") return <Check className="w-3 h-3 text-green-600" />;
+  if (type === "error") return <AlertCircle className="w-3 h-3 text-red-600" />;
+  return <Info className="w-3 h-3 text-gray-500" />;
+};
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -20,6 +40,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const { notifications, unreadCount, markAllRead, clearAll } = useNotifications();
 
   useEffect(() => {
     const getUser = async () => {
@@ -76,8 +97,75 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             />
           </Link>
           
-          {/* User Dropdown Menu - Premium Design */}
-          <div className="flex items-center">
+          {/* Right actions: Bell + User */}
+          <div className="flex items-center gap-2">
+
+            {/* Notification Bell */}
+            <Popover onOpenChange={(open) => { if (open) markAllRead(); }}>
+              <PopoverTrigger asChild>
+                <button
+                  className="relative flex items-center justify-center w-9 h-9 rounded-full bg-white border border-gray-200/80 hover:border-gray-300 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                  aria-label="Aktivitäten"
+                >
+                  <Bell className="w-4 h-4 text-gray-500" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center px-0.5">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" sideOffset={8} className="w-80 p-0 rounded-2xl shadow-xl border border-gray-200 bg-white overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                  <h3 className="text-sm font-semibold text-gray-900">Aktivitäten</h3>
+                  {notifications.length > 0 && (
+                    <button
+                      onClick={clearAll}
+                      className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      Alle löschen
+                    </button>
+                  )}
+                </div>
+                {/* List */}
+                <ScrollArea className="max-h-80">
+                  {notifications.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+                      <Bell className="w-8 h-8 mb-2 opacity-20" />
+                      <p className="text-sm">Keine Aktivitäten</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-gray-50">
+                      {notifications.map((n) => (
+                        <div
+                          key={n.id}
+                          className={cn(
+                            "flex items-start gap-3 px-4 py-3",
+                            !n.read && "bg-amber-50/60"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "mt-0.5 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0",
+                              n.type === "success" ? "bg-green-100" : n.type === "error" ? "bg-red-100" : "bg-gray-100"
+                            )}
+                          >
+                            <NotifIcon type={n.type} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 leading-snug">{n.title}</p>
+                            {n.detail && <p className="text-xs text-gray-500 mt-0.5">{n.detail}</p>}
+                            <p className="text-xs text-gray-400 mt-1">{formatRelativeTime(n.timestamp)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </PopoverContent>
+            </Popover>
+
             {userEmail ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

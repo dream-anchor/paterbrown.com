@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Upload, 
-  X, 
-  Check, 
-  AlertCircle, 
-  ChevronUp, 
+import {
+  Upload,
+  X,
+  Check,
+  AlertCircle,
+  ChevronUp,
   ChevronDown,
   Trash2,
   RotateCcw,
@@ -18,6 +18,7 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useUpload, UploadFile } from "@/contexts/UploadContext";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return "0 B";
@@ -68,9 +69,10 @@ const GlobalUploadIndicator = () => {
     isIndicatorExpanded,
     setIndicatorExpanded,
   } = useUpload();
+  const { addNotification } = useNotifications();
 
-  // Don't render if no files
-  if (files.length === 0) return null;
+  const [dismissIn, setDismissIn] = useState<number | null>(null);
+  const prevCompleteRef = useRef(false);
 
   const successCount = files.filter(f => f.status === "success").length;
   const errorCount = files.filter(f => f.status === "error").length;
@@ -78,6 +80,39 @@ const GlobalUploadIndicator = () => {
 
   const allComplete = !isUploading && files.length > 0;
   const hasErrors = errorCount > 0;
+
+  // Detect batch completion: add notification + start 10s auto-dismiss
+  useEffect(() => {
+    if (allComplete && !prevCompleteRef.current) {
+      addNotification({
+        type: hasErrors ? "error" : "success",
+        title: hasErrors
+          ? `Upload: ${errorCount} Fehler`
+          : `${successCount} Datei${successCount !== 1 ? "en" : ""} hochgeladen`,
+        detail: hasErrors
+          ? `${successCount} erfolgreich, ${errorCount} fehlgeschlagen`
+          : undefined,
+      });
+      if (!hasErrors) setDismissIn(10);
+    }
+    if (!allComplete) setDismissIn(null);
+    prevCompleteRef.current = allComplete;
+  }, [allComplete, hasErrors, successCount, errorCount, addNotification]);
+
+  // Countdown tick → auto-dismiss
+  useEffect(() => {
+    if (dismissIn === null) return;
+    if (dismissIn <= 0) {
+      clearCompleted();
+      setDismissIn(null);
+      return;
+    }
+    const t = setTimeout(() => setDismissIn(prev => (prev !== null ? prev - 1 : null)), 1000);
+    return () => clearTimeout(t);
+  }, [dismissIn, clearCompleted]);
+
+  // Don't render if no files
+  if (files.length === 0) return null;
 
   return (
     <AnimatePresence>
@@ -130,6 +165,7 @@ const GlobalUploadIndicator = () => {
                   <p className="text-xs text-gray-500">
                     {successCount} erfolgreich
                     {errorCount > 0 && `, ${errorCount} fehlgeschlagen`}
+                    {dismissIn !== null && ` · wird in ${dismissIn}s ausgeblendet`}
                   </p>
                 )}
               </div>

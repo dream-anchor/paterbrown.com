@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { UploadProvider } from "@/contexts/UploadContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import GlobalUploadIndicator from "@/components/admin/GlobalUploadIndicator";
 
 const Index = lazy(() => import("./pages/Index"));
@@ -44,6 +45,7 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <NotificationProvider>
         <UploadProvider>
           <Toaster />
           <Sonner />
@@ -68,6 +70,7 @@ const App = () => (
           {/* Global Upload Indicator - visible across all pages */}
           <GlobalUploadIndicator />
         </UploadProvider>
+        </NotificationProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </ErrorBoundary>
