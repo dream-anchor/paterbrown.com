@@ -19,25 +19,21 @@ const navItems = [
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   const navRef = useRef<HTMLElement>(null);
 
-  // Fix iOS Chrome: unlike iOS Safari, Chrome doesn't auto-keep fixed elements
-  // above browser chrome. window.innerHeight == vv.height on iOS Chrome, so
-  // the old visualViewport approach always returned 0 — useless.
-  //
-  // Correct fix: apply a CSS calc transform that the browser re-evaluates
-  // continuously as dvh (dynamic viewport) changes relative to lvh (large viewport).
-  //   calc(100dvh - 100lvh) = current_visible_height - max_visible_height
-  //                         = -(browser_chrome_height)  [negative → nav moves up]
-  // This keeps the nav exactly at the top edge of the browser toolbar at all times.
-  // On iOS Safari (which already handles fixed-bottom correctly) we skip this.
+  // Fix iOS Chrome: fixed elements don't reposition when the browser toolbar
+  // shows/hides. bottom: calc(100vh - 100dvh) solves this:
+  //   100vh  = layout viewport (large, constant — doesn't shrink with toolbar)
+  //   100dvh = dynamic viewport (tracks visual viewport — shrinks when toolbar shows)
+  //   diff   = toolbar height → nav sits exactly above the toolbar
+  // When toolbar hides: dvh → vh → diff → 0 → bottom: 0 → nav at physical bottom.
+  // iOS Safari already handles fixed-bottom correctly, so we skip it.
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
     // CriOS = iOS Chrome; FxiOS = Firefox iOS; EdgiOS = Edge iOS (all have this bug)
     const isAffected = /CriOS|FxiOS|EdgiOS/.test(navigator.userAgent);
     if (!isAffected) return;
-    // Verify the browser supports dvh + lvh before applying
-    if (!CSS.supports("height", "1dvh") || !CSS.supports("height", "1lvh")) return;
-    nav.style.transform = "translateY(calc(100dvh - 100lvh))";
+    if (!CSS.supports("height", "1dvh")) return;
+    nav.style.bottom = "calc(100vh - 100dvh)";
   }, []);
 
   return (
