@@ -200,16 +200,13 @@ const BundleDownloadPage = () => {
     if (!bundle || !token) return;
     const totalFiles = bundle.documents.length + bundle.images.length;
 
-    // Single file → direct download (no ZIP needed)
-    if (totalFiles === 1) {
+    // Single document (no images) → direct download
+    if (totalFiles === 1 && bundle.images.length === 0) {
       setDownloadingId("all");
       try {
         await supabase.rpc("increment_bundle_download", { p_token: token });
-        const item = bundle.documents[0] || bundle.images[0];
-        const url = bundle.documents[0]
-          ? getPublicDownloadUrl(bundle.documents[0].file_path)
-          : getImageOriginalUrl("picks-images", bundle.images[0].file_path);
-        await triggerDownload(url, item.file_name);
+        const doc = bundle.documents[0];
+        await triggerDownload(getPublicDownloadUrl(doc.file_path), doc.file_name);
         setDownloaded(true);
       } catch (err) {
         console.error("Download error:", err);
@@ -218,6 +215,7 @@ const BundleDownloadPage = () => {
       }
       return;
     }
+    // Bilder immer als ZIP (damit BILDRECHTE.txt enthalten ist)
 
     // Multiple files → ZIP download
     setDownloadingId("all");
@@ -437,42 +435,27 @@ const BundleDownloadPage = () => {
 
           {/* Datei-Liste */}
           <div className="px-6 py-4 space-y-2 max-h-64 overflow-y-auto">
-            {/* Bilder aus Picks */}
+            {/* Bilder aus Picks — kein Einzel-Download, nur ZIP */}
             {bundle.images.map((img) => (
               <div
                 key={img.id}
-                className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg hover:bg-gray-50 group"
+                className="flex items-center gap-3 py-2 px-3 rounded-lg"
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
-                    {img.thumbnail_url ? (
-                      <img src={img.thumbnail_url} alt={img.file_name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                        <ImageIcon className="w-4 h-4 text-gray-400" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{img.file_name}</p>
-                    <p className="text-xs text-gray-400">
-                      {getFileExtension(img.file_name)?.toUpperCase()}
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleDownloadSingle(img)}
-                  disabled={downloadingId === img.id}
-                  className="shrink-0 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-900"
-                >
-                  {downloadingId === img.id ? (
-                    <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
+                  {img.thumbnail_url ? (
+                    <img src={img.thumbnail_url} alt={img.file_name} className="w-full h-full object-cover" />
                   ) : (
-                    <Download className="w-4 h-4" />
+                    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                      <ImageIcon className="w-4 h-4 text-gray-400" />
+                    </div>
                   )}
-                </Button>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{img.file_name}</p>
+                  <p className="text-xs text-gray-400">
+                    {getFileExtension(img.file_name)?.toUpperCase()}
+                  </p>
+                </div>
               </div>
             ))}
             {/* Dokumente */}
