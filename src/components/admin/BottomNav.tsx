@@ -1,6 +1,7 @@
 import { CalendarDays, MapPin, Plane, Heart, CloudDownload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { haptics } from "@/lib/haptics";
+import { useEffect, useRef } from "react";
 
 interface BottomNavProps {
   activeTab: string;
@@ -11,13 +12,37 @@ const navItems = [
   { id: "calendar", label: "Plan", icon: CalendarDays },
   { id: "map", label: "Tour", icon: MapPin },
   { id: "travel", label: "Trips", icon: Plane },
-  { id: "picks", label: "Picks", icon: Heart },
   { id: "documents", label: "Drops", icon: CloudDownload },
+  { id: "picks", label: "Picks", icon: Heart },
 ];
 
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
+  const navRef = useRef<HTMLElement>(null);
+
+  // Fix iOS Chrome: sync nav position with visual viewport so it follows
+  // the browser toolbar when it slides in/out on scroll
+  useEffect(() => {
+    const nav = navRef.current;
+    const vv = window.visualViewport;
+    if (!nav || !vv) return;
+
+    const update = () => {
+      const offset = Math.max(0, window.innerHeight - vv.offsetTop - vv.height);
+      nav.style.bottom = `${offset}px`;
+    };
+
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    update();
+
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
+  }, []);
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden safe-area-bottom">
+    <nav ref={navRef} className="fixed bottom-0 left-0 right-0 z-50 md:hidden safe-area-bottom">
       {/* Glass background */}
       <div className="bg-background/80 backdrop-blur-xl border-t border-border/60 shadow-lg">
         {/* Safe area padding for iPhone notch + home indicator */}
