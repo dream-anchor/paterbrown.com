@@ -167,11 +167,11 @@ const PicksPanel = () => {
     setPageDragActive(false);
 
     if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/") || f.type.startsWith("video/"));
       if (files.length === 0) {
         toast({
-          title: "Keine Bilder",
-          description: "Bitte nur Bilddateien ablegen.",
+          title: "Keine Medien",
+          description: "Bitte nur Bild- oder Videodateien ablegen.",
           variant: "destructive",
         });
         return;
@@ -527,9 +527,14 @@ const PicksPanel = () => {
     
     addFiles(files, "picks", { folderId: currentAlbumId });
     
+    const videoCount = files.filter(f => f.type.startsWith("video/")).length;
+    const imageCount = files.length - videoCount;
+    const parts: string[] = [];
+    if (imageCount > 0) parts.push(`${imageCount} Bild${imageCount > 1 ? "er" : ""}`);
+    if (videoCount > 0) parts.push(`${videoCount} Video${videoCount > 1 ? "s" : ""}`);
     toast({
       title: "Upload gestartet",
-      description: `${files.length} Bild${files.length > 1 ? "er" : ""} werden hochgeladen...`,
+      description: `${parts.join(" und ")} ${files.length > 1 ? "werden" : "wird"} hochgeladen...`,
     });
   };
 
@@ -906,7 +911,7 @@ const PicksPanel = () => {
             <Input
               id="image-upload"
               type="file"
-              accept="image/*"
+              accept="image/*,video/mp4,video/quicktime,video/webm,video/x-m4v"
               multiple
               onChange={handleFileUpload}
               className="hidden"
@@ -1384,7 +1389,7 @@ const PicksPanel = () => {
             .insert({
               created_by: user.id,
               image_ids: ids,
-              label: `${ids.length} Fotos aus Picks`,
+              label: `${ids.length} Medien aus Picks`,
               photographer_name: photographerName,
               project_name: projectName,
               contact_email: contactEmail,
@@ -1395,7 +1400,7 @@ const PicksPanel = () => {
             return;
           }
 
-          toast({ title: `✓ ${ids.length} Fotos als Paket vorbereitet`, description: "Wechsle zu Drops…" });
+          toast({ title: `✓ ${ids.length} Medien als Paket vorbereitet`, description: "Wechsle zu Drops…" });
           setSearchParams({ tab: "documents" });
         } : undefined}
       />

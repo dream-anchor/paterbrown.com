@@ -10,6 +10,7 @@ export interface ImageData {
   folder_id: string | null;
   uploaded_by: string | null;
   created_at: string;
+  mime_type?: string | null;
 }
 
 export interface AlbumData {

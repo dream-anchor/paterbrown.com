@@ -98,6 +98,76 @@ export const generateImageVersions = async (
 };
 
 /**
+ * Extract a thumbnail from a video file by grabbing a frame at ~10% duration.
+ * Returns a WebP blob suitable for use as thumbnail_url.
+ */
+export const extractVideoThumbnail = (
+  file: File,
+  maxSize: number = 400,
+  quality: number = 0.75
+): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.muted = true;
+    video.playsInline = true;
+
+    video.onloadeddata = () => {
+      // Seek to 10% of duration or 1 second, whichever is smaller
+      video.currentTime = Math.min(1, video.duration * 0.1);
+    };
+
+    video.onseeked = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        URL.revokeObjectURL(video.src);
+        reject(new Error("Could not get canvas context"));
+        return;
+      }
+
+      let { videoWidth: width, videoHeight: height } = video;
+
+      // Scale down maintaining aspect ratio
+      if (width > height) {
+        if (width > maxSize) {
+          height = Math.round((height * maxSize) / width);
+          width = maxSize;
+        }
+      } else {
+        if (height > maxSize) {
+          width = Math.round((width * maxSize) / height);
+          height = maxSize;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(video, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          URL.revokeObjectURL(video.src);
+          if (blob) resolve(blob);
+          else reject(new Error("Failed to create video thumbnail blob"));
+        },
+        "image/webp",
+        quality
+      );
+    };
+
+    video.onerror = () => {
+      URL.revokeObjectURL(video.src);
+      reject(new Error("Failed to load video for thumbnail extraction"));
+    };
+
+    video.src = URL.createObjectURL(file);
+  });
+};
+
+/**
  * Check if image needs resizing (already small enough)
  */
 export const shouldResize = async (file: File): Promise<boolean> => {

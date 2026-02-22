@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { generateImageVersions, generateFilePaths } from "@/lib/imageResizer";
+import { generateImageVersions, generateFilePaths, extractVideoThumbnail } from "@/lib/imageResizer";
 
 // ============ TYPES ============
 
@@ -229,6 +229,7 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             title: uploadFile.displayName || uploadFile.file.name.replace(/\.[^/.]+$/, ""),
             uploaded_by: user?.id || null,
             folder_id: uploadFile.folderId || null,
+            mime_type: uploadFile.file.type || null,
           });
         
         if (dbError) {
@@ -245,6 +246,96 @@ export const UploadProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 publicUrl: originalUrl.publicUrl,
                 thumbnailUrl: thumbnailUrl.publicUrl,
                 previewUrl: previewUrl.publicUrl,
+                r2Key: originalUrl.r2Key,
+                savedToDb: true,
+              }
+            : f
+        ));
+
+      } else if (uploadFile.folder === "picks" && uploadFile.file.type.startsWith("video/")) {
+        // === VIDEO UPLOAD (picks): original + extracted thumbnail ===
+        console.log(`[Upload] Extracting video thumbnail for ${uploadFile.file.name}...`);
+
+        let thumbnailBlob: Blob | null = null;
+        try {
+          thumbnailBlob = await extractVideoThumbnail(uploadFile.file);
+        } catch (err) {
+          console.warn(`[Upload] Video thumbnail extraction failed, uploading without thumbnail:`, err);
+        }
+
+        const paths = generateFilePaths(uploadFile.file.name, "picks");
+
+        // Build presigned URL request: always original, optionally thumbnail
+        const presignedFiles: { fileName: string; contentType: string; folder: string; customPath: string }[] = [];
+        if (thumbnailBlob) {
+          presignedFiles.push({ fileName: "thumbnail.webp", contentType: "image/webp", folder: "picks", customPath: paths.thumbnailPath });
+        }
+        presignedFiles.push({ fileName: uploadFile.file.name, contentType: uploadFile.file.type, folder: "picks", customPath: paths.originalPath });
+
+        const { data: presignedData, error: presignedError } = await supabase.functions.invoke(
+          "get-presigned-url",
+          { body: { files: presignedFiles } }
+        );
+
+        if (presignedError || !presignedData?.success) {
+          throw new Error(presignedData?.error || presignedError?.message || "Failed to get presigned URLs");
+        }
+
+        const urls = presignedData.urls;
+        let thumbnailPublicUrl: string | null = null;
+        let originalUrl: typeof urls[0];
+
+        if (thumbnailBlob) {
+          const thumbUrlInfo = urls[0];
+          originalUrl = urls[1];
+
+          let thumbProgress = 0;
+          let origProgress = 0;
+          const updateCombined = () => {
+            const combined = (thumbProgress * 0.1) + (origProgress * 0.9);
+            setFiles(prev => prev.map(f => f.id === fileId ? { ...f, progress: Math.round(combined) } : f));
+          };
+
+          await Promise.all([
+            uploadWithProgress(thumbUrlInfo.uploadUrl, thumbnailBlob, "image/webp", abortController.signal, (p) => { thumbProgress = p; updateCombined(); }),
+            uploadWithProgress(originalUrl.uploadUrl, uploadFile.file, uploadFile.file.type, abortController.signal, (p) => { origProgress = p; updateCombined(); }),
+          ]);
+          thumbnailPublicUrl = thumbUrlInfo.publicUrl;
+        } else {
+          originalUrl = urls[0];
+          await uploadWithProgress(
+            originalUrl.uploadUrl, uploadFile.file, uploadFile.file.type, abortController.signal,
+            (progress) => { setFiles(prev => prev.map(f => f.id === fileId ? { ...f, progress } : f)); }
+          );
+        }
+
+        console.log(`[Upload] Video uploaded, saving to database...`);
+
+        const { error: dbError } = await supabase
+          .from("images")
+          .insert({
+            file_name: uploadFile.file.name,
+            file_path: originalUrl.publicUrl,
+            thumbnail_url: thumbnailPublicUrl,
+            preview_url: null,
+            title: uploadFile.displayName || uploadFile.file.name.replace(/\.[^/.]+$/, ""),
+            uploaded_by: user?.id || null,
+            folder_id: uploadFile.folderId || null,
+            mime_type: uploadFile.file.type,
+          });
+
+        if (dbError) {
+          console.error("DB insert error for video:", dbError);
+        }
+
+        setFiles(prev => prev.map(f =>
+          f.id === fileId
+            ? {
+                ...f,
+                status: "success" as UploadStatus,
+                progress: 100,
+                publicUrl: originalUrl.publicUrl,
+                thumbnailUrl: thumbnailPublicUrl || undefined,
                 r2Key: originalUrl.r2Key,
                 savedToDb: true,
               }

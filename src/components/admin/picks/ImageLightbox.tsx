@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ImageData, VoteStatus, ImageVote } from "./types";
-import { getImageOriginalUrl } from "@/lib/documentUtils";
+import { getImageOriginalUrl, isVideoFile } from "@/lib/documentUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileLightbox from "./MobileLightbox";
 
@@ -220,24 +220,45 @@ const ImageLightbox = ({
             </button>
           )}
 
-          {/* Image */}
-          <motion.img
-            key={image.id}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            src={getDisplayUrl(image)}
-            alt={image.title || image.file_name}
-            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
-          
-          {/* Missing preview indicator */}
-          {isMissingPreview && (
-            <div className="absolute top-16 right-4 bg-amber-500/80 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-2">
-              <span>⚠️ Original wird geladen (Preview fehlt)</span>
-            </div>
+          {/* Image or Video */}
+          {isVideoFile(image.mime_type, image.file_name) ? (
+            <motion.div
+              key={image.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <video
+                src={getImageOriginalUrl("picks-images", image.file_path)}
+                controls
+                autoPlay
+                playsInline
+                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+              />
+            </motion.div>
+          ) : (
+            <>
+              <motion.img
+                key={image.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                src={getDisplayUrl(image)}
+                alt={image.title || image.file_name}
+                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+
+              {/* Missing preview indicator */}
+              {isMissingPreview && (
+                <div className="absolute top-16 right-4 bg-amber-500/80 text-white px-3 py-1.5 rounded-lg text-xs flex items-center gap-2">
+                  <span>Original wird geladen (Preview fehlt)</span>
+                </div>
+              )}
+            </>
           )}
 
           {/* Image info - bottom left */}

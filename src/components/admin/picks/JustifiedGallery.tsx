@@ -5,12 +5,13 @@ import {
   HelpCircle,
   XCircle,
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  Play
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ImageData, VoteStatus, ImageVote } from "./types";
-import { getImageThumbnailUrl } from "@/lib/documentUtils";
+import { getImageThumbnailUrl, isVideoFile } from "@/lib/documentUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface JustifiedGalleryProps {
@@ -200,25 +201,67 @@ const MasonryItem = ({
         </div>
       )}
 
-      {/* Image — w-full + h-auto = natural aspect ratio, no cropping */}
+      {/* Media — w-full + h-auto = natural aspect ratio, no cropping */}
       {isInView && !loadError && !isRetrying && (
-        <img
-          src={getDisplayUrl()}
-          alt={image.title || image.file_name}
-          className={cn(
-            "w-full h-auto block transition-transform duration-300",
-            isHovered && "scale-[1.03]",
-            !imageLoaded && "hidden"
-          )}
-          loading={index < 20 ? "eager" : "lazy"}
-          decoding={index < 20 ? "sync" : "async"}
-          fetchPriority={index < 10 ? "high" : "auto"}
-          onLoad={() => {
-            setImageLoaded(true);
-            setLoadError(false);
-          }}
-          onError={handleImageError}
-        />
+        isVideoFile(image.mime_type, image.file_name) ? (
+          <>
+            {/* Video: show thumbnail if available, otherwise poster-like element */}
+            {image.thumbnail_url ? (
+              <img
+                src={image.thumbnail_url}
+                alt={image.title || image.file_name}
+                className={cn(
+                  "w-full h-auto block transition-transform duration-300",
+                  isHovered && "scale-[1.03]",
+                  !imageLoaded && "hidden"
+                )}
+                loading={index < 20 ? "eager" : "lazy"}
+                onLoad={() => { setImageLoaded(true); setLoadError(false); }}
+                onError={handleImageError}
+              />
+            ) : (
+              <video
+                src={image.file_path}
+                muted
+                playsInline
+                preload="metadata"
+                className={cn(
+                  "w-full h-auto block transition-transform duration-300",
+                  isHovered && "scale-[1.03]",
+                  !imageLoaded && "hidden"
+                )}
+                onLoadedData={() => { setImageLoaded(true); setLoadError(false); }}
+                onError={() => handleImageError()}
+              />
+            )}
+            {/* Video play badge */}
+            {imageLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="bg-black/50 backdrop-blur-sm rounded-full p-3 shadow-lg">
+                  <Play className="w-6 h-6 text-white fill-white" />
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <img
+            src={getDisplayUrl()}
+            alt={image.title || image.file_name}
+            className={cn(
+              "w-full h-auto block transition-transform duration-300",
+              isHovered && "scale-[1.03]",
+              !imageLoaded && "hidden"
+            )}
+            loading={index < 20 ? "eager" : "lazy"}
+            decoding={index < 20 ? "sync" : "async"}
+            fetchPriority={index < 10 ? "high" : "auto"}
+            onLoad={() => {
+              setImageLoaded(true);
+              setLoadError(false);
+            }}
+            onError={handleImageError}
+          />
+        )
       )}
 
       {/* Overlays — all absolute, work correctly over natural-height image */}

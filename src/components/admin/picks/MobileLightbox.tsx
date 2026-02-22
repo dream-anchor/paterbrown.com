@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ImageData, VoteStatus, ImageVote } from "./types";
-import { getImageOriginalUrl } from "@/lib/documentUtils";
+import { getImageOriginalUrl, isVideoFile } from "@/lib/documentUtils";
 import { haptics } from "@/lib/haptics";
 
 interface MobileLightboxProps {
@@ -181,20 +181,39 @@ const MobileLightbox = ({
             </div>
           )}
           
-          <motion.img
-            key={image.id}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.2}
-            onDragEnd={handleDragEnd}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            src={getDisplayUrl(image)}
-            alt={image.title || image.file_name}
-            className="max-w-full max-h-full object-contain rounded-lg touch-pan-y"
-          />
+          {isVideoFile(image.mime_type, image.file_name) ? (
+            <motion.div
+              key={image.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="w-full flex items-center justify-center"
+            >
+              <video
+                src={getImageOriginalUrl("picks-images", image.file_path)}
+                controls
+                autoPlay
+                playsInline
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            </motion.div>
+          ) : (
+            <motion.img
+              key={image.id}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={handleDragEnd}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              src={getDisplayUrl(image)}
+              alt={image.title || image.file_name}
+              className="max-w-full max-h-full object-contain rounded-lg touch-pan-y"
+            />
+          )}
         </div>
 
         {/* Bottom panel - voting and actions - ABOVE main nav */}

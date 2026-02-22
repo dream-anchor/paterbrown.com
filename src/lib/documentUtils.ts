@@ -67,6 +67,15 @@ export function isImageFile(contentType: string | null, fileName: string): boole
   return getFileTypeGroup(contentType, fileName) === "images";
 }
 
+/**
+ * Check if a file is a video based on MIME type or extension.
+ * Works with ImageData.mime_type or File.type.
+ */
+export function isVideoFile(mimeType: string | null | undefined, fileName: string): boolean {
+  if (mimeType?.startsWith("video/")) return true;
+  return /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(fileName);
+}
+
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 B";
   

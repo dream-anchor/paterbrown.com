@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { Folder, Trash2, Image as ImageIcon, ChevronRight, Camera, Mail, Phone } from "lucide-react";
+import { Folder, Trash2, Image as ImageIcon, ChevronRight, Camera, Mail, Phone, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AlbumData, ImageData } from "./types";
+import { isVideoFile } from "@/lib/documentUtils";
 
 interface AlbumCardProps {
   album: AlbumData;
@@ -49,13 +50,39 @@ const AlbumCard = ({
         <div className="aspect-[4/3] relative overflow-hidden">
           {hasImages ? (
             <>
-              {/* Main cover image - use thumbnail for performance */}
-              <img
-                src={previewImages[0].thumbnail_url || previewImages[0].file_path}
-                alt=""
-                className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                loading="lazy"
-              />
+              {/* Main cover — thumbnail for images, thumbnail or video element for videos */}
+              {isVideoFile(previewImages[0].mime_type, previewImages[0].file_name) ? (
+                <>
+                  {previewImages[0].thumbnail_url ? (
+                    <img
+                      src={previewImages[0].thumbnail_url}
+                      alt=""
+                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <video
+                      src={previewImages[0].file_path}
+                      muted
+                      playsInline
+                      preload="metadata"
+                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                    />
+                  )}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[1]">
+                    <div className="bg-black/40 backdrop-blur-sm rounded-full p-2">
+                      <Play className="w-5 h-5 text-white fill-white" />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <img
+                  src={previewImages[0].thumbnail_url || previewImages[0].file_path}
+                  alt=""
+                  className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+              )}
               
               {/* Stacked effect - subtle offset cards behind */}
               <div className="absolute inset-0 pointer-events-none">

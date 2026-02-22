@@ -491,6 +491,7 @@ export type Database = {
           file_path: string
           folder_id: string | null
           id: string
+          mime_type: string | null
           preview_url: string | null
           thumbnail_url: string | null
           title: string | null
@@ -505,6 +506,7 @@ export type Database = {
           file_path: string
           folder_id?: string | null
           id?: string
+          mime_type?: string | null
           preview_url?: string | null
           thumbnail_url?: string | null
           title?: string | null
@@ -519,6 +521,7 @@ export type Database = {
           file_path?: string
           folder_id?: string | null
           id?: string
+          mime_type?: string | null
           preview_url?: string | null
           thumbnail_url?: string | null
           title?: string | null
