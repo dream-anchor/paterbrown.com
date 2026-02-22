@@ -1,0 +1,1 @@
+CREATE POLICY "anon_read_votes" ON public.image_votes FOR SELECT TO anon USING (true);
