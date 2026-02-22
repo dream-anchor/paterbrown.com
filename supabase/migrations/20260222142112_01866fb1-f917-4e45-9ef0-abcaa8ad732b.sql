@@ -1,0 +1,1 @@
+CREATE POLICY "anon_read_folders" ON public.picks_folders FOR SELECT TO anon USING (true);
