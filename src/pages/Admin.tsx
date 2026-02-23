@@ -55,7 +55,8 @@ const Admin = () => {
   const [dataVersion, setDataVersion] = useState(0);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [selectedSearchEvent, setSelectedSearchEvent] = useState<any>(null);
-  const [mapSubTab, setMapSubTab] = useState<"karte" | "vvk">("karte");
+  // Map sub-tab derived from URL for deep-linking
+  const mapSubTab = (searchParams.get("subtab") === "vvk" ? "vvk" : "karte") as "karte" | "vvk";
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -447,7 +448,11 @@ const Admin = () => {
             {/* Sub-tab navigation: Karte / VVK-Freigabe */}
             <div className="flex items-center gap-1 px-4 py-2 bg-white border-b border-gray-100">
               <button
-                onClick={() => setMapSubTab("karte")}
+                onClick={() => {
+                  const newParams = new URLSearchParams(searchParams);
+                  newParams.delete("subtab");
+                  setSearchParams(newParams);
+                }}
                 className={cn(
                   "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all min-h-[44px]",
                   mapSubTab === "karte"
@@ -459,7 +464,11 @@ const Admin = () => {
                 Karte
               </button>
               <button
-                onClick={() => setMapSubTab("vvk")}
+                onClick={() => {
+                  const newParams = new URLSearchParams(searchParams);
+                  newParams.set("subtab", "vvk");
+                  setSearchParams(newParams);
+                }}
                 className={cn(
                   "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all min-h-[44px]",
                   mapSubTab === "vvk"

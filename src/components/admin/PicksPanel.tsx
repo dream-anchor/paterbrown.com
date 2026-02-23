@@ -87,9 +87,23 @@ const PicksPanel = ({ isAdmin = false }: PicksPanelProps) => {
     } else {
       newParams.delete("album");
     }
+    newParams.delete("image"); // close lightbox when changing album
     setSearchParams(newParams, { replace: true });
   }, [searchParams, setSearchParams]);
-  
+
+  // Lightbox URL helpers
+  const openLightbox = useCallback((image: ImageData) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("image", image.id);
+    setSearchParams(newParams); // push → browser back closes lightbox
+  }, [searchParams, setSearchParams]);
+
+  const closeLightbox = useCallback(() => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("image");
+    setSearchParams(newParams, { replace: true });
+  }, [searchParams, setSearchParams]);
+
   // Selection state
   const [selectedImageIds, setSelectedImageIds] = useState<Set<string>>(new Set());
   // New album dialog
@@ -112,8 +126,8 @@ const PicksPanel = ({ isAdmin = false }: PicksPanelProps) => {
   const [editContactEmail, setEditContactEmail] = useState("");
   const [isSavingAlbum, setIsSavingAlbum] = useState(false);
 
-  // Lightbox state
-  const [lightboxImage, setLightboxImage] = useState<ImageData | null>(null);
+  // Lightbox state — derived from URL for deep-linking + browser back support
+  const urlImageId = searchParams.get("image");
 
   // Move dialog state
   const [showMoveDialog, setShowMoveDialog] = useState(false);
@@ -330,6 +344,12 @@ const PicksPanel = ({ isAdmin = false }: PicksPanelProps) => {
 
     return result;
   }, [currentImages, votes, selectedUserIds, minApprovals]);
+
+  // Lightbox image derived from URL — enables deep-linking and browser back
+  const lightboxImage = useMemo(() => {
+    if (!urlImageId) return null;
+    return filteredImages.find(img => img.id === urlImageId) || null;
+  }, [urlImageId, filteredImages]);
 
   // Check if current user can delete an item (owner or admin)
   const canDeleteItem = useCallback((item: ImageData | AlbumData) => {
@@ -608,7 +628,7 @@ const PicksPanel = ({ isAdmin = false }: PicksPanelProps) => {
       // Remove from local state (it's now in trash)
       setImages((prev) => prev.filter((i) => i.id !== image.id));
       setVotes((prev) => prev.filter((v) => v.image_id !== image.id));
-      setLightboxImage(null);
+      closeLightbox();
       toast({ 
         title: "In Papierkorb", 
         description: "Kann 90 Tage lang wiederhergestellt werden"
@@ -746,13 +766,15 @@ const PicksPanel = ({ isAdmin = false }: PicksPanelProps) => {
     });
   };
 
-  // Lightbox navigation
+  // Lightbox navigation — replace (not push) so back button closes lightbox, not steps through images
   const handleLightboxNavigate = (direction: 'prev' | 'next') => {
     if (!lightboxImage) return;
     const currentIndex = filteredImages.findIndex(img => img.id === lightboxImage.id);
     const newIndex = direction === 'prev' ? currentIndex - 1 : currentIndex + 1;
     if (newIndex >= 0 && newIndex < filteredImages.length) {
-      setLightboxImage(filteredImages[newIndex]);
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("image", filteredImages[newIndex].id);
+      setSearchParams(newParams, { replace: true });
     }
   };
 
@@ -1059,7 +1081,7 @@ const PicksPanel = ({ isAdmin = false }: PicksPanelProps) => {
             currentUserId={currentUserId}
             selectedImageIds={selectedImageIds}
             onSelect={handleSelectImage}
-            onOpen={setLightboxImage}
+            onOpen={openLightbox}
             onVote={handleVote}
             targetRowHeight={220}
             gap={4}
@@ -1412,7 +1434,7 @@ const PicksPanel = ({ isAdmin = false }: PicksPanelProps) => {
         images={filteredImages}
         votes={votes}
         currentUserId={currentUserId}
-        onClose={() => setLightboxImage(null)}
+        onClose={() => closeLightbox()}
         onNavigate={handleLightboxNavigate}
         onVote={handleVote}
         onDownload={handleDownloadImage}
