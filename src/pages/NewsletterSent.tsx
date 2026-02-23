@@ -1,77 +1,62 @@
-import logoImage from "@/assets/pater-brown-logo.png";
+import { Link } from "react-router-dom";
+import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { SEO } from "@/components/SEO";
+import Section from "@/components/ui/Section";
+import GhostButton from "@/components/ui/GhostButton";
 import { Mail } from "lucide-react";
-import { Link } from "react-router-dom";
 
 const NewsletterSent = () => {
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
-      <SEO 
-        title="E-Mail bestätigen"
-        description="Bitte bestätigen Sie Ihre Newsletter-Anmeldung per E-Mail."
+    <div className="min-h-screen flex flex-col bg-background">
+      <SEO
+        title="E-Mail best\u00E4tigen"
+        description="Bitte best\u00E4tigen Sie Ihre Newsletter-Anmeldung per E-Mail."
         robots="noindex, nofollow"
         canonical="/newsletter-gesendet"
-        ogTitle="E-Mail bestätigen | Pater Brown Live-Hörspiel"
-        ogDescription="Bitte bestätigen Sie Ihre Newsletter-Anmeldung per E-Mail."
+        ogTitle="E-Mail best\u00E4tigen | Pater Brown Live-H\u00F6rspiel"
+        ogDescription="Bitte best\u00E4tigen Sie Ihre Newsletter-Anmeldung per E-Mail."
       />
-      <div className="absolute inset-0 bg-background" />
-      
-      <main className="flex-grow flex items-center justify-center px-6 py-20 relative z-10">
-        <div className="max-w-4xl w-full text-center">
-          {/* Logo */}
-          <div className="mb-16 cinematic-enter">
-            <Link to="/" aria-label="Zurück zur Startseite">
-              <img 
-                src={logoImage} 
-                alt="Pater Brown - Das Live-Hörspiel" 
-                className="w-full max-w-md mx-auto h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)] cursor-pointer hover:scale-105 transition-transform duration-300"
-              />
-            </Link>
-          </div>
+      <Navigation />
 
-          {/* Icon */}
-          <div className="cinematic-enter inline-flex items-center justify-center w-20 h-20 rounded-full bg-gold/10 border-2 border-gold/30 mb-8" style={{ animationDelay: "0.1s" }}>
-            <Mail className="w-10 h-10 text-gold" />
-          </div>
+      <main className="flex-1 pt-32 pb-16">
+        <Section container="narrow">
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-[3px] bg-primary/10 border border-primary/30 mb-8">
+              <Mail className="w-10 h-10 text-primary" />
+            </div>
 
-          {/* Bestätigungstext */}
-          <div className="space-y-8 mb-16 cinematic-enter" style={{ animationDelay: "0.2s" }}>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-[0.1em] text-foreground/95 leading-tight">
+            <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+              Newsletter
+            </p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading text-foreground mb-4">
               Fast geschafft!
             </h1>
-            
-            <div className="divider-gold w-32 mx-auto my-8" aria-hidden="true" />
-            
-            <div className="space-y-4 max-w-2xl mx-auto">
-              <p className="text-xl md:text-2xl text-gold/90 font-light leading-relaxed">
-                Wir haben dir eine Bestätigungs-E-Mail gesendet.
+            <div className="divider-gold mb-12 max-w-[120px] mx-auto" aria-hidden="true" />
+
+            <div className="space-y-6 max-w-2xl mx-auto font-serif text-foreground/70 leading-relaxed tracking-[0.03em]">
+              <p className="text-xl text-primary">
+                Wir haben dir eine Best{"\u00E4"}tigungs-E-Mail gesendet.
               </p>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                Bitte überprüfe dein Postfach und klicke auf den Bestätigungslink, um deine Anmeldung abzuschließen.
+              <p className="text-lg">
+                Bitte {"\u00FC"}berpr{"\u00FC"}fe dein Postfach und klicke auf den Best{"\u00E4"}tigungslink,
+                um deine Anmeldung abzuschlie{"\u00DF"}en.
               </p>
-              <p className="text-sm text-muted-foreground/70 mt-6">
-                Keine E-Mail erhalten? Überprüfe auch deinen Spam-Ordner.
+              <p className="text-sm text-foreground/50 mt-6">
+                Keine E-Mail erhalten? {"\u00DC"}berpr{"\u00FC"}fe auch deinen Spam-Ordner.
               </p>
             </div>
-          </div>
 
-          {/* Zurück zur Startseite */}
-          <Link 
-            to="/"
-            className="cinematic-enter inline-block"
-            style={{ animationDelay: "0.4s" }}
-          >
-            <button className="btn-premium">
-              Zurück zur Startseite
-            </button>
-          </Link>
-        </div>
+            <div className="mt-12">
+              <GhostButton to="/">
+                Zur{"\u00FC"}ck zur Startseite
+              </GhostButton>
+            </div>
+          </div>
+        </Section>
       </main>
 
-      <div className="relative z-10">
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };

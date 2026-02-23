@@ -1,67 +1,49 @@
-import logoImage from "@/assets/pater-brown-logo.png";
+import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { SEO } from "@/components/SEO";
+import Section from "@/components/ui/Section";
+import GhostButton from "@/components/ui/GhostButton";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
-import { Link } from "react-router-dom";
 
 const NewsletterThankYou = () => {
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
-      <SEO 
-        title="Newsletter bestätigt"
-        description="Vielen Dank! Ihre Newsletter-Anmeldung wurde erfolgreich bestätigt."
+    <div className="min-h-screen flex flex-col bg-background">
+      <SEO
+        title="Newsletter best\u00E4tigt"
+        description="Vielen Dank! Ihre Newsletter-Anmeldung wurde erfolgreich best\u00E4tigt."
         robots="noindex, nofollow"
         canonical="/danke-newsletter"
-        ogTitle="Newsletter bestätigt | Pater Brown Live-Hörspiel"
-        ogDescription="Vielen Dank! Ihre Newsletter-Anmeldung wurde erfolgreich bestätigt."
+        ogTitle="Newsletter best\u00E4tigt | Pater Brown Live-H\u00F6rspiel"
+        ogDescription="Vielen Dank! Ihre Newsletter-Anmeldung wurde erfolgreich best\u00E4tigt."
       />
-      <div className="absolute inset-0 bg-background" />
-      
-      <main className="flex-grow flex items-center justify-center px-6 py-20 relative z-10">
-        <div className="max-w-4xl w-full text-center">
-          {/* Logo */}
-          <div className="mb-16 cinematic-enter">
-            <Link to="/" aria-label="Zurück zur Startseite">
-              <img 
-                src={logoImage} 
-                alt="Pater Brown - Das Live-Hörspiel" 
-                className="w-full max-w-md mx-auto h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)] cursor-pointer hover:scale-105 transition-transform duration-300"
-              />
-            </Link>
-          </div>
+      <Navigation />
 
-          {/* Dankestext */}
-          <div className="space-y-8 mb-16 cinematic-enter" style={{ animationDelay: "0.2s" }}>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-light tracking-[0.1em] text-foreground/95 leading-tight">
-              Vielen Dank für deine Anmeldung!
-            </h1>
-            
-            <div className="divider-gold w-32 mx-auto my-8" aria-hidden="true" />
-            
-            <p className="text-xl md:text-2xl text-gold/90 font-light leading-relaxed">
-              Du erhältst ab sofort alle News und Updates direkt in dein Postfach.
+      <main className="flex-1 pt-32 pb-16">
+        <Section container="narrow">
+          <div className="text-center">
+            <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+              Newsletter
             </p>
-          </div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading text-foreground mb-4">
+              Vielen Dank!
+            </h1>
+            <div className="divider-gold mb-12 max-w-[120px] mx-auto" aria-hidden="true" />
 
-          {/* CTA Button */}
-          <a 
-            href={EVENTIM_AFFILIATE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="cinematic-enter inline-block"
-            style={{ animationDelay: "0.4s" }}
-            aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen"
-          >
-            <button className="btn-premium">
-              <span aria-hidden="true">🎟</span> Tickets sichern
-            </button>
-          </a>
-        </div>
+            <p className="text-xl font-serif text-primary leading-relaxed max-w-2xl mx-auto mb-12">
+              Du erh{"\u00E4"}ltst ab sofort alle News und Updates direkt in dein Postfach.
+            </p>
+
+            <GhostButton
+              href={EVENTIM_AFFILIATE_URL}
+              aria-label="Tickets f\u00FCr Pater Brown Live-H\u00F6rspiel bei Eventim kaufen"
+            >
+              Tickets sichern
+            </GhostButton>
+          </div>
+        </Section>
       </main>
 
-      <div className="relative z-10">
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };
