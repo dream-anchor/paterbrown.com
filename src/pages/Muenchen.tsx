@@ -7,6 +7,10 @@ const config: CityPageConfig = {
   cityFilter: "München",
   addressRegion: "Bayern",
   addressCountry: "DE",
+  nearbyCities: [
+    { slug: "erding", name: "Erding" },
+    { slug: "kempten", name: "Kempten" },
+  ],
   venue: {
     name: "Alte Kongresshalle",
     address: "Theresienhöhe 15, 80339 München (Schwanthalerhöhe)",

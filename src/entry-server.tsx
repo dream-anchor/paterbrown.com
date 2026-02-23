@@ -35,6 +35,14 @@ import Hoerspiel from "./pages/Hoerspiel";
 import GKChesterton from "./pages/GKChesterton";
 import FatherBrown from "./pages/FatherBrown";
 import KrimiHoerspiel from "./pages/KrimiHoerspiel";
+import Leipzig from "./pages/Leipzig";
+import Stuttgart from "./pages/Stuttgart";
+import Zuerich from "./pages/Zuerich";
+import BaunatalKassel from "./pages/BaunatalKassel";
+import Giessen from "./pages/Giessen";
+import Kempten from "./pages/Kempten";
+import Erding from "./pages/Erding";
+import NeuIsenburg from "./pages/NeuIsenburg";
 
 /** Mapping: Stadtseiten-URL → Supabase city-Filter */
 const CITY_ROUTES: Record<string, string> = {
@@ -43,6 +51,14 @@ const CITY_ROUTES: Record<string, string> = {
   "/koeln": "Köln",
   "/berlin": "Berlin",
   "/bremen": "Bremen",
+  "/leipzig": "Leipzig",
+  "/stuttgart": "Stuttgart",
+  "/zuerich": "Zürich",
+  "/baunatal-kassel": "Baunatal",
+  "/giessen": "Gießen",
+  "/kempten": "Kempten",
+  "/erding": "Erding",
+  "/neu-isenburg": "Neu-Isenburg",
 };
 
 export async function render(url: string) {
@@ -273,6 +289,14 @@ export async function render(url: string) {
                 <Route path="/g-k-chesterton" element={<GKChesterton />} />
                 <Route path="/father-brown" element={<FatherBrown />} />
                 <Route path="/krimi-hoerspiel" element={<KrimiHoerspiel />} />
+                <Route path="/leipzig" element={<Leipzig />} />
+                <Route path="/stuttgart" element={<Stuttgart />} />
+                <Route path="/zuerich" element={<Zuerich />} />
+                <Route path="/baunatal-kassel" element={<BaunatalKassel />} />
+                <Route path="/giessen" element={<Giessen />} />
+                <Route path="/kempten" element={<Kempten />} />
+                <Route path="/erding" element={<Erding />} />
+                <Route path="/neu-isenburg" element={<NeuIsenburg />} />
               </Routes>
             </StaticRouter>
           </TooltipProvider>

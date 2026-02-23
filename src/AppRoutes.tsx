@@ -24,6 +24,14 @@ const Hoerspiel = lazy(() => import("./pages/Hoerspiel"));
 const GKChesterton = lazy(() => import("./pages/GKChesterton"));
 const FatherBrown = lazy(() => import("./pages/FatherBrown"));
 const KrimiHoerspiel = lazy(() => import("./pages/KrimiHoerspiel"));
+const Leipzig = lazy(() => import("./pages/Leipzig"));
+const Stuttgart = lazy(() => import("./pages/Stuttgart"));
+const Zuerich = lazy(() => import("./pages/Zuerich"));
+const BaunatalKassel = lazy(() => import("./pages/BaunatalKassel"));
+const Giessen = lazy(() => import("./pages/Giessen"));
+const Kempten = lazy(() => import("./pages/Kempten"));
+const Erding = lazy(() => import("./pages/Erding"));
+const NeuIsenburg = lazy(() => import("./pages/NeuIsenburg"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Download = lazy(() => import("./pages/Download"));
 const ShareDownload = lazy(() => import("./pages/ShareDownload"));
@@ -62,6 +70,14 @@ export const SSG_ROUTES = [
   "/g-k-chesterton",
   "/father-brown",
   "/krimi-hoerspiel",
+  "/leipzig",
+  "/stuttgart",
+  "/zuerich",
+  "/baunatal-kassel",
+  "/giessen",
+  "/kempten",
+  "/erding",
+  "/neu-isenburg",
 ];
 
 /** Client-Side Routes mit lazy loading (Code Splitting) */
@@ -90,6 +106,14 @@ export const AppRoutes = () => (
       <Route path="/g-k-chesterton" element={<GKChesterton />} />
       <Route path="/father-brown" element={<FatherBrown />} />
       <Route path="/krimi-hoerspiel" element={<KrimiHoerspiel />} />
+      <Route path="/leipzig" element={<Leipzig />} />
+      <Route path="/stuttgart" element={<Stuttgart />} />
+      <Route path="/zuerich" element={<Zuerich />} />
+      <Route path="/baunatal-kassel" element={<BaunatalKassel />} />
+      <Route path="/giessen" element={<Giessen />} />
+      <Route path="/kempten" element={<Kempten />} />
+      <Route path="/erding" element={<Erding />} />
+      <Route path="/neu-isenburg" element={<NeuIsenburg />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/download/:id" element={<Download />} />
       <Route path="/dl/:token" element={<ShareDownload />} />

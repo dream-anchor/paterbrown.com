@@ -41,6 +41,14 @@ const routes = [
   "/g-k-chesterton",
   "/father-brown",
   "/krimi-hoerspiel",
+  "/leipzig",
+  "/stuttgart",
+  "/zuerich",
+  "/baunatal-kassel",
+  "/giessen",
+  "/kempten",
+  "/erding",
+  "/neu-isenburg",
 ];
 
 console.log("Pre-Rendering gestartet...\n");
