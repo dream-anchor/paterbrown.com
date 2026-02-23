@@ -192,16 +192,14 @@ const MobileLightbox = ({
           {isVideoFile(image.mime_type, image.file_name) ? (
             <motion.div
               key={image.id}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.2}
-              onDragEnd={handleDragEnd}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
               className="w-full h-full flex items-center justify-center"
             >
+              {/* No drag on videos — tap zones on left/right handle navigation.
+                  Swipe conflicts with play/pause touch interaction. */}
               <LightboxVideo
                 src={getImageOriginalUrl("picks-images", image.file_path)}
                 poster={image.thumbnail_url || undefined}
