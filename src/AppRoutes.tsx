@@ -16,6 +16,10 @@ const Hamburg = lazy(() => import("./pages/Hamburg"));
 const Koeln = lazy(() => import("./pages/Koeln"));
 const Berlin = lazy(() => import("./pages/Berlin"));
 const Bremen = lazy(() => import("./pages/Bremen"));
+const WanjaMues = lazy(() => import("./pages/WanjaMues"));
+const AntoineMonot = lazy(() => import("./pages/AntoineMonot"));
+const MarvelinPage = lazy(() => import("./pages/Marvelin"));
+const StefanieSick = lazy(() => import("./pages/StefanieSick"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Download = lazy(() => import("./pages/Download"));
 const ShareDownload = lazy(() => import("./pages/ShareDownload"));
@@ -46,6 +50,10 @@ export const SSG_ROUTES = [
   "/koeln",
   "/berlin",
   "/bremen",
+  "/wanja-mues",
+  "/antoine-monot",
+  "/marvelin",
+  "/stefanie-sick",
 ];
 
 /** Client-Side Routes mit lazy loading (Code Splitting) */
@@ -66,6 +74,10 @@ export const AppRoutes = () => (
       <Route path="/koeln" element={<Koeln />} />
       <Route path="/berlin" element={<Berlin />} />
       <Route path="/bremen" element={<Bremen />} />
+      <Route path="/wanja-mues" element={<WanjaMues />} />
+      <Route path="/antoine-monot" element={<AntoineMonot />} />
+      <Route path="/marvelin" element={<MarvelinPage />} />
+      <Route path="/stefanie-sick" element={<StefanieSick />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/download/:id" element={<Download />} />
       <Route path="/dl/:token" element={<ShareDownload />} />

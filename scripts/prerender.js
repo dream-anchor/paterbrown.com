@@ -33,6 +33,10 @@ const routes = [
   "/koeln",
   "/berlin",
   "/bremen",
+  "/wanja-mues",
+  "/antoine-monot",
+  "/marvelin",
+  "/stefanie-sick",
 ];
 
 console.log("Pre-Rendering gestartet...\n");
