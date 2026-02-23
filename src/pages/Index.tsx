@@ -52,6 +52,7 @@ const Index = () => {
         canonical="/"
         ogTitle="Pater Brown – Das Live-Hörspiel"
         ogDescription="Mit Wanja Mues und Antoine Monot. Jetzt Tickets sichern!"
+        ogImage="/images/og/pater-brown-live-hoerspiel-tour-og.webp"
       />
       <FAQStructuredData />
       <SkipLink />

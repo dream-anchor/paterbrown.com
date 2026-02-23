@@ -1,4 +1,4 @@
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import { HelmetProvider } from 'react-helmet-async';
 import App from "./App.tsx";
 import "./fonts.css";
@@ -19,8 +19,16 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
   });
 }
 
-createRoot(document.getElementById("root")!).render(
+const rootElement = document.getElementById("root")!;
+const app = (
   <HelmetProvider>
     <App />
   </HelmetProvider>
 );
+
+// Conditional Hydration: wenn SSG pre-rendered hat, hydrateRoot verwenden
+if (rootElement.childNodes.length > 0) {
+  hydrateRoot(rootElement, app);
+} else {
+  createRoot(rootElement).render(app);
+}

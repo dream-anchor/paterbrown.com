@@ -6,16 +6,17 @@ import viteCompression from "vite-plugin-compression";
 import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode, isSsrBuild }) => ({
   server: {
     host: "::",
     port: 5173,
     allowedHosts: ["tunnel.schrittmacher.ai"],
   },
   plugins: [
-    react(), 
+    react(),
     mode === "development" && componentTagger(),
-    ViteImageOptimizer({
+    // Image-Optimizer und Compression nur beim Client-Build
+    !isSsrBuild && ViteImageOptimizer({
       jpg: {
         quality: 80,
       },
@@ -29,11 +30,11 @@ export default defineConfig(({ mode }) => ({
         quality: 80,
       },
     }),
-    viteCompression({
+    !isSsrBuild && viteCompression({
       algorithm: 'gzip',
       ext: '.gz',
     }),
-    viteCompression({
+    !isSsrBuild && viteCompression({
       algorithm: 'brotliCompress',
       ext: '.br',
     }),
@@ -43,9 +44,13 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  ssr: {
+    // CJS-Module die named exports nicht für ESM bereitstellen → bundlen statt externalisieren
+    noExternal: ['react-helmet-async'],
+  },
   build: {
-    minify: 'esbuild',
-    rollupOptions: {
+    minify: isSsrBuild ? false : 'esbuild',
+    rollupOptions: isSsrBuild ? {} : {
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],

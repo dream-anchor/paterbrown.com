@@ -28,3 +28,6 @@ dist-ssr
 
 # Responsive audit output
 screenshots/
+
+# Nested project copy
+paterbrown.com/
