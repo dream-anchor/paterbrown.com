@@ -57,7 +57,7 @@ const Index = () => {
       <FAQStructuredData />
       <SkipLink />
       
-      <h1 className="sr-only">Pater Brown - Das Live-Hörspiel mit Wanja Mues und Antoine Monot</h1>
+      {/* h1 is now rendered inside HeroSection */}
       
       <HeroSection />
       

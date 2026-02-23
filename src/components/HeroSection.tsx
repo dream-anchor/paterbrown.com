@@ -2,15 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import logoImage from "@/assets/pater-brown-logo.png";
-import heroBackground from "@/assets/hero-background.jpg";
-import antoineHeaderBg from "@/assets/antoine-header-bg.png";
-import wanjaHeaderBg from "@/assets/wanja-header-bg.png";
+import heroBackground from "@/assets/hero-background-modern.jpg";
 import StickyHeader from "@/components/StickyHeader";
 import { EVENTIM_AFFILIATE_URL, SCROLL_THRESHOLD_STICKY_HEADER } from "@/lib/constants";
 import { throttle } from "@/lib/scroll-utils";
 import { isBlackWeekActive } from "@/lib/blackWeekConfig";
 import { BlackWeekBanner } from "@/components/BlackWeekBanner";
 import { getTourYear } from "@/lib/dateUtils";
+import HeroTourInfo from "@/components/HeroTourInfo";
 
 const HeroSection = () => {
   const [logoAnimating, setLogoAnimating] = useState(false);
@@ -55,237 +54,111 @@ const HeroSection = () => {
   }, [logoAnimating]);
 
   useEffect(() => {
-    const throttledScroll = throttle(handleScroll, 16); // ~60fps
+    const throttledScroll = throttle(handleScroll, 16);
     window.addEventListener("scroll", throttledScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener("scroll", throttledScroll);
-    };
+    return () => window.removeEventListener("scroll", throttledScroll);
   }, [handleScroll]);
+
   return <>
-      {showStickyHeader && <StickyHeader />}
-      {isBlackWeek && <BlackWeekBanner />}
-      
-      <section className="relative min-h-screen flex flex-col overflow-hidden max-w-full">
+    {showStickyHeader && <StickyHeader />}
+    {isBlackWeek && <BlackWeekBanner />}
+    
+    <section className="relative min-h-screen flex flex-col overflow-hidden max-w-full">
+      {/* Modern cinematic background */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
+        style={{ backgroundImage: `url(${heroBackground})` }} 
+        role="img" 
+        aria-label="Atmosphärische Bühnenbeleuchtung für Pater Brown Live-Hörspiel" 
+      />
+      {/* Subtle dark overlay – no gold radial, just clean vignette */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/30" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-transparent to-transparent" />
+
+      {/* Floating minimal nav area */}
+      <div className="relative z-10 flex items-center justify-between px-6 md:px-12 pt-6 pb-4">
         <div 
-          className="absolute inset-0 bg-cover bg-top bg-no-repeat" 
+          className={`${logoAnimating ? 'fixed z-[200]' : 'relative'} ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`} 
           style={{
-          backgroundImage: `url(${heroBackground})`,
-            backgroundPositionY: 'clamp(-200px, -15vw, 0px)'
-          }} 
-          role="img" 
-          aria-label="Atmosphärischer Hintergrund für Pater Brown Live-Hörspiel" 
-        />
-        <div className="absolute inset-0 hero-overlay" />
-        
-
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pb-20 pt-8">
-          <div className="w-full max-w-4xl mb-12 cinematic-enter relative h-[180px]">
-            <div 
-              className={`absolute w-full ${logoAnimating ? 'fixed z-[200]' : 'relative'} ${showStickyHeader ? 'opacity-0' : 'opacity-100'}`} 
-              style={{
-                ...(logoAnimating ? {
-                  top: 'calc(0.75rem + env(safe-area-inset-top, 0px))',
-                  left: 'calc(1.5rem + env(safe-area-inset-left, 0px))',
-                  maxWidth: '210px',
-                } : {}),
-                transition: 'opacity 0.7s ease-in-out',
-              }}
-              data-testid="hero-logo"
-            >
-              <img 
-                src={logoImage} 
-                alt="Pater Brown - Das Live-Hörspiel" 
-                className="w-full h-auto drop-shadow-[0_0_60px_rgba(234,179,8,0.3)]" 
-                loading="eager" 
-                decoding="async" 
-                fetchPriority="high"
-                width={800}
-                height={200}
-              />
-            </div>
-          </div>
-
-          <div 
-            className="flex justify-center gap-8 mb-8 mt-16 md:mt-64 cinematic-enter" 
-            style={{
-              animationDelay: "0.2s",
-              opacity: 0.3
-            }}
-          >
-            <div className="w-[140px] sm:w-[200px] md:w-[280px] h-auto relative group">
-              <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-background/60 pointer-events-none rounded-lg" />
-              <img 
-                src={antoineHeaderBg} 
-                alt="Antoine Monot als Pater Brown" 
-                className="w-full h-auto object-contain transition-all duration-500" 
-                style={{
-                  filter: 'drop-shadow(0 0 40px rgba(234, 179, 8, 0.2))',
-                  mixBlendMode: 'lighten'
-                }} 
-                loading="eager" 
-                decoding="async" 
-                fetchPriority="high"
-                width={280}
-                height={400}
-              />
-            </div>
-            <div className="w-[140px] sm:w-[200px] md:w-[280px] h-auto relative group">
-              <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-background/60 pointer-events-none rounded-lg" />
-              <img 
-                src={wanjaHeaderBg} 
-                alt="Wanja Mues als Flambeau" 
-                className="w-full h-auto object-contain transition-all duration-500" 
-                style={{
-                  filter: 'drop-shadow(0 0 40px rgba(234, 179, 8, 0.2))',
-                  mixBlendMode: 'lighten'
-                }} 
-                loading="eager" 
-                decoding="async" 
-                fetchPriority="high"
-                width={280}
-                height={400}
-              />
-            </div>
-          </div>
-
-          <div className="max-w-4xl text-center space-y-6 cinematic-enter" style={{
-          animationDelay: "0.3s"
-        }}>
-            {isBlackWeek ? (
-              <h1 className="text-3xl md:text-5xl lg:text-7xl font-heading text-foreground/95 leading-tight mt-16">
-                Nur diese Woche: Das Live-Hörspiel,<br />
-                das Deutschland begeistert – jetzt 30% günstiger
-              </h1>
-            ) : (
-              <h1 className="text-4xl md:text-6xl lg:text-[5rem] font-heading text-foreground/95 leading-[0.95] mt-16">
-                Pater Brown LIVE –<br />Krimi, Klang & Gänsehaut
-              </h1>
-            )}
-            
-            <div className="divider-gold w-32 mx-auto my-8" aria-hidden="true" />
-            
-            <div className="space-y-4">
-              <p className="text-xl md:text-2xl text-gold/90 font-light leading-relaxed">
-                Mit <span className="font-medium">Antoine Monot</span> und <span className="font-medium">Wanja Mues</span>,<br />
-                bekannt aus der ZDF-Serie „Ein Fall für Zwei"
-              </p>
-              <p className="text-lg md:text-xl text-muted-foreground/80 font-light">
-                Mit Beatboxer & Loop Artist <span className="font-medium text-gold/80">Marvelin</span>
-              </p>
-            </div>
-
-            <div className="py-8">
-              <div className="relative inline-block">
-                <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen">
-                  <button 
-                    className="btn-premium text-base md:text-xl px-10 md:px-16 py-6 md:py-8 rounded-full shadow-2xl relative overflow-hidden group cinematic-enter focus:outline-none focus:ring-4 focus:ring-neon-gold/50 focus:ring-offset-2 focus:ring-offset-background"
-                    style={{
-                      animationDelay: "0.6s"
-                    }}
-                    type="button" 
-                    aria-label="Jetzt Tickets bei Eventim sichern"
-                  >
-                    <span className="relative z-10 flex flex-col items-center gap-1">
-                      {isBlackWeek && (
-                        <span className="text-xs font-black uppercase tracking-[0.2em] text-black/80">
-                          Black Week Deal
-                        </span>
-                      )}
-                      <span className={isBlackWeek ? "text-lg font-black uppercase tracking-[0.15em]" : ""}>
-                        {isBlackWeek ? 'JETZT TICKETS SICHERN' : 'Tickets sichern'}
-                      </span>
-                    </span>
-                  </button>
-                </a>
-              </div>
-            </div>
-
-            <div className="divider-gold w-16 mx-auto opacity-40" aria-hidden="true" />
-
-            <div className="flex flex-col gap-6 pt-4 cinematic-enter max-w-2xl mx-auto" style={{
-            animationDelay: "0.8s"
-          }}>
-              {previewEvents.length > 0 && (
-                <div className="w-full bg-card/30 backdrop-blur-sm px-6 pt-10 pb-4 rounded-lg text-center">
-                  <p className="text-gold/70 text-xs uppercase tracking-widest mb-2">
-                    🤫 Preview {getTourYear(previewEvents.map(e => ({ event_date: e.event_date })))}
-                  </p>
-                  <div className="text-base text-foreground/90">
-                    {previewEvents.map(event => (
-                      <a 
-                        key={event.id}
-                        href={event.ticket_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block hover:text-gold transition-colors"
-                        aria-label={`Tickets für ${event.city}`}
-                      >
-                        {event.city}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {tour2026Events.length > 0 && (
-                <div className="w-full bg-card/30 backdrop-blur-sm px-6 py-4 rounded-lg text-center">
-                  <p className="text-gold/70 text-xs uppercase tracking-widest mb-3">
-                    📍 Tour {getTourYear(tour2026Events.map(e => ({ event_date: e.event_date })))}
-                  </p>
-                  <div className="text-base text-foreground/90 space-y-1.5">
-                    {tour2026Events.map((event, index) => {
-                      const isEven = index % 2 === 0;
-                      const nextEvent = tour2026Events[index + 1];
-                      
-                      if (isEven && nextEvent) {
-                        return (
-                          <p key={event.id}>
-                            <a 
-                              href={event.ticket_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:text-gold transition-colors"
-                              aria-label={`Tickets für ${event.city}`}
-                            >
-                              {event.city}
-                            </a>
-                            {' • '}
-                            <a 
-                              href={nextEvent.ticket_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:text-gold transition-colors"
-                              aria-label={`Tickets für ${nextEvent.city}`}
-                            >
-                              {nextEvent.city}
-                            </a>
-                          </p>
-                        );
-                      } else if (isEven) {
-                        return (
-                          <p key={event.id}>
-                            <a 
-                              href={event.ticket_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:text-gold transition-colors"
-                              aria-label={`Tickets für ${event.city}`}
-                            >
-                              {event.city}
-                            </a>
-                          </p>
-                        );
-                      }
-                      return null;
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+            ...(logoAnimating ? {
+              top: 'calc(0.75rem + env(safe-area-inset-top, 0px))',
+              left: 'calc(1.5rem + env(safe-area-inset-left, 0px))',
+              maxWidth: '210px',
+            } : {}),
+            transition: 'opacity 0.7s ease-in-out',
+          }}
+          data-testid="hero-logo"
+        >
+          <img 
+            src={logoImage} 
+            alt="Pater Brown - Das Live-Hörspiel" 
+            className="h-16 md:h-20 w-auto" 
+            loading="eager" 
+            decoding="async" 
+            fetchPriority="high"
+            width={800}
+            height={200}
+          />
         </div>
-      </section>
-    </>;
+        <a 
+          href={EVENTIM_AFFILIATE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-foreground/80 hover:text-foreground transition-colors text-xs uppercase tracking-[0.25em] font-medium border border-foreground/20 hover:border-foreground/40 px-5 py-2.5"
+        >
+          Tickets
+        </a>
+      </div>
+
+      {/* Main hero content – Mousetrap-style: huge centered typography */}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center">
+        
+        <div className="cinematic-enter max-w-5xl">
+          {isBlackWeek ? (
+            <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-[9rem] font-heading text-foreground leading-[0.85] tracking-tight uppercase">
+              Black Week
+              <span className="block text-2xl sm:text-3xl md:text-4xl font-light tracking-[0.15em] text-foreground/60 mt-4 normal-case">
+                30% auf alle Tickets
+              </span>
+            </h1>
+          ) : (
+            <>
+              <p className="text-gold/60 text-xs md:text-sm uppercase tracking-[0.4em] mb-6 cinematic-enter" style={{ animationDelay: '0.1s' }}>
+                Das Live-Hörspiel
+              </p>
+              <h1 className="text-5xl sm:text-7xl md:text-9xl lg:text-[11rem] font-heading text-foreground leading-[0.85] tracking-tight uppercase cinematic-enter" style={{ animationDelay: '0.2s' }}>
+                Pater<br />Brown
+              </h1>
+              <p className="text-lg md:text-xl text-foreground/50 font-light mt-8 tracking-wide cinematic-enter" style={{ animationDelay: '0.4s' }}>
+                Mit <span className="text-foreground/80">Antoine Monot</span> & <span className="text-foreground/80">Wanja Mues</span>
+              </p>
+            </>
+          )}
+        </div>
+
+        {/* CTA Button */}
+        <div className="mt-12 cinematic-enter" style={{ animationDelay: '0.6s' }}>
+          <a 
+            href={EVENTIM_AFFILIATE_URL} 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            <button 
+              className="text-sm md:text-base uppercase tracking-[0.25em] font-semibold px-10 md:px-14 py-4 md:py-5 border border-foreground/30 hover:border-foreground/60 text-foreground/90 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 backdrop-blur-sm transition-all duration-300"
+              type="button"
+            >
+              {isBlackWeek ? 'Jetzt Tickets sichern' : 'Tickets sichern'}
+            </button>
+          </a>
+        </div>
+      </div>
+
+      {/* Bottom tour info – clean, minimal */}
+      <div className="relative z-10 pb-12 px-6">
+        <HeroTourInfo previewEvents={previewEvents} tour2026Events={tour2026Events} />
+      </div>
+    </section>
+  </>;
 };
+
 export default HeroSection;
