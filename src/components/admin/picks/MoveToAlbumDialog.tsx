@@ -56,7 +56,7 @@ const MoveToAlbumDialog = ({
       <DialogContent className="bg-white sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-gray-900">
-            {selectedCount} {selectedCount === 1 ? 'Bild' : 'Bilder'} verschieben
+            {selectedCount} {selectedCount === 1 ? 'Medium' : 'Medien'} verschieben
           </DialogTitle>
         </DialogHeader>
 

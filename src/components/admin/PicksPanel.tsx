@@ -171,7 +171,7 @@ const PicksPanel = () => {
       if (files.length === 0) {
         toast({
           title: "Keine Medien",
-          description: "Bitte nur Bild- oder Videodateien ablegen.",
+          description: "Bitte nur Mediendateien ablegen.",
           variant: "destructive",
         });
         return;
@@ -508,7 +508,7 @@ const PicksPanel = () => {
       toast({ 
         title: "In Papierkorb verschoben",
         description: imagesToDelete.length > 0 
-          ? `Album mit ${imagesToDelete.length} Bild(ern) kann 90 Tage wiederhergestellt werden`
+          ? `Album mit ${imagesToDelete.length} ${imagesToDelete.length === 1 ? "Medium" : "Medien"} kann 90 Tage wiederhergestellt werden`
           : "Kann 90 Tage lang wiederhergestellt werden",
       });
     } catch (error) {
@@ -527,14 +527,9 @@ const PicksPanel = () => {
     
     addFiles(files, "picks", { folderId: currentAlbumId });
     
-    const videoCount = files.filter(f => f.type.startsWith("video/")).length;
-    const imageCount = files.length - videoCount;
-    const parts: string[] = [];
-    if (imageCount > 0) parts.push(`${imageCount} Bild${imageCount > 1 ? "er" : ""}`);
-    if (videoCount > 0) parts.push(`${videoCount} Video${videoCount > 1 ? "s" : ""}`);
     toast({
       title: "Upload gestartet",
-      description: `${parts.join(" und ")} ${files.length > 1 ? "werden" : "wird"} hochgeladen...`,
+      description: `${files.length} ${files.length === 1 ? "Medium wird" : "Medien werden"} hochgeladen...`,
     });
   };
 
@@ -642,7 +637,7 @@ const PicksPanel = () => {
       setSelectedImageIds(new Set());
       
       toast({ 
-        title: `${imageIds.length} Bilder in Papierkorb`,
+        title: `${imageIds.length} Medien in Papierkorb`,
         description: "Können 90 Tage lang wiederhergestellt werden"
       });
     } catch (error) {
@@ -678,7 +673,7 @@ const PicksPanel = () => {
       if (data) setVotes(data as ImageVote[]);
       
       setSelectedImageIds(new Set());
-      toast({ title: `${selectedImageIds.size} Bilder bewertet` });
+      toast({ title: `${selectedImageIds.size} Medien bewertet` });
     } catch (error) {
       console.error("Batch vote error:", error);
       toast({ title: "Fehler", variant: "destructive" });
@@ -700,7 +695,7 @@ const PicksPanel = () => {
       ));
       
       setSelectedImageIds(new Set());
-      toast({ title: "Bilder verschoben" });
+      toast({ title: "Medien verschoben" });
     } catch (error) {
       console.error("Move error:", error);
       toast({ title: "Fehler", variant: "destructive" });
@@ -798,7 +793,7 @@ const PicksPanel = () => {
         <div className="fixed inset-0 z-50 bg-amber-500/10 backdrop-blur-sm flex items-center justify-center pointer-events-none">
           <div className="bg-white rounded-2xl shadow-2xl border-2 border-dashed border-amber-500 p-12 text-center">
             <Upload className="w-16 h-16 text-amber-500 mx-auto mb-4" />
-            <p className="text-xl font-semibold text-gray-900">Bilder hier ablegen</p>
+            <p className="text-xl font-semibold text-gray-900">Medien hier ablegen</p>
             <p className="text-gray-500 mt-1">zum Hochladen in dieses Album</p>
           </div>
         </div>
@@ -810,7 +805,7 @@ const PicksPanel = () => {
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Picks</h2>
             <p className="text-sm text-gray-500">
-              Bilder in Alben organisieren und mit Ampel-System bewerten
+              Medien in Alben organisieren und mit Ampel-System bewerten
             </p>
           </div>
 
@@ -1047,7 +1042,7 @@ const PicksPanel = () => {
             </h3>
             <p className="text-sm text-gray-500">
               {currentImages.length === 0
-                ? "Lade Bilder hoch oder erstelle Unteralben"
+                ? "Lade Medien hoch oder erstelle Unteralben"
                 : "Passe die Filter an"}
             </p>
           </Card>
@@ -1143,7 +1138,7 @@ const PicksPanel = () => {
                   </div>
                   <div>
                     <Label htmlFor="contact-email" className="text-gray-600 text-sm">
-                      Kontakt-E-Mail (Bildrechte)
+                      Kontakt-E-Mail (Medienrechte)
                     </Label>
                     <Input
                       id="contact-email"
@@ -1260,7 +1255,7 @@ const PicksPanel = () => {
                   </div>
                   <div>
                     <Label htmlFor="edit-contact-email" className="text-gray-600 text-sm">
-                      Kontakt-E-Mail (Bildrechte)
+                      Kontakt-E-Mail (Medienrechte)
                     </Label>
                     <Input
                       id="edit-contact-email"
@@ -1307,12 +1302,12 @@ const PicksPanel = () => {
                 {deleteConfirmation?.type === 'album' 
                   ? 'Album löschen?' 
                   : deleteConfirmation?.type === 'batch'
-                    ? `${selectedImageIds.size} Bilder löschen?`
-                    : 'Bild löschen?'}
+                    ? `${selectedImageIds.size} Medien löschen?`
+                    : 'Medium löschen?'}
               </AlertDialogTitle>
               <AlertDialogDescription>
                 {deleteConfirmation?.type === 'album' 
-                  ? 'Alle Bilder in diesem Album werden ebenfalls unwiderruflich gelöscht.'
+                  ? 'Alle Medien in diesem Album werden ebenfalls unwiderruflich gelöscht.'
                   : 'Diese Aktion kann nicht rückgängig gemacht werden.'}
               </AlertDialogDescription>
             </AlertDialogHeader>

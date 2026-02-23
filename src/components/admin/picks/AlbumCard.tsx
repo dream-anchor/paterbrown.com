@@ -140,7 +140,7 @@ const AlbumCard = ({
               <div className="flex items-center gap-2 mt-0.5">
                 {!hasImages && (
                   <p className="text-xs text-gray-400">
-                    {imageCount} {imageCount === 1 ? 'Bild' : 'Bilder'}
+                    {imageCount} {imageCount === 1 ? 'Medium' : 'Medien'}
                   </p>
                 )}
                 {hasPhotographer && (
