@@ -34,9 +34,10 @@ const NotifIcon = ({ type }: { type: AppNotification["type"] }) => {
 
 interface AdminLayoutProps {
   children: ReactNode;
+  bottomNav?: ReactNode;
 }
 
-const AdminLayout = ({ children }: AdminLayoutProps) => {
+const AdminLayout = ({ children, bottomNav }: AdminLayoutProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -78,9 +79,9 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 admin-no-focus-ring" style={{ color: '#111827' }}>
+    <div className="h-dvh-safe flex flex-col bg-gray-50 admin-no-focus-ring overflow-hidden" style={{ color: '#111827' }}>
       {/* Premium Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-100">
+      <header className="flex-shrink-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-100">
         <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           {/* Empty left spacer for balance */}
           <div className="w-24" />
@@ -241,10 +242,15 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 py-6 max-w-7xl">
-        {children}
+      {/* Main Content — scrollable area */}
+      <main className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="container mx-auto px-4 sm:px-6 py-6 max-w-7xl">
+          {children}
+        </div>
       </main>
+
+      {/* Bottom Navigation — flex child, not fixed */}
+      {bottomNav}
     </div>
   );
 };

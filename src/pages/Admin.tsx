@@ -365,7 +365,7 @@ const Admin = () => {
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout bottomNav={<BottomNav activeTab={activeTab} onTabChange={handleTabChange} />}>
       {/* Command Palette */}
       <AdminCommandPalette
         open={commandPaletteOpen}
@@ -382,7 +382,7 @@ const Admin = () => {
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         {/* Premium Pill-Style Tabs + Search */}
-        <div className="sticky top-16 z-30 -mx-4 px-4 py-3 bg-gray-50/80 backdrop-blur-md border-b border-gray-100 hidden md:block">
+        <div className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-gray-50/80 backdrop-blur-md border-b border-gray-100 hidden md:block">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             {/* Tabs - Desktop only */}
             <TabsList className="inline-flex p-1 bg-white rounded-full shadow-sm border border-gray-200 gap-1">
@@ -493,25 +493,25 @@ const Admin = () => {
             </Suspense>
           </TabsContent>
 
-          <TabsContent value="travel" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
+          <TabsContent value="travel" className="mt-0 focus-visible:outline-none">
             <Suspense fallback={<TabFallback />}>
               <TravelDashboard />
             </Suspense>
           </TabsContent>
 
-          <TabsContent value="documents" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
+          <TabsContent value="documents" className="mt-0 focus-visible:outline-none">
             <Suspense fallback={<TabFallback />}>
               <DocumentsPanel />
             </Suspense>
           </TabsContent>
 
-          <TabsContent value="picks" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
+          <TabsContent value="picks" className="mt-0 focus-visible:outline-none">
             <Suspense fallback={<TabFallback />}>
               <PicksPanel isAdmin={isAdmin} />
             </Suspense>
           </TabsContent>
 
-          <TabsContent value="settings" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
+          <TabsContent value="settings" className="mt-0 focus-visible:outline-none">
             <Suspense fallback={<TabFallback />}>
               <SettingsPanel isAdmin={isAdmin} />
             </Suspense>
@@ -519,8 +519,6 @@ const Admin = () => {
         </div>
       </Tabs>
 
-      {/* Mobile Bottom Navigation */}
-      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
     </AdminLayout>
   );
 };

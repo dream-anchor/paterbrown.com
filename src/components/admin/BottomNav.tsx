@@ -17,7 +17,7 @@ const navItems = [
 
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+    <nav className="flex-shrink-0 md:hidden">
       {/* Glass background */}
       <div className="bg-background/80 backdrop-blur-xl border-t border-border/60 shadow-lg">
         {/* Safe area padding for iPhone notch + home indicator */}

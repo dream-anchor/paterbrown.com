@@ -95,6 +95,12 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* dvh container with vh fallback for older browsers */
+  .h-dvh-safe {
+    height: 100vh;
+    height: 100dvh;
+  }
+
   /* Premium gold text */
   .text-gold {
     color: hsl(var(--gold));
