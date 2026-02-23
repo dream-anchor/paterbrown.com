@@ -169,21 +169,31 @@ const MobileLightbox = ({
 
         {/* Main image area with swipe */}
         <div className="flex-1 relative overflow-hidden flex items-center justify-center px-2">
-          {/* Navigation hint arrows */}
+          {/* Navigation tap zones + arrows */}
           {hasPrev && (
-            <div className="absolute left-2 top-1/2 -translate-y-1/2 text-white/30 z-10">
+            <button
+              onClick={() => { haptics.tap(); onNavigate('prev'); }}
+              className="absolute left-0 top-0 bottom-0 w-16 flex items-center justify-center text-white/30 active:text-white/60 z-10"
+            >
               <ChevronLeft className="w-8 h-8" />
-            </div>
+            </button>
           )}
           {hasNext && (
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 text-white/30 z-10">
+            <button
+              onClick={() => { haptics.tap(); onNavigate('next'); }}
+              className="absolute right-0 top-0 bottom-0 w-16 flex items-center justify-center text-white/30 active:text-white/60 z-10"
+            >
               <ChevronRight className="w-8 h-8" />
-            </div>
+            </button>
           )}
           
           {isVideoFile(image.mime_type, image.file_name) ? (
             <motion.div
               key={image.id}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={handleDragEnd}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
