@@ -4,7 +4,8 @@
 React/TS + Vite, shadcn/ui, Tailwind | Supabase (Postgres + Edge Functions) | Leaflet Maps
 
 ## Deployment
-- Code → commit + push → auto-deploy (User prüft Live-Site, nicht lokal)
+- Code → commit + push → GitHub Actions baut + deployed per SCP auf Strato
+- Workflow: `.github/workflows/deploy.yml` (trigger: push auf main)
 - Supabase (SQL, Edge Functions, Auth/Storage) → Lovable-Prompt an User
 - Build: `npx vite build`
 - IndexNow: Edge Function `indexnow-ping`

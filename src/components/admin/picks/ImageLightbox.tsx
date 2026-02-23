@@ -232,8 +232,9 @@ const ImageLightbox = ({
             >
               <video
                 src={getImageOriginalUrl("picks-images", image.file_path)}
+                poster={image.thumbnail_url || undefined}
                 controls
-                autoPlay
+                preload="metadata"
                 playsInline
                 className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
               />

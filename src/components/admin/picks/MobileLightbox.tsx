@@ -202,8 +202,9 @@ const MobileLightbox = ({
             >
               <video
                 src={getImageOriginalUrl("picks-images", image.file_path)}
+                poster={image.thumbnail_url || undefined}
                 controls
-                autoPlay
+                preload="metadata"
                 playsInline
                 className="max-w-full max-h-full object-contain rounded-lg"
               />
