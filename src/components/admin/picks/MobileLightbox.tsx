@@ -95,14 +95,19 @@ const MobileLightbox = ({
       });
   }, [image, votes, currentUserId]);
 
-  // Lock body scroll when open
+  // Lock body scroll + black background when open (covers iOS toolbar gap)
   useEffect(() => {
     if (image) {
       document.body.style.overflow = 'hidden';
+      document.body.style.backgroundColor = 'black';
     } else {
       document.body.style.overflow = '';
+      document.body.style.backgroundColor = '';
     }
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.backgroundColor = '';
+    };
   }, [image]);
 
   // Handle swipe gestures
@@ -145,8 +150,7 @@ const MobileLightbox = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed top-0 left-0 right-0 z-[9999] bg-black flex flex-col"
-        style={{ minHeight: '100lvh' }}
+        className="fixed inset-0 z-[9999] bg-black flex flex-col overflow-hidden"
       >
         {/* Header - minimal with safe area */}
         <div className="flex items-center justify-between px-4 pt-3 pb-2" style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
