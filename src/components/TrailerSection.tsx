@@ -7,19 +7,19 @@ const TrailerSection = memo(() => {
   const isMobile = useIsMobile();
 
   return (
-    <section className="py-24 px-6 bg-gradient-to-b from-background to-card/20" aria-labelledby="trailer-heading">
+    <section className="py-28 md:py-36 px-6" aria-labelledby="trailer-heading">
       <div className="container mx-auto max-w-5xl">
-        <div className="text-center space-y-6 mb-12">
+        <div className="text-center space-y-6 mb-16">
           <p className="text-gold text-sm uppercase tracking-[0.3em] font-medium">
             Exklusiver Einblick
           </p>
-          <h2 id="trailer-heading" className="text-4xl sm:text-5xl md:text-7xl font-heading tracking-wider text-foreground uppercase">
+          <h2 id="trailer-heading" className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85]">
             Erlebe Pater Brown
           </h2>
-          <div className="divider-gold w-32 mx-auto" aria-hidden="true" />
+          <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent max-w-md mx-auto" aria-hidden="true" />
         </div>
 
-        <div className="relative rounded-lg overflow-hidden shadow-2xl border border-gold/20">
+        <div className="relative overflow-hidden shadow-2xl border border-foreground/10">
           {isMobile ? (
             // Mobile: 9:16 Video
             <div className="relative w-full max-w-sm mx-auto" style={{ paddingTop: "177.78%" }}>

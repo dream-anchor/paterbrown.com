@@ -2,9 +2,7 @@ import { type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 import Breadcrumb from "./Breadcrumb";
-import CTASection from "./CTASection";
 import paterbrown from "@/assets/pater-brown-logo.png";
-import heroBackground from "@/assets/hero-background.jpg";
 
 interface BreadcrumbItem {
   label: string;
@@ -14,49 +12,70 @@ interface BreadcrumbItem {
 interface LandingLayoutProps {
   children: ReactNode;
   breadcrumbs: BreadcrumbItem[];
+  heroImage?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
   showCTA?: boolean;
 }
 
 const LandingLayout = ({
   children,
   breadcrumbs,
+  heroImage,
+  heroTitle,
+  heroSubtitle,
   showCTA = true,
 }: LandingLayoutProps) => (
-  <div className="min-h-screen flex flex-col">
-    {/* Hero Header */}
-    <div
-      className="relative bg-cover bg-top bg-no-repeat min-h-[300px]"
-      style={{
-        backgroundImage: `url(${heroBackground})`,
-        backgroundPositionY: "clamp(-200px, -15vw, 0px)",
-      }}
-    >
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
-      <div className="relative container mx-auto px-6 py-4">
-        <Link
-          to="/"
-          className="inline-block hover:opacity-80 transition-opacity"
-        >
-          <img
-            src={paterbrown}
-            alt="Pater Brown Logo"
-            className="h-[84px] w-auto"
-          />
-        </Link>
-      </div>
-    </div>
+  <div className="min-h-screen flex flex-col bg-background">
+    {/* Floating Nav */}
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 bg-gradient-to-b from-background/90 to-transparent">
+      <Link
+        to="/"
+        className="hover:opacity-80 transition-opacity"
+      >
+        <img
+          src={paterbrown}
+          alt="Pater Brown Logo"
+          className="h-12 md:h-16 w-auto"
+        />
+      </Link>
+      <Link
+        to="/termine"
+        className="text-foreground/90 hover:text-gold transition-colors text-sm uppercase tracking-[0.2em] font-medium border border-foreground/20 hover:border-gold/50 px-5 py-2.5"
+      >
+        Tickets
+      </Link>
+    </nav>
 
-    {/* Content */}
-    <main className="flex-1 bg-background py-12">
-      <div className="container mx-auto px-6 max-w-4xl">
-        <Breadcrumb items={breadcrumbs} />
-
-        <div className="premium-card p-8 md:p-12">
-          {children}
+    {/* Full-Viewport Hero */}
+    {heroImage && (
+      <section className="relative h-screen min-h-[600px] flex items-end justify-center overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        <div className="relative z-10 text-center pb-16 md:pb-24 px-6 w-full max-w-5xl mx-auto">
+          {heroTitle && (
+            <h1 className="text-6xl sm:text-8xl md:text-[10rem] lg:text-[12rem] font-heading font-black text-foreground leading-[0.85] tracking-tight uppercase">
+              {heroTitle}
+            </h1>
+          )}
+          {heroSubtitle && (
+            <p className="text-lg md:text-2xl text-foreground/70 font-light mt-6 tracking-wide">
+              {heroSubtitle}
+            </p>
+          )}
         </div>
+      </section>
+    )}
 
-        {showCTA && <CTASection />}
+    {/* Content - Full Width Sections */}
+    <main className="flex-1">
+      <div className="px-6 md:px-12 py-8 max-w-6xl mx-auto">
+        <Breadcrumb items={breadcrumbs} />
       </div>
+      {children}
     </main>
 
     <Footer />

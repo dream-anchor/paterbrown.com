@@ -23,7 +23,7 @@ const queryClient = new QueryClient({
 // Dehydrated State vom SSG Pre-Render (falls vorhanden)
 const dehydratedState =
   typeof window !== "undefined"
-    ? (window as Record<string, unknown>).__REACT_QUERY_STATE__
+    ? (window as unknown as Record<string, unknown>).__REACT_QUERY_STATE__
     : undefined;
 
 const App = () => (

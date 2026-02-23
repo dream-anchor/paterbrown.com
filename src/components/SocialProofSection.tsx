@@ -25,20 +25,17 @@ const testimonials = [
 export const SocialProofSection = () => {
   return (
     <section 
-      className="py-20 md:py-24 px-6 bg-card/10"
+      className="py-28 md:py-36 px-6"
       aria-labelledby="testimonials-heading"
     >
       <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-16">
-          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">
-            Erfahrungen aus erster Hand
-          </p>
-          <h2 
-            id="testimonials-heading" 
-            className="text-3xl sm:text-4xl md:text-6xl font-heading tracking-wider text-foreground uppercase"
-          >
-            Das sagen unsere Besucher
-          </h2>
+        {/* Featured Quote - Mousetrap Style */}
+        <div className="text-center mb-24">
+          <blockquote className="text-3xl md:text-5xl lg:text-6xl font-heading italic text-foreground/90 leading-tight max-w-4xl mx-auto">
+            „Ein Abend voller Spannung, Humor und Gänsehaut."
+          </blockquote>
+          <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent max-w-md mx-auto mt-10 mb-6" />
+          <p className="text-gold text-sm uppercase tracking-[0.3em]">Das sagen unsere Besucher</p>
         </div>
 
         {/* Testimonials */}
@@ -46,7 +43,7 @@ export const SocialProofSection = () => {
           {testimonials.map((testimonial) => (
             <blockquote 
               key={testimonial.id}
-              className="premium-card p-6 md:p-8 space-y-4 hover:border-gold/40 transition-colors"
+              className="p-8 border border-foreground/10 bg-card/10 space-y-5 transition-colors hover:border-gold/20"
             >
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
@@ -57,10 +54,10 @@ export const SocialProofSection = () => {
                   />
                 ))}
               </div>
-              <p className="text-foreground/90 leading-relaxed text-lg">
-                "{testimonial.quote}"
+              <p className="text-foreground/80 leading-relaxed text-lg font-light">
+                „{testimonial.quote}"
               </p>
-              <cite className="text-gold text-base not-italic block mt-4">
+              <cite className="text-gold text-sm not-italic block mt-4 uppercase tracking-wider">
                 — {testimonial.author}, {testimonial.location}
               </cite>
             </blockquote>

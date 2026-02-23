@@ -70,8 +70,9 @@ export default {
       },
       fontFamily: {
         'display': ['Pacifico', 'cursive'],
-        'heading': ['Bebas Neue', 'sans-serif'],
+        'heading': ['Playfair Display', 'Georgia', 'serif'],
         'sans': ['Inter', 'sans-serif'],
+        'serif': ['Playfair Display', 'Georgia', 'serif'],
       },
       keyframes: {
         "accordion-down": {

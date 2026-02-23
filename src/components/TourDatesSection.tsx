@@ -138,17 +138,17 @@ const TourDatesSection = () => {
   return (
     <section
       id="tour-dates"
-      className="py-24 px-6 bg-gradient-to-b from-background to-card/20"
+      className="py-28 md:py-36 px-6"
       aria-labelledby="tour-dates-heading"
       role="region"
     >
       <div className="container mx-auto max-w-5xl">
         <div className="text-center mb-24">
-          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">Termine & Tickets {getTourYearRange(tourDates)}</p>
-          <h2 id="tour-dates-heading" className="text-4xl sm:text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase mb-8">
+          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-6 font-medium">Termine & Tickets {getTourYearRange(tourDates)}</p>
+          <h2 id="tour-dates-heading" className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85] mb-8">
             Termine
           </h2>
-          <p className="text-xl md:text-2xl text-foreground/80 font-light leading-relaxed max-w-2xl mx-auto mt-6">
+          <p className="text-xl md:text-2xl text-foreground/60 font-light leading-relaxed max-w-2xl mx-auto mt-8">
             Erlebe Pater Brown live in deiner Stadt – <br />
             sichere dir jetzt deine Tickets:
           </p>

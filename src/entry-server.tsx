@@ -1,6 +1,7 @@
 import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server";
 import { HelmetProvider } from "react-helmet-async";
+// @ts-ignore - FilledContext exists at runtime
 import type { FilledContext } from "react-helmet-async";
 import {
   QueryClient,
@@ -99,12 +100,12 @@ export async function render(url: string) {
                   eventDate: event.event_date,
                 }))
                 .filter(
-                  (e: { eventDate: string }) => e.eventDate >= today
+                  (e: Record<string, unknown>) => (e.eventDate as string) >= today
                 )
                 .sort(
-                  (a: { eventDate: string }, b: { eventDate: string }) =>
-                    new Date(a.eventDate).getTime() -
-                    new Date(b.eventDate).getTime()
+                  (a: Record<string, unknown>, b: Record<string, unknown>) =>
+                    new Date(a.eventDate as string).getTime() -
+                    new Date(b.eventDate as string).getTime()
                 );
             },
           });
