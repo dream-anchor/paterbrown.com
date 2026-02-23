@@ -1,28 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <!-- Startseite -->
   <url>
     <loc>https://paterbrown.com/</loc>
-    <lastmod>2025-10-25</lastmod>
+    <lastmod>2026-02-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://paterbrown.com/og-image.png</image:loc>
-      <image:title>Pater Brown - Das Live-Hörspiel Logo</image:title>
-      <image:caption>Pater Brown Live-Hörspiel mit Wanja Mues und Antoine Monot</image:caption>
+      <image:loc>https://paterbrown.com/images/og/pater-brown-live-hoerspiel-tour-og.webp</image:loc>
+      <image:title>Pater Brown - Das Live-Hörspiel</image:title>
     </image:image>
   </url>
+
+  <!-- Pillar Pages -->
   <url>
-    <loc>https://paterbrown.com/impressum</loc>
-    <lastmod>2025-10-25</lastmod>
+    <loc>https://paterbrown.com/pater-brown</loc>
+    <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://paterbrown.com/datenschutz</loc>
-    <lastmod>2025-10-25</lastmod>
+    <loc>https://paterbrown.com/live-hoerspiel</loc>
+    <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://paterbrown.com/images/og/pater-brown-live-hoerspiel-buehne-og.webp</image:loc>
+      <image:title>Pater Brown Live-Hörspiel auf der Bühne</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://paterbrown.com/termine</loc>
@@ -30,18 +36,76 @@
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
+
+  <!-- Content-Seiten -->
   <url>
-    <loc>https://paterbrown.com/live-hoerspiel</loc>
+    <loc>https://paterbrown.com/hoerspiel</loc>
     <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://paterbrown.com/pater-brown</loc>
+    <loc>https://paterbrown.com/g-k-chesterton</loc>
     <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://paterbrown.com/images/og/g-k-chesterton-pater-brown-og.webp</image:loc>
+      <image:title>G.K. Chesterton – Schöpfer von Pater Brown</image:title>
+    </image:image>
   </url>
+  <url>
+    <loc>https://paterbrown.com/father-brown</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://paterbrown.com/krimi-hoerspiel</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Person-Seiten -->
+  <url>
+    <loc>https://paterbrown.com/wanja-mues</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://paterbrown.com/images/og/wanja-mues-schauspieler-og.webp</image:loc>
+      <image:title>Wanja Mues – Schauspieler</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://paterbrown.com/antoine-monot</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://paterbrown.com/images/og/antoine-monot-schauspieler-og.webp</image:loc>
+      <image:title>Antoine Monot – Schauspieler</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://paterbrown.com/marvelin</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://paterbrown.com/images/og/marvelin-beatboxer-pater-brown-og.webp</image:loc>
+      <image:title>Marvelin – Beatboxer</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://paterbrown.com/stefanie-sick</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Stadtseiten (bestehend) -->
   <url>
     <loc>https://paterbrown.com/muenchen</loc>
     <lastmod>2026-02-23</lastmod>
@@ -71,5 +135,69 @@
     <lastmod>2026-02-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+  </url>
+
+  <!-- Stadtseiten (neu) -->
+  <url>
+    <loc>https://paterbrown.com/leipzig</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://paterbrown.com/stuttgart</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://paterbrown.com/zuerich</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://paterbrown.com/baunatal-kassel</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://paterbrown.com/giessen</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://paterbrown.com/kempten</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://paterbrown.com/erding</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://paterbrown.com/neu-isenburg</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Utility-Seiten -->
+  <url>
+    <loc>https://paterbrown.com/impressum</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://paterbrown.com/datenschutz</loc>
+    <lastmod>2026-02-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>

@@ -7,7 +7,8 @@ const FOOTER_NAV = [
     heading: "Pater Brown",
     links: [
       { label: "Pater Brown", href: "/pater-brown" },
-      { label: "Das Live-Hörspiel", href: "/live-hoerspiel" },
+      { label: "Das Live-H\u00F6rspiel", href: "/live-hoerspiel" },
+      { label: "Krimi-H\u00F6rspiel", href: "/krimi-hoerspiel" },
     ],
   },
   {
@@ -23,15 +24,18 @@ const FOOTER_NAV = [
     heading: "Termine",
     links: [
       { label: "Alle Termine", href: "/termine" },
-      { label: "München", href: "/muenchen" },
+      { label: "M\u00FCnchen", href: "/muenchen" },
       { label: "Hamburg", href: "/hamburg" },
-      { label: "Köln", href: "/koeln" },
+      { label: "K\u00F6ln", href: "/koeln" },
       { label: "Berlin", href: "/berlin" },
     ],
   },
   {
     heading: "Mehr",
     links: [
+      { label: "G.K. Chesterton", href: "/g-k-chesterton" },
+      { label: "Das H\u00F6rspiel", href: "/hoerspiel" },
+      { label: "Father Brown", href: "/father-brown" },
       { label: "Impressum", href: "/impressum" },
       { label: "Datenschutz", href: "/datenschutz" },
     ],

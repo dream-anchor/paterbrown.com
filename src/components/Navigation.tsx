@@ -17,6 +17,7 @@ const NAV_LINKS: NavLink[] = [
     children: [
       { label: "Das Live-Hörspiel", href: "/live-hoerspiel" },
       { label: "Pater Brown", href: "/pater-brown" },
+      { label: "Das Hörspiel", href: "/hoerspiel" },
     ],
   },
   { label: "Termine", href: "/termine" },
