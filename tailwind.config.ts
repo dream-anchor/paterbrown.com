@@ -69,10 +69,10 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        'display': ['Pacifico', 'cursive'],
-        'heading': ['Playfair Display', 'Georgia', 'serif'],
-        'sans': ['Inter', 'sans-serif'],
-        'serif': ['Playfair Display', 'Georgia', 'serif'],
+        'heading': ['"Josefin Sans"', 'sans-serif'],
+        'display': ['"Josefin Sans"', 'sans-serif'],
+        'serif': ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        'sans': ['"DM Sans"', 'sans-serif'],
       },
       keyframes: {
         "accordion-down": {

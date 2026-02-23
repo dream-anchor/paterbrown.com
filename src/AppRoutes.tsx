@@ -22,10 +22,10 @@ const ShareDownload = lazy(() => import("./pages/ShareDownload"));
 const BundleDownload = lazy(() => import("./pages/BundleDownload"));
 
 const LoadingFallback = () => (
-  <div className="min-h-screen bg-white flex items-center justify-center">
+  <div className="min-h-screen bg-background flex items-center justify-center">
     <div className="flex flex-col items-center gap-3">
-      <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-      <span className="text-sm text-gray-500 font-medium">Lädt...</span>
+      <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <span className="text-sm text-muted-foreground font-heading uppercase tracking-widest">Lädt...</span>
     </div>
   </div>
 );
