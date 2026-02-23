@@ -24,31 +24,27 @@ const CTASection = () => {
   });
 
   return (
-    <section className="text-center space-y-10">
+    <div className="text-center space-y-12">
       <div>
-        <p className="text-gold text-sm uppercase tracking-[0.3em] font-medium mb-4">
-          Jetzt erleben
-        </p>
-        <h2 className="text-4xl sm:text-5xl md:text-7xl font-heading text-foreground">
+        <p className="text-foreground/30 text-[10px] uppercase tracking-[0.4em] mb-6">Jetzt erleben</p>
+        <h2 className="text-4xl sm:text-5xl md:text-7xl font-heading text-foreground leading-[0.9]">
           Tickets sichern
         </h2>
       </div>
 
       {nextEvents.length > 0 && (
-        <div className="space-y-3 max-w-2xl mx-auto text-left">
+        <div className="space-y-px max-w-2xl mx-auto text-left bg-foreground/5">
           {nextEvents.map((event) => (
             <div
               key={event.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 border border-foreground/10 bg-card/20 transition-colors hover:border-gold/20"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-6 bg-background transition-colors hover:bg-foreground/[0.02]"
             >
               <div className="flex items-center gap-4">
-                <CalendarDays className="w-5 h-5 text-gold shrink-0" aria-hidden="true" />
+                <CalendarDays className="w-4 h-4 text-foreground/30 shrink-0" aria-hidden="true" />
                 <div>
-                  <span className="text-gold font-heading text-xl">
-                    {event.date}
-                  </span>
-                  <span className="text-foreground/40 text-sm ml-2">{event.day}</span>
-                  <p className="text-foreground/60 text-sm">{event.city} · {event.venue}</p>
+                  <span className="text-foreground font-heading text-lg">{event.date}</span>
+                  <span className="text-foreground/30 text-xs ml-2">{event.day}</span>
+                  <p className="text-foreground/40 text-sm">{event.city} · {event.venue}</p>
                 </div>
               </div>
               {event.ticket_url && (
@@ -56,7 +52,7 @@ const CTASection = () => {
                   href={event.ticket_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-medium text-gold hover:text-gold/80 transition-colors uppercase tracking-[0.15em] whitespace-nowrap"
+                  className="text-xs font-medium text-foreground/50 hover:text-foreground transition-colors uppercase tracking-[0.2em] whitespace-nowrap"
                 >
                   Tickets →
                 </a>
@@ -68,18 +64,18 @@ const CTASection = () => {
 
       <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
         <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer">
-          <button className="btn-premium" type="button">
-            Jetzt Tickets sichern
+          <button className="text-sm uppercase tracking-[0.25em] font-semibold px-10 py-4 border border-foreground/30 hover:border-foreground/60 text-foreground/90 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 transition-all duration-300" type="button">
+            Alle Tickets
           </button>
         </a>
         <Link
           to="/termine"
-          className="text-gold hover:text-gold/80 transition-colors text-sm font-medium uppercase tracking-[0.2em] underline-offset-4 hover:underline"
+          className="text-foreground/40 hover:text-foreground transition-colors text-xs uppercase tracking-[0.2em]"
         >
-          Alle Termine anzeigen →
+          Alle Termine →
         </Link>
       </div>
-    </section>
+    </div>
   );
 };
 
