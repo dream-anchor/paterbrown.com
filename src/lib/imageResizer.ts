@@ -100,28 +100,48 @@ export const generateImageVersions = async (
 /**
  * Extract a thumbnail from a video file by grabbing a frame at ~10% duration.
  * Returns a WebP blob suitable for use as thumbnail_url.
+ * Includes a timeout to prevent hanging on unsupported codecs (e.g. HEVC).
  */
 export const extractVideoThumbnail = (
   file: File,
   maxSize: number = 400,
-  quality: number = 0.75
+  quality: number = 0.75,
+  timeoutMs: number = 10000
 ): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const video = document.createElement("video");
-    video.preload = "metadata";
+    video.preload = "auto";
     video.muted = true;
     video.playsInline = true;
 
-    video.onloadeddata = () => {
+    let settled = false;
+    const cleanup = () => {
+      if (video.src) URL.revokeObjectURL(video.src);
+    };
+
+    // Timeout guard — reject if extraction takes too long
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        cleanup();
+        reject(new Error("Video thumbnail extraction timed out"));
+      }
+    }, timeoutMs);
+
+    video.onloadedmetadata = () => {
       // Seek to 10% of duration or 1 second, whichever is smaller
       video.currentTime = Math.min(1, video.duration * 0.1);
     };
 
     video.onseeked = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       if (!ctx) {
-        URL.revokeObjectURL(video.src);
+        cleanup();
         reject(new Error("Could not get canvas context"));
         return;
       }
@@ -149,7 +169,7 @@ export const extractVideoThumbnail = (
 
       canvas.toBlob(
         (blob) => {
-          URL.revokeObjectURL(video.src);
+          cleanup();
           if (blob) resolve(blob);
           else reject(new Error("Failed to create video thumbnail blob"));
         },
@@ -159,7 +179,10 @@ export const extractVideoThumbnail = (
     };
 
     video.onerror = () => {
-      URL.revokeObjectURL(video.src);
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      cleanup();
       reject(new Error("Failed to load video for thumbnail extraction"));
     };
 
