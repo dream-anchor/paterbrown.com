@@ -165,32 +165,30 @@ const MasonryItem = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.3) }}
-      // break-inside-avoid keeps the card in one column (no split)
       className={cn(
-        "break-inside-avoid relative overflow-hidden cursor-pointer rounded-2xl bg-gray-100 group",
+        "relative overflow-hidden cursor-pointer rounded-2xl bg-gray-100 group aspect-[4/3]",
         isSelected
           ? "ring-3 ring-amber-500 ring-offset-2 ring-offset-gray-100 shadow-lg"
           : "hover:shadow-xl transition-shadow duration-200"
       )}
-      style={{ marginBottom: gap }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleClick}
     >
-      {/* Skeleton placeholder — 3:2 approximation while loading */}
+      {/* Skeleton placeholder */}
       {!imageLoaded && !loadError && !isRetrying && (
-        <div className="w-full aspect-[3/2] bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-[shimmer_1.5s_infinite]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-[shimmer_1.5s_infinite]" />
       )}
 
       {isRetrying && (
-        <div className="w-full aspect-[3/2] bg-gray-200 flex items-center justify-center">
+        <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
           <RefreshCw className="w-5 h-5 text-gray-400 animate-spin" />
         </div>
       )}
 
       {/* Error state */}
       {loadError && !isRetrying && (
-        <div className="w-full aspect-[3/2] bg-gray-200 flex flex-col items-center justify-center gap-1 p-2">
+        <div className="absolute inset-0 bg-gray-200 flex flex-col items-center justify-center gap-1 p-2">
           <AlertTriangle className="w-5 h-5 text-amber-500" />
           <button
             onClick={handleManualRetry}
@@ -211,7 +209,7 @@ const MasonryItem = ({
                 src={image.thumbnail_url}
                 alt={image.title || image.file_name}
                 className={cn(
-                  "w-full h-auto block transition-transform duration-300",
+                  "w-full h-full object-cover block transition-transform duration-300",
                   isHovered && "scale-[1.03]",
                   !imageLoaded && "hidden"
                 )}
@@ -226,7 +224,7 @@ const MasonryItem = ({
                 playsInline
                 preload="metadata"
                 className={cn(
-                  "w-full h-auto block transition-transform duration-300",
+                  "w-full h-full object-cover block transition-transform duration-300",
                   isHovered && "scale-[1.03]",
                   !imageLoaded && "hidden"
                 )}
@@ -248,7 +246,7 @@ const MasonryItem = ({
             src={getDisplayUrl()}
             alt={image.title || image.file_name}
             className={cn(
-              "w-full h-auto block transition-transform duration-300",
+              "w-full h-full object-cover block transition-transform duration-300",
               isHovered && "scale-[1.03]",
               !imageLoaded && "hidden"
             )}
@@ -359,11 +357,10 @@ const JustifiedGallery = ({
   const effectiveGap = isMobile ? 2 : gap;
 
   return (
-    // CSS columns masonry: images flow into columns at their natural aspect ratio
     <div className={cn(
-      "w-full",
-      isMobile ? "columns-2" : "columns-2 sm:columns-3 lg:columns-4"
-    )} style={{ columnGap: effectiveGap }}>
+      "w-full grid",
+      isMobile ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
+    )} style={{ gap: effectiveGap }}>
       {images.map((image, index) => (
         <MasonryItem
           key={image.id}
