@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ChevronRight } from "lucide-react";
 
 interface BreadcrumbItem {
   label: string;
@@ -33,22 +32,25 @@ const Breadcrumb = ({ items }: BreadcrumbProps) => {
         <script type="application/ld+json">{JSON.stringify(schema)}</script>
       </Helmet>
       <nav aria-label="Breadcrumb" className="mb-8">
-        <ol className="flex flex-wrap items-center gap-1.5 text-sm text-foreground/60">
+        <ol className="flex flex-wrap items-center gap-1.5 text-[11px] font-sans uppercase tracking-[0.1em] text-foreground/40">
           {allItems.map((item, index) => {
             const isLast = index === allItems.length - 1;
             return (
               <li key={index} className="flex items-center gap-1.5">
                 {index > 0 && (
-                  <ChevronRight className="w-3.5 h-3.5 text-foreground/30" aria-hidden="true" />
+                  <span className="text-primary/40" aria-hidden="true">/</span>
                 )}
                 {isLast || !item.href ? (
-                  <span className={isLast ? "text-gold font-medium" : ""} aria-current={isLast ? "page" : undefined}>
+                  <span
+                    className={isLast ? "text-primary" : ""}
+                    aria-current={isLast ? "page" : undefined}
+                  >
                     {item.label}
                   </span>
                 ) : (
                   <Link
                     to={item.href}
-                    className="hover:text-gold transition-colors underline-offset-4 hover:underline"
+                    className="hover:text-foreground transition-colors"
                   >
                     {item.label}
                   </Link>

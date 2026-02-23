@@ -1,137 +1,125 @@
-import { Instagram, Flame } from "lucide-react";
-import { EVENTIM_AFFILIATE_URL, INSTAGRAM_URL } from "@/lib/constants";
-import { isBlackWeekActive } from "@/lib/blackWeekConfig";
+import { Link } from "react-router-dom";
+import { Instagram } from "lucide-react";
+import { INSTAGRAM_URL } from "@/lib/constants";
+
+const FOOTER_NAV = [
+  {
+    heading: "Pater Brown",
+    links: [
+      { label: "Pater Brown", href: "/pater-brown" },
+      { label: "Das Live-Hörspiel", href: "/live-hoerspiel" },
+    ],
+  },
+  {
+    heading: "Darsteller",
+    links: [
+      { label: "Wanja Mues", href: "/wanja-mues" },
+      { label: "Antoine Monot", href: "/antoine-monot" },
+      { label: "Marvelin", href: "/marvelin" },
+      { label: "Stefanie Sick", href: "/stefanie-sick" },
+    ],
+  },
+  {
+    heading: "Termine",
+    links: [
+      { label: "Alle Termine", href: "/termine" },
+      { label: "München", href: "/muenchen" },
+      { label: "Hamburg", href: "/hamburg" },
+      { label: "Köln", href: "/koeln" },
+      { label: "Berlin", href: "/berlin" },
+    ],
+  },
+  {
+    heading: "Mehr",
+    links: [
+      { label: "Impressum", href: "/impressum" },
+      { label: "Datenschutz", href: "/datenschutz" },
+    ],
+  },
+];
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  const isBlackWeek = isBlackWeekActive();
-  
+
   return (
-    <footer className="pt-0 pb-20 px-6 bg-background" role="contentinfo">
-      <div className="container mx-auto max-w-6xl">
-        
-        {/* Black Week CTA */}
-        {isBlackWeek && (
-          <div className="flex items-center justify-center mt-0 mb-16">
-            <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer">
-              <button 
-                className="stoerer-badge px-10 py-4 rounded-full inline-flex items-center gap-3 hover:scale-105 transition-transform"
-                type="button"
-              >
-                <Flame className="w-6 h-6 text-black fill-neon-gold" />
-                <span className="text-black font-black text-lg uppercase tracking-wide">
-                  🔥 Jetzt letzte Tickets sichern – 30% bis 1.12.
-                </span>
-                <Flame className="w-6 h-6 text-black fill-neon-gold" />
-              </button>
+    <footer className="pt-16 pb-12 bg-background border-t border-border/30" role="contentinfo">
+      <div className="w-[88%] max-w-[1400px] mx-auto">
+        {/* 4-Spalten Navigation */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-16">
+          {FOOTER_NAV.map((col) => (
+            <div key={col.heading}>
+              <h3 className="text-primary text-xs font-heading uppercase tracking-[0.2em] mb-5">
+                {col.heading}
+              </h3>
+              <nav aria-label={col.heading}>
+                <ul className="space-y-3">
+                  {col.links.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        to={link.href}
+                        className="text-foreground/50 hover:text-foreground text-sm font-heading uppercase tracking-[0.1em] transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
+          ))}
+        </div>
+
+        {/* Kontakt-Zeile */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
+          <address className="not-italic font-serif text-foreground/60 text-sm tracking-[0.05em]">
+            <a href="mailto:hallo@paterbrown.com" className="hover:text-primary transition-colors">
+              hallo@paterbrown.com
             </a>
-          </div>
-        )}
+            <span className="mx-3 text-primary/30">|</span>
+            <a href="tel:+498990901539433" className="hover:text-primary transition-colors">
+              +49 89 909015 3943
+            </a>
+          </address>
 
-
-        <div className="grid md:grid-cols-3 gap-12 text-center mb-12 justify-items-center">
-          <div>
-            <h3 className="text-gold text-xs mb-4 tracking-[0.3em] uppercase font-bold">
-              Kontakt
-            </h3>
-            <address className="text-foreground/80 text-sm leading-relaxed not-italic">
-              <a href="mailto:hallo@paterbrown.com" className="hover:text-gold transition-colors">
-                hallo@paterbrown.com
-              </a>
-              <br />
-              <a href="tel:+498990901539433" className="hover:text-gold transition-colors">
-                +49 89 909015 3943
-              </a>
-            </address>
-          </div>
-
-          <div>
-            <h3 className="text-gold text-xs mb-4 tracking-[0.3em] uppercase font-bold">
-              Social
-            </h3>
-            <nav aria-label="Social Media Links">
-              <div className="flex gap-6 justify-center">
-              <a 
-                href={INSTAGRAM_URL} 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-foreground/80 hover:text-gold transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded"
-                aria-label="Besuche uns auf Instagram"
-              >
-                  <Instagram className="w-5 h-5" aria-hidden="true" />
-                  <span className="text-sm">Instagram</span>
-                </a>
-              </div>
-            </nav>
-          </div>
-
-          <div>
-            <h3 className="text-gold text-xs mb-4 tracking-[0.3em] uppercase font-bold">
-              Rechtliches
-            </h3>
-            <nav aria-label="Rechtliche Links">
-              <div className="flex flex-col gap-2 text-sm">
-                <a href="/impressum" className="text-foreground/80 hover:text-gold active:text-gold transition-colors focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded py-2 inline-block min-h-[44px] flex items-center">
-                  Impressum
-                </a>
-              <a href="/datenschutz" className="text-foreground/80 hover:text-gold active:text-gold transition-colors focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded py-2 inline-block min-h-[44px] flex items-center">
-                  Datenschutz
-                </a>
-              </div>
-            </nav>
-          </div>
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground/50 hover:text-primary transition-colors flex items-center gap-2"
+            aria-label="Besuche uns auf Instagram"
+          >
+            <Instagram className="w-4 h-4" aria-hidden="true" />
+            <span className="text-xs font-heading uppercase tracking-[0.15em]">Instagram</span>
+          </a>
         </div>
 
-        <div className="text-center mb-16 px-4">
-          <h3 className="text-foreground text-xs mb-4 tracking-[0.3em] uppercase font-bold">
-            Ticketservice
-          </h3>
-          <p className="text-foreground/80 text-sm leading-relaxed max-w-3xl mx-auto">
-            Unser Ticketpartner <a href="https://www.eventim.de" target="_blank" rel="noopener noreferrer" className="text-gold hover:text-gold/80 transition-colors font-semibold">eventim.de</a> hilft dir gern weiter –<br />
-            telefonisch Montag bis Freitag von <strong>10–16 Uhr</strong> unter{" "}
-            <a href="tel:+4942120315511" className="hover:text-gold transition-colors">
-              +49 421 20 31 55 11
-            </a>{" "}
-            oder jederzeit im{" "}
-            <a 
-              href="https://www.eventim.de/faq/de_de/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-gold transition-colors"
-            >
-              Helpcenter
-            </a>.
-          </p>
-        </div>
-
+        {/* Divider */}
         <div className="divider-gold mb-8" aria-hidden="true" />
 
-        <div className="text-center space-y-4">
-          <p className="text-foreground/60 text-sm">
-            Eine Produktion der Dream & Anchor
-          </p>
-          <p className="text-muted-foreground text-xs tracking-wider">
-            © {currentYear} Pater Brown Live-Hörspiel
-          </p>
-          <div className="mt-6">
-            <a 
-              href={EVENTIM_AFFILIATE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gold hover:text-gold/80 transition-colors text-sm font-medium tracking-wide focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-background rounded"
-              aria-label="Noch keine Tickets? Jetzt bei Eventim sichern"
-            >
-              Noch keine Tickets? Jetzt sichern <span aria-hidden="true">→</span>
-            </a>
+        {/* Bottom */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+          <div className="space-y-1">
+            <p className="text-foreground/40 text-xs font-heading uppercase tracking-[0.1em]">
+              Eine Produktion der Dream &amp; Anchor
+            </p>
+            <p className="text-muted-foreground text-xs tracking-wider">
+              &copy; {currentYear} Pater Brown Live-Hörspiel
+            </p>
           </div>
-          <div className="mt-4">
-            <a 
-              href="/admin" 
-              className="text-muted-foreground/50 hover:text-foreground/60 transition-colors text-xs inline-block py-3 px-4 min-h-[44px] min-w-[44px] flex items-center justify-center"
-            >
-              Admin
-            </a>
-          </div>
+
+          <p className="text-foreground/25 text-[10px] tracking-wider">
+            Fotos: &copy; Alexander Frank, Gio Löwe
+          </p>
+        </div>
+
+        {/* Admin Link */}
+        <div className="text-center mt-8">
+          <a
+            href="/admin"
+            className="text-muted-foreground/30 hover:text-foreground/40 transition-colors text-[10px]"
+          >
+            Admin
+          </a>
         </div>
       </div>
     </footer>

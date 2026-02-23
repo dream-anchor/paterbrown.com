@@ -273,6 +273,12 @@ All colors MUST be HSL.
     animation: cinematic-enter 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
+  /* Mobile off-canvas slide-in */
+  @keyframes slideInLeft {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(0); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .cinematic-enter {
       animation: none;
