@@ -1,14 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Helmet } from "react-helmet-async";
 import { SEO } from "@/components/SEO";
 import { Link } from "react-router-dom";
 import LandingLayout from "./LandingLayout";
 import FAQSection from "./FAQSection";
 import ResponsiveImage from "./ResponsiveImage";
-import CTASection from "./CTASection";
+import Section from "@/components/ui/Section";
+import SerifText from "@/components/ui/SerifText";
+import GhostButton from "@/components/ui/GhostButton";
+import Quote from "@/components/ui/Quote";
 import { CalendarDays, MapPin, Train, Car, Utensils, Hotel, Landmark } from "lucide-react";
-import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 interface VenueInfo {
   name: string;
@@ -74,13 +75,12 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
 
   const nextEvent = events[0];
 
-  // Event Schema
   const eventSchema = nextEvent
     ? {
         "@context": "https://schema.org",
         "@type": "TheaterEvent",
-        name: `Pater Brown – Das Live-Hörspiel – ${config.cityName}`,
-        description: `Live-Hörspiel mit Antoine Monot, Wanja Mues & Marvelin in ${config.cityName}, ${config.venue.name}`,
+        name: `Pater Brown \u2013 Das Live-H\u00F6rspiel \u2013 ${config.cityName}`,
+        description: `Live-H\u00F6rspiel mit Antoine Monot, Wanja Mues & Marvelin in ${config.cityName}, ${config.venue.name}`,
         startDate: `${nextEvent.eventDate}T20:00:00`,
         duration: "PT2H",
         eventStatus: "https://schema.org/EventScheduled",
@@ -118,8 +118,8 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
 
   const tipSections = [
     { icon: Utensils, title: "Restaurants & Bars", items: config.tips.restaurants },
-    { icon: Hotel, title: "Übernachten", items: config.tips.hotels },
-    { icon: Landmark, title: "Sehenswürdigkeiten", items: config.tips.sights },
+    { icon: Hotel, title: "\u00DCbernachten", items: config.tips.hotels },
+    { icon: Landmark, title: "Sehensw\u00FCrdigkeiten", items: config.tips.sights },
   ].filter(s => s.items.length > 0);
 
   return (
@@ -129,7 +129,8 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
         { label: config.cityName },
       ]}
       heroTitle={config.cityName}
-      heroSubtitle={`Das Live-Hörspiel`}
+      heroSubtitle="Das Live-H\u00F6rspiel"
+      showCTA
     >
       <SEO
         title={config.seo.title}
@@ -137,95 +138,99 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
         canonical={`/${config.slug}`}
         keywords={config.seo.keywords}
         ogImage={`/images/og/pater-brown-${config.slug}-live-hoerspiel-og.webp`}
+        schema={eventSchema}
       />
-
-      {eventSchema && (
-        <Helmet>
-          <script type="application/ld+json">{JSON.stringify(eventSchema)}</script>
-        </Helmet>
-      )}
 
       {/* ─── Event Details ─── */}
       {nextEvent ? (
-        <section className="py-20 md:py-28">
-          <div className="max-w-5xl mx-auto px-6 md:px-12">
-            <div className="border border-foreground/10 p-8 md:p-12">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-                <div className="space-y-5">
-                  <p className="text-foreground/40 text-[10px] uppercase tracking-[0.3em]">Nächster Termin</p>
-                  <div className="flex items-center gap-4">
-                    <CalendarDays className="w-5 h-5 text-gold shrink-0" aria-hidden="true" />
-                    <div>
-                      <span className="text-foreground font-heading text-3xl md:text-4xl">{nextEvent.date}</span>
-                      <span className="text-foreground/30 text-sm ml-3">{nextEvent.day}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <MapPin className="w-5 h-5 text-gold shrink-0" aria-hidden="true" />
-                    <div>
-                      <p className="text-foreground text-lg">{config.venue.name}</p>
-                      <p className="text-foreground/40 text-sm">{config.venue.address}</p>
-                    </div>
+        <Section container="wide" className="py-16 md:py-24">
+          <div className="card-glow rounded-[3px] p-8 md:p-12">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+              <div className="space-y-5">
+                <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading">
+                  N\u00E4chster Termin
+                </p>
+                <div className="flex items-center gap-4">
+                  <CalendarDays className="w-5 h-5 text-primary/50 shrink-0" aria-hidden="true" />
+                  <div>
+                    <span className="text-foreground font-heading text-3xl md:text-4xl">{nextEvent.date}</span>
+                    <span className="text-foreground/30 text-sm ml-3">{nextEvent.day}</span>
                   </div>
                 </div>
-                {nextEvent.ticketUrl && (
-                  <a href={nextEvent.ticketUrl} target="_blank" rel="noopener noreferrer">
-                    <button className="text-sm uppercase tracking-[0.25em] font-semibold px-10 py-4 border border-foreground/30 hover:border-foreground/60 text-foreground/90 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 transition-all duration-300" type="button">
-                      Tickets sichern
-                    </button>
-                  </a>
-                )}
+                <div className="flex items-center gap-4">
+                  <MapPin className="w-5 h-5 text-primary/50 shrink-0" aria-hidden="true" />
+                  <div>
+                    <p className="text-foreground font-heading text-lg">{config.venue.name}</p>
+                    <p className="text-foreground/40 text-sm font-serif normal-case tracking-[0.05em]">{config.venue.address}</p>
+                  </div>
+                </div>
               </div>
+              {nextEvent.ticketUrl && (
+                <GhostButton href={nextEvent.ticketUrl} size="lg">
+                  Tickets sichern
+                </GhostButton>
+              )}
             </div>
           </div>
-        </section>
+        </Section>
       ) : config.noCurrentEvent ? (
-        <section className="py-20 md:py-28">
-          <div className="max-w-5xl mx-auto px-6 md:px-12 text-center space-y-4">
-            <p className="text-foreground/50 text-xl font-light">
+        <Section container="narrow" className="py-16 md:py-24">
+          <div className="text-center space-y-6">
+            <SerifText size="xl" className="text-foreground/50">
               {config.comingSoonText || `Aktuell sind keine Termine in ${config.cityName} geplant.`}
-            </p>
-            <Link to="/termine" className="text-foreground/60 hover:text-foreground transition-colors text-sm uppercase tracking-[0.2em] inline-block">
-              Alle Termine →
-            </Link>
+            </SerifText>
+            <GhostButton to="/termine" size="sm">
+              Alle Termine
+            </GhostButton>
           </div>
-        </section>
+        </Section>
       ) : null}
 
-      {/* ─── Über die Veranstaltung ─── */}
-      <section className="py-20 md:py-28 border-t border-foreground/5">
-        <div className="max-w-4xl mx-auto px-6 md:px-12">
-          <p className="text-foreground/30 text-[10px] uppercase tracking-[0.4em] mb-6">Die Show</p>
-          <h2 className="text-4xl sm:text-5xl md:text-7xl font-heading text-foreground mb-10 leading-[0.9]">
-            Krimi, Klang<br />& Gänsehaut
-          </h2>
-          <div className="text-foreground/60 leading-relaxed space-y-5 text-lg max-w-3xl">
-            <p>
-              <strong className="text-foreground/90">PATER BROWN – Das Live-Hörspiel</strong>{" "}
-              kommt nach {config.cityName}. Erleben Sie die einzigartige Kombination aus Theater,
-              Hörspiel und Beatbox-Sounddesign live auf der Bühne.
-            </p>
-            <p>
-              <Link to="/antoine-monot" className="text-foreground/80 hover:text-foreground transition-colors underline underline-offset-4 decoration-foreground/20 hover:decoration-foreground/40">Antoine Monot</Link>{" "}
-              schlüpft in die Rolle des scharfsinnigen Pater Brown.{" "}
-              <Link to="/wanja-mues" className="text-foreground/80 hover:text-foreground transition-colors underline underline-offset-4 decoration-foreground/20 hover:decoration-foreground/40">Wanja Mues</Link>{" "}
-              gibt den charmanten Meisterdieb Flambeau, und{" "}
-              <Link to="/marvelin" className="text-foreground/80 hover:text-foreground transition-colors underline underline-offset-4 decoration-foreground/20 hover:decoration-foreground/40">Marvelin</Link>{" "}
-              erzeugt live alle Geräusche – ausschließlich mit dem Mund.
-            </p>
-            <p className="text-foreground/40">
-              2 Krimis · ca. 2 Stunden · ab{" "}
-              {config.addressCountry === "CH" ? "CHF 45" : "34,90 €"}
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* ─── Die Show ─── */}
+      <Section container="narrow" className="py-16 md:py-24">
+        <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+          Die Show
+        </p>
+        <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
+          Krimi, Klang & G\u00E4nsehaut
+        </h2>
+        <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
 
-      {/* ─── Bühnenfoto – Full Bleed ─── */}
-      <section className="py-0">
+        <div className="space-y-4">
+          <SerifText size="lg" className="text-foreground/70">
+            <strong className="text-foreground">PATER BROWN \u2013 Das Live-H\u00F6rspiel</strong>{" "}
+            kommt nach {config.cityName}. Erleben Sie die einzigartige Kombination aus Theater,
+            H\u00F6rspiel und Beatbox-Sounddesign live auf der B\u00FChne.
+          </SerifText>
+          <SerifText size="lg" className="text-foreground/70">
+            <Link to="/antoine-monot" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">Antoine Monot</Link>{" "}
+            schl\u00FCpft in die Rolle des scharfsinnigen Pater Brown.{" "}
+            <Link to="/wanja-mues" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">Wanja Mues</Link>{" "}
+            gibt den charmanten Meisterdieb Flambeau, und{" "}
+            <Link to="/marvelin" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">Marvelin</Link>{" "}
+            erzeugt live alle Ger\u00E4usche \u2013 ausschlie\u00DFlich mit dem Mund.
+          </SerifText>
+          <p className="text-foreground/40 font-heading text-sm uppercase tracking-[0.15em]">
+            2 Krimis \u00B7 ca. 2 Stunden \u00B7 ab{" "}
+            {config.addressCountry === "CH" ? "CHF 45" : "34,90 \u20AC"}
+          </p>
+        </div>
+
+        <div className="mt-8">
+          <Link
+            to="/live-hoerspiel"
+            className="text-primary text-xs font-heading uppercase tracking-[0.15em] hover:text-foreground transition-colors"
+          >
+            Mehr zur Show &rarr;
+          </Link>
+        </div>
+      </Section>
+
+      {/* ─── B\u00FChnenfoto \u2013 Full Bleed ─── */}
+      <div className="w-full overflow-hidden">
         <ResponsiveImage
           basePath="/images/buehne/pater-brown-atmosphaere-silhouette-nebel-af"
-          alt={`Stimmungsvolle Silhouette beim Pater Brown Live-Hörspiel in ${config.cityName}`}
+          alt={`Stimmungsvolle Silhouette beim Pater Brown Live-H\u00F6rspiel in ${config.cityName}`}
           width={2000}
           height={2666}
           sizes="100vw"
@@ -233,141 +238,143 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
           className="w-full aspect-[21/9] object-cover object-center"
           credit="Alexander Frank"
         />
-      </section>
+      </div>
 
-      {/* ─── Großes Zitat ─── */}
-      <section className="py-24 md:py-36">
-        <div className="max-w-5xl mx-auto px-6 md:px-12 text-center">
-          <blockquote className="text-3xl md:text-5xl lg:text-7xl font-heading italic text-foreground/80 leading-[0.95]">
-            „Zwei Schauspieler.<br />Alle Stimmen.<br />Jeder verdächtig."
-          </blockquote>
+      {/* ─── Gro\u00DFes Zitat ─── */}
+      <Section container="narrow" className="py-20 md:py-32">
+        <div className="text-center">
+          <Quote
+            text="Zwei Schauspieler. Alle Stimmen. Jeder verd\u00E4chtig."
+            citation="Das Live-H\u00F6rspiel"
+          />
         </div>
-      </section>
+      </Section>
 
       {/* ─── Veranstaltungsort ─── */}
-      <section className="py-20 md:py-28 border-t border-foreground/5">
-        <div className="max-w-5xl mx-auto px-6 md:px-12">
-          <p className="text-foreground/30 text-[10px] uppercase tracking-[0.4em] mb-6">Veranstaltungsort</p>
-          <h2 className="text-4xl sm:text-5xl md:text-7xl font-heading text-foreground mb-10 leading-[0.9]">
-            {config.venue.name}
-          </h2>
-          <p className="text-foreground/50 leading-relaxed text-lg mb-12 max-w-3xl">{config.venue.description}</p>
+      <Section container="wide" className="py-16 md:py-24">
+        <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+          Veranstaltungsort
+        </p>
+        <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
+          {config.venue.name}
+        </h2>
+        <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-foreground/5">
-            <div className="p-8 bg-background space-y-3">
-              <MapPin className="w-5 h-5 text-foreground/30" aria-hidden="true" />
-              <p className="text-foreground/30 text-[10px] uppercase tracking-[0.3em]">Adresse</p>
-              <p className="text-foreground/70 text-sm">{config.venue.address}</p>
-            </div>
-            {config.venue.oepnv && (
-              <div className="p-8 bg-background space-y-3">
-                <Train className="w-5 h-5 text-foreground/30" aria-hidden="true" />
-                <p className="text-foreground/30 text-[10px] uppercase tracking-[0.3em]">ÖPNV</p>
-                <p className="text-foreground/70 text-sm">{config.venue.oepnv}</p>
-              </div>
-            )}
-            {config.venue.parking && (
-              <div className="p-8 bg-background space-y-3">
-                <Car className="w-5 h-5 text-foreground/30" aria-hidden="true" />
-                <p className="text-foreground/30 text-[10px] uppercase tracking-[0.3em]">Parken</p>
-                <p className="text-foreground/70 text-sm">{config.venue.parking}</p>
-              </div>
-            )}
+        <SerifText size="lg" className="text-foreground/60 mb-12 max-w-3xl">
+          {config.venue.description}
+        </SerifText>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="p-6 card-glow rounded-[3px] space-y-3">
+            <MapPin className="w-5 h-5 text-primary/40" aria-hidden="true" />
+            <p className="text-primary text-[10px] uppercase tracking-[0.2em] font-heading">Adresse</p>
+            <p className="text-foreground/70 text-sm font-serif normal-case tracking-[0.05em]">{config.venue.address}</p>
           </div>
+          {config.venue.oepnv && (
+            <div className="p-6 card-glow rounded-[3px] space-y-3">
+              <Train className="w-5 h-5 text-primary/40" aria-hidden="true" />
+              <p className="text-primary text-[10px] uppercase tracking-[0.2em] font-heading">\u00D6PNV</p>
+              <p className="text-foreground/70 text-sm font-serif normal-case tracking-[0.05em]">{config.venue.oepnv}</p>
+            </div>
+          )}
+          {config.venue.parking && (
+            <div className="p-6 card-glow rounded-[3px] space-y-3">
+              <Car className="w-5 h-5 text-primary/40" aria-hidden="true" />
+              <p className="text-primary text-[10px] uppercase tracking-[0.2em] font-heading">Parken</p>
+              <p className="text-foreground/70 text-sm font-serif normal-case tracking-[0.05em]">{config.venue.parking}</p>
+            </div>
+          )}
         </div>
-      </section>
+      </Section>
 
-      {/* ─── Stadt-Tipps – als Karten ─── */}
+      {/* ─── Stadt-Tipps ─── */}
       {tipSections.length > 0 && (
-        <section className="py-20 md:py-28 border-t border-foreground/5">
-          <div className="max-w-5xl mx-auto px-6 md:px-12">
-            <p className="text-foreground/30 text-[10px] uppercase tracking-[0.4em] mb-6">{config.cityName} entdecken</p>
-            <h2 className="text-4xl sm:text-5xl md:text-7xl font-heading text-foreground mb-14 leading-[0.9]">
-              Rund um<br />den Abend
-            </h2>
+        <Section container="wide" className="py-16 md:py-24">
+          <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+            {config.cityName} entdecken
+          </p>
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
+            Rund um den Abend
+          </h2>
+          <div className="divider-gold mb-10 max-w-xs" aria-hidden="true" />
 
-            <div className="grid md:grid-cols-3 gap-px bg-foreground/5">
-              {tipSections.map(({ icon: Icon, title, items }) => (
-                <div key={title} className="p-8 bg-background">
-                  <Icon className="w-5 h-5 text-foreground/20 mb-4" aria-hidden="true" />
-                  <h3 className="text-foreground/60 text-[11px] uppercase tracking-[0.25em] font-medium mb-6">{title}</h3>
-                  <ul className="space-y-3">
-                    {items.map((tip, i) => (
-                      <li key={i} className="text-foreground/50 text-sm leading-relaxed pl-3 border-l border-foreground/10">
-                        {tip}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            {tipSections.map(({ icon: Icon, title, items }) => (
+              <div key={title} className="p-6 card-glow rounded-[3px]">
+                <Icon className="w-5 h-5 text-primary/40 mb-4" aria-hidden="true" />
+                <h3 className="text-primary text-[11px] uppercase tracking-[0.2em] font-heading mb-6">{title}</h3>
+                <ul className="space-y-3">
+                  {items.map((tip, i) => (
+                    <li key={i} className="text-foreground/60 text-sm font-serif normal-case tracking-[0.05em] leading-relaxed pl-3 border-l border-primary/20">
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-        </section>
+        </Section>
       )}
 
-      {/* ─── Über das Live-Hörspiel ─── */}
-      <section className="py-20 md:py-28 border-t border-foreground/5">
-        <div className="max-w-4xl mx-auto px-6 md:px-12">
-          <p className="text-foreground/30 text-[10px] uppercase tracking-[0.4em] mb-6">Mehr erfahren</p>
-          <h2 className="text-4xl sm:text-5xl md:text-7xl font-heading text-foreground mb-10 leading-[0.9]">
-            G.K. Chesterton<br />neu erzählt
-          </h2>
-          <div className="text-foreground/50 leading-relaxed space-y-5 text-lg max-w-3xl">
-            <p>
-              <strong className="text-foreground/80">PATER BROWN – Das Live-Hörspiel</strong>{" "}
-              basiert auf den zeitlosen Kriminalgeschichten von{" "}
-              <Link to="/g-k-chesterton" className="text-foreground/70 hover:text-foreground transition-colors underline underline-offset-4 decoration-foreground/20">G.K. Chesterton</Link>.
-              Die Figur des{" "}
-              <Link to="/pater-brown" className="text-foreground/70 hover:text-foreground transition-colors underline underline-offset-4 decoration-foreground/20">Pater Brown</Link>{" "}
-              – ein unscheinbarer Priester, der mit Einfühlungsvermögen Kriminalfälle löst – fasziniert seit über 100 Jahren.
-            </p>
-            <p>
-              <Link to="/live-hoerspiel" className="text-foreground/70 hover:text-foreground transition-colors underline underline-offset-4 decoration-foreground/20">
-                Was ist ein Live-Hörspiel? →
-              </Link>
-            </p>
-          </div>
+      {/* ─── Mehr erfahren ─── */}
+      <Section container="narrow" className="py-16 md:py-24">
+        <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+          Mehr erfahren
+        </p>
+        <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
+          G.K. Chesterton neu erz\u00E4hlt
+        </h2>
+        <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
+
+        <div className="space-y-4">
+          <SerifText size="lg" className="text-foreground/70">
+            <strong className="text-foreground">PATER BROWN \u2013 Das Live-H\u00F6rspiel</strong>{" "}
+            basiert auf den zeitlosen Kriminalgeschichten von{" "}
+            <Link to="/g-k-chesterton" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">G.K. Chesterton</Link>.
+            Die Figur des{" "}
+            <Link to="/pater-brown" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">Pater Brown</Link>{" "}
+            \u2013 ein unscheinbarer Priester, der mit Einf\u00FChlungsverm\u00F6gen Kriminalf\u00E4lle l\u00F6st \u2013 fasziniert seit \u00FCber 100 Jahren.
+          </SerifText>
+          <Link
+            to="/live-hoerspiel"
+            className="text-primary text-xs font-heading uppercase tracking-[0.15em] hover:text-foreground transition-colors inline-block"
+          >
+            Was ist ein Live-H\u00F6rspiel? &rarr;
+          </Link>
         </div>
-      </section>
+      </Section>
 
       {/* ─── Nearby Cities ─── */}
       {config.nearbyCities && config.nearbyCities.length > 0 && (
-        <section className="py-20 md:py-28 border-t border-foreground/5">
-          <div className="max-w-5xl mx-auto px-6 md:px-12">
-            <p className="text-foreground/30 text-[10px] uppercase tracking-[0.4em] mb-6">Auch in der Nähe</p>
-            <div className="grid sm:grid-cols-2 gap-px bg-foreground/5">
-              {config.nearbyCities.map((city) => (
-                <Link
-                  key={city.slug}
-                  to={`/${city.slug}`}
-                  className="p-8 bg-background hover:bg-foreground/[0.02] transition-colors group"
-                >
-                  <span className="text-3xl md:text-4xl font-heading text-foreground group-hover:text-foreground/80 transition-colors">
-                    {city.name}
-                  </span>
-                  <p className="text-foreground/30 text-sm mt-2">Pater Brown Live →</p>
-                </Link>
-              ))}
-            </div>
+        <Section container="wide" className="py-16 md:py-24">
+          <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-8">
+            Auch in der N\u00E4he
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {config.nearbyCities.map((city) => (
+              <Link
+                key={city.slug}
+                to={`/${city.slug}`}
+                className="p-8 card-glow rounded-[3px] group transition-all"
+              >
+                <span className="text-3xl md:text-4xl font-heading text-foreground group-hover:text-primary transition-colors">
+                  {city.name}
+                </span>
+                <p className="text-foreground/40 text-sm font-serif normal-case tracking-[0.05em] mt-2">
+                  Pater Brown Live &rarr;
+                </p>
+              </Link>
+            ))}
           </div>
-        </section>
+        </Section>
       )}
 
       {/* ─── FAQ ─── */}
       {config.faq.length > 0 && (
-        <section className="py-20 md:py-28 border-t border-foreground/5">
-          <div className="max-w-4xl mx-auto px-6 md:px-12">
-            <FAQSection items={config.faq} label="FAQ" title={`Häufige Fragen`} />
-          </div>
-        </section>
+        <Section container="narrow" className="py-16 md:py-24">
+          <FAQSection items={config.faq} label="FAQ" title="H\u00E4ufige Fragen" />
+        </Section>
       )}
-
-      {/* ─── CTA ─── */}
-      <section className="py-20 md:py-28 border-t border-foreground/5">
-        <div className="max-w-4xl mx-auto px-6 md:px-12">
-          <CTASection />
-        </div>
-      </section>
     </LandingLayout>
   );
 };
