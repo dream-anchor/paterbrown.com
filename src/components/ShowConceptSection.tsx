@@ -6,15 +6,15 @@ import { Flame } from "lucide-react";
 const ShowConceptSection = memo(() => {
   return (
     <section 
-      className="py-24 px-6 bg-gradient-to-b from-card/20 to-background"
+      className="py-28 md:py-36 px-6"
       aria-labelledby="program-heading"
     >
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-24">
-          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-4 font-medium">
+          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-6 font-medium">
             Zwei Kriminalfälle an einem Abend
           </p>
-          <h2 id="program-heading" className="text-4xl sm:text-6xl md:text-8xl font-heading tracking-wider text-foreground uppercase">
+          <h2 id="program-heading" className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85]">
             Das Programm
           </h2>
         </div>
@@ -23,15 +23,13 @@ const ShowConceptSection = memo(() => {
           {showCases.map((showCase) => (
             <article 
               key={showCase.id} 
-              className="premium-card p-8 space-y-6"
+              className="p-8 border border-foreground/10 bg-card/10 space-y-6 transition-colors hover:border-gold/20"
             >
-              <div className="space-y-2">
-                <h3 className="text-4xl font-heading tracking-wider text-gold uppercase">
-                  {showCase.title}
-                </h3>
-              </div>
-              <div className="divider-gold w-24" aria-hidden="true" />
-              <p className="text-foreground/90 leading-relaxed">
+              <h3 className="text-3xl md:text-4xl font-heading text-gold">
+                {showCase.title}
+              </h3>
+              <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24" />
+              <p className="text-foreground/70 leading-relaxed text-lg font-light">
                 {showCase.description}
               </p>
             </article>
@@ -39,13 +37,12 @@ const ShowConceptSection = memo(() => {
         </div>
 
         <div className="text-center mt-16 space-y-4">
-          <div className="divider-gold w-48 mx-auto opacity-50" aria-hidden="true" />
-          <p className="text-xl md:text-2xl text-foreground/80 font-light">
+          <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/30 to-transparent max-w-lg mx-auto" />
+          <p className="text-xl md:text-2xl text-foreground/60 font-light">
             Gesamtdauer: ca. 2 Stunden inkl. 15-minütiger Pause
           </p>
         </div>
 
-        {/* Black Week CTA Banner */}
         {isBlackWeekActive() && (
           <div className="text-center mt-12">
             <div className="stoerer-badge inline-flex items-center gap-3 px-8 py-4 rounded-lg">

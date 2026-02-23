@@ -24,68 +24,60 @@ const CTASection = () => {
   });
 
   return (
-    <section className="py-16 mt-8">
-      <div className="premium-card p-8 md:p-12 text-center space-y-8">
-        <p className="text-gold text-sm uppercase tracking-[0.3em] font-medium">
+    <section className="text-center space-y-10">
+      <div>
+        <p className="text-gold text-sm uppercase tracking-[0.3em] font-medium mb-4">
           Jetzt erleben
         </p>
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading tracking-wider text-foreground uppercase">
+        <h2 className="text-4xl sm:text-5xl md:text-7xl font-heading text-foreground">
           Tickets sichern
         </h2>
+      </div>
 
-        {nextEvents.length > 0 && (
-          <div className="grid gap-4 max-w-2xl mx-auto text-left">
-            {nextEvents.map((event) => (
-              <div
-                key={event.id}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg border border-foreground/10 bg-card/30"
-              >
-                <div className="flex items-center gap-4">
-                  <CalendarDays className="w-5 h-5 text-gold shrink-0" aria-hidden="true" />
-                  <div>
-                    <span className="text-gold font-heading text-xl tracking-wider">
-                      {event.date}
-                    </span>
-                    <span className="text-foreground/50 text-sm ml-2">
-                      {event.day}
-                    </span>
-                    <p className="text-foreground/80 text-sm">
-                      {event.city} · {event.venue}
-                    </p>
-                  </div>
+      {nextEvents.length > 0 && (
+        <div className="space-y-3 max-w-2xl mx-auto text-left">
+          {nextEvents.map((event) => (
+            <div
+              key={event.id}
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 border border-foreground/10 bg-card/20 transition-colors hover:border-gold/20"
+            >
+              <div className="flex items-center gap-4">
+                <CalendarDays className="w-5 h-5 text-gold shrink-0" aria-hidden="true" />
+                <div>
+                  <span className="text-gold font-heading text-xl">
+                    {event.date}
+                  </span>
+                  <span className="text-foreground/40 text-sm ml-2">{event.day}</span>
+                  <p className="text-foreground/60 text-sm">{event.city} · {event.venue}</p>
                 </div>
-                {event.ticket_url && (
-                  <a
-                    href={event.ticket_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm font-medium text-gold hover:text-gold/80 transition-colors uppercase tracking-wider whitespace-nowrap"
-                  >
-                    Tickets <span aria-hidden="true">→</span>
-                  </a>
-                )}
               </div>
-            ))}
-          </div>
-        )}
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-          <a
-            href={EVENTIM_AFFILIATE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <button className="btn-premium" type="button">
-              Jetzt Tickets sichern
-            </button>
-          </a>
-          <Link
-            to="/termine"
-            className="text-gold hover:text-gold/80 transition-colors text-sm font-medium uppercase tracking-wider underline-offset-4 hover:underline"
-          >
-            Alle Termine anzeigen <span aria-hidden="true">→</span>
-          </Link>
+              {event.ticket_url && (
+                <a
+                  href={event.ticket_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-gold hover:text-gold/80 transition-colors uppercase tracking-[0.15em] whitespace-nowrap"
+                >
+                  Tickets →
+                </a>
+              )}
+            </div>
+          ))}
         </div>
+      )}
+
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
+        <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer">
+          <button className="btn-premium" type="button">
+            Jetzt Tickets sichern
+          </button>
+        </a>
+        <Link
+          to="/termine"
+          className="text-gold hover:text-gold/80 transition-colors text-sm font-medium uppercase tracking-[0.2em] underline-offset-4 hover:underline"
+        >
+          Alle Termine anzeigen →
+        </Link>
       </div>
     </section>
   );

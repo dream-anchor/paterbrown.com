@@ -153,12 +153,12 @@ const HeroSection = () => {
           animationDelay: "0.3s"
         }}>
             {isBlackWeek ? (
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-light tracking-wider text-foreground/95 leading-tight mt-16">
+              <h1 className="text-3xl md:text-5xl lg:text-7xl font-heading text-foreground/95 leading-tight mt-16">
                 Nur diese Woche: Das Live-Hörspiel,<br />
                 das Deutschland begeistert – jetzt 30% günstiger
               </h1>
             ) : (
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-light tracking-wider text-foreground/95 leading-tight mt-16">
+              <h1 className="text-4xl md:text-6xl lg:text-[5rem] font-heading text-foreground/95 leading-[0.95] mt-16">
                 Pater Brown LIVE –<br />Krimi, Klang & Gänsehaut
               </h1>
             )}

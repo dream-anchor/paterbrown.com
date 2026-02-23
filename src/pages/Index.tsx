@@ -86,16 +86,16 @@ const Index = () => {
           <SocialProofSection />
         </Suspense>
         
-        <section className="py-24 px-6 bg-card/10" aria-labelledby="project-heading">
-          <div className="container mx-auto max-w-4xl text-center space-y-8">
+        <section className="py-28 md:py-36 px-6" aria-labelledby="project-heading">
+          <div className="container mx-auto max-w-5xl text-center space-y-8">
             <p className="text-gold text-sm uppercase tracking-[0.3em] font-medium">
               Die Geschichte dahinter
             </p>
-            <h2 id="project-heading" className="text-5xl md:text-7xl font-heading tracking-wider text-foreground uppercase">
+            <h2 id="project-heading" className="text-5xl md:text-7xl lg:text-[6rem] font-heading text-foreground leading-tight">
               Kult trifft Innovation
             </h2>
-            <div className="divider-gold w-32 mx-auto" aria-hidden="true" />
-            <p className="text-xl text-foreground/90 leading-relaxed">
+            <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent max-w-md mx-auto" aria-hidden="true" />
+            <p className="text-xl md:text-2xl text-foreground/70 leading-relaxed font-light max-w-3xl mx-auto">
               Die modernen Adaptionen der G. K. Chesterton-Vorlagen bewahren deren 
               literarischen Reiz und verleihen ihnen zugleich eine frische, zeitgemäße Form.
             </p>
