@@ -37,6 +37,10 @@ const routes = [
   "/antoine-monot",
   "/marvelin",
   "/stefanie-sick",
+  "/hoerspiel",
+  "/g-k-chesterton",
+  "/father-brown",
+  "/krimi-hoerspiel",
 ];
 
 console.log("Pre-Rendering gestartet...\n");

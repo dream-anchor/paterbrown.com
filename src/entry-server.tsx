@@ -31,6 +31,10 @@ import WanjaMues from "./pages/WanjaMues";
 import AntoineMonot from "./pages/AntoineMonot";
 import MarvelinPage from "./pages/Marvelin";
 import StefanieSick from "./pages/StefanieSick";
+import Hoerspiel from "./pages/Hoerspiel";
+import GKChesterton from "./pages/GKChesterton";
+import FatherBrown from "./pages/FatherBrown";
+import KrimiHoerspiel from "./pages/KrimiHoerspiel";
 
 /** Mapping: Stadtseiten-URL → Supabase city-Filter */
 const CITY_ROUTES: Record<string, string> = {
@@ -200,7 +204,7 @@ export async function render(url: string) {
   }
 
   // Seiten mit CTA-Section: Tour-Daten prefetchen
-  const pagesWithCTA = ["/live-hoerspiel", "/pater-brown", "/wanja-mues", "/antoine-monot", "/marvelin", "/stefanie-sick"];
+  const pagesWithCTA = ["/live-hoerspiel", "/pater-brown", "/wanja-mues", "/antoine-monot", "/marvelin", "/stefanie-sick", "/hoerspiel", "/g-k-chesterton", "/father-brown", "/krimi-hoerspiel"];
   if (pagesWithCTA.includes(url)) {
     try {
       const { createClient } = await import("@supabase/supabase-js");
@@ -265,6 +269,10 @@ export async function render(url: string) {
                 <Route path="/antoine-monot" element={<AntoineMonot />} />
                 <Route path="/marvelin" element={<MarvelinPage />} />
                 <Route path="/stefanie-sick" element={<StefanieSick />} />
+                <Route path="/hoerspiel" element={<Hoerspiel />} />
+                <Route path="/g-k-chesterton" element={<GKChesterton />} />
+                <Route path="/father-brown" element={<FatherBrown />} />
+                <Route path="/krimi-hoerspiel" element={<KrimiHoerspiel />} />
               </Routes>
             </StaticRouter>
           </TooltipProvider>
