@@ -305,6 +305,120 @@ All colors MUST be HSL.
     animation: pulse-subtle 3s ease-in-out infinite;
   }
 
+  /* ============================================
+     IMMERSIVE PAGE: Mousetrap-style theatrical CSS
+     ============================================ */
+
+  /* Gold neon glow CTA button */
+  .btn-glow {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem 3.5rem;
+    background: transparent;
+    color: hsl(var(--gold));
+    font-weight: 700;
+    font-size: 1.125rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: 2px solid hsl(var(--gold));
+    transition: all 0.4s ease;
+    box-shadow:
+      0 0 20px 10px hsl(var(--gold) / 0.12),
+      inset 0 0 20px 10px hsl(var(--gold) / 0.08);
+  }
+
+  .btn-glow:hover {
+    color: hsl(0 0% 5%);
+    background: hsl(var(--gold) / 0.2);
+    box-shadow:
+      0 0 30px 15px hsl(var(--gold) / 0.25),
+      inset 0 0 30px 15px hsl(var(--gold) / 0.15);
+    border-color: hsl(var(--gold));
+  }
+
+  @media (hover: hover) {
+    .btn-glow:hover {
+      transform: translateY(-2px);
+    }
+  }
+
+  /* Card with gold glow border */
+  .card-glow {
+    border: 1px solid hsl(var(--gold) / 0.25);
+    background: hsl(0 0% 4% / 0.8);
+    box-shadow: 0 0 15px 5px hsl(var(--gold) / 0.06);
+    transition: all 0.4s ease;
+  }
+
+  .card-glow:hover {
+    border-color: hsl(var(--gold) / 0.45);
+    box-shadow: 0 0 25px 10px hsl(var(--gold) / 0.12);
+  }
+
+  /* Immersive section: full-width with generous padding */
+  .section-immersive {
+    position: relative;
+    width: 100%;
+    padding: 5rem 1.5rem;
+    overflow: hidden;
+  }
+
+  @media (min-width: 768px) {
+    .section-immersive {
+      padding: 7rem 1.5rem;
+    }
+  }
+
+  /* Hero video background container */
+  .hero-video-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  .hero-video-bg iframe,
+  .hero-video-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  /* Hero fade overlay: gold glow + dark gradient */
+  .hero-fade-full {
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 50% 40%, hsl(28 100% 55% / 0.08) 0%, transparent 60%),
+      linear-gradient(
+        180deg,
+        hsl(0 0% 0% / 0.5) 0%,
+        hsl(0 0% 0% / 0.25) 30%,
+        hsl(0 0% 0% / 0.35) 60%,
+        hsl(0 0% 2% / 1) 100%
+      );
+  }
+
+  /* Press quote display text */
+  .quote-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.5rem, 4vw, 3.5rem);
+    letter-spacing: 0.05em;
+    line-height: 1.15;
+    text-transform: uppercase;
+    color: hsl(0 0% 98%);
+  }
+
+  /* Reduced motion: disable glow transitions */
+  @media (prefers-reduced-motion: reduce) {
+    .btn-glow,
+    .card-glow {
+      transition: none;
+    }
+  }
+
   /* Brevo Newsletter Form Styling */
   #sib-form, .sib-form {
     background: hsl(0 0% 5%) !important;
