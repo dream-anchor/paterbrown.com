@@ -498,7 +498,7 @@ const Admin = () => {
 
           <TabsContent value="picks" className="mt-0 focus-visible:outline-none pb-20 md:pb-0">
             <Suspense fallback={<TabFallback />}>
-              <PicksPanel />
+              <PicksPanel isAdmin={isAdmin} />
             </Suspense>
           </TabsContent>
 

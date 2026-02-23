@@ -54,7 +54,11 @@ import FloatingActionBar from "./picks/FloatingActionBar";
 import MoveToAlbumDialog from "./picks/MoveToAlbumDialog";
 import JustifiedGallery from "./picks/JustifiedGallery";
 
-const PicksPanel = () => {
+interface PicksPanelProps {
+  isAdmin?: boolean;
+}
+
+const PicksPanel = ({ isAdmin = false }: PicksPanelProps) => {
   const { toast } = useToast();
   const { addFiles, files: uploadingFiles, isUploading: globalIsUploading } = useUpload();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -327,9 +331,10 @@ const PicksPanel = () => {
     return result;
   }, [currentImages, votes, selectedUserIds, minApprovals]);
 
-  // Check if current user can delete an item
+  // Check if current user can delete an item (owner or admin)
   const canDeleteItem = useCallback((item: ImageData | AlbumData) => {
     if (!currentUserId) return false;
+    if (isAdmin) return true;
     if ('uploaded_by' in item) {
       return item.uploaded_by === currentUserId;
     }
@@ -337,7 +342,7 @@ const PicksPanel = () => {
       return item.created_by === currentUserId;
     }
     return false;
-  }, [currentUserId]);
+  }, [currentUserId, isAdmin]);
 
   // Create new album
   const handleCreateAlbum = async () => {
@@ -769,14 +774,15 @@ const PicksPanel = () => {
     );
   };
 
-  // Check if all selected images are owned by current user
+  // Check if all selected images are owned by current user (or user is admin)
   const canDeleteSelected = useMemo(() => {
     if (selectedImageIds.size === 0 || !currentUserId) return false;
+    if (isAdmin) return true;
     return Array.from(selectedImageIds).every(id => {
       const img = images.find(i => i.id === id);
       return img?.uploaded_by === currentUserId;
     });
-  }, [selectedImageIds, images, currentUserId]);
+  }, [selectedImageIds, images, currentUserId, isAdmin]);
 
   if (isLoading) {
     return (
