@@ -209,7 +209,7 @@ const MasonryItem = ({
                 src={image.thumbnail_url}
                 alt={image.title || image.file_name}
                 className={cn(
-                  "w-full h-full object-cover block transition-transform duration-300",
+                  "w-full h-full object-cover object-top block transition-transform duration-300",
                   isHovered && "scale-[1.03]",
                   !imageLoaded && "hidden"
                 )}
@@ -224,7 +224,7 @@ const MasonryItem = ({
                 playsInline
                 preload="metadata"
                 className={cn(
-                  "w-full h-full object-cover block transition-transform duration-300",
+                  "w-full h-full object-cover object-top block transition-transform duration-300",
                   isHovered && "scale-[1.03]",
                   !imageLoaded && "hidden"
                 )}
@@ -246,7 +246,7 @@ const MasonryItem = ({
             src={getDisplayUrl()}
             alt={image.title || image.file_name}
             className={cn(
-              "w-full h-full object-cover block transition-transform duration-300",
+              "w-full h-full object-cover object-top block transition-transform duration-300",
               isHovered && "scale-[1.03]",
               !imageLoaded && "hidden"
             )}
