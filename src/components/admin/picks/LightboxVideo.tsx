@@ -24,26 +24,30 @@ const LightboxVideo = ({ src, poster, className }: LightboxVideoProps) => {
   }, []);
 
   return (
-    <div className="relative cursor-pointer" onClick={togglePlay}>
+    <>
       <video
         ref={videoRef}
         src={src}
         poster={poster}
         preload="metadata"
         playsInline
+        onClick={togglePlay}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onEnded={() => setIsPlaying(false)}
-        className={className}
+        className={cn("cursor-pointer", className)}
       />
       {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div
+          className="absolute inset-0 flex items-center justify-center cursor-pointer z-10"
+          onClick={togglePlay}
+        >
           <div className="bg-black/50 backdrop-blur-sm rounded-full p-5 shadow-2xl">
             <Play className="w-12 h-12 text-white fill-white" />
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
