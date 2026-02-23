@@ -179,7 +179,7 @@ const MobileLightbox = ({
           {hasPrev && (
             <button
               onClick={() => { haptics.tap(); onNavigate('prev'); }}
-              className="absolute left-0 top-0 bottom-0 w-16 flex items-center justify-center text-white/30 active:text-white/60 z-10"
+              className="absolute left-0 top-0 bottom-0 w-16 flex items-center justify-center text-white/30 active:text-white/60 z-20"
             >
               <ChevronLeft className="w-8 h-8" />
             </button>
@@ -187,7 +187,7 @@ const MobileLightbox = ({
           {hasNext && (
             <button
               onClick={() => { haptics.tap(); onNavigate('next'); }}
-              className="absolute right-0 top-0 bottom-0 w-16 flex items-center justify-center text-white/30 active:text-white/60 z-10"
+              className="absolute right-0 top-0 bottom-0 w-16 flex items-center justify-center text-white/30 active:text-white/60 z-20"
             >
               <ChevronRight className="w-8 h-8" />
             </button>
