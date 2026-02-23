@@ -18,6 +18,7 @@ import { ImageData, VoteStatus, ImageVote } from "./types";
 import { getImageOriginalUrl, isVideoFile } from "@/lib/documentUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileLightbox from "./MobileLightbox";
+import LightboxVideo from "./LightboxVideo";
 
 interface ImageLightboxProps {
   image: ImageData | null;
@@ -230,12 +231,9 @@ const ImageLightbox = ({
               transition={{ duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <video
+              <LightboxVideo
                 src={getImageOriginalUrl("picks-images", image.file_path)}
                 poster={image.thumbnail_url || undefined}
-                controls
-                preload="metadata"
-                playsInline
                 className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
               />
             </motion.div>

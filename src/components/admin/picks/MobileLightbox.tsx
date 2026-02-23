@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { ImageData, VoteStatus, ImageVote } from "./types";
 import { getImageOriginalUrl, isVideoFile } from "@/lib/documentUtils";
 import { haptics } from "@/lib/haptics";
+import LightboxVideo from "./LightboxVideo";
 
 interface MobileLightboxProps {
   image: ImageData | null;
@@ -200,12 +201,9 @@ const MobileLightbox = ({
               transition={{ duration: 0.2 }}
               className="w-full h-full flex items-center justify-center"
             >
-              <video
+              <LightboxVideo
                 src={getImageOriginalUrl("picks-images", image.file_path)}
                 poster={image.thumbnail_url || undefined}
-                controls
-                preload="metadata"
-                playsInline
                 className="max-w-full max-h-full object-contain rounded-lg"
               />
             </motion.div>
