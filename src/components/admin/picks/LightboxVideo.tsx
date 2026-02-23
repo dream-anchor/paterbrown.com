@@ -39,20 +39,20 @@ const LightboxVideo = ({ src, poster, className }: LightboxVideoProps) => {
         onLoadedData={() => setIsLoading(false)}
         className={cn("cursor-pointer", className)}
       />
-      {/* Ladeanimation */}
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-          <div className="w-10 h-10 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-        </div>
-      )}
-      {/* Play-Button (nur wenn geladen und nicht playing) */}
-      {!isPlaying && !isLoading && (
+      {/* Play-Button — immer sichtbar wenn nicht playing */}
+      {!isPlaying && (
         <div
           className="absolute inset-0 flex items-center justify-center cursor-pointer z-10"
           onClick={togglePlay}
         >
-          <div className="bg-black/50 backdrop-blur-sm rounded-full p-5 shadow-2xl">
-            <Play className="w-12 h-12 text-white fill-white" />
+          <div className="relative">
+            {/* Lade-Ring um den Button */}
+            {isLoading && (
+              <div className="absolute -inset-2 border-3 border-white/20 border-t-white rounded-full animate-spin" />
+            )}
+            <div className="bg-black/50 backdrop-blur-sm rounded-full p-5 shadow-2xl">
+              <Play className="w-12 h-12 text-white fill-white" />
+            </div>
           </div>
         </div>
       )}
