@@ -145,7 +145,8 @@ const MobileLightbox = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[9999] bg-black flex flex-col"
+        className="fixed top-0 left-0 right-0 z-[9999] bg-black flex flex-col"
+        style={{ minHeight: '100lvh' }}
       >
         {/* Header - minimal with safe area */}
         <div className="flex items-center justify-between px-4 pt-3 pb-2" style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
@@ -226,13 +227,14 @@ const MobileLightbox = ({
         </div>
 
         {/* Bottom panel - voting and actions - ABOVE main nav */}
-        <motion.div 
+        <motion.div
           className="bg-gray-900/98 backdrop-blur-2xl border-t border-white/15 shadow-2xl"
           initial={{ y: 100 }}
           animate={{ y: 0 }}
           transition={{ delay: 0.1, type: "spring", damping: 25 }}
           style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
         >
+
           {/* Vote label */}
           <div className="flex items-center justify-center pt-3 pb-1">
             <span className="text-white/50 text-xs font-medium uppercase tracking-wider">Bewertung</span>

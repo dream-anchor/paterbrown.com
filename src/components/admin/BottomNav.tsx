@@ -15,16 +15,21 @@ const navItems = [
   { id: "picks", label: "Picks", icon: Heart },
 ];
 
+// iOS toolbar gap: when the browser toolbar (back/forward arrows) slides away,
+// fixed elements at bottom:0 leave a gap to the actual screen edge.
+// Fix: position the nav 100px below the viewport and add a 100px spacer inside.
+// The spacer is behind the toolbar when visible, fills the gap when it hides.
+// Buttons stay at the correct visual position. Works on all iOS browsers.
+const IOS_GAP_SPACER = 100;
+
 const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
-      {/* Glass background */}
-      <div className="bg-background/80 backdrop-blur-xl border-t border-border/60 shadow-lg relative">
-        {/* Background extension below nav — fills the gap when iOS browser
-            toolbar slides away. Always rendered but hidden behind the toolbar
-            when visible. Pure CSS, works on all iOS browsers. */}
-        <div className="absolute left-0 right-0 top-full h-[100px] bg-background" />
-
+    <nav
+      className="fixed left-0 right-0 z-50 md:hidden"
+      style={{ bottom: `-${IOS_GAP_SPACER}px` }}
+    >
+      {/* Glass background — includes spacer for iOS gap coverage */}
+      <div className="bg-background/80 backdrop-blur-xl border-t border-border/60 shadow-lg">
         {/* Safe area padding for iPhone notch + home indicator */}
         <div className="flex items-center justify-around px-2 pt-2 pb-2" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
           {navItems.map((item) => {
@@ -74,6 +79,9 @@ const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
             );
           })}
         </div>
+
+        {/* iOS toolbar gap spacer — hidden behind toolbar, visible when it slides away */}
+        <div style={{ height: `${IOS_GAP_SPACER}px` }} className="bg-background" />
       </div>
     </nav>
   );
