@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import logoImage from "@/assets/pater-brown-logo.png";
-import heroBackground from "@/assets/hero-background-modern.jpg";
+import ticketButton from "@/assets/tickets-sichern-button.png";
+const heroBackground = "/images/buehne/pater-brown-atmosphaere-silhouette-nebel-af.webp";
 import StickyHeader from "@/components/StickyHeader";
 import { EVENTIM_AFFILIATE_URL, SCROLL_THRESHOLD_STICKY_HEADER } from "@/lib/constants";
 import { throttle } from "@/lib/scroll-utils";
@@ -71,7 +72,7 @@ const HeroSection = () => {
         role="img" 
         aria-label="Atmosphärische Bühnenbeleuchtung für Pater Brown Live-Hörspiel" 
       />
-      {/* Subtle dark overlay – no gold radial, just clean vignette */}
+      {/* Dark gradient overlays for text readability */}
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/30" />
       <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-transparent to-transparent" />
 
@@ -92,7 +93,7 @@ const HeroSection = () => {
           <img 
             src={logoImage} 
             alt="Pater Brown - Das Live-Hörspiel" 
-            className="h-16 md:h-20 w-auto" 
+            className="h-20 md:h-28 w-auto" 
             loading="eager" 
             decoding="async" 
             fetchPriority="high"
@@ -100,13 +101,19 @@ const HeroSection = () => {
             height={200}
           />
         </div>
-        <a 
+        <a
           href={EVENTIM_AFFILIATE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-foreground/80 hover:text-foreground transition-colors text-xs uppercase tracking-[0.25em] font-medium border border-foreground/20 hover:border-foreground/40 px-5 py-2.5"
+          className="hover:scale-105 transition-transform"
         >
-          Tickets
+          <img
+            src={ticketButton}
+            alt="Tickets sichern"
+            className="h-[96px] md:h-[140px] w-auto mix-blend-screen"
+            loading="eager"
+            decoding="async"
+          />
         </a>
       </div>
 
@@ -123,14 +130,14 @@ const HeroSection = () => {
             </h1>
           ) : (
             <>
-              <p className="text-gold/60 text-xs md:text-sm uppercase tracking-[0.4em] mb-6 cinematic-enter" style={{ animationDelay: '0.1s' }}>
+              <p className="neon-gold-subtle text-xs md:text-sm uppercase tracking-[0.4em] mb-6 cinematic-enter" style={{ animationDelay: '0.1s' }}>
                 Das Live-Hörspiel
               </p>
-              <h1 className="text-5xl sm:text-7xl md:text-9xl lg:text-[11rem] font-heading text-foreground leading-[0.85] tracking-tight uppercase cinematic-enter" style={{ animationDelay: '0.2s' }}>
+              <h1 className="text-5xl sm:text-7xl md:text-9xl lg:text-[11rem] font-heading leading-[0.85] tracking-tight uppercase cinematic-enter neon-gold neon-breathe" style={{ animationDelay: '0.2s' }}>
                 Pater<br />Brown
               </h1>
               <p className="text-lg md:text-xl text-foreground/50 font-light mt-8 tracking-wide cinematic-enter" style={{ animationDelay: '0.4s' }}>
-                Mit <span className="text-foreground/80">Antoine Monot</span> & <span className="text-foreground/80">Wanja Mues</span>
+                Mit <span className="neon-gold-subtle">Antoine Monot</span> & <span className="neon-gold-subtle">Wanja Mues</span>
               </p>
             </>
           )}

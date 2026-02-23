@@ -74,12 +74,12 @@ const Navigation = () => {
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
         style={{
           backgroundColor: scrolled
-            ? "hsl(260 30% 4% / 0.95)"
+            ? "hsl(var(--background) / 0.95)"
             : "transparent",
           backdropFilter: scrolled ? "blur(12px)" : "none",
           WebkitBackdropFilter: scrolled ? "blur(12px)" : "none",
           borderBottom: scrolled
-            ? "1px solid hsl(43 50% 53% / 0.1)"
+            ? "1px solid hsl(var(--gold) / 0.1)"
             : "1px solid transparent",
           paddingTop: "env(safe-area-inset-top)",
         }}
@@ -176,7 +176,7 @@ const Navigation = () => {
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(to right, hsl(260 30% 4% / 0.95) 80%, transparent)",
+                "linear-gradient(to right, hsl(var(--background) / 0.95) 80%, transparent)",
             }}
             onClick={() => setMobileOpen(false)}
             aria-hidden="true"

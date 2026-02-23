@@ -4,7 +4,7 @@ import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 const testimonials = [
   {
     id: 3,
-    quote: "Ein tolles Konzept mit erstklassigen Sprechern, die die Figuren zum Leben erweckten. Herrlich! Alle zusammen haben es geschafft, die passende Stimmung zu erzeugen. Sehr gerne mehr davon!",
+    quote: "Herrlich! Alle zusammen haben es geschafft, die passende Stimmung zu erzeugen. Sehr gerne mehr davon!",
     author: "@majokeli2024",
     location: "Instagram"
   },

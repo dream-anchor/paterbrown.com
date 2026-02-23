@@ -29,11 +29,11 @@ const SIZE_MAP = {
 
 const base = cn(
   "inline-flex items-center justify-center",
-  "border border-primary bg-primary/20 text-primary",
-  "font-heading uppercase tracking-[0.1em] font-bold",
+  "border border-primary/60 bg-transparent text-primary",
+  "font-heading uppercase tracking-[0.15em] font-bold",
   "rounded-[3px]",
-  "glow-gold transition-all duration-300",
-  "hover:bg-primary/40 glow-gold-hover",
+  "neon-border transition-all duration-300",
+  "hover:bg-primary/10 hover:text-white",
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
 );
 
