@@ -11,6 +11,7 @@ interface LightboxVideoProps {
 const LightboxVideo = ({ src, poster, className }: LightboxVideoProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const togglePlay = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -35,9 +36,17 @@ const LightboxVideo = ({ src, poster, className }: LightboxVideoProps) => {
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onEnded={() => setIsPlaying(false)}
+        onLoadedData={() => setIsLoading(false)}
         className={cn("cursor-pointer", className)}
       />
-      {!isPlaying && (
+      {/* Ladeanimation */}
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+          <div className="w-10 h-10 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+        </div>
+      )}
+      {/* Play-Button (nur wenn geladen und nicht playing) */}
+      {!isPlaying && !isLoading && (
         <div
           className="absolute inset-0 flex items-center justify-center cursor-pointer z-10"
           onClick={togglePlay}
