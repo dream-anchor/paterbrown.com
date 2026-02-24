@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Gießen",
   addressRegion: "Hessen",
   addressCountry: "DE",
-  heroImage: "/images/buehne/af-buehne-totale-nebel-blau.webp",
+  heroImage: "/images/buehne/dd-buehne-panorama-nebel-led.webp",
   nearbyCities: [
     { slug: "baunatal-kassel", name: "Baunatal/Kassel" },
     { slug: "koeln", name: "Köln" },

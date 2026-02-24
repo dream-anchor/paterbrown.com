@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import logoImage from "@/assets/pater-brown-logo.png";
 import ticketButton from "@/assets/tickets-sichern-button.png";
-const heroBackground = "/images/buehne/pater-brown-atmosphaere-silhouette-nebel-af.webp";
+const heroBackground = "/images/buehne/dd-duo-marvelin-tiefblau.webp";
 import StickyHeader from "@/components/StickyHeader";
 import { EVENTIM_AFFILIATE_URL, SCROLL_THRESHOLD_STICKY_HEADER } from "@/lib/constants";
 import { throttle } from "@/lib/scroll-utils";
@@ -65,15 +65,61 @@ const HeroSection = () => {
     {isBlackWeek && <BlackWeekBanner />}
     
     <section className="relative min-h-screen flex flex-col overflow-hidden max-w-full">
-      {/* Modern cinematic background */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat" 
-        style={{ backgroundImage: `url(${heroBackground})` }} 
-        role="img" 
-        aria-label="Atmosphärische Bühnenbeleuchtung für Pater Brown Live-Hörspiel" 
+      {/* Blurred background layer */}
+      <div className="absolute inset-0">
+        <img
+          src={heroBackground}
+          alt=""
+          aria-hidden="true"
+          className="w-full h-full object-cover"
+          style={{ objectPosition: "50% 15%", filter: "contrast(1.15) brightness(0.9) saturate(0.85) blur(3px)" }}
+          loading="eager"
+          decoding="async"
+        />
+      </div>
+      {/* Sharp foreground layer with radial mask — fake depth-of-field */}
+      <div
+        className="absolute inset-0"
+        style={{
+          WebkitMaskImage: "radial-gradient(ellipse 70% 80% at 50% 40%, black 30%, transparent 70%)",
+          maskImage: "radial-gradient(ellipse 70% 80% at 50% 40%, black 30%, transparent 70%)",
+        }}
+      >
+        <img
+          src={heroBackground}
+          alt=""
+          aria-hidden="true"
+          className="w-full h-full object-cover"
+          style={{ objectPosition: "50% 15%", filter: "contrast(1.15) brightness(0.9) saturate(0.85)" }}
+          decoding="async"
+        />
+      </div>
+      {/* Soft-glow / Diffusion layer — glättet Hauttöne */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          mixBlendMode: "soft-light",
+          opacity: 0.35,
+          WebkitMaskImage: "radial-gradient(ellipse 70% 80% at 50% 40%, black 30%, transparent 70%)",
+          maskImage: "radial-gradient(ellipse 70% 80% at 50% 40%, black 30%, transparent 70%)",
+        }}
+      >
+        <img
+          src={heroBackground}
+          alt=""
+          aria-hidden="true"
+          className="w-full h-full object-cover"
+          style={{ objectPosition: "50% 15%", filter: "blur(4px) brightness(1.1) saturate(0.7)" }}
+          decoding="async"
+        />
+      </div>
+      {/* Gradient overlays for text readability */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: "linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 20%, hsl(var(--background) / 0.15) 45%, transparent 65%)",
+        }}
       />
-      {/* Dark gradient overlays for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/30" />
       <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-transparent to-transparent" />
 
       {/* Floating minimal nav area */}
@@ -93,7 +139,7 @@ const HeroSection = () => {
           <img 
             src={logoImage} 
             alt="Pater Brown - Das Live-Hörspiel" 
-            className="h-20 md:h-28 w-auto" 
+            className="h-14 md:h-20 lg:h-28 w-auto"
             loading="eager" 
             decoding="async" 
             fetchPriority="high"
@@ -110,7 +156,7 @@ const HeroSection = () => {
           <img
             src={ticketButton}
             alt="Tickets sichern"
-            className="h-[96px] md:h-[140px] w-auto mix-blend-screen"
+            className="h-[56px] md:h-[96px] lg:h-[140px] w-auto mix-blend-screen"
             loading="eager"
             decoding="async"
           />
@@ -118,7 +164,7 @@ const HeroSection = () => {
       </div>
 
       {/* Main hero content – Mousetrap-style: huge centered typography */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-end px-6 text-center pb-0">
         
         <div className="cinematic-enter max-w-5xl">
           {isBlackWeek ? (
@@ -161,7 +207,7 @@ const HeroSection = () => {
       </div>
 
       {/* Bottom tour info – clean, minimal */}
-      <div className="relative z-10 pb-12 px-6">
+      <div className="relative z-10 pb-0 px-6 -mb-6">
         <HeroTourInfo previewEvents={previewEvents} tour2026Events={tour2026Events} />
       </div>
     </section>

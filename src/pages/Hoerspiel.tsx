@@ -2,7 +2,9 @@ import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import { SEO } from "@/components/SEO";
 import FAQSection from "@/components/landing/FAQSection";
+import CinematicPortrait from "@/components/CinematicPortrait";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
+import TicketCTA from "@/components/shared/TicketCTA";
 
 const BREADCRUMBS = [
   { label: "Startseite", href: "/" },
@@ -68,6 +70,7 @@ const Hoerspiel = () => {
       heroImage="/images/buehne/af-duo-dialog-gestik-blau.webp"
       heroTitle="Hörspiel"
       heroSubtitle="Von den Maritim-Klassikern zum Live-Erlebnis"
+      heroCTA
     >
       <SEO
         title={`Pater Brown Hörspiel – Alle Hörspiele & das Live-Erlebnis | paterbrown.com`}
@@ -104,14 +107,15 @@ const Hoerspiel = () => {
               . Die bekannteste Produktion stammt vom Maritim Verlag.
             </p>
           </div>
-          <div className="border border-foreground/10 overflow-hidden">
+          <div className="relative overflow-hidden aspect-[4/3]">
             <img
               src="/images/historisch/father-brown-wisdom-buchillustration-original.webp"
               srcSet="/images/historisch/father-brown-wisdom-buchillustration-original-480.webp 480w, /images/historisch/father-brown-wisdom-buchillustration-original-768.webp 768w, /images/historisch/father-brown-wisdom-buchillustration-original-1200.webp 1200w"
               sizes="(max-width: 768px) 100vw, 50vw"
               alt="Father Brown – historische Buchillustration der Originalausgabe"
-              className="w-full aspect-[4/3] object-cover"
               loading="eager"
+              decoding="async"
+              className="w-full h-full object-cover"
             />
           </div>
         </div>
@@ -160,6 +164,8 @@ const Hoerspiel = () => {
           ))}
         </div>
       </div></section>
+
+      <TicketCTA variant="emotional" />
 
       {/* Reihenfolge */}
       <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
@@ -219,16 +225,15 @@ const Hoerspiel = () => {
       {/* Live-Hörspiel Überleitung */}
       <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-6xl">
         <div className="grid md:grid-cols-[1.2fr_1fr] gap-12 lg:gap-20 items-start">
-          <div className="border border-foreground/10 overflow-hidden">
-            <img
-              src="/images/buehne/pater-brown-ensemble-monot-mues-marvelin-af.webp"
-              srcSet="/images/buehne/pater-brown-ensemble-monot-mues-marvelin-af-480.webp 480w, /images/buehne/pater-brown-ensemble-monot-mues-marvelin-af-768.webp 768w, /images/buehne/pater-brown-ensemble-monot-mues-marvelin-af-1200.webp 1200w"
-              sizes="(max-width: 768px) 100vw, 55vw"
-              alt="Antoine Monot, Wanja Mues und Marvelin im Pater Brown Live-Hörspiel"
-              className="w-full aspect-[4/3] object-cover"
-              loading="lazy"
-            />
-          </div>
+          <CinematicPortrait
+            src="/images/buehne/pater-brown-ensemble-monot-mues-marvelin-af.webp"
+            srcSet="/images/buehne/pater-brown-ensemble-monot-mues-marvelin-af-480.webp 480w, /images/buehne/pater-brown-ensemble-monot-mues-marvelin-af-768.webp 768w, /images/buehne/pater-brown-ensemble-monot-mues-marvelin-af-1200.webp 1200w"
+            sizes="(max-width: 768px) 100vw, 55vw"
+            alt="Antoine Monot, Wanja Mues und Marvelin im Pater Brown Live-Hörspiel"
+            aspectRatio="aspect-[4/3]"
+            objectPosition="50% 50%"
+            fadeEdges
+          />
           <div>
             <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">Live erleben</p>
             <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
@@ -266,6 +271,8 @@ const Hoerspiel = () => {
           </div>
         </div>
       </div></section>
+
+      <TicketCTA variant="concrete" />
 
       {/* FAQ */}
       <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">

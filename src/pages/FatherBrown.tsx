@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import { SEO } from "@/components/SEO";
+import CinematicPortrait from "@/components/CinematicPortrait";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
+import TicketCTA from "@/components/shared/TicketCTA";
 
 const BREADCRUMBS = [
   { label: "Startseite", href: "/" },
@@ -37,6 +39,7 @@ const FatherBrown = () => {
       heroImage="/images/buehne/dd-dialog-haende-gestik.webp"
       heroTitle="Father Brown"
       heroSubtitle="Von G.K. Chesterton zum Live-Hörspiel"
+      heroCTA
     >
       <SEO
         title="Father Brown – Von G.K. Chesterton zum Live-Hörspiel | paterbrown.com"
@@ -74,18 +77,21 @@ const FatherBrown = () => {
               49 Kurzgeschichten mit Father Brown veröffentlichte.
             </p>
           </div>
-          <div className="border border-foreground/10 overflow-hidden">
+          <div className="relative overflow-hidden aspect-[4/3]">
             <img
               src="/images/historisch/father-brown-wisdom-buchillustration-original.webp"
               srcSet="/images/historisch/father-brown-wisdom-buchillustration-original-480.webp 480w, /images/historisch/father-brown-wisdom-buchillustration-original-768.webp 768w, /images/historisch/father-brown-wisdom-buchillustration-original-1200.webp 1200w"
               sizes="(max-width: 768px) 100vw, 50vw"
               alt="Father Brown – historische Buchillustration der Originalausgabe von G.K. Chesterton"
-              className="w-full aspect-[4/3] object-cover"
               loading="eager"
+              decoding="async"
+              className="w-full h-full object-cover"
             />
           </div>
         </div>
       </div></section>
+
+      <TicketCTA variant="informative" />
 
       {/* BBC-Serie */}
       <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
@@ -108,19 +114,20 @@ const FatherBrown = () => {
         </p>
       </div></section>
 
+      <TicketCTA variant="concrete" />
+
       {/* Live-Hörspiel */}
       <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-6xl">
         <div className="grid md:grid-cols-[1.2fr_1fr] gap-12 lg:gap-20 items-start">
-          <div className="border border-foreground/10 overflow-hidden">
-            <img
-              src="/images/buehne/pater-brown-dialog-szene-monot-mues-af.webp"
-              srcSet="/images/buehne/pater-brown-dialog-szene-monot-mues-af-480.webp 480w, /images/buehne/pater-brown-dialog-szene-monot-mues-af-768.webp 768w, /images/buehne/pater-brown-dialog-szene-monot-mues-af-1200.webp 1200w"
-              sizes="(max-width: 768px) 100vw, 55vw"
-              alt="Pater Brown Live-Hörspiel – Antoine Monot und Wanja Mues auf der Bühne"
-              className="w-full aspect-[16/10] object-cover"
-              loading="lazy"
-            />
-          </div>
+          <CinematicPortrait
+            src="/images/buehne/pater-brown-dialog-szene-monot-mues-af.webp"
+            srcSet="/images/buehne/pater-brown-dialog-szene-monot-mues-af-480.webp 480w, /images/buehne/pater-brown-dialog-szene-monot-mues-af-768.webp 768w, /images/buehne/pater-brown-dialog-szene-monot-mues-af-1200.webp 1200w"
+            sizes="(max-width: 768px) 100vw, 55vw"
+            alt="Pater Brown Live-Hörspiel – Antoine Monot und Wanja Mues auf der Bühne"
+            aspectRatio="aspect-[16/10]"
+            objectPosition="50% 50%"
+            fadeEdges
+          />
           <div>
             <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">Live erleben</p>
             <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">

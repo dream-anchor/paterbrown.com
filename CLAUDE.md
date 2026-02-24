@@ -20,6 +20,13 @@ React/TS + Vite, shadcn/ui, Tailwind | Supabase (Postgres + Edge Functions) | Le
 ## Landingpage-Design
 **BLOCKING:** Bei Arbeit an Landingpages (alle Seiten außer Index.tsx und Admin) IMMER zuerst lesen:
 - `docs/landingpage-design.md` — Exakte CSS-Klassen, Verbotene Muster, Referenz = Startseite
+- `landingpages.md` (Root) — Hero-Bilder-Zuordnung, Cinematic Filter, Symmetrie-Regeln
+
+## Grid-Symmetrie (BLOCKING)
+Wenn Fotos/Karten nebeneinander in einem Grid stehen, müssen alle Elemente visuell gleich sein:
+- **Namen:** Gleiche Zeilenanzahl (alle einzeilig ODER alle zweizeilig)
+- **Rollen/Subtitles:** Gleiche Zeilenanzahl
+- Gilt für ALLE Seiten und ALLE Grids mit Personen, Karten oder Fotos
 
 ## Regeln
 - Design: Neon-Gold auf Schwarz, theatralisch, cinematisch

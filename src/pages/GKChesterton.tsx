@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import { SEO } from "@/components/SEO";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
+import TicketCTA from "@/components/shared/TicketCTA";
 
 const BREADCRUMBS = [
   { label: "Startseite", href: "/" },
@@ -48,6 +49,7 @@ const GKChesterton = () => {
       heroImage="/images/buehne/dd-dialog-nahaufnahme-intim.webp"
       heroTitle="G.K. Chesterton"
       heroSubtitle="Der Erfinder von Pater Brown (1874–1936)"
+      heroCTA
     >
       <SEO
         title="G.K. Chesterton – Der Erfinder von Pater Brown | paterbrown.com"
@@ -88,20 +90,21 @@ const GKChesterton = () => {
               Er starb am 14. Juni 1936 in Beaconsfield.
             </p>
           </div>
-          <div className="space-y-4">
-            <div className="border border-foreground/10 overflow-hidden">
-              <img
-                src="/images/historisch/gk-chesterton-portrait-autor-father-brown.webp"
-                srcSet="/images/historisch/gk-chesterton-portrait-autor-father-brown-480.webp 480w, /images/historisch/gk-chesterton-portrait-autor-father-brown-768.webp 768w, /images/historisch/gk-chesterton-portrait-autor-father-brown-1200.webp 1200w"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                alt="G.K. Chesterton – Portrait des Autors von Father Brown"
-                className="w-full aspect-[4/5] object-cover object-top"
-                loading="eager"
-              />
-            </div>
+          <div className="relative overflow-hidden aspect-[4/5]">
+            <img
+              src="/images/historisch/gk-chesterton-portrait-autor-father-brown.webp"
+              srcSet="/images/historisch/gk-chesterton-portrait-autor-father-brown-480.webp 480w, /images/historisch/gk-chesterton-portrait-autor-father-brown-768.webp 768w, /images/historisch/gk-chesterton-portrait-autor-father-brown-1200.webp 1200w"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              alt="G.K. Chesterton – Portrait des Autors von Father Brown"
+              loading="eager"
+              decoding="async"
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
       </div></section>
+
+      <TicketCTA variant="informative" />
 
       {/* Werk */}
       <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
@@ -143,34 +146,37 @@ const GKChesterton = () => {
       {/* Historische Fotos */}
       <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-6xl">
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="border border-foreground/10 overflow-hidden">
+          <div className="relative overflow-hidden aspect-[3/4]">
             <img
               src="/images/historisch/gk-chesterton-1904-portrait-junger-autor.webp"
               srcSet="/images/historisch/gk-chesterton-1904-portrait-junger-autor-480.webp 480w, /images/historisch/gk-chesterton-1904-portrait-junger-autor-768.webp 768w"
               sizes="(max-width: 640px) 100vw, 33vw"
               alt="G.K. Chesterton 1904 – Portrait als junger Autor"
-              className="w-full aspect-[3/4] object-cover object-top"
               loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover"
             />
           </div>
-          <div className="border border-foreground/10 overflow-hidden">
+          <div className="relative overflow-hidden aspect-[3/4]">
             <img
               src="/images/historisch/gk-chesterton-bei-der-arbeit-schreibtisch.webp"
               srcSet="/images/historisch/gk-chesterton-bei-der-arbeit-schreibtisch-480.webp 480w, /images/historisch/gk-chesterton-bei-der-arbeit-schreibtisch-768.webp 768w"
               sizes="(max-width: 640px) 100vw, 33vw"
               alt="G.K. Chesterton bei der Arbeit am Schreibtisch"
-              className="w-full aspect-[3/4] object-cover object-top"
               loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover"
             />
           </div>
-          <div className="border border-foreground/10 overflow-hidden">
+          <div className="relative overflow-hidden aspect-[3/4]">
             <img
               src="/images/historisch/gk-chesterton-shaw-belloc-schriftsteller.webp"
               srcSet="/images/historisch/gk-chesterton-shaw-belloc-schriftsteller-480.webp 480w, /images/historisch/gk-chesterton-shaw-belloc-schriftsteller-768.webp 768w"
               sizes="(max-width: 640px) 100vw, 33vw"
               alt="G.K. Chesterton mit George Bernard Shaw und Hilaire Belloc"
-              className="w-full aspect-[3/4] object-cover object-top"
               loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover"
             />
           </div>
         </div>
@@ -239,6 +245,8 @@ const GKChesterton = () => {
           </blockquote>
         </div>
       </div></section>
+
+      <TicketCTA variant="concrete" />
 
       {/* Erbe heute */}
       <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">

@@ -7,7 +7,7 @@ const TrailerSection = memo(() => {
   const isMobile = useIsMobile();
 
   return (
-    <section className="py-28 md:py-36 px-6" aria-labelledby="trailer-heading">
+    <section id="trailer" className="py-28 md:py-36 px-6" aria-labelledby="trailer-heading">
       <div className="container mx-auto max-w-5xl">
         <div className="text-center space-y-6 mb-16">
           <p className="text-gold text-sm uppercase tracking-[0.3em] font-medium">

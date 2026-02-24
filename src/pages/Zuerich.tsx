@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Zürich",
   addressRegion: "Zürich",
   addressCountry: "CH",
-  heroImage: "/images/buehne/dd-dialog-nahaufnahme-intim.webp",
+  heroImage: "/images/buehne/dd-duo-mikro-blau-intensiv.webp",
   venue: {
     name: "Volkshaus Zürich – Weisser Saal",
     address: "Stauffacherstrasse 60, 8004 Zürich",

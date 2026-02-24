@@ -68,34 +68,34 @@ const Navigation = () => {
 
   return (
     <>
-      {/* Fixed Nav Bar — identisch mit StickyHeader der Startseite */}
+      {/* Fixed Nav Bar — smooth slide-down */}
       <header
-        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+        className="fixed top-0 left-0 right-0 z-50"
         style={{
-          backgroundColor: visible ? "hsl(var(--background) / 0.95)" : "transparent",
-          backdropFilter: visible ? "blur(12px)" : "none",
-          WebkitBackdropFilter: visible ? "blur(12px)" : "none",
-          borderBottom: visible ? "1px solid hsl(var(--gold) / 0.2)" : "1px solid transparent",
-          boxShadow: visible ? "0 4px 20px rgba(0, 0, 0, 0.5)" : "none",
+          backgroundColor: "hsl(var(--background) / 0.95)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          borderBottom: "1px solid hsl(var(--gold) / 0.15)",
+          boxShadow: "0 1px 30px rgba(0, 0, 0, 0.6)",
+          paddingTop: "env(safe-area-inset-top)",
+          transform: visible ? "translateY(0)" : "translateY(-100%)",
           opacity: visible ? 1 : 0,
           pointerEvents: visible ? "auto" : "none",
-          paddingTop: "env(safe-area-inset-top)",
-          WebkitTransform: "translate3d(0,0,0)",
-          transform: "translate3d(0,0,0)",
-          willChange: "transform",
+          transition: "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease",
+          willChange: "transform, opacity",
         }}
       >
         <div className="w-[92%] max-w-[1400px] mx-auto flex items-center justify-between py-3 md:py-4">
           {/* Logo */}
           <Link
             to="/"
-            className="hover:opacity-80 transition-opacity shrink-0"
+            className="hover:opacity-80 transition-opacity duration-300 shrink-0"
             aria-label="Startseite"
           >
             <img
               src={logoImage}
               alt="Pater Brown Logo"
-              className="h-12 md:h-16 w-auto"
+              className="h-12 md:h-20 lg:h-28 w-auto"
               loading="lazy"
               decoding="async"
             />
@@ -103,7 +103,7 @@ const Navigation = () => {
 
           {/* Desktop Nav */}
           <nav
-            className="hidden md:flex items-center gap-10"
+            className="hidden md:flex items-center gap-12"
             aria-label="Hauptnavigation"
           >
             {NAV_LINKS.map((link) => (
@@ -117,33 +117,47 @@ const Navigation = () => {
               >
                 <Link
                   to={link.href}
-                  className={`text-base uppercase tracking-[0.2em] font-heading transition-colors py-2 ${
+                  className={`relative text-sm uppercase tracking-[0.25em] font-heading transition-colors duration-300 py-2 group ${
                     link.highlight
                       ? "neon-gold"
-                      : "text-foreground/60 hover:text-foreground"
+                      : "text-foreground/50 hover:text-foreground/90"
                   }`}
                 >
                   {link.label}
                   {link.children && (
-                    <span className="ml-1 text-[0.6em]" aria-hidden="true">
+                    <span className="ml-1.5 text-[0.55em] opacity-40 group-hover:opacity-70 transition-opacity" aria-hidden="true">
                       &#9662;
                     </span>
                   )}
+                  <span
+                    className={`absolute bottom-0 left-0 h-[1px] transition-all duration-300 ${
+                      link.highlight
+                        ? "w-full bg-gold/40"
+                        : "w-0 group-hover:w-full bg-foreground/30"
+                    }`}
+                  />
                 </Link>
 
                 {/* Dropdown */}
                 {link.children && openDropdown === link.label && (
                   <div
-                    className="absolute top-full left-0 pt-2 min-w-[200px]"
+                    className="absolute top-full left-0 pt-3 min-w-[220px]"
                     onMouseEnter={() => handleDropdownEnter(link.label)}
                     onMouseLeave={handleDropdownLeave}
                   >
-                    <div className="bg-card/95 backdrop-blur-md border border-border rounded-[3px] py-2">
+                    <div
+                      className="border border-foreground/10 py-2"
+                      style={{
+                        backgroundColor: "hsl(var(--background) / 0.97)",
+                        backdropFilter: "blur(16px)",
+                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+                      }}
+                    >
                       {link.children.map((child) => (
                         <Link
                           key={child.href}
                           to={child.href}
-                          className="block px-5 py-2.5 text-sm font-heading uppercase tracking-[0.15em] text-foreground/60 hover:text-foreground hover:bg-primary/5 transition-colors"
+                          className="block px-6 py-3 text-xs font-heading uppercase tracking-[0.2em] text-foreground/50 hover:text-foreground hover:bg-foreground/5 transition-all duration-200"
                         >
                           {child.label}
                         </Link>
@@ -155,17 +169,17 @@ const Navigation = () => {
             ))}
           </nav>
 
-          {/* Ticket Button — identisch mit StickyHeader */}
+          {/* Ticket Button */}
           <a
             href={EVENTIM_AFFILIATE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:scale-105 transition-transform shrink-0"
+            className="hidden md:block hover:scale-105 transition-transform duration-300 shrink-0"
           >
             <img
               src={ticketButton}
               alt="Tickets sichern"
-              className="h-[48px] md:h-[64px] lg:h-[80px] w-auto mix-blend-screen"
+              className="h-[96px] md:h-[140px] w-auto mix-blend-screen"
               loading="lazy"
               decoding="async"
             />
@@ -174,7 +188,7 @@ const Navigation = () => {
           {/* Mobile Hamburger */}
           <button
             type="button"
-            className="md:hidden p-2 text-foreground/70 hover:text-foreground transition-colors"
+            className="md:hidden p-3 text-foreground/50 hover:text-foreground transition-colors duration-300"
             onClick={() => setMobileOpen(true)}
             aria-label="Menü öffnen"
             aria-expanded={mobileOpen}

@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import LandingLayout from "./LandingLayout";
 import FAQSection from "./FAQSection";
 import { CalendarDays, MapPin, Train, Car, Utensils, Hotel, Landmark } from "lucide-react";
+import CinematicPortrait from "@/components/CinematicPortrait";
+import TicketCTA from "@/components/shared/TicketCTA";
 
 interface VenueInfo {
   name: string;
@@ -127,6 +129,7 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
       heroImage={config.heroImage}
       heroTitle={config.cityName}
       heroSubtitle="Das Live-Hörspiel"
+      heroCTA
       showCTA
     >
       <SEO
@@ -234,11 +237,14 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
       </section>
 
       {/* ── Bühnenfoto – Full Bleed ── */}
-      <div
-        className="w-full min-h-[250px] md:min-h-[400px] bg-cover bg-center"
-        style={{ backgroundImage: `url(/images/buehne/pater-brown-atmosphaere-silhouette-nebel-af-1200.webp)` }}
-        role="img"
-        aria-label={`Stimmungsvolle Silhouette beim Pater Brown Live-Hörspiel in ${config.cityName}`}
+      <CinematicPortrait
+        src="/images/buehne/pater-brown-atmosphaere-silhouette-nebel-af.webp"
+        srcSet="/images/buehne/pater-brown-atmosphaere-silhouette-nebel-af-480.webp 480w, /images/buehne/pater-brown-atmosphaere-silhouette-nebel-af-768.webp 768w, /images/buehne/pater-brown-atmosphaere-silhouette-nebel-af-1200.webp 1200w"
+        sizes="100vw"
+        alt={`Stimmungsvolle Silhouette beim Pater Brown Live-Hörspiel in ${config.cityName}`}
+        aspectRatio="aspect-[16/10]"
+        objectPosition="50% 50%"
+        fadeEdges
       />
 
       {/* ── Großes Zitat ── */}
@@ -251,6 +257,8 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
           <p className="text-gold text-sm uppercase tracking-[0.3em]">Das Live-Hörspiel</p>
         </div>
       </section>
+
+      <TicketCTA variant="emotional" />
 
       {/* ── Veranstaltungsort ── */}
       <section className="py-28 md:py-36 px-6">
@@ -374,6 +382,8 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
           </div>
         </section>
       )}
+
+      <TicketCTA variant="concrete" />
 
       {/* ── FAQ ── */}
       {config.faq.length > 0 && (

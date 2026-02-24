@@ -8,7 +8,8 @@ const CastSection = () => {
   const marvelin = castMembers.find(m => m.id === 'marvelin');
 
   return (
-    <section 
+    <section
+      id="cast"
       className="py-28 md:py-36 px-6 relative overflow-hidden"
       aria-labelledby="cast-heading"
     >
@@ -22,27 +23,88 @@ const CastSection = () => {
         
         <div className="grid md:grid-cols-2 gap-16 lg:gap-24 max-w-6xl mx-auto">
           {mainCast.map((member) => (
-            <article 
+            <article
               key={member.id}
               className="group"
             >
               <div className="relative overflow-hidden aspect-[3/4] mb-8">
-                <ResponsiveImage 
-                  src={member.image} 
-                  alt={`${member.name} als ${member.character || member.role}`}
-                  className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                {/* Layer 1 — Blurred background */}
+                <ResponsiveImage
+                  src={member.image}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover"
                   loading="lazy"
                   width={800}
                   height={1067}
                   sizes="(max-width: 768px) 100vw, 50vw"
                   style={{
-                    filter: 'grayscale(0.3) contrast(1.1)'
+                    objectPosition: '50% 15%',
+                    filter: 'contrast(1.15) brightness(0.9) saturate(0.85) blur(3px)',
                   }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+                {/* Layer 2 — Sharp foreground with radial mask */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    WebkitMaskImage: 'radial-gradient(ellipse 80% 75% at 50% 35%, black 30%, transparent 70%)',
+                    maskImage: 'radial-gradient(ellipse 80% 75% at 50% 35%, black 30%, transparent 70%)',
+                  }}
+                >
+                  <ResponsiveImage
+                    src={member.image}
+                    alt={`${member.name} als ${member.character || member.role}`}
+                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
+                    loading="lazy"
+                    width={800}
+                    height={1067}
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    style={{
+                      objectPosition: '50% 15%',
+                      filter: 'contrast(1.15) brightness(0.9) saturate(0.85)',
+                    }}
+                  />
+                </div>
+                {/* Layer 3 — Soft-glow / Diffusion */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    mixBlendMode: 'soft-light',
+                    opacity: 0.35,
+                    WebkitMaskImage: 'radial-gradient(ellipse 80% 75% at 50% 35%, black 30%, transparent 70%)',
+                    maskImage: 'radial-gradient(ellipse 80% 75% at 50% 35%, black 30%, transparent 70%)',
+                  }}
+                >
+                  <ResponsiveImage
+                    src={member.image}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    width={800}
+                    height={1067}
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    style={{
+                      objectPosition: '50% 15%',
+                      filter: 'blur(4px) brightness(1.1) saturate(0.7)',
+                    }}
+                  />
+                </div>
+                {/* Unterer Gradient — Text-Lesbarkeit */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.6) 18%, transparent 45%)',
+                  }}
+                />
+                {/* Gold-Akzentlinie am unteren Bildrand */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-[1px] pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(to right, transparent 10%, hsl(var(--gold) / 0.3) 50%, transparent 90%)',
+                  }}
+                />
               </div>
               <div className="relative z-10 -mt-24 px-4">
-                <h3 className="text-4xl md:text-6xl font-heading text-foreground mb-2">
+                <h3 className="text-4xl md:text-5xl font-heading text-foreground mb-2 whitespace-nowrap">
                   {member.name}
                 </h3>
                 <p className="text-lg text-gold tracking-[0.2em] uppercase font-medium">

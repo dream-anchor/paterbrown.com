@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import { SEO } from "@/components/SEO";
-
+import CinematicPortrait from "@/components/CinematicPortrait";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
+import TicketCTA from "@/components/shared/TicketCTA";
 
 const BREADCRUMBS = [
   { label: "Startseite", href: "/" },
@@ -63,6 +64,7 @@ const WanjaMues = () => {
       heroTitle="Wanja Mues"
       heroSubtitle="Schauspieler, Hörbuchsprecher"
       variant="portrait"
+      heroCTA
     >
       <SEO
         title={`Wanja Mues als Pater Brown – Der Star aus „Ein Fall für zwei“ live | paterbrown.com`}
@@ -99,16 +101,14 @@ const WanjaMues = () => {
                 „Jokehnen" neben Armin Mueller-Stahl.
               </p>
             </div>
-            <div className="overflow-hidden border border-foreground/10">
-              <img
-                src="/images/portraits/wanja-mues-portrait-pater-brown-gl.webp"
-                srcSet="/images/portraits/wanja-mues-portrait-pater-brown-gl-480.webp 480w, /images/portraits/wanja-mues-portrait-pater-brown-gl-768.webp 768w, /images/portraits/wanja-mues-portrait-pater-brown-gl-1200.webp 1200w"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                alt="Wanja Mues – Schauspieler im Pater Brown Live-Hörspiel"
-                className="w-full aspect-[3/4] object-cover object-top"
-                loading="eager"
-              />
-            </div>
+            <CinematicPortrait
+              src="/images/portraits/wanja-mues-portrait-pater-brown-gl.webp"
+              srcSet="/images/portraits/wanja-mues-portrait-pater-brown-gl-480.webp 480w, /images/portraits/wanja-mues-portrait-pater-brown-gl-768.webp 768w, /images/portraits/wanja-mues-portrait-pater-brown-gl-1200.webp 1200w"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              alt="Wanja Mues – Schauspieler im Pater Brown Live-Hörspiel"
+              loading="eager"
+              fadeEdges
+            />
           </div>
         </div>
       </section>
@@ -159,6 +159,8 @@ const WanjaMues = () => {
           </p>
         </div>
       </section>
+
+      <TicketCTA variant="personal" />
 
       {/* Theater */}
       <section className="py-28 md:py-36 px-6">
@@ -219,16 +221,15 @@ const WanjaMues = () => {
       {/* Bühnenfoto Fullbleed */}
       <section className="py-28 md:py-36 px-6">
         <div className="container mx-auto max-w-6xl">
-          <div className="overflow-hidden border border-foreground/10">
-            <img
-              src="/images/buehne/pater-brown-dialog-szene-monot-mues-af.webp"
-              srcSet="/images/buehne/pater-brown-dialog-szene-monot-mues-af-480.webp 480w, /images/buehne/pater-brown-dialog-szene-monot-mues-af-768.webp 768w, /images/buehne/pater-brown-dialog-szene-monot-mues-af-1200.webp 1200w"
-              sizes="(max-width: 768px) 100vw, 80vw"
-              alt="Wanja Mues und Antoine Monot in einer Dialog-Szene des Pater Brown Live-Hörspiels"
-              className="w-full aspect-[21/9] object-cover"
-              loading="lazy"
-            />
-          </div>
+          <CinematicPortrait
+            src="/images/buehne/pater-brown-dialog-szene-monot-mues-af.webp"
+            srcSet="/images/buehne/pater-brown-dialog-szene-monot-mues-af-480.webp 480w, /images/buehne/pater-brown-dialog-szene-monot-mues-af-768.webp 768w, /images/buehne/pater-brown-dialog-szene-monot-mues-af-1200.webp 1200w"
+            sizes="(max-width: 768px) 100vw, 80vw"
+            alt="Wanja Mues und Antoine Monot in einer Dialog-Szene des Pater Brown Live-Hörspiels"
+            aspectRatio="aspect-[21/9]"
+            objectPosition="50% 25%"
+            fadeEdges
+          />
         </div>
       </section>
 

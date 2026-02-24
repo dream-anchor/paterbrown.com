@@ -53,7 +53,7 @@ export const teamMembers: TeamMember[] = [
   {
     id: "stefanie",
     name: "Stefanie Sick",
-    role: "Produktion & Öffentlichkeitsarbeit",
+    role: "Künstlerische Leitung",
     image: stefanieSickImage,
     mobileImagePosition: "60% center",
     description: "Als Creative Producerin verantwortet Stefanie Sick die künstlerische Leitung, Gesamtkonzeption und Kommunikationsstrategie von \"Pater Brown – Das Live-Hörspiel\".\n\nMit ihrer Expertise in den Bereichen Produktion und Öffentlichkeitsarbeit führt sie kreative, organisatorische und mediale Prozesse zusammen – von der ersten Idee bis zum publikumswirksamen Bühnenerlebnis, das klassische Krimispannung mit moderner Performance verbindet."

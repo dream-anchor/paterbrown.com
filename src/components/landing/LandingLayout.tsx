@@ -2,6 +2,8 @@ import { type ReactNode } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import CTABlock from "@/components/shared/CTABlock";
+import StickyMobileCTA from "@/components/shared/StickyMobileCTA";
+import TicketCTA from "@/components/shared/TicketCTA";
 
 const DEFAULT_HERO = "/images/hero/pater-brown-buehne-ensemble-nebel-dd";
 
@@ -18,8 +20,12 @@ interface LandingLayoutProps {
   heroTitle?: string;
   heroSubtitle?: string;
   showCTA?: boolean;
+  /** Zeigt einen Hero-CTA-Button nach dem Hero-Titel */
+  heroCTA?: boolean;
   /** "immersive" entfernt Hero und erlaubt Fullbleed-Sections, "portrait" für Personen-Seiten mit Hochformat-Foto */
   variant?: "default" | "immersive" | "portrait";
+  /** Object-Position für das Hero-Bild (default: "50% 15%") */
+  heroObjectPosition?: string;
 }
 
 const LandingLayout = ({
@@ -29,11 +35,13 @@ const LandingLayout = ({
   heroTitle,
   heroSubtitle,
   showCTA = true,
+  heroCTA = false,
   variant = "default",
+  heroObjectPosition = "50% 15%",
 }: LandingLayoutProps) => {
   if (variant === "immersive") {
     return (
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col bg-background pb-14 md:pb-0">
         <Navigation />
 
         <main className="flex-1">
@@ -42,13 +50,14 @@ const LandingLayout = ({
 
         {showCTA && <CTABlock />}
         <Footer />
+        <StickyMobileCTA />
       </div>
     );
   }
 
   if (variant === "portrait") {
     return (
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen flex flex-col bg-background pb-14 md:pb-0">
         <Navigation />
 
         {/* Portrait Hero — Split Layout */}
@@ -76,18 +85,60 @@ const LandingLayout = ({
                 {heroSubtitle}
               </p>
             )}
+            {heroCTA && (
+              <div className="cinematic-enter mt-10" style={{ animationDelay: "0.45s" }}>
+                <TicketCTA variant="hero" className="py-0" />
+              </div>
+            )}
           </div>
 
           {/* Portrait-Foto: oben auf Mobile, rechts auf Desktop */}
           <div className="relative order-1 md:order-2 w-full md:w-[55%] h-[65vh] md:h-auto md:min-h-screen flex-shrink-0">
+            {/* Blurred background layer */}
             <img
               src={heroImage}
-              alt={heroTitle || ""}
-              className="w-full h-full object-cover"
-              style={{ objectPosition: "50% 15%" }}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ objectPosition: heroObjectPosition, filter: "contrast(1.15) brightness(0.9) saturate(0.85) blur(3px)" }}
               loading="eager"
               decoding="async"
             />
+            {/* Sharp foreground layer with radial mask */}
+            <div
+              className="absolute inset-0"
+              style={{
+                WebkitMaskImage: "radial-gradient(ellipse 80% 85% at 50% 35%, black 30%, transparent 70%)",
+                maskImage: "radial-gradient(ellipse 80% 85% at 50% 35%, black 30%, transparent 70%)",
+              }}
+            >
+              <img
+                src={heroImage}
+                alt={heroTitle || ""}
+                className="w-full h-full object-cover"
+                style={{ objectPosition: heroObjectPosition, filter: "contrast(1.15) brightness(0.9) saturate(0.85)" }}
+                decoding="async"
+              />
+            </div>
+            {/* Soft-glow / Diffusion layer */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                mixBlendMode: "soft-light",
+                opacity: 0.35,
+                WebkitMaskImage: "radial-gradient(ellipse 80% 85% at 50% 35%, black 30%, transparent 70%)",
+                maskImage: "radial-gradient(ellipse 80% 85% at 50% 35%, black 30%, transparent 70%)",
+              }}
+            >
+              <img
+                src={heroImage}
+                alt=""
+                aria-hidden="true"
+                className="w-full h-full object-cover"
+                style={{ objectPosition: heroObjectPosition, filter: "blur(4px) brightness(1.1) saturate(0.7)" }}
+                decoding="async"
+              />
+            </div>
             {/* Mobile: unterer Gradient */}
             <div
               className="absolute inset-0 md:hidden"
@@ -118,6 +169,7 @@ const LandingLayout = ({
 
         {showCTA && <CTABlock />}
         <Footer />
+        <StickyMobileCTA />
       </div>
     );
   }
@@ -127,11 +179,12 @@ const LandingLayout = ({
 
   // Default variant — Full-Viewport Hero + Content
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background pb-14 md:pb-0">
       <Navigation />
 
       {/* Full-Viewport Hero */}
       <section className="relative min-h-screen flex items-end justify-center overflow-hidden pb-12 md:pb-16">
+        {/* Blurred background layer */}
         <div className="absolute inset-0">
           {isResponsiveHero ? (
             <img
@@ -147,7 +200,7 @@ const LandingLayout = ({
               alt=""
               aria-hidden="true"
               className="w-full h-full object-cover"
-              style={{ objectPosition: "50% 15%" }}
+              style={{ objectPosition: heroObjectPosition, filter: "contrast(1.15) brightness(0.9) saturate(0.85) blur(3px)" }}
               loading="eager"
               decoding="async"
             />
@@ -157,8 +210,75 @@ const LandingLayout = ({
               alt=""
               aria-hidden="true"
               className="w-full h-full object-cover"
-              style={{ objectPosition: "50% 15%" }}
+              style={{ objectPosition: heroObjectPosition, filter: "contrast(1.15) brightness(0.9) saturate(0.85) blur(3px)" }}
               loading="eager"
+              decoding="async"
+            />
+          )}
+        </div>
+        {/* Sharp foreground layer with radial mask — fake depth-of-field */}
+        <div
+          className="absolute inset-0"
+          style={{
+            WebkitMaskImage: "radial-gradient(ellipse 70% 80% at 50% 40%, black 30%, transparent 70%)",
+            maskImage: "radial-gradient(ellipse 70% 80% at 50% 40%, black 30%, transparent 70%)",
+          }}
+        >
+          {isResponsiveHero ? (
+            <img
+              src={`${heroBase}-1200.webp`}
+              srcSet={[
+                `${heroBase}-480.webp 480w`,
+                `${heroBase}-768.webp 768w`,
+                `${heroBase}-1200.webp 1200w`,
+                `${heroBase}-2000.webp 2000w`,
+                `${heroBase}.webp 3817w`,
+              ].join(", ")}
+              sizes="100vw"
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-cover"
+              style={{ objectPosition: heroObjectPosition, filter: "contrast(1.15) brightness(0.9) saturate(0.85)" }}
+              decoding="async"
+            />
+          ) : (
+            <img
+              src={heroImage}
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-cover"
+              style={{ objectPosition: heroObjectPosition, filter: "contrast(1.15) brightness(0.9) saturate(0.85)" }}
+              decoding="async"
+            />
+          )}
+        </div>
+        {/* Soft-glow / Diffusion layer — glättet Hauttöne, cinematischer Look */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            mixBlendMode: "soft-light",
+            opacity: 0.35,
+            WebkitMaskImage: "radial-gradient(ellipse 70% 80% at 50% 40%, black 30%, transparent 70%)",
+            maskImage: "radial-gradient(ellipse 70% 80% at 50% 40%, black 30%, transparent 70%)",
+          }}
+        >
+          {isResponsiveHero ? (
+            <img
+              src={`${heroBase}-1200.webp`}
+              sizes="100vw"
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-cover"
+              style={{ objectPosition: heroObjectPosition, filter: "blur(4px) brightness(1.1) saturate(0.7)" }}
+              decoding="async"
+            />
+          ) : (
+            <img
+              src={heroImage}
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-cover"
+              style={{ objectPosition: heroObjectPosition, filter: "blur(4px) brightness(1.1) saturate(0.7)" }}
               decoding="async"
             />
           )}
@@ -193,6 +313,11 @@ const LandingLayout = ({
               {heroSubtitle}
             </p>
           )}
+          {heroCTA && (
+            <div className="cinematic-enter mt-10" style={{ animationDelay: "0.45s" }}>
+              <TicketCTA variant="hero" className="py-0" />
+            </div>
+          )}
         </div>
       </section>
 
@@ -203,6 +328,7 @@ const LandingLayout = ({
 
       {showCTA && <CTABlock />}
       <Footer />
+      <StickyMobileCTA />
     </div>
   );
 };

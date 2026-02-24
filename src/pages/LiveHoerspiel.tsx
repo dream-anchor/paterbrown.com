@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import FAQSection from "@/components/landing/FAQSection";
-
+import CinematicPortrait from "@/components/CinematicPortrait";
 import { SEO } from "@/components/SEO";
 import { useIsMobile } from "@/hooks/use-mobile";
 import marvelinImage from "@/assets/marvelin-v3.png";
@@ -242,64 +242,65 @@ const LiveHoerspiel = () => (
     {/* ── SECTION 3: DIE SHOW ── */}
     <section className="py-28 md:py-36 px-6">
       <div className="container mx-auto max-w-6xl">
-        <div className="grid md:grid-cols-[1fr_1.2fr] gap-12 lg:gap-20 items-center">
-          <div>
-            <p className="text-gold text-sm uppercase tracking-[0.3em] mb-6 font-medium">Die Show</p>
-            <h2 className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85] mb-8">
-              Das Programm
-            </h2>
-            <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" />
+        <div className="text-center mb-24">
+          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-6 font-medium">Die Show</p>
+          <h2 className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85]">
+            Das Programm
+          </h2>
+        </div>
 
-            <div className="space-y-4">
-              <p className="text-foreground/70 leading-relaxed text-lg font-light">
-                <strong className="text-foreground">
-                  Zwei spannende Kriminalgeschichten
-                </strong>{" "}
-                nach dem britischen Autor{" "}
-                <Link
-                  to="/g-k-chesterton"
-                  className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
-                >
-                  G.K. Chesterton
-                </Link>{" "}
-                bilden den Kern jeder Vorstellung. Die Kurzgeschichten rund um den
-                scharfsinnigen{" "}
-                <Link
-                  to="/pater-brown"
-                  className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
-                >
-                  Pater Brown
-                </Link>{" "}
-                und seinen Gegenspieler Flambeau gehören zu den Klassikern der
-                Kriminalliteratur.
-              </p>
-              <p className="text-foreground/70 leading-relaxed text-lg font-light">
-                Jede Vorstellung dauert ca.{" "}
-                <strong className="text-foreground">
-                  2 Stunden inklusive Pause
-                </strong>
-                . Das Ensemble hat mehrere Geschichten im Repertoire –
-                Wiederholungsbesuche lohnen sich. Tickets ab{" "}
-                <strong className="text-foreground">34,90 €</strong>.
-              </p>
-            </div>
+        <CinematicPortrait
+          src="/images/buehne/pater-brown-dialog-szene-monot-mues-af-1200.webp"
+          srcSet="/images/buehne/pater-brown-dialog-szene-monot-mues-af-480.webp 480w, /images/buehne/pater-brown-dialog-szene-monot-mues-af-768.webp 768w, /images/buehne/pater-brown-dialog-szene-monot-mues-af-1200.webp 1200w"
+          sizes="(max-width: 768px) 90vw, 1200px"
+          alt="Antoine Monot und Wanja Mues in einer Dialogszene des Pater Brown Live-Hörspiels"
+          aspectRatio="aspect-[21/9]"
+          objectPosition="50% 50%"
+          fadeEdges
+          className="mb-16"
+        />
 
-            <div className="mt-8">
-              <Link
-                to="/termine"
-                className="text-sm md:text-base uppercase tracking-[0.25em] font-semibold px-10 md:px-14 py-4 md:py-5 border border-foreground/30 hover:border-foreground/60 text-foreground/90 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 backdrop-blur-sm transition-all duration-300 inline-block"
-              >
-                Alle Termine & Tickets
-              </Link>
-            </div>
-          </div>
+        <div className="space-y-4 max-w-3xl mx-auto">
+          <p className="text-foreground/70 leading-relaxed text-lg font-light">
+            <strong className="text-foreground">
+              Zwei spannende Kriminalgeschichten
+            </strong>{" "}
+            nach dem britischen Autor{" "}
+            <Link
+              to="/g-k-chesterton"
+              className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
+            >
+              G.K. Chesterton
+            </Link>{" "}
+            bilden den Kern jeder Vorstellung. Die Kurzgeschichten rund um den
+            scharfsinnigen{" "}
+            <Link
+              to="/pater-brown"
+              className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
+            >
+              Pater Brown
+            </Link>{" "}
+            und seinen Gegenspieler Flambeau gehören zu den Klassikern der
+            Kriminalliteratur.
+          </p>
+          <p className="text-foreground/70 leading-relaxed text-lg font-light">
+            Jede Vorstellung dauert ca.{" "}
+            <strong className="text-foreground">
+              2 Stunden inklusive Pause
+            </strong>
+            . Das Ensemble hat mehrere Geschichten im Repertoire –
+            Wiederholungsbesuche lohnen sich. Tickets ab{" "}
+            <strong className="text-foreground">34,90 €</strong>.
+          </p>
+        </div>
 
-          <div
-            className="border border-foreground/10 min-h-[300px] md:min-h-[500px] bg-cover bg-center"
-            style={{ backgroundImage: `url(/images/buehne/pater-brown-dialog-szene-monot-mues-af-1200.webp)` }}
-            role="img"
-            aria-label="Antoine Monot und Wanja Mues in einer Dialogszene des Pater Brown Live-Hörspiels"
-          />
+        <div className="text-center mt-12">
+          <Link
+            to="/termine"
+            className="text-sm md:text-base uppercase tracking-[0.25em] font-semibold px-10 md:px-14 py-4 md:py-5 border border-foreground/30 hover:border-foreground/60 text-foreground/90 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 backdrop-blur-sm transition-all duration-300 inline-block"
+          >
+            Alle Termine & Tickets
+          </Link>
         </div>
       </div>
     </section>
@@ -321,28 +322,22 @@ const LiveHoerspiel = () => (
               to={member.slug}
               className="block group"
             >
-              <div className="relative overflow-hidden aspect-[3/4] mb-8">
-                <img
-                  src={member.staticImage ? member.image : `${member.image}-768.webp`}
-                  {...(!member.staticImage && {
-                    srcSet: [
-                      `${member.image}-300.webp 300w`,
-                      `${member.image}-480.webp 480w`,
-                      `${member.image}-768.webp 768w`,
-                      `${member.image}-1200.webp 1200w`,
-                    ].join(", "),
-                    sizes: "(max-width: 768px) 100vw, 50vw",
-                  })}
-                  alt={`${member.name} – ${member.role}`}
-                  width={800}
-                  height={1067}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover object-top transition-all duration-700 group-hover:scale-105"
-                  style={{ filter: 'grayscale(0.3) contrast(1.1)' }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-              </div>
+              <CinematicPortrait
+                src={member.staticImage ? member.image : `${member.image}-768.webp`}
+                {...(!member.staticImage && {
+                  srcSet: [
+                    `${member.image}-300.webp 300w`,
+                    `${member.image}-480.webp 480w`,
+                    `${member.image}-768.webp 768w`,
+                    `${member.image}-1200.webp 1200w`,
+                  ].join(", "),
+                  sizes: "(max-width: 768px) 100vw, 50vw",
+                })}
+                alt={`${member.name} – ${member.role}`}
+                hoverScale
+                showOverlay
+                className="mb-8"
+              />
               <div className="relative z-10 -mt-24 px-4">
                 <h3 className="text-4xl md:text-6xl font-heading text-foreground mb-2">
                   {member.name}
@@ -367,11 +362,14 @@ const LiveHoerspiel = () => (
     <section className="py-28 md:py-36 px-6">
       <div className="container mx-auto max-w-6xl">
         <div className="grid md:grid-cols-[1.2fr_1fr] gap-12 lg:gap-20 items-center">
-          <div
-            className="border border-foreground/10 min-h-[400px] md:min-h-[600px] bg-cover bg-center"
-            style={{ backgroundImage: `url(/images/buehne/pater-brown-buehne-ensemble-marvelin-af-1200.webp)` }}
-            role="img"
-            aria-label="Beatboxer Marvelin erzeugt live alle Soundeffekte im Pater Brown Live-Hörspiel"
+          <CinematicPortrait
+            src="/images/buehne/pater-brown-buehne-ensemble-marvelin-af-1200.webp"
+            srcSet="/images/buehne/pater-brown-buehne-ensemble-marvelin-af-480.webp 480w, /images/buehne/pater-brown-buehne-ensemble-marvelin-af-768.webp 768w, /images/buehne/pater-brown-buehne-ensemble-marvelin-af-1200.webp 1200w"
+            sizes="(max-width: 768px) 100vw, 55vw"
+            alt="Beatboxer Marvelin erzeugt live alle Soundeffekte im Pater Brown Live-Hörspiel"
+            aspectRatio="aspect-[3/4]"
+            objectPosition="50% 50%"
+            fadeEdges
           />
 
           <div>

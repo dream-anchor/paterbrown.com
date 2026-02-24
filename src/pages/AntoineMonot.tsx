@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import { SEO } from "@/components/SEO";
-
+import CinematicPortrait from "@/components/CinematicPortrait";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
+import TicketCTA from "@/components/shared/TicketCTA";
 
 const BREADCRUMBS = [
   { label: "Startseite", href: "/" },
@@ -42,6 +43,7 @@ const AntoineMonot = () => {
       heroTitle="Antoine Monot"
       heroSubtitle="Schauspieler, Regisseur"
       variant="portrait"
+      heroCTA
     >
       <SEO
         title={`Antoine Monot & Pater Brown – Der Star aus „Ein Fall für zwei" | paterbrown.com`}
@@ -56,16 +58,14 @@ const AntoineMonot = () => {
       <section className="py-28 md:py-36 px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-[1.2fr_1fr] gap-12 lg:gap-20 items-start">
-            <div className="overflow-hidden border border-foreground/10">
-              <img
-                src="/images/portraits/antoine-monot-portrait-pater-brown-gl.webp"
-                srcSet="/images/portraits/antoine-monot-portrait-pater-brown-gl-480.webp 480w, /images/portraits/antoine-monot-portrait-pater-brown-gl-768.webp 768w, /images/portraits/antoine-monot-portrait-pater-brown-gl-1200.webp 1200w"
-                sizes="(max-width: 768px) 100vw, 55vw"
-                alt="Antoine Monot – Schauspieler und Co-Produzent des Pater Brown Live-Hörspiels"
-                className="w-full aspect-[3/4] object-cover object-top"
-                loading="eager"
-              />
-            </div>
+            <CinematicPortrait
+              src="/images/portraits/antoine-monot-portrait-pater-brown-gl.webp"
+              srcSet="/images/portraits/antoine-monot-portrait-pater-brown-gl-480.webp 480w, /images/portraits/antoine-monot-portrait-pater-brown-gl-768.webp 768w, /images/portraits/antoine-monot-portrait-pater-brown-gl-1200.webp 1200w"
+              sizes="(max-width: 768px) 100vw, 55vw"
+              alt="Antoine Monot – Schauspieler und Co-Produzent des Pater Brown Live-Hörspiels"
+              loading="eager"
+              fadeEdges
+            />
             <div>
               <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">Biografie</p>
               <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
@@ -134,19 +134,20 @@ const AntoineMonot = () => {
         </div>
       </section>
 
+      <TicketCTA variant="personal" />
+
       {/* Bühnenfoto */}
       <section className="py-28 md:py-36 px-6">
         <div className="container mx-auto max-w-6xl">
-          <div className="overflow-hidden border border-foreground/10">
-            <img
-              src="/images/buehne/pater-brown-antoine-monot-buehne-solo-af.webp"
-              srcSet="/images/buehne/pater-brown-antoine-monot-buehne-solo-af-480.webp 480w, /images/buehne/pater-brown-antoine-monot-buehne-solo-af-768.webp 768w, /images/buehne/pater-brown-antoine-monot-buehne-solo-af-1200.webp 1200w"
-              sizes="(max-width: 768px) 100vw, 80vw"
-              alt="Antoine Monot auf der Bühne im Pater Brown Live-Hörspiel"
-              className="w-full aspect-[21/9] object-cover"
-              loading="lazy"
-            />
-          </div>
+          <CinematicPortrait
+            src="/images/buehne/pater-brown-antoine-monot-buehne-solo-af.webp"
+            srcSet="/images/buehne/pater-brown-antoine-monot-buehne-solo-af-480.webp 480w, /images/buehne/pater-brown-antoine-monot-buehne-solo-af-768.webp 768w, /images/buehne/pater-brown-antoine-monot-buehne-solo-af-1200.webp 1200w"
+            sizes="(max-width: 768px) 100vw, 80vw"
+            alt="Antoine Monot auf der Bühne im Pater Brown Live-Hörspiel"
+            aspectRatio="aspect-[21/9]"
+            objectPosition="50% 25%"
+            fadeEdges
+          />
         </div>
       </section>
 

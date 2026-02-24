@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Baunatal",
   addressRegion: "Hessen",
   addressCountry: "DE",
-  heroImage: "/images/buehne/dd-dialog-intensiv-closeup.webp",
+  heroImage: "/images/buehne/dd-trio-lila-nebel.webp",
   nearbyCities: [{ slug: "giessen", name: "Gießen" }],
   venue: {
     name: "Stadthalle Baunatal",

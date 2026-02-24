@@ -201,17 +201,24 @@ All colors MUST be HSL.
   /* Premium button */
   .btn-premium {
     position: relative;
-    padding: 1.25rem 3rem;
+    padding: 1rem 1.5rem;
     background: linear-gradient(135deg, hsl(28 100% 55%), hsl(28 90% 47%));
     color: hsl(0 0% 5%);
     font-weight: 700;
-    font-size: 1.125rem;
+    font-size: 0.875rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     border: none;
     overflow: hidden;
     transition: all 0.4s ease;
     box-shadow: 0 10px 30px hsl(28 100% 55% / 0.3);
+  }
+
+  @media (min-width: 640px) {
+    .btn-premium {
+      padding: 1.25rem 3rem;
+      font-size: 1.125rem;
+    }
   }
 
   .btn-premium::before {
@@ -486,6 +493,15 @@ All colors MUST be HSL.
       0 0 42px hsl(var(--gold) / 0.8),
       0 0 82px hsl(var(--gold) / 0.4),
       0 0 120px hsl(var(--gold) / 0.2);
+  }
+
+  /* Cast-Portrait: entsättigt → farbig bei Hover */
+  .cast-portrait {
+    filter: grayscale(0.4) contrast(1.15) brightness(0.95);
+    transition: filter 0.7s ease, transform 0.7s ease;
+  }
+  .group:hover .cast-portrait {
+    filter: grayscale(0) contrast(1.1) brightness(1) saturate(1.05);
   }
 
   .neon-gold-subtle {

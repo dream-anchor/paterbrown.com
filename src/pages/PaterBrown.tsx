@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import FAQSection from "@/components/landing/FAQSection";
 import { SEO } from "@/components/SEO";
+import CinematicPortrait from "@/components/CinematicPortrait";
+import TicketCTA from "@/components/shared/TicketCTA";
 
 const FAQ_ITEMS = [
   {
@@ -224,9 +226,9 @@ const WEITERLESEN = [
 const PaterBrown = () => (
   <LandingLayout
     breadcrumbs={[{ label: "Pater Brown" }]}
-    heroImage="/images/buehne/dd-buehne-totale-nebel-licht.webp"
     heroTitle="Pater Brown"
     heroSubtitle="Der unscheinbare Priester, der seit über 100 Jahren Kriminalfälle löst – von den Kurzgeschichten über Film und Fernsehen bis auf die Live-Bühne."
+    heroCTA
     showCTA
   >
     <SEO
@@ -250,9 +252,18 @@ const PaterBrown = () => (
       </h2>
       <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" aria-hidden="true" />
 
-      <div className="float-right ml-6 mb-4 w-48 sm:w-56">
-        <div className="border border-foreground/10 overflow-hidden">
-          <img src="/images/historisch/gk-chesterton-foto-schriftsteller.webp" srcSet="/images/historisch/gk-chesterton-foto-schriftsteller-480.webp 480w, /images/historisch/gk-chesterton-foto-schriftsteller-768.webp 768w" sizes="(max-width: 640px) 192px, 224px" alt="G.K. Chesterton – Schriftsteller und Schöpfer der Figur Father Brown" className="w-full" loading="lazy" />
+      <div className="float-right ml-4 sm:ml-6 mb-4 w-32 sm:w-48 md:w-56">
+        <div className="relative overflow-hidden aspect-[3/4]">
+          <img
+            src="/images/historisch/gk-chesterton-foto-schriftsteller.webp"
+            srcSet="/images/historisch/gk-chesterton-foto-schriftsteller-480.webp 480w, /images/historisch/gk-chesterton-foto-schriftsteller-768.webp 768w"
+            sizes="(max-width: 480px) 128px, (max-width: 640px) 192px, 224px"
+            alt="G.K. Chesterton – Schriftsteller und Schöpfer der Figur Father Brown"
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-cover"
+            style={{ objectPosition: "50% 15%" }}
+          />
         </div>
       </div>
 
@@ -273,28 +284,20 @@ const PaterBrown = () => (
           fünf Sammlungen:
         </p>
 
-        <ol className="list-decimal list-inside space-y-1 text-lg leading-relaxed font-light text-foreground/70 pl-4">
-          <li>
-            <strong className="text-foreground">1911</strong> – Father Browns
-            Einfalt (<em>The Innocence of Father Brown</em>)
-          </li>
-          <li>
-            <strong className="text-foreground">1914</strong> – Father Browns
-            Weisheit (<em>The Wisdom of Father Brown</em>)
-          </li>
-          <li>
-            <strong className="text-foreground">1926</strong> – Father Browns
-            Ungläubigkeit (<em>The Incredulity of Father Brown</em>)
-          </li>
-          <li>
-            <strong className="text-foreground">1927</strong> – Father Browns
-            Geheimnis (<em>The Secret of Father Brown</em>)
-          </li>
-          <li>
-            <strong className="text-foreground">1935</strong> – Father Browns
-            Skandal (<em>The Scandal of Father Brown</em>)
-          </li>
-        </ol>
+        <div className="space-y-2 text-lg leading-relaxed font-light text-foreground/70">
+          {[
+            { year: "1911", de: "Father Browns Einfalt", en: "The Innocence of Father Brown" },
+            { year: "1914", de: "Father Browns Weisheit", en: "The Wisdom of Father Brown" },
+            { year: "1926", de: "Father Browns Ungläubigkeit", en: "The Incredulity of Father Brown" },
+            { year: "1927", de: "Father Browns Geheimnis", en: "The Secret of Father Brown" },
+            { year: "1935", de: "Father Browns Skandal", en: "The Scandal of Father Brown" },
+          ].map((book) => (
+            <div key={book.year} className="flex gap-3">
+              <strong className="text-foreground tabular-nums shrink-0">{book.year}</strong>
+              <span>– {book.de} (<em>{book.en}</em>)</span>
+            </div>
+          ))}
+        </div>
 
         <p className="text-foreground/70 leading-relaxed text-lg font-light">
           Brown ist das Gegenteil eines klassischen Detektivhelden: klein,
@@ -355,6 +358,8 @@ const PaterBrown = () => (
       </div>
     </div></section>
 
+    <TicketCTA variant="informative" />
+
     {/* ── Kapitel 2: Film und Fernsehen ── */}
     <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
       <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">
@@ -373,15 +378,17 @@ const PaterBrown = () => (
             </h3>
 
             {item.image && (
-              <div className="float-right ml-6 mb-4 w-40 sm:w-48">
-                <div className="border border-foreground/10 overflow-hidden">
+              <div className="float-right ml-4 sm:ml-6 mb-4 w-28 sm:w-40 md:w-48">
+                <div className="relative overflow-hidden aspect-[3/4]">
                   <img
                     src={`${item.image.basePath}.webp`}
                     srcSet={`${item.image.basePath}-480.webp 480w, ${item.image.basePath}-768.webp 768w`}
-                    sizes="(max-width: 640px) 160px, 192px"
+                    sizes="(max-width: 480px) 112px, (max-width: 640px) 160px, 192px"
                     alt={item.image.alt}
-                    className="w-full"
                     loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover"
+                    style={{ objectPosition: "50% 50%" }}
                   />
                 </div>
               </div>
@@ -396,6 +403,8 @@ const PaterBrown = () => (
         ))}
       </div>
     </div></section>
+
+    <TicketCTA variant="emotional" />
 
     {/* ── Kapitel 3: Hörspiel ── */}
     <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
@@ -446,10 +455,14 @@ const PaterBrown = () => (
       </h2>
       <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" aria-hidden="true" />
 
-      <div className="w-full min-h-[250px] md:min-h-[400px] bg-cover bg-center border border-foreground/10 mb-8"
-        style={{ backgroundImage: 'url(/images/buehne/pater-brown-dialog-szene-monot-mues-af-1200.webp)' }}
-        role="img"
-        aria-label="Live-Hörspiel-Szene: Antoine Monot und Wanja Mues im Dialog beim Pater Brown Live-Hörspiel"
+      <CinematicPortrait
+        src="/images/buehne/pater-brown-dialog-szene-monot-mues-af.webp"
+        srcSet="/images/buehne/pater-brown-dialog-szene-monot-mues-af-480.webp 480w, /images/buehne/pater-brown-dialog-szene-monot-mues-af-768.webp 768w, /images/buehne/pater-brown-dialog-szene-monot-mues-af-1200.webp 1200w"
+        sizes="(max-width: 768px) 100vw, 80vw"
+        alt="Live-Hörspiel-Szene: Antoine Monot und Wanja Mues im Dialog beim Pater Brown Live-Hörspiel"
+        aspectRatio="aspect-[16/10]"
+        objectPosition="50% 50%"
+        className="border border-foreground/10 mb-8"
       />
 
       <div className="space-y-4">
@@ -497,7 +510,7 @@ const PaterBrown = () => (
       </div>
     </div></section>
 
-    <div className="w-[88%] max-w-4xl mx-auto"><div className="h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent" aria-hidden="true" /></div>
+    <TicketCTA variant="concrete" />
 
     {/* ── FAQ ── */}
     <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">

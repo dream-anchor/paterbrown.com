@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Erding",
   addressRegion: "Bayern",
   addressCountry: "DE",
-  heroImage: "/images/buehne/af-duo-dialog-gestik-blau.webp",
+  heroImage: "/images/buehne/dd-duo-nebel-blaulicht.webp",
   nearbyCities: [
     { slug: "muenchen", name: "München" },
     { slug: "kempten", name: "Kempten" },

@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Stuttgart",
   addressRegion: "Baden-Württemberg",
   addressCountry: "DE",
-  heroImage: "/images/buehne/dd-dialog-haende-gestik.webp",
+  heroImage: "/images/buehne/dd-duo-rauch-marvelin-lila.webp",
   nearbyCities: [
     { slug: "muenchen", name: "München" },
     { slug: "koeln", name: "Köln" },

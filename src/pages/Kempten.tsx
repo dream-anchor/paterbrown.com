@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Kempten",
   addressRegion: "Bayern",
   addressCountry: "DE",
-  heroImage: "/images/buehne/dd-buehne-nebel-led-publikum.webp",
+  heroImage: "/images/buehne/dd-buehne-totale-nebel-licht.webp",
   nearbyCities: [
     { slug: "muenchen", name: "München" },
     { slug: "erding", name: "Erding" },

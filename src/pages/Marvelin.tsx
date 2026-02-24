@@ -2,7 +2,9 @@ import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import { SEO } from "@/components/SEO";
 import FAQSection from "@/components/landing/FAQSection";
+import CinematicPortrait from "@/components/CinematicPortrait";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
+import TicketCTA from "@/components/shared/TicketCTA";
 
 const BREADCRUMBS = [
   { label: "Startseite", href: "/" },
@@ -69,9 +71,12 @@ const Marvelin = () => {
   return (
     <LandingLayout
       breadcrumbs={BREADCRUMBS}
-      heroImage="/images/buehne/dd-duo-marvelin-tiefblau.webp"
+      heroImage="/images/buehne/marvelin-portrait.webp"
       heroTitle="Marvelin"
       heroSubtitle="Beatboxer, Coach, Veranstalter"
+      variant="portrait"
+      heroObjectPosition="50% 30%"
+      heroCTA
     >
       <SEO
         title="Marvelin – Beatboxer im Pater Brown Live-Hörspiel | paterbrown.com"
@@ -102,16 +107,14 @@ const Marvelin = () => {
                 Begonnen hat alles als Straßenmusiker in Berlin.
               </p>
             </div>
-            <div className="overflow-hidden border border-foreground/10">
-              <img
-                src="/images/buehne/pater-brown-buehne-ensemble-marvelin-af.webp"
-                srcSet="/images/buehne/pater-brown-buehne-ensemble-marvelin-af-480.webp 480w, /images/buehne/pater-brown-buehne-ensemble-marvelin-af-768.webp 768w, /images/buehne/pater-brown-buehne-ensemble-marvelin-af-1200.webp 1200w"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                alt="Marvelin – Beatboxer im Pater Brown Live-Hörspiel"
-                className="w-full aspect-[3/4] object-cover object-top"
-                loading="eager"
-              />
-            </div>
+            <CinematicPortrait
+              src="/images/buehne/pater-brown-buehne-ensemble-marvelin-af.webp"
+              srcSet="/images/buehne/pater-brown-buehne-ensemble-marvelin-af-480.webp 480w, /images/buehne/pater-brown-buehne-ensemble-marvelin-af-768.webp 768w, /images/buehne/pater-brown-buehne-ensemble-marvelin-af-1200.webp 1200w"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              alt="Marvelin – Beatboxer im Pater Brown Live-Hörspiel"
+              loading="eager"
+              fadeEdges
+            />
           </div>
         </div>
       </section>
@@ -181,20 +184,21 @@ const Marvelin = () => {
         </div>
       </section>
 
+      <TicketCTA variant="personal" />
+
       {/* Im Live-Hörspiel */}
       <section className="py-28 md:py-36 px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-[1.2fr_1fr] gap-12 lg:gap-20 items-start">
-            <div className="overflow-hidden border border-foreground/10">
-              <img
-                src="/images/buehne/pater-brown-ensemble-monot-mues-marvelin-af.webp"
-                srcSet="/images/buehne/pater-brown-ensemble-monot-mues-marvelin-af-480.webp 480w, /images/buehne/pater-brown-ensemble-monot-mues-marvelin-af-768.webp 768w, /images/buehne/pater-brown-ensemble-monot-mues-marvelin-af-1200.webp 1200w"
-                sizes="(max-width: 768px) 100vw, 55vw"
-                alt="Marvelin, Antoine Monot und Wanja Mues gemeinsam auf der Bühne"
-                className="w-full aspect-[4/3] object-cover"
-                loading="lazy"
-              />
-            </div>
+            <CinematicPortrait
+              src="/images/buehne/pater-brown-ensemble-monot-mues-marvelin-af.webp"
+              srcSet="/images/buehne/pater-brown-ensemble-monot-mues-marvelin-af-480.webp 480w, /images/buehne/pater-brown-ensemble-monot-mues-marvelin-af-768.webp 768w, /images/buehne/pater-brown-ensemble-monot-mues-marvelin-af-1200.webp 1200w"
+              sizes="(max-width: 768px) 100vw, 55vw"
+              alt="Marvelin, Antoine Monot und Wanja Mues gemeinsam auf der Bühne"
+              aspectRatio="aspect-[4/3]"
+              objectPosition="50% 50%"
+              fadeEdges
+            />
             <div>
               <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">Pater Brown</p>
               <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">

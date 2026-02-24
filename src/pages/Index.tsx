@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import SkipLink from "@/components/SkipLink";
 import { FAQStructuredData } from "@/components/StructuredData";
 import { SEO } from "@/components/SEO";
-import { StickyBlackWeekCTA } from "@/components/StickyBlackWeekCTA";
+import StickyMobileCTA from "@/components/shared/StickyMobileCTA";
 import { getSEOTourYear } from "@/lib/dateUtils";
 
 // Lazy load non-critical sections for better performance
@@ -44,7 +44,7 @@ const Index = () => {
   const seoYear = getSEOTourYear(tourEvents);
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background overflow-x-hidden pb-14 md:pb-0">
       <SEO 
         title={`Pater Brown Live-Hörspiel | Tickets & Termine ${seoYear}`}
         description="Erleben Sie Pater Brown live auf der Bühne mit Wanja Mues und Antoine Monot. Ein einzigartiges Live-Hörspiel-Erlebnis mit Beatboxer Marvelin."
@@ -114,8 +114,7 @@ const Index = () => {
       
       <Footer />
       
-      {/* Sticky CTA Button */}
-      <StickyBlackWeekCTA />
+      <StickyMobileCTA />
     </div>
   );
 };

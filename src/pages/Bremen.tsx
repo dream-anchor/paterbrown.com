@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Bremen",
   addressRegion: "Bremen",
   addressCountry: "DE",
-  heroImage: "/images/buehne/dd-duo-lesen-lila.webp",
+  heroImage: "/images/buehne/dd-duo-zeigefinger-blau.webp",
   nearbyCities: [{ slug: "hamburg", name: "Hamburg" }],
   noCurrentEvent: true,
   comingSoonText:

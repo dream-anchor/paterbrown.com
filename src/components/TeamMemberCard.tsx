@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { TeamMember } from "@/types";
-import { ResponsiveImage } from "./ResponsiveImage";
+import CinematicPortrait from "./CinematicPortrait";
 
 interface TeamMemberCardProps {
   member: TeamMember;
@@ -12,16 +12,11 @@ const TeamMemberCard = memo(({ member, reverse = false }: TeamMemberCardProps) =
     <div className="premium-card p-0 overflow-hidden">
       <div className={`grid md:grid-cols-2 ${reverse ? 'md:grid-flow-dense' : ''}`}>
         {/* Image */}
-        <div className={`relative overflow-hidden bg-gradient-to-br from-card to-background flex items-stretch ${reverse ? 'md:col-start-2' : ''}`}>
-          <ResponsiveImage 
+        <div className={`${reverse ? 'md:col-start-2' : ''}`}>
+          <CinematicPortrait
             src={member.image}
             alt={`${member.name} - ${member.role}`}
-            className="w-full h-full object-cover team-member-image"
-            loading="lazy"
-            width={800}
-            height={1067}
-            sizes="(max-width: 768px) 100vw, 50vw"
-            style={member.mobileImagePosition ? { objectPosition: member.mobileImagePosition } : undefined}
+            objectPosition={member.mobileImagePosition || "50% 15%"}
           />
         </div>
         
