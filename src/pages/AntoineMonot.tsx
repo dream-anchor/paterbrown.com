@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import { SEO } from "@/components/SEO";
-import antoineHeaderBg from "@/assets/antoine-header-bg.png";
+
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 const BREADCRUMBS = [
@@ -38,7 +38,7 @@ const AntoineMonot = () => {
   return (
     <LandingLayout
       breadcrumbs={BREADCRUMBS}
-      heroImage={antoineHeaderBg}
+      heroImage="/images/buehne/antoine-monot-portrait-gl.webp"
       heroTitle="Antoine Monot"
       heroSubtitle="Schauspieler, Drehbuchautor, Produzent"
     >

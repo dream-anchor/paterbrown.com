@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import { SEO } from "@/components/SEO";
-import wanjaHeaderBg from "@/assets/wanja-header-bg.png";
+
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 const BREADCRUMBS = [
@@ -59,7 +59,7 @@ const WanjaMues = () => {
   return (
     <LandingLayout
       breadcrumbs={BREADCRUMBS}
-      heroImage={wanjaHeaderBg}
+      heroImage="/images/buehne/wanja-mues-portrait-gl.webp"
       heroTitle="Wanja Mues"
       heroSubtitle="Schauspieler, Hörbuchsprecher, Bühnenkünstler"
     >
