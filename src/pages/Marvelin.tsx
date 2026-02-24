@@ -75,7 +75,7 @@ const Marvelin = () => {
       heroTitle="Marvelin"
       heroSubtitle="Beatboxer, Coach, Veranstalter"
       variant="portrait"
-      heroObjectPosition="50% 30%"
+      heroObjectPosition="52% 18%"
       heroCTA
     >
       <SEO

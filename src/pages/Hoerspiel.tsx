@@ -67,7 +67,7 @@ const Hoerspiel = () => {
   return (
     <LandingLayout
       breadcrumbs={BREADCRUMBS}
-      heroImage="/images/buehne/af-duo-dialog-gestik-blau.webp"
+      heroImage="/images/buehne/pater-brown-szene-gestik-nahaufnahme-af"
       heroTitle="Hörspiel"
       heroSubtitle="Von den Maritim-Klassikern zum Live-Erlebnis"
       heroCTA

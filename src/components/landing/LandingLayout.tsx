@@ -26,6 +26,10 @@ interface LandingLayoutProps {
   variant?: "default" | "immersive" | "portrait";
   /** Object-Position für das Hero-Bild (default: "50% 15%") */
   heroObjectPosition?: string;
+  /** Verschiebt den Hero-Text vertikal in px (positiv = weiter runter) */
+  heroTextOffset?: number;
+  /** Zusätzlicher Blur auf dem Hero-Hintergrund in px (addiert zum Standard-blur) */
+  heroExtraBlur?: number;
 }
 
 const LandingLayout = ({
@@ -38,6 +42,8 @@ const LandingLayout = ({
   heroCTA = false,
   variant = "default",
   heroObjectPosition = "50% 15%",
+  heroTextOffset = 0,
+  heroExtraBlur = 0,
 }: LandingLayoutProps) => {
   if (variant === "immersive") {
     return (
@@ -100,7 +106,7 @@ const LandingLayout = ({
               alt=""
               aria-hidden="true"
               className="absolute inset-0 w-full h-full object-cover"
-              style={{ objectPosition: heroObjectPosition, filter: "contrast(1.15) brightness(0.9) saturate(0.85) blur(3px)" }}
+              style={{ objectPosition: heroObjectPosition, filter: bgFilter }}
               loading="eager"
               decoding="async"
             />
@@ -116,7 +122,7 @@ const LandingLayout = ({
                 src={heroImage}
                 alt={heroTitle || ""}
                 className="w-full h-full object-cover"
-                style={{ objectPosition: heroObjectPosition, filter: "contrast(1.15) brightness(0.9) saturate(0.85)" }}
+                style={{ objectPosition: heroObjectPosition, filter: fgFilter }}
                 decoding="async"
               />
             </div>
@@ -135,7 +141,7 @@ const LandingLayout = ({
                 alt=""
                 aria-hidden="true"
                 className="w-full h-full object-cover"
-                style={{ objectPosition: heroObjectPosition, filter: "blur(4px) brightness(1.1) saturate(0.7)" }}
+                style={{ objectPosition: heroObjectPosition, filter: glowFilter }}
                 decoding="async"
               />
             </div>
@@ -176,6 +182,11 @@ const LandingLayout = ({
 
   const heroBase = heroImage || DEFAULT_HERO;
   const isResponsiveHero = !heroImage || !heroImage.includes(".");
+  const bgBlur = 3 + heroExtraBlur;
+  const glowBlur = 4 + heroExtraBlur;
+  const bgFilter = `contrast(1.15) brightness(0.9) saturate(0.85) blur(${bgBlur}px)`;
+  const fgFilter = "contrast(1.15) brightness(0.9) saturate(0.85)";
+  const glowFilter = `blur(${glowBlur}px) brightness(1.1) saturate(0.7)`;
 
   // Default variant — Full-Viewport Hero + Content
   return (
@@ -200,7 +211,7 @@ const LandingLayout = ({
               alt=""
               aria-hidden="true"
               className="w-full h-full object-cover"
-              style={{ objectPosition: heroObjectPosition, filter: "contrast(1.15) brightness(0.9) saturate(0.85) blur(3px)" }}
+              style={{ objectPosition: heroObjectPosition, filter: bgFilter }}
               loading="eager"
               decoding="async"
             />
@@ -210,7 +221,7 @@ const LandingLayout = ({
               alt=""
               aria-hidden="true"
               className="w-full h-full object-cover"
-              style={{ objectPosition: heroObjectPosition, filter: "contrast(1.15) brightness(0.9) saturate(0.85) blur(3px)" }}
+              style={{ objectPosition: heroObjectPosition, filter: bgFilter }}
               loading="eager"
               decoding="async"
             />
@@ -238,7 +249,7 @@ const LandingLayout = ({
               alt=""
               aria-hidden="true"
               className="w-full h-full object-cover"
-              style={{ objectPosition: heroObjectPosition, filter: "contrast(1.15) brightness(0.9) saturate(0.85)" }}
+              style={{ objectPosition: heroObjectPosition, filter: fgFilter }}
               decoding="async"
             />
           ) : (
@@ -247,7 +258,7 @@ const LandingLayout = ({
               alt=""
               aria-hidden="true"
               className="w-full h-full object-cover"
-              style={{ objectPosition: heroObjectPosition, filter: "contrast(1.15) brightness(0.9) saturate(0.85)" }}
+              style={{ objectPosition: heroObjectPosition, filter: fgFilter }}
               decoding="async"
             />
           )}
@@ -269,7 +280,7 @@ const LandingLayout = ({
               alt=""
               aria-hidden="true"
               className="w-full h-full object-cover"
-              style={{ objectPosition: heroObjectPosition, filter: "blur(4px) brightness(1.1) saturate(0.7)" }}
+              style={{ objectPosition: heroObjectPosition, filter: glowFilter }}
               decoding="async"
             />
           ) : (
@@ -278,7 +289,7 @@ const LandingLayout = ({
               alt=""
               aria-hidden="true"
               className="w-full h-full object-cover"
-              style={{ objectPosition: heroObjectPosition, filter: "blur(4px) brightness(1.1) saturate(0.7)" }}
+              style={{ objectPosition: heroObjectPosition, filter: glowFilter }}
               decoding="async"
             />
           )}
@@ -291,7 +302,7 @@ const LandingLayout = ({
           }}
         />
 
-        <div className="relative z-10 text-center px-6 w-full max-w-5xl mx-auto">
+        <div className="relative z-10 text-center px-6 w-full max-w-5xl mx-auto" style={heroTextOffset ? { transform: `translateY(${heroTextOffset}px)` } : undefined}>
           {heroTitle && (
             <>
               <p className="neon-gold-subtle text-xs md:text-sm uppercase tracking-[0.4em] mb-6 font-heading cinematic-enter">

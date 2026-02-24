@@ -4,6 +4,7 @@ import { SEO } from "@/components/SEO";
 import { Link } from "react-router-dom";
 import LandingLayout from "./LandingLayout";
 import FAQSection from "./FAQSection";
+import PastEventSection from "./PastEventSection";
 import { CalendarDays, MapPin, Train, Car, Utensils, Hotel, Landmark } from "lucide-react";
 import CinematicPortrait from "@/components/CinematicPortrait";
 import TicketCTA from "@/components/shared/TicketCTA";
@@ -41,11 +42,13 @@ export interface CityPageConfig {
 }
 
 const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
+  const today = new Date().toISOString().split("T")[0];
+
+  // Future events (existing query)
   const { data: events = [] } = useQuery({
     queryKey: ["city-events", config.cityFilter],
     staleTime: 1000 * 60 * 60,
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
       const { data, error } = await supabase
         .from("tour_events")
         .select("*")
@@ -71,8 +74,46 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
     },
   });
 
-  const nextEvent = events[0];
+  // Past events (new query — auto-detects retrospective mode)
+  const { data: pastEvents = [] } = useQuery({
+    queryKey: ["city-past-events", config.cityFilter],
+    staleTime: 1000 * 60 * 60,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tour_events")
+        .select("id, date, day, city, venue, event_date")
+        .eq("is_active", true)
+        .ilike("city", `%${config.cityFilter}%`)
+        .lt("event_date", today)
+        .order("event_date", { ascending: false })
+        .limit(5);
 
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const nextEvent = events[0];
+  const hasFutureEvents = events.length > 0;
+  const hasPastEvents = pastEvents.length > 0;
+
+  // Auto-detect event mode: active > retrospective > coming-soon
+  const eventMode = hasFutureEvents
+    ? "active"
+    : hasPastEvents
+    ? "retrospective"
+    : "coming-soon";
+
+  // Dynamic SEO based on event mode
+  const seoTitle = eventMode === "retrospective"
+    ? `Pater Brown in ${config.cityName} – Rückblick & neue Termine | paterbrown.com`
+    : config.seo.title;
+
+  const seoDescription = eventMode === "retrospective"
+    ? `Pater Brown Live-Hörspiel war in ${config.cityName}! Rückblick auf ${pastEvents[0]?.venue || config.venue.name}. Neue Termine & Tickets für kommende Shows.`
+    : config.seo.description;
+
+  // Schema.org only for active events (prevents stale Rich Results)
   const eventSchema = nextEvent
     ? {
         "@context": "https://schema.org",
@@ -120,6 +161,11 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
     { icon: Landmark, title: "Sehenswürdigkeiten", items: config.tips.sights },
   ].filter(s => s.items.length > 0);
 
+  // Dynamic show text based on event mode
+  const showIntroText = eventMode === "retrospective"
+    ? `war in ${config.cityName}. Erleben Sie die einzigartige Kombination aus Theater, Hörspiel und Beatbox-Sounddesign live auf der Bühne – bald wieder in Ihrer Nähe.`
+    : `kommt nach ${config.cityName}. Erleben Sie die einzigartige Kombination aus Theater, Hörspiel und Beatbox-Sounddesign live auf der Bühne.`;
+
   return (
     <LandingLayout
       breadcrumbs={[
@@ -129,20 +175,20 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
       heroImage={config.heroImage}
       heroTitle={config.cityName}
       heroSubtitle="Das Live-Hörspiel"
-      heroCTA
-      showCTA
+      heroCTA={eventMode === "active"}
+      showCTA={eventMode === "active"}
     >
       <SEO
-        title={config.seo.title}
-        description={config.seo.description}
+        title={seoTitle}
+        description={seoDescription}
         canonical={`/${config.slug}`}
         keywords={config.seo.keywords}
         ogImage={`/images/og/pater-brown-${config.slug}-live-hoerspiel-og.webp`}
         schema={eventSchema}
       />
 
-      {/* ── Event Details ── */}
-      {nextEvent ? (
+      {/* ── Event Details / Rückblick / Coming Soon ── */}
+      {eventMode === "active" && nextEvent ? (
         <section className="py-28 md:py-36 px-6">
           <div className="container mx-auto max-w-6xl">
             <div className="p-8 md:p-12 border border-foreground/10 bg-card/10">
@@ -180,7 +226,19 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
             </div>
           </div>
         </section>
-      ) : config.noCurrentEvent ? (
+      ) : eventMode === "retrospective" ? (
+        <PastEventSection
+          cityName={config.cityName}
+          venueName={pastEvents[0]?.venue || config.venue.name}
+          lastEvent={{
+            date: pastEvents[0]?.date || "",
+            day: pastEvents[0]?.day || "",
+            venue: pastEvents[0]?.venue || config.venue.name,
+            city: pastEvents[0]?.city || config.cityName,
+          }}
+          eventCount={pastEvents.length}
+        />
+      ) : (
         <section className="py-28 md:py-36 px-6">
           <div className="container mx-auto max-w-4xl text-center space-y-6">
             <p className="text-foreground/50 leading-relaxed text-xl font-light">
@@ -194,7 +252,7 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
             </Link>
           </div>
         </section>
-      ) : null}
+      )}
 
       {/* ── Die Show ── */}
       <section className="py-28 md:py-36 px-6">
@@ -208,8 +266,7 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
           <div className="space-y-4 max-w-3xl">
             <p className="text-foreground/70 leading-relaxed text-lg font-light">
               <strong className="text-foreground">PATER BROWN – Das Live-Hörspiel</strong>{" "}
-              kommt nach {config.cityName}. Erleben Sie die einzigartige Kombination aus Theater,
-              Hörspiel und Beatbox-Sounddesign live auf der Bühne.
+              {showIntroText}
             </p>
             <p className="text-foreground/70 leading-relaxed text-lg font-light">
               <Link to="/antoine-monot" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">Antoine Monot</Link>{" "}
@@ -251,14 +308,14 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
       <section className="py-28 md:py-36 px-6">
         <div className="container mx-auto max-w-4xl text-center">
           <blockquote className="text-3xl md:text-5xl lg:text-6xl font-heading italic text-foreground/90 leading-tight">
-            „Zwei Schauspieler. Alle Stimmen. Jeder verdächtig.“
+            „Zwei Schauspieler. Alle Stimmen. Jeder verdächtig."
           </blockquote>
           <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent max-w-md mx-auto mt-10 mb-6" />
           <p className="text-gold text-sm uppercase tracking-[0.3em]">Das Live-Hörspiel</p>
         </div>
       </section>
 
-      <TicketCTA variant="emotional" />
+      <TicketCTA variant={eventMode === "active" ? "emotional" : "concrete"} />
 
       {/* ── Veranstaltungsort ── */}
       <section className="py-28 md:py-36 px-6">
@@ -383,7 +440,7 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
         </section>
       )}
 
-      <TicketCTA variant="concrete" />
+      {eventMode === "active" && <TicketCTA variant="concrete" />}
 
       {/* ── FAQ ── */}
       {config.faq.length > 0 && (

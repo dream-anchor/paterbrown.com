@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Köln",
   addressRegion: "Nordrhein-Westfalen",
   addressCountry: "DE",
-  heroImage: "/images/buehne/af-duo-stift-nebel.webp",
+  heroImage: "/images/buehne/pater-brown-dialog-szene-monot-mues-af",
   venue: {
     name: "Volksbühne am Rudolfplatz",
     address: "Aachener Str. 5, 50674 Köln",

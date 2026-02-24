@@ -74,6 +74,7 @@ const KrimiHoerspiel = () => {
       heroImage="/images/buehne/dd-dialog-intensiv-closeup.webp"
       heroTitle="Krimi-Hörspiel"
       heroSubtitle="Die besten Serien – und wie man Krimi live erlebt"
+      heroTextOffset={100}
       heroCTA
     >
       <SEO
