@@ -34,7 +34,7 @@ const FatherBrown = () => {
   return (
     <LandingLayout
       breadcrumbs={BREADCRUMBS}
-      heroImage="/images/buehne/pater-brown-ensemble-monot-mues-marvelin-af.webp"
+      heroImage="/images/buehne/dd-dialog-haende-gestik.webp"
       heroTitle="Father Brown"
       heroSubtitle="Von G.K. Chesterton zum Live-Hörspiel"
     >

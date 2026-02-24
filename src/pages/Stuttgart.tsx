@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Stuttgart",
   addressRegion: "Baden-Württemberg",
   addressCountry: "DE",
-  heroImage: "/images/buehne/pater-brown-buehne-ensemble-marvelin-af.webp",
+  heroImage: "/images/buehne/dd-dialog-haende-gestik.webp",
   nearbyCities: [
     { slug: "muenchen", name: "München" },
     { slug: "koeln", name: "Köln" },

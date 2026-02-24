@@ -45,7 +45,7 @@ const GKChesterton = () => {
   return (
     <LandingLayout
       breadcrumbs={BREADCRUMBS}
-      heroImage="/images/buehne/pater-brown-dialog-szene-monot-mues-af.webp"
+      heroImage="/images/buehne/dd-dialog-nahaufnahme-intim.webp"
       heroTitle="G.K. Chesterton"
       heroSubtitle="Der Erfinder von Pater Brown (1874–1936)"
     >

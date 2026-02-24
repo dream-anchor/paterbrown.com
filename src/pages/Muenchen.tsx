@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "München",
   addressRegion: "Bayern",
   addressCountry: "DE",
-  heroImage: "/images/hero/pater-brown-live-hoerspiel-buehne-totale-af.webp",
+  heroImage: "/images/buehne/af-buehne-totale-nebel-blau.webp",
   nearbyCities: [
     { slug: "erding", name: "Erding" },
     { slug: "kempten", name: "Kempten" },

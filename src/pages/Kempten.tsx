@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Kempten",
   addressRegion: "Bayern",
   addressCountry: "DE",
-  heroImage: "/images/buehne/pater-brown-ensemble-monot-mues-marvelin-af.webp",
+  heroImage: "/images/buehne/dd-buehne-nebel-led-publikum.webp",
   nearbyCities: [
     { slug: "muenchen", name: "München" },
     { slug: "erding", name: "Erding" },

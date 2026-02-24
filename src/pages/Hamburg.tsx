@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Hamburg",
   addressRegion: "Hamburg",
   addressCountry: "DE",
-  heroImage: "/images/buehne/pater-brown-szene-gestik-nahaufnahme-af.webp",
+  heroImage: "/images/buehne/dd-duo-intensiv-blau.webp",
   nearbyCities: [{ slug: "bremen", name: "Bremen" }],
   venue: {
     name: "Friedrich-Ebert-Halle",

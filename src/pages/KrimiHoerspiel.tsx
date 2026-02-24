@@ -68,7 +68,7 @@ const KrimiHoerspiel = () => {
   return (
     <LandingLayout
       breadcrumbs={BREADCRUMBS}
-      heroImage="/images/buehne/pater-brown-szene-gestik-nahaufnahme-af.webp"
+      heroImage="/images/buehne/dd-dialog-intensiv-closeup.webp"
       heroTitle="Krimi-Hörspiel"
       heroSubtitle="Die besten Serien – und wie man Krimi live erlebt"
     >

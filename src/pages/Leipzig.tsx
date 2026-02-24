@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Leipzig",
   addressRegion: "Sachsen",
   addressCountry: "DE",
-  heroImage: "/images/buehne/pater-brown-atmosphaere-silhouette-nebel-af.webp",
+  heroImage: "/images/buehne/dd-trio-applaus-blumen.webp",
   nearbyCities: [{ slug: "berlin", name: "Berlin" }],
   venue: {
     name: "Kupfersaal Leipzig",

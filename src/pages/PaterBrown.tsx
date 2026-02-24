@@ -224,6 +224,7 @@ const WEITERLESEN = [
 const PaterBrown = () => (
   <LandingLayout
     breadcrumbs={[{ label: "Pater Brown" }]}
+    heroImage="/images/buehne/dd-buehne-totale-nebel-licht.webp"
     heroTitle="Pater Brown"
     heroSubtitle="Der unscheinbare Priester, der seit über 100 Jahren Kriminalfälle löst – von den Kurzgeschichten über Film und Fernsehen bis auf die Live-Bühne."
     showCTA

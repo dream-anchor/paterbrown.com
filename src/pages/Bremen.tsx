@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Bremen",
   addressRegion: "Bremen",
   addressCountry: "DE",
-  heroImage: "/images/buehne/pater-brown-wanja-mues-buehne-skript-af.webp",
+  heroImage: "/images/buehne/dd-duo-lesen-lila.webp",
   nearbyCities: [{ slug: "hamburg", name: "Hamburg" }],
   noCurrentEvent: true,
   comingSoonText:
