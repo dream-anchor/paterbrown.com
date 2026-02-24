@@ -4,7 +4,7 @@ import FAQSection from "@/components/landing/FAQSection";
 import CinematicPortrait from "@/components/CinematicPortrait";
 import { SEO } from "@/components/SEO";
 import { useIsMobile } from "@/hooks/use-mobile";
-import marvelinImage from "@/assets/marvelin-v3.png";
+import marvelinImage from "@/assets/marvelin-v3.webp";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 /* ─── FAQ Data ─── */

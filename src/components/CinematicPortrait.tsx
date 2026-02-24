@@ -57,7 +57,7 @@ const CinematicPortrait = ({
     : undefined;
 
   return (
-    <div className={`relative overflow-hidden ${aspectRatio} ${className}`} style={{ ...containerStyle, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}>
+    <div className={`relative overflow-hidden ${aspectRatio} ${className}`} style={{ ...containerStyle, willChange: "transform", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}>
       {/* Layer 1 — Blurred background */}
       <img
         src={src}

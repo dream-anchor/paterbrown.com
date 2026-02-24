@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import logoImage from "@/assets/pater-brown-logo.png";
-import ticketButton from "@/assets/tickets-sichern-button.png";
+import logoImage from "@/assets/pater-brown-logo.webp";
+import ticketButton from "@/assets/tickets-sichern-button.webp";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 const navLinks = [

@@ -1,10 +1,10 @@
 import { CastMember, ShowCase, TeamMember } from "@/types";
-import wanjaImage from "@/assets/cast-wanja.jpg";
-import antoineImage from "@/assets/cast-antoine.jpg";
-import marvelinImage from "@/assets/marvelin-v3.png";
+import wanjaImage from "@/assets/cast-wanja.webp";
+import antoineImage from "@/assets/cast-antoine.webp";
+import marvelinImage from "@/assets/marvelin-v3.webp";
 import stefanieSickImage from "@/assets/stefanie-sick.webp";
-import wanjaHeaderBg from "@/assets/wanja-header-bg.png";
-import antoineHeaderBg from "@/assets/antoine-header-bg.png";
+import wanjaHeaderBg from "@/assets/wanja-header-bg.webp";
+import antoineHeaderBg from "@/assets/antoine-header-bg.webp";
 
 export const castMembers: CastMember[] = [
   {

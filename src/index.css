@@ -106,6 +106,25 @@ All colors MUST be HSL.
     background-color: hsl(var(--background));
     min-height: 100vh;
   }
+
+  /* Prevent white flash during GPU compositing on scroll.
+     Elements with overflow:hidden, CSS masks or blend-modes
+     create GPU layers that default to white before painting. */
+  main,
+  section,
+  footer,
+  .relative.overflow-hidden,
+  .overflow-hidden {
+    background-color: hsl(var(--background));
+  }
+
+  /* Force persistent GPU layers on overlay/mask containers.
+     Prevents Chrome from creating/destroying layers during scroll
+     which causes brief white rectangles (mask-image, mix-blend-mode). */
+  .absolute.inset-0 {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
 }
 
 @layer utilities {

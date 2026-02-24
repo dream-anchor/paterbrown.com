@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import logoImage from "@/assets/pater-brown-logo.png";
-import ticketButton from "@/assets/tickets-sichern-button.png";
+import logoImage from "@/assets/pater-brown-logo.webp";
+import ticketButton from "@/assets/tickets-sichern-button.webp";
 const heroBackground = "/images/buehne/dd-duo-marvelin-tiefblau.webp";
 import StickyHeader from "@/components/StickyHeader";
 import { EVENTIM_AFFILIATE_URL, SCROLL_THRESHOLD_STICKY_HEADER } from "@/lib/constants";

@@ -61,7 +61,7 @@ const LandingLayout = ({
         <Navigation />
 
         {/* Portrait Hero — Split Layout */}
-        <section className="relative min-h-screen flex flex-col md:flex-row overflow-hidden">
+        <section className="relative min-h-screen flex flex-col md:flex-row overflow-hidden" style={{ willChange: "transform", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}>
           {/* Text: unten auf Mobile, links zentriert auf Desktop */}
           <div className="relative z-10 flex flex-col justify-end md:justify-start order-2 md:order-1 w-full md:w-[45%] px-6 md:px-12 lg:px-16 pb-12 md:pb-0 md:pt-[25vh] -mt-32 md:mt-0">
             {heroTitle && (
@@ -183,7 +183,7 @@ const LandingLayout = ({
       <Navigation />
 
       {/* Full-Viewport Hero */}
-      <section className="relative min-h-screen flex items-end justify-center overflow-hidden pb-12 md:pb-16">
+      <section className="relative min-h-screen flex items-end justify-center overflow-hidden pb-12 md:pb-16" style={{ willChange: "transform", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}>
         {/* Blurred background layer */}
         <div className="absolute inset-0">
           {isResponsiveHero ? (
