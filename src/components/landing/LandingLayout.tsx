@@ -70,7 +70,8 @@ const LandingLayout = ({
               sizes="100vw"
               alt=""
               aria-hidden="true"
-              className="w-full h-full object-cover object-center"
+              className="w-full h-full object-cover"
+              style={{ objectPosition: "50% 25%" }}
               loading="eager"
               decoding="async"
             />
@@ -79,13 +80,20 @@ const LandingLayout = ({
               src={heroImage}
               alt=""
               aria-hidden="true"
-              className="w-full h-full object-cover object-center"
+              className="w-full h-full object-cover"
+              style={{ objectPosition: "50% 25%" }}
               loading="eager"
               decoding="async"
             />
           )}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+        {/* Gradient nur untere ~40% — Köpfe/Gesichter bleiben frei */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 20%, hsl(var(--background) / 0.15) 45%, transparent 65%)",
+          }}
+        />
 
         <div className="relative z-10 text-center px-6 w-full max-w-5xl mx-auto">
           {heroTitle && (

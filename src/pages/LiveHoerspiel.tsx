@@ -54,7 +54,7 @@ const CAST = [
     slug: "/antoine-monot",
     image: "/images/portraits/antoine-monot-portrait-pater-brown-gl",
     staticImage: false,
-    bio: `Antoine Monot ist Schauspieler, Drehbuchautor und Produzent. Einem breiten Publikum wurde er als Rechtsanwalt Dr. Markus Lanz in der ZDF-Serie \u201EEin Fall für Zwei\u201C bekannt. Auf der Bühne schlüpft er in die Rolle des scharfsinnigen Pater Brown.`,
+    bio: `Antoine Monot ist Schauspieler, Drehbuchautor und Produzent. Einem breiten Publikum wurde er als Rechtsanwalt Dr. Markus Lanz in der ZDF-Serie „Ein Fall für Zwei“ bekannt. Auf der Bühne schlüpft er in die Rolle des scharfsinnigen Pater Brown.`,
   },
   {
     name: "Wanja Mues",
@@ -62,7 +62,7 @@ const CAST = [
     slug: "/wanja-mues",
     image: "/images/portraits/wanja-mues-portrait-pater-brown-gl",
     staticImage: false,
-    bio: `Wanja Mues ist Schauspieler und Regisseur, bekannt als Privatdetektiv Matula in \u201EEin Fall für Zwei\u201C. Im Live-Hörspiel verkörpert er den charmanten Meisterdieb Flambeau und spricht zahlreiche weitere Charaktere.`,
+    bio: `Wanja Mues ist Schauspieler und Regisseur, bekannt als Privatdetektiv Matula in „Ein Fall für Zwei“. Im Live-Hörspiel verkörpert er den charmanten Meisterdieb Flambeau und spricht zahlreiche weitere Charaktere.`,
   },
   {
     name: "Marvelin",

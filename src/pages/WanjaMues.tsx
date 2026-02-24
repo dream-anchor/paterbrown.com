@@ -10,21 +10,21 @@ const BREADCRUMBS = [
 ];
 
 const FILMOGRAPHY = [
-  { title: "Der Pianist", year: "2001", info: "Regie: Roman Pola\u0144ski \u2013 neben Adrien Brody (Oscar-pr\u00E4miert)" },
-  { title: "Die Bourne Verschw\u00F6rung", year: "2004", info: "neben Matt Damon" },
-  { title: "Yella", year: "2007", info: "Regie: Christian Petzold \u2013 neben Nina Hoss" },
+  { title: "Der Pianist", year: "2001", info: "Regie: Roman Polański – neben Adrien Brody (Oscar-prämiert)" },
+  { title: "Die Bourne Verschwörung", year: "2004", info: "neben Matt Damon" },
+  { title: "Yella", year: "2007", info: "Regie: Christian Petzold – neben Nina Hoss" },
   { title: "Blueprint", year: "2004", info: "neben Franka Potente" },
-  { title: "Mein letzter Film", year: "", info: "Regie: Oliver Hirschbiegel \u2013 mit Hannelore Elsner" },
+  { title: "Mein letzter Film", year: "", info: "Regie: Oliver Hirschbiegel – mit Hannelore Elsner" },
 ];
 
 const TV_ROLES = [
-  { title: "Ein Fall f\u00FCr zwei", year: "seit 2014", role: "Privatdetektiv Leo Oswald", highlight: true },
-  { title: "Stubbe \u2013 Von Fall zu Fall", year: "2009\u20132014/2025", role: "Helge Kleinert" },
+  { title: "Ein Fall für zwei", year: "seit 2014", role: "Privatdetektiv Leo Oswald", highlight: true },
+  { title: "Stubbe – Von Fall zu Fall", year: "2009–2014/2025", role: "Helge Kleinert" },
   { title: "Tage, die es nicht gab", year: "2022/2025", role: "ORF/ARD" },
-  { title: "Martha Liebermann \u2013 Ein gestohlenes Leben", year: "2022", role: "TV-Film" },
-  { title: "D\u00FCrer", year: "2021", role: "Albrecht D\u00FCrer \u2013 neben Hannah Herzsprung" },
-  { title: "Unsere Hagenbecks", year: "1991\u20131994", role: "" },
-  { title: "GSG 9 \u2013 Die Elite-Einheit", year: "", role: "" },
+  { title: "Martha Liebermann – Ein gestohlenes Leben", year: "2022", role: "TV-Film" },
+  { title: "Dürer", year: "2021", role: "Albrecht Dürer – neben Hannah Herzsprung" },
+  { title: "Unsere Hagenbecks", year: "1991–1994", role: "" },
+  { title: "GSG 9 – Die Elite-Einheit", year: "", role: "" },
   { title: "Die Heiland: Wir sind Anwalt", year: "", role: "" },
 ];
 
@@ -38,10 +38,10 @@ const WanjaMues = () => {
     jobTitle: "Schauspieler",
     birthDate: "1973-12-27",
     birthPlace: { "@type": "Place", name: "Hamburg, Deutschland" },
-    description: "Wanja Mues ist ein deutscher Schauspieler, bekannt aus ZDF Ein Fall f\u00FCr zwei und dem Pater Brown Live-H\u00F6rspiel.",
+    description: "Wanja Mues ist ein deutscher Schauspieler, bekannt aus ZDF Ein Fall für zwei und dem Pater Brown Live-Hörspiel.",
     performerIn: {
       "@type": "TheaterEvent",
-      name: "Pater Brown \u2013 Das Live-H\u00F6rspiel",
+      name: "Pater Brown – Das Live-Hörspiel",
       url: "https://paterbrown.com/live-hoerspiel",
     },
     sameAs: [],
@@ -64,8 +64,8 @@ const WanjaMues = () => {
       heroSubtitle="Schauspieler, Hörbuchsprecher, Bühnenkünstler"
     >
       <SEO
-        title={`Wanja Mues als Pater Brown \u2013 Der Star aus \u201EEin Fall f\u00FCr zwei\u201C live | paterbrown.com`}
-        description={`Wanja Mues bringt Pater Brown als Live-H\u00F6rspiel auf die B\u00FChne. Der Schauspieler aus \u201EEin Fall f\u00FCr zwei\u201C & \u201EDer Pianist\u201C in einer neuen Rolle. Termine & Tickets.`}
+        title={`Wanja Mues als Pater Brown – Der Star aus „Ein Fall für zwei“ live | paterbrown.com`}
+        description={`Wanja Mues bringt Pater Brown als Live-Hörspiel auf die Bühne. Der Schauspieler aus „Ein Fall für zwei“ & „Der Pianist“ in einer neuen Rolle. Termine & Tickets.`}
         canonical="/wanja-mues"
         keywords="pater brown wanja mues, wanja mues pater brown, wanja mues, wanja mues schauspieler"
         ogImage="/images/og/wanja-mues-schauspieler-og.webp"

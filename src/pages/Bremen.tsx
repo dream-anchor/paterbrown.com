@@ -51,7 +51,7 @@ const config: CityPageConfig = {
     {
       question: "Was ist das Pater Brown Live-Hörspiel?",
       answer:
-        `Ein einzigartiges Bühnenerlebnis: Antoine Monot und Wanja Mues (bekannt aus \u201EEin Fall für zwei\u201C, ZDF) spielen live Kriminalgeschichten nach G.K. Chesterton. Beatboxer Marvelin erzeugt dabei alle Geräusche und Soundeffekte live mit dem Mund \u2013 ohne Playback. Mehr unter paterbrown.com/live-hoerspiel.`,
+        `Ein einzigartiges Bühnenerlebnis: Antoine Monot und Wanja Mues (bekannt aus „Ein Fall für zwei“, ZDF) spielen live Kriminalgeschichten nach G.K. Chesterton. Beatboxer Marvelin erzeugt dabei alle Geräusche und Soundeffekte live mit dem Mund – ohne Playback. Mehr unter paterbrown.com/live-hoerspiel.`,
     },
     {
       question: "Was kostet ein Ticket für Pater Brown?",

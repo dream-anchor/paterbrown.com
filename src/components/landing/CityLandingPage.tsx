@@ -74,8 +74,8 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
     ? {
         "@context": "https://schema.org",
         "@type": "TheaterEvent",
-        name: `Pater Brown \u2013 Das Live-H\u00F6rspiel \u2013 ${config.cityName}`,
-        description: `Live-H\u00F6rspiel mit Antoine Monot, Wanja Mues & Marvelin in ${config.cityName}, ${config.venue.name}`,
+        name: `Pater Brown – Das Live-Hörspiel – ${config.cityName}`,
+        description: `Live-Hörspiel mit Antoine Monot, Wanja Mues & Marvelin in ${config.cityName}, ${config.venue.name}`,
         startDate: `${nextEvent.eventDate}T20:00:00`,
         duration: "PT2H",
         eventStatus: "https://schema.org/EventScheduled",
@@ -113,8 +113,8 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
 
   const tipSections = [
     { icon: Utensils, title: "Restaurants & Bars", items: config.tips.restaurants },
-    { icon: Hotel, title: "\u00DCbernachten", items: config.tips.hotels },
-    { icon: Landmark, title: "Sehensw\u00FCrdigkeiten", items: config.tips.sights },
+    { icon: Hotel, title: "Übernachten", items: config.tips.hotels },
+    { icon: Landmark, title: "Sehenswürdigkeiten", items: config.tips.sights },
   ].filter(s => s.items.length > 0);
 
   return (
@@ -124,7 +124,7 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
         { label: config.cityName },
       ]}
       heroTitle={config.cityName}
-      heroSubtitle="Das Live-H\u00F6rspiel"
+      heroSubtitle="Das Live-Hörspiel"
       showCTA
     >
       <SEO
@@ -144,7 +144,7 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                 <div className="space-y-5">
                   <p className="text-gold text-sm uppercase tracking-[0.3em] font-medium">
-                    N\u00E4chster Termin
+                    Nächster Termin
                   </p>
                   <div className="flex items-center gap-4">
                     <CalendarDays className="w-5 h-5 text-gold/50 shrink-0" aria-hidden="true" />
@@ -196,27 +196,27 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
         <div className="container mx-auto max-w-5xl">
           <p className="text-gold text-sm uppercase tracking-[0.3em] mb-6 font-medium">Die Show</p>
           <h2 className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85] mb-8">
-            Krimi, Klang & G\u00E4nsehaut
+            Krimi, Klang & Gänsehaut
           </h2>
           <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" />
 
           <div className="space-y-4 max-w-3xl">
             <p className="text-foreground/70 leading-relaxed text-lg font-light">
-              <strong className="text-foreground">PATER BROWN \u2013 Das Live-H\u00F6rspiel</strong>{" "}
+              <strong className="text-foreground">PATER BROWN – Das Live-Hörspiel</strong>{" "}
               kommt nach {config.cityName}. Erleben Sie die einzigartige Kombination aus Theater,
-              H\u00F6rspiel und Beatbox-Sounddesign live auf der B\u00FChne.
+              Hörspiel und Beatbox-Sounddesign live auf der Bühne.
             </p>
             <p className="text-foreground/70 leading-relaxed text-lg font-light">
               <Link to="/antoine-monot" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">Antoine Monot</Link>{" "}
-              schl\u00FCpft in die Rolle des scharfsinnigen Pater Brown.{" "}
+              schlüpft in die Rolle des scharfsinnigen Pater Brown.{" "}
               <Link to="/wanja-mues" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">Wanja Mues</Link>{" "}
               gibt den charmanten Meisterdieb Flambeau, und{" "}
               <Link to="/marvelin" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">Marvelin</Link>{" "}
-              erzeugt live alle Ger\u00E4usche \u2013 ausschlie\u00DFlich mit dem Mund.
+              erzeugt live alle Geräusche – ausschließlich mit dem Mund.
             </p>
             <p className="text-foreground/40 font-heading text-sm uppercase tracking-[0.15em]">
-              2 Krimis \u00B7 ca. 2 Stunden \u00B7 ab{" "}
-              {config.addressCountry === "CH" ? "CHF 45" : "34,90 \u20AC"}
+              2 Krimis · ca. 2 Stunden · ab{" "}
+              {config.addressCountry === "CH" ? "CHF 45" : "34,90 €"}
             </p>
           </div>
 
@@ -231,22 +231,22 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
         </div>
       </section>
 
-      {/* ── B\u00FChnenfoto \u2013 Full Bleed ── */}
+      {/* ── Bühnenfoto – Full Bleed ── */}
       <div
         className="w-full min-h-[250px] md:min-h-[400px] bg-cover bg-center"
         style={{ backgroundImage: `url(/images/buehne/pater-brown-atmosphaere-silhouette-nebel-af-1200.webp)` }}
         role="img"
-        aria-label={`Stimmungsvolle Silhouette beim Pater Brown Live-H\u00F6rspiel in ${config.cityName}`}
+        aria-label={`Stimmungsvolle Silhouette beim Pater Brown Live-Hörspiel in ${config.cityName}`}
       />
 
-      {/* ── Gro\u00DFes Zitat ── */}
+      {/* ── Großes Zitat ── */}
       <section className="py-28 md:py-36 px-6">
         <div className="container mx-auto max-w-4xl text-center">
           <blockquote className="text-3xl md:text-5xl lg:text-6xl font-heading italic text-foreground/90 leading-tight">
-            \u201EZwei Schauspieler. Alle Stimmen. Jeder verd\u00E4chtig.\u201C
+            „Zwei Schauspieler. Alle Stimmen. Jeder verdächtig.“
           </blockquote>
           <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent max-w-md mx-auto mt-10 mb-6" />
-          <p className="text-gold text-sm uppercase tracking-[0.3em]">Das Live-H\u00F6rspiel</p>
+          <p className="text-gold text-sm uppercase tracking-[0.3em]">Das Live-Hörspiel</p>
         </div>
       </section>
 
@@ -272,7 +272,7 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
             {config.venue.oepnv && (
               <div className="p-6 border border-foreground/10 bg-card/10 space-y-3">
                 <Train className="w-5 h-5 text-gold/40" aria-hidden="true" />
-                <p className="text-gold text-[10px] uppercase tracking-[0.2em] font-heading">\u00D6PNV</p>
+                <p className="text-gold text-[10px] uppercase tracking-[0.2em] font-heading">ÖPNV</p>
                 <p className="text-foreground/70 text-sm leading-relaxed">{config.venue.oepnv}</p>
               </div>
             )}
@@ -323,24 +323,24 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
         <div className="container mx-auto max-w-5xl">
           <p className="text-gold text-sm uppercase tracking-[0.3em] mb-6 font-medium">Mehr erfahren</p>
           <h2 className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85] mb-8">
-            G.K. Chesterton neu erz\u00E4hlt
+            G.K. Chesterton neu erzählt
           </h2>
           <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" />
 
           <div className="space-y-4 max-w-3xl">
             <p className="text-foreground/70 leading-relaxed text-lg font-light">
-              <strong className="text-foreground">PATER BROWN \u2013 Das Live-H\u00F6rspiel</strong>{" "}
+              <strong className="text-foreground">PATER BROWN – Das Live-Hörspiel</strong>{" "}
               basiert auf den zeitlosen Kriminalgeschichten von{" "}
               <Link to="/g-k-chesterton" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">G.K. Chesterton</Link>.
               Die Figur des{" "}
               <Link to="/pater-brown" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">Pater Brown</Link>{" "}
-              \u2013 ein unscheinbarer Priester, der mit Einf\u00FChlungsverm\u00F6gen Kriminalf\u00E4lle l\u00F6st \u2013 fasziniert seit \u00FCber 100 Jahren.
+              – ein unscheinbarer Priester, der mit Einfühlungsvermögen Kriminalfälle löst – fasziniert seit über 100 Jahren.
             </p>
             <Link
               to="/live-hoerspiel"
               className="text-gold text-xs font-heading uppercase tracking-[0.15em] hover:text-foreground transition-colors inline-block"
             >
-              Was ist ein Live-H\u00F6rspiel? &rarr;
+              Was ist ein Live-Hörspiel? &rarr;
             </Link>
           </div>
         </div>
@@ -351,7 +351,7 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
         <section className="py-28 md:py-36 px-6">
           <div className="container mx-auto max-w-6xl">
             <p className="text-gold text-sm uppercase tracking-[0.3em] mb-8 font-medium">
-              Auch in der N\u00E4he
+              Auch in der Nähe
             </p>
             <div className="grid sm:grid-cols-2 gap-4">
               {config.nearbyCities.map((city) => (
@@ -377,7 +377,7 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
       {config.faq.length > 0 && (
         <section className="py-28 md:py-36 px-6">
           <div className="container mx-auto max-w-4xl">
-            <FAQSection items={config.faq} label="FAQ" title="H\u00E4ufige Fragen" />
+            <FAQSection items={config.faq} label="FAQ" title="Häufige Fragen" />
           </div>
         </section>
       )}

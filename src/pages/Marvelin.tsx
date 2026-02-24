@@ -35,7 +35,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "Was sind die Razzzones?",
-    answer: `The Razzzones sind Deutschlands erfolgreichste Beatbox-Band. 2018 Deutsche Beatbox-Meister, 2021 Halbfinale bei \u201EThe Voice of Germany\u201C. Marvelin ist Mitglied seit 2021.`,
+    answer: `The Razzzones sind Deutschlands erfolgreichste Beatbox-Band. 2018 Deutsche Beatbox-Meister, 2021 Halbfinale bei „The Voice of Germany“. Marvelin ist Mitglied seit 2021.`,
   },
 ];
 

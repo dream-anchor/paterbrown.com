@@ -8,11 +8,11 @@ const Datenschutz = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
         title="Datenschutz"
-        description="Datenschutzerkl\u00E4rung f\u00FCr Pater Brown Live-H\u00F6rspiel. Informationen zur Verarbeitung personenbezogener Daten gem\u00E4\u00DF DSGVO."
+        description="Datenschutzerklärung für Pater Brown Live-Hörspiel. Informationen zur Verarbeitung personenbezogener Daten gemäß DSGVO."
         robots="index, follow"
         canonical="/datenschutz"
-        ogTitle="Datenschutz | Pater Brown Live-H\u00F6rspiel"
-        ogDescription="Informationen zur Datenverarbeitung und Ihren Rechten gem\u00E4\u00DF DSGVO."
+        ogTitle="Datenschutz | Pater Brown Live-Hörspiel"
+        ogDescription="Informationen zur Datenverarbeitung und Ihren Rechten gemäß DSGVO."
       />
       <Navigation />
 
@@ -35,7 +35,7 @@ const Datenschutz = () => {
               </h2>
               <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Allgemeine Hinweise</h3>
               <p>
-                Die folgenden Hinweise geben einen einfachen \u00DCberblick dar\u00FCber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie pers\u00F6nlich identifiziert werden k\u00F6nnen. Ausf\u00FChrliche Informationen zum Thema Datenschutz entnehmen Sie unserer unter diesem Text aufgef\u00FChrten Datenschutzerkl\u00E4rung.
+                Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können. Ausführliche Informationen zum Thema Datenschutz entnehmen Sie unserer unter diesem Text aufgeführten Datenschutzerklärung.
               </p>
             </div>
 
@@ -49,7 +49,7 @@ const Datenschutz = () => {
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Wer ist verantwortlich?</h3>
-                <p>Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber. Dessen Kontaktdaten k\u00F6nnen Sie dem Abschnitt \u201EHinweis zur Verantwortlichen Stelle\u201C in dieser Datenschutzerkl\u00E4rung entnehmen.</p>
+                <p>Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber. Dessen Kontaktdaten können Sie dem Abschnitt „Hinweis zur Verantwortlichen Stelle“ in dieser Datenschutzerklärung entnehmen.</p>
               </div>
 
               <div className="space-y-2">
@@ -59,14 +59,14 @@ const Datenschutz = () => {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Wof\u00FCr nutzen wir Ihre Daten?</h3>
-                <p>Ein Teil der Daten wird erhoben, um eine fehlerfreie Bereitstellung der Website zu gew\u00E4hrleisten. Andere Daten k\u00F6nnen zur Analyse Ihres Nutzerverhaltens verwendet werden. Sofern \u00FCber die Website Vertr\u00E4ge geschlossen oder angebahnt werden k\u00F6nnen, werden die \u00FCbermittelten Daten auch f\u00FCr Vertragsangebote, Bestellungen oder sonstige Auftragsanfragen verarbeitet.</p>
+                <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Wofür nutzen wir Ihre Daten?</h3>
+                <p>Ein Teil der Daten wird erhoben, um eine fehlerfreie Bereitstellung der Website zu gewährleisten. Andere Daten können zur Analyse Ihres Nutzerverhaltens verwendet werden. Sofern über die Website Verträge geschlossen oder angebahnt werden können, werden die übermittelten Daten auch für Vertragsangebote, Bestellungen oder sonstige Auftragsanfragen verarbeitet.</p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Welche Rechte haben Sie?</h3>
-                <p>Sie haben jederzeit das Recht, unentgeltlich Auskunft \u00FCber Herkunft, Empf\u00E4nger und Zweck Ihrer gespeicherten personenbezogenen Daten zu erhalten. Sie haben au\u00DFerdem ein Recht, die Berichtigung oder L\u00F6schung dieser Daten zu verlangen. Wenn Sie eine Einwilligung zur Datenverarbeitung erteilt haben, k\u00F6nnen Sie diese Einwilligung jederzeit f\u00FCr die Zukunft widerrufen. Au\u00DFerdem haben Sie das Recht, unter bestimmten Umst\u00E4nden die Einschr\u00E4nkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen. Des Weiteren steht Ihnen ein Beschwerderecht bei der zust\u00E4ndigen Aufsichtsbeh\u00F6rde zu.</p>
-                <p>Hierzu sowie zu weiteren Fragen zum Thema Datenschutz k\u00F6nnen Sie sich jederzeit an uns wenden.</p>
+                <p>Sie haben jederzeit das Recht, unentgeltlich Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten personenbezogenen Daten zu erhalten. Sie haben außerdem ein Recht, die Berichtigung oder Löschung dieser Daten zu verlangen. Wenn Sie eine Einwilligung zur Datenverarbeitung erteilt haben, können Sie diese Einwilligung jederzeit für die Zukunft widerrufen. Außerdem haben Sie das Recht, unter bestimmten Umständen die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen. Des Weiteren steht Ihnen ein Beschwerderecht bei der zuständigen Aufsichtsbehörde zu.</p>
+                <p>Hierzu sowie zu weiteren Fragen zum Thema Datenschutz können Sie sich jederzeit an uns wenden.</p>
               </div>
             </div>
 
@@ -81,19 +81,19 @@ const Datenschutz = () => {
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Strato</h3>
-                <p>Anbieter ist die Strato AG, Otto-Ostrowski-Stra\u00DFe 7, 10249 Berlin (nachfolgend \u201EStrato\u201C). Wenn Sie unsere Website besuchen, erfasst Strato verschiedene Logfiles inklusive Ihrer IP-Adressen.</p>
+                <p>Anbieter ist die Strato AG, Otto-Ostrowski-Straße 7, 10249 Berlin (nachfolgend „Strato“). Wenn Sie unsere Website besuchen, erfasst Strato verschiedene Logfiles inklusive Ihrer IP-Adressen.</p>
                 <p>
-                  Weitere Informationen entnehmen Sie der Datenschutzerkl\u00E4rung von Strato:{" "}
+                  Weitere Informationen entnehmen Sie der Datenschutzerklärung von Strato:{" "}
                   <a href="https://www.strato.de/datenschutz/" target="_blank" rel="noreferrer" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
                     strato.de/datenschutz
                   </a>
                 </p>
-                <p>Die Verwendung von Strato erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO. Wir haben ein berechtigtes Interesse an einer m\u00F6glichst zuverl\u00E4ssigen Darstellung unserer Website. Sofern eine entsprechende Einwilligung abgefragt wurde, erfolgt die Verarbeitung ausschlie\u00DFlich auf Grundlage von Art. 6 Abs. 1 lit. a DSGVO und \u00A7 25 Abs. 1 TDDDG, soweit die Einwilligung die Speicherung von Cookies oder den Zugriff auf Informationen im Endger\u00E4t des Nutzers im Sinne des TDDDG umfasst. Die Einwilligung ist jederzeit widerrufbar.</p>
+                <p>Die Verwendung von Strato erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO. Wir haben ein berechtigtes Interesse an einer möglichst zuverlässigen Darstellung unserer Website. Sofern eine entsprechende Einwilligung abgefragt wurde, erfolgt die Verarbeitung ausschließlich auf Grundlage von Art. 6 Abs. 1 lit. a DSGVO und § 25 Abs. 1 TDDDG, soweit die Einwilligung die Speicherung von Cookies oder den Zugriff auf Informationen im Endgerät des Nutzers im Sinne des TDDDG umfasst. Die Einwilligung ist jederzeit widerrufbar.</p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Auftragsverarbeitung</h3>
-                <p>Wir haben einen Vertrag \u00FCber Auftragsverarbeitung (AVV) zur Nutzung des oben genannten Dienstes geschlossen. Hierbei handelt es sich um einen datenschutzrechtlich vorgeschriebenen Vertrag, der gew\u00E4hrleistet, dass dieser die personenbezogenen Daten unserer Websitebesucher nur nach unseren Weisungen und unter Einhaltung der DSGVO verarbeitet.</p>
+                <p>Wir haben einen Vertrag über Auftragsverarbeitung (AVV) zur Nutzung des oben genannten Dienstes geschlossen. Hierbei handelt es sich um einen datenschutzrechtlich vorgeschriebenen Vertrag, der gewährleistet, dass dieser die personenbezogenen Daten unserer Websitebesucher nur nach unseren Weisungen und unter Einhaltung der DSGVO verarbeitet.</p>
               </div>
             </div>
 
@@ -107,17 +107,17 @@ const Datenschutz = () => {
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Datenschutz</h3>
-                <p>Die Betreiber dieser Seiten nehmen den Schutz Ihrer pers\u00F6nlichen Daten sehr ernst. Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend den gesetzlichen Datenschutzvorschriften sowie dieser Datenschutzerkl\u00E4rung.</p>
-                <p>Wenn Sie diese Website benutzen, werden verschiedene personenbezogene Daten erhoben. Die vorliegende Datenschutzerkl\u00E4rung erl\u00E4utert, welche Daten wir erheben und wof\u00FCr wir sie nutzen.</p>
-                <p>Wir weisen darauf hin, dass die Daten\u00FCbertragung im Internet (z. B. bei der Kommunikation per E-Mail) Sicherheitsl\u00FCcken aufweisen kann. Ein l\u00FCckenloser Schutz der Daten vor dem Zugriff durch Dritte ist nicht m\u00F6glich.</p>
+                <p>Die Betreiber dieser Seiten nehmen den Schutz Ihrer persönlichen Daten sehr ernst. Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend den gesetzlichen Datenschutzvorschriften sowie dieser Datenschutzerklärung.</p>
+                <p>Wenn Sie diese Website benutzen, werden verschiedene personenbezogene Daten erhoben. Die vorliegende Datenschutzerklärung erläutert, welche Daten wir erheben und wofür wir sie nutzen.</p>
+                <p>Wir weisen darauf hin, dass die Datenübertragung im Internet (z. B. bei der Kommunikation per E-Mail) Sicherheitslücken aufweisen kann. Ein lückenloser Schutz der Daten vor dem Zugriff durch Dritte ist nicht möglich.</p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Verantwortliche Stelle</h3>
                 <p>
                   Dream &amp; Anchor Handelsgesellschaft mbH<br />
-                  N\u00F6rdliche M\u00FCnchner Stra\u00DFe 27a<br />
-                  82031 Gr\u00FCnwald<br />
+                  Nördliche Münchner Straße 27a<br />
+                  82031 Grünwald<br />
                   Telefon: +49 89 909015 3943<br />
                   E-Mail:{" "}
                   <a href="mailto:hello@dream-anchor.com" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
@@ -128,47 +128,47 @@ const Datenschutz = () => {
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Speicherdauer</h3>
-                <p>Soweit innerhalb dieser Datenschutzerkl\u00E4rung keine speziellere Speicherdauer genannt wurde, verbleiben Ihre personenbezogenen Daten bei uns, bis der Zweck f\u00FCr die Datenverarbeitung entf\u00E4llt.</p>
+                <p>Soweit innerhalb dieser Datenschutzerklärung keine speziellere Speicherdauer genannt wurde, verbleiben Ihre personenbezogenen Daten bei uns, bis der Zweck für die Datenverarbeitung entfällt.</p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Rechtsgrundlagen</h3>
-                <p>Sofern Sie in die Datenverarbeitung eingewilligt haben, verarbeiten wir Ihre personenbezogenen Daten auf Grundlage von Art. 6 Abs. 1 lit. a DSGVO bzw. Art. 9 Abs. 2 lit. a DSGVO. Sind Ihre Daten zur Vertragserf\u00FCllung oder zur Durchf\u00FChrung vorvertraglicher Ma\u00DFnahmen erforderlich, verarbeiten wir Ihre Daten auf Grundlage des Art. 6 Abs. 1 lit. b DSGVO. Des Weiteren verarbeiten wir Ihre Daten, sofern diese zur Erf\u00FCllung einer rechtlichen Verpflichtung erforderlich sind auf Grundlage von Art. 6 Abs. 1 lit. c DSGVO.</p>
+                <p>Sofern Sie in die Datenverarbeitung eingewilligt haben, verarbeiten wir Ihre personenbezogenen Daten auf Grundlage von Art. 6 Abs. 1 lit. a DSGVO bzw. Art. 9 Abs. 2 lit. a DSGVO. Sind Ihre Daten zur Vertragserfüllung oder zur Durchführung vorvertraglicher Maßnahmen erforderlich, verarbeiten wir Ihre Daten auf Grundlage des Art. 6 Abs. 1 lit. b DSGVO. Des Weiteren verarbeiten wir Ihre Daten, sofern diese zur Erfüllung einer rechtlichen Verpflichtung erforderlich sind auf Grundlage von Art. 6 Abs. 1 lit. c DSGVO.</p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Widerruf Ihrer Einwilligung</h3>
-                <p>Viele Datenverarbeitungsvorg\u00E4nge sind nur mit Ihrer ausdr\u00FCcklichen Einwilligung m\u00F6glich. Sie k\u00F6nnen eine bereits erteilte Einwilligung jederzeit widerrufen. Die Rechtm\u00E4\u00DFigkeit der bis zum Widerruf erfolgten Datenverarbeitung bleibt vom Widerruf unber\u00FChrt.</p>
+                <p>Viele Datenverarbeitungsvorgänge sind nur mit Ihrer ausdrücklichen Einwilligung möglich. Sie können eine bereits erteilte Einwilligung jederzeit widerrufen. Die Rechtmäßigkeit der bis zum Widerruf erfolgten Datenverarbeitung bleibt vom Widerruf unberührt.</p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Widerspruchsrecht (Art. 21 DSGVO)</h3>
-                <p>Wenn die Datenverarbeitung auf Grundlage von Art. 6 Abs. 1 lit. e oder f DSGVO erfolgt, haben Sie jederzeit das Recht, aus Gr\u00FCnden, die sich aus Ihrer besonderen Situation ergeben, gegen die Verarbeitung Ihrer personenbezogenen Daten Widerspruch einzulegen. Werden Ihre personenbezogenen Daten verarbeitet, um Direktwerbung zu betreiben, so haben Sie das Recht, jederzeit Widerspruch gegen die Verarbeitung einzulegen.</p>
+                <p>Wenn die Datenverarbeitung auf Grundlage von Art. 6 Abs. 1 lit. e oder f DSGVO erfolgt, haben Sie jederzeit das Recht, aus Gründen, die sich aus Ihrer besonderen Situation ergeben, gegen die Verarbeitung Ihrer personenbezogenen Daten Widerspruch einzulegen. Werden Ihre personenbezogenen Daten verarbeitet, um Direktwerbung zu betreiben, so haben Sie das Recht, jederzeit Widerspruch gegen die Verarbeitung einzulegen.</p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Beschwerderecht</h3>
-                <p>Im Falle von Verst\u00F6\u00DFen gegen die DSGVO steht den Betroffenen ein Beschwerderecht bei einer Aufsichtsbeh\u00F6rde, insbesondere in dem Mitgliedstaat ihres gew\u00F6hnlichen Aufenthalts, ihres Arbeitsplatzes oder des Orts des mutma\u00DFlichen Versto\u00DFes zu.</p>
+                <p>Im Falle von Verstößen gegen die DSGVO steht den Betroffenen ein Beschwerderecht bei einer Aufsichtsbehörde, insbesondere in dem Mitgliedstaat ihres gewöhnlichen Aufenthalts, ihres Arbeitsplatzes oder des Orts des mutmaßlichen Verstoßes zu.</p>
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Recht auf Daten\u00FCbertragbarkeit</h3>
-                <p>Sie haben das Recht, Daten, die wir auf Grundlage Ihrer Einwilligung oder in Erf\u00FCllung eines Vertrags automatisiert verarbeiten, an sich oder an einen Dritten in einem g\u00E4ngigen, maschinenlesbaren Format aush\u00E4ndigen zu lassen.</p>
+                <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Recht auf Datenübertragbarkeit</h3>
+                <p>Sie haben das Recht, Daten, die wir auf Grundlage Ihrer Einwilligung oder in Erfüllung eines Vertrags automatisiert verarbeiten, an sich oder an einen Dritten in einem gängigen, maschinenlesbaren Format aushändigen zu lassen.</p>
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Auskunft, Berichtigung und L\u00F6schung</h3>
-                <p>Sie haben im Rahmen der geltenden gesetzlichen Bestimmungen jederzeit das Recht auf unentgeltliche Auskunft \u00FCber Ihre gespeicherten personenbezogenen Daten, deren Herkunft und Empf\u00E4nger und den Zweck der Datenverarbeitung und ggf. ein Recht auf Berichtigung oder L\u00F6schung dieser Daten.</p>
+                <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Auskunft, Berichtigung und Löschung</h3>
+                <p>Sie haben im Rahmen der geltenden gesetzlichen Bestimmungen jederzeit das Recht auf unentgeltliche Auskunft über Ihre gespeicherten personenbezogenen Daten, deren Herkunft und Empfänger und den Zweck der Datenverarbeitung und ggf. ein Recht auf Berichtigung oder Löschung dieser Daten.</p>
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Einschr\u00E4nkung der Verarbeitung</h3>
-                <p>Sie haben das Recht, die Einschr\u00E4nkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen. Das Recht besteht insbesondere wenn Sie die Richtigkeit der Daten bestreiten, die Verarbeitung unrechtm\u00E4\u00DFig ist, wir die Daten nicht mehr ben\u00F6tigen oder Sie Widerspruch eingelegt haben.</p>
+                <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Einschränkung der Verarbeitung</h3>
+                <p>Sie haben das Recht, die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen. Das Recht besteht insbesondere wenn Sie die Richtigkeit der Daten bestreiten, die Verarbeitung unrechtmäßig ist, wir die Daten nicht mehr benötigen oder Sie Widerspruch eingelegt haben.</p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Widerspruch gegen Werbe-E-Mails</h3>
-                <p>Der Nutzung von im Rahmen der Impressumspflicht ver\u00F6ffentlichten Kontaktdaten zur \u00DCbersendung von nicht ausdr\u00FCcklich angeforderter Werbung und Informationsmaterialien wird hiermit widersprochen.</p>
+                <p>Der Nutzung von im Rahmen der Impressumspflicht veröffentlichten Kontaktdaten zur Übersendung von nicht ausdrücklich angeforderter Werbung und Informationsmaterialien wird hiermit widersprochen.</p>
               </div>
             </div>
 
@@ -182,14 +182,14 @@ const Datenschutz = () => {
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Cookies</h3>
-                <p>Unsere Internetseiten verwenden so genannte \u201ECookies\u201C. Cookies sind kleine Datenpakete und richten auf Ihrem Endger\u00E4t keinen Schaden an. Sie werden entweder vor\u00FCbergehend f\u00FCr die Dauer einer Sitzung (Session-Cookies) oder dauerhaft (permanente Cookies) auf Ihrem Endger\u00E4t gespeichert.</p>
-                <p>Cookies, die zur Durchf\u00FChrung des elektronischen Kommunikationsvorgangs, zur Bereitstellung bestimmter, von Ihnen erw\u00FCnschter Funktionen oder zur Optimierung der Website erforderlich sind (notwendige Cookies), werden auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO gespeichert, sofern keine andere Rechtsgrundlage angegeben wird.</p>
-                <p>Sie k\u00F6nnen Ihren Browser so einstellen, dass Sie \u00FCber das Setzen von Cookies informiert werden und Cookies nur im Einzelfall erlauben, die Annahme von Cookies f\u00FCr bestimmte F\u00E4lle oder generell ausschlie\u00DFen sowie das automatische L\u00F6schen der Cookies beim Schlie\u00DFen des Browsers aktivieren.</p>
+                <p>Unsere Internetseiten verwenden so genannte „Cookies“. Cookies sind kleine Datenpakete und richten auf Ihrem Endgerät keinen Schaden an. Sie werden entweder vorübergehend für die Dauer einer Sitzung (Session-Cookies) oder dauerhaft (permanente Cookies) auf Ihrem Endgerät gespeichert.</p>
+                <p>Cookies, die zur Durchführung des elektronischen Kommunikationsvorgangs, zur Bereitstellung bestimmter, von Ihnen erwünschter Funktionen oder zur Optimierung der Website erforderlich sind (notwendige Cookies), werden auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO gespeichert, sofern keine andere Rechtsgrundlage angegeben wird.</p>
+                <p>Sie können Ihren Browser so einstellen, dass Sie über das Setzen von Cookies informiert werden und Cookies nur im Einzelfall erlauben, die Annahme von Cookies für bestimmte Fälle oder generell ausschließen sowie das automatische Löschen der Cookies beim Schließen des Browsers aktivieren.</p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Server-Log-Dateien</h3>
-                <p>Der Provider der Seiten erhebt und speichert automatisch Informationen in so genannten Server-Log-Dateien, die Ihr Browser automatisch an uns \u00FCbermittelt. Dies sind:</p>
+                <p>Der Provider der Seiten erhebt und speichert automatisch Informationen in so genannten Server-Log-Dateien, die Ihr Browser automatisch an uns übermittelt. Dies sind:</p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
                   <li>Browsertyp und Browserversion</li>
                   <li>verwendetes Betriebssystem</li>
@@ -198,13 +198,13 @@ const Datenschutz = () => {
                   <li>Uhrzeit der Serveranfrage</li>
                   <li>IP-Adresse</li>
                 </ul>
-                <p>Eine Zusammenf\u00FChrung dieser Daten mit anderen Datenquellen wird nicht vorgenommen. Die Erfassung dieser Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO.</p>
+                <p>Eine Zusammenführung dieser Daten mit anderen Datenquellen wird nicht vorgenommen. Die Erfassung dieser Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO.</p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="text-gold text-xs uppercase tracking-[0.2em] font-heading">Anfrage per E-Mail, Telefon oder Telefax</h3>
                 <p>Wenn Sie uns per E-Mail, Telefon oder Telefax kontaktieren, wird Ihre Anfrage inklusive aller daraus hervorgehenden personenbezogenen Daten zum Zwecke der Bearbeitung Ihres Anliegens bei uns gespeichert und verarbeitet. Diese Daten geben wir nicht ohne Ihre Einwilligung weiter.</p>
-                <p>Die Verarbeitung dieser Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO, sofern Ihre Anfrage mit der Erf\u00FCllung eines Vertrags zusammenh\u00E4ngt oder zur Durchf\u00FChrung vorvertraglicher Ma\u00DFnahmen erforderlich ist.</p>
+                <p>Die Verarbeitung dieser Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO, sofern Ihre Anfrage mit der Erfüllung eines Vertrags zusammenhängt oder zur Durchführung vorvertraglicher Maßnahmen erforderlich ist.</p>
               </div>
             </div>
 
@@ -213,7 +213,7 @@ const Datenschutz = () => {
                 to="/"
                 className="text-gold text-xs font-heading uppercase tracking-[0.15em] hover:text-foreground transition-colors"
               >
-                Zur\u00FCck zur Startseite &rarr;
+                Zurück zur Startseite &rarr;
               </Link>
             </div>
           </div>
