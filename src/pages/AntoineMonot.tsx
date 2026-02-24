@@ -151,6 +151,40 @@ const AntoineMonot = () => {
         </div>
       </section>
 
+      {/* Multitalent */}
+      <section className="py-28 md:py-36 px-6">
+        <div className="container mx-auto max-w-5xl">
+          <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">Kreativkopf</p>
+          <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
+            Vor und hinter der Kamera
+          </h2>
+          <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8 max-w-xs" aria-hidden="true" />
+          <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+            Antoine Monot gehört zu den vielseitigsten Künstlern im deutschen
+            Unterhaltungsgeschäft. Neben der Schauspielerei schreibt er Drehbücher,
+            führt Regie und entwickelt eigene Formate. Seine Arbeit bewegt sich
+            zwischen klassischem Fernsehen, Theater und innovativen Live-Formaten.
+          </p>
+          <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+            Was viele nicht wissen: Monot programmiert seit 1996 und bringt technisches
+            Verständnis in seine Projekte ein. Diese Kombination aus künstlerischer
+            Sensibilität und analytischem Denken spiegelt sich in der Konzeption
+            des Live-Hörspiels wider – ein Format, das Tradition und Innovation verbindet.
+          </p>
+          <p className="text-foreground/70 leading-relaxed text-lg font-light">
+            Sein Anspruch: Unterhaltung, die das Publikum nicht unterschätzt.
+            Genau wie{" "}
+            <Link to="/g-k-chesterton" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+              G.K. Chesterton
+            </Link>
+            {" "}seinen Father Brown als intellektuell anspruchsvollen Krimi angelegt hat,
+            setzt Monot auf Qualität statt Quote.
+          </p>
+        </div>
+      </section>
+
+      <TicketCTA variant="emotional" />
+
       {/* Antoine Monot & Pater Brown */}
       <section className="py-28 md:py-36 px-6">
         <div className="container mx-auto max-w-5xl">

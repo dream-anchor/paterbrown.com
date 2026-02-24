@@ -204,6 +204,12 @@ const WanjaMues = () => {
             die man aus dem Fernsehen kennt, verleiht Hörbüchern von Ian McEwan,
             Haruki Murakami und Christian Kracht besonderen Tiefgang.
           </p>
+          <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+            Für die Arbeit als Sprecher bringt Mues eine seltene Kombination mit:
+            Seine Ausbildung am Actors' Studio in New York hat ihn gelehrt, Figuren
+            von innen heraus zu denken. Diese Methode überträgt er auf die Stimmarbeit –
+            jede Figur bekommt eine eigene Farbe, ein eigenes Tempo, einen eigenen Atem.
+          </p>
           <p className="text-foreground/70 leading-relaxed text-lg font-light">
             Genau diese Stimmarbeit macht ihn zum idealen Interpreten für das{" "}
             <Link to="/live-hoerspiel" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
@@ -277,9 +283,15 @@ const WanjaMues = () => {
           <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">Engagement</p>
           <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">Abseits der Bühne</h2>
           <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" aria-hidden="true" />
-          <p className="text-foreground/70 leading-relaxed text-lg font-light">
+          <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
             Wanja Mues engagiert sich für den Verein „Orang-Utans in Not" und setzt sich
-            aktiv für den Klimaschutz ein. Er lebt in Berlin.
+            aktiv für den Klimaschutz ein. Als Botschafter macht er auf die Bedrohung
+            der Regenwälder und ihrer Bewohner aufmerksam.
+          </p>
+          <p className="text-foreground/70 leading-relaxed text-lg font-light">
+            Privat lebt Mues in Berlin. Wenn er nicht auf der Bühne oder vor der
+            Kamera steht, findet man ihn oft in der Natur – ein Kontrast zum
+            intensiven Arbeitsalltag als Schauspieler und Sprecher.
           </p>
         </div>
       </section>

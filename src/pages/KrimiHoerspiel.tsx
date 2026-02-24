@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import { SEO } from "@/components/SEO";
 import CinematicPortrait from "@/components/CinematicPortrait";
+import FAQSection from "@/components/landing/FAQSection";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 import TicketCTA from "@/components/shared/TicketCTA";
 
@@ -101,6 +102,12 @@ const KrimiHoerspiel = () => {
           langen Autofahrten. Deutschland ist Hörspielland Nr. 1 – nirgendwo
           sonst auf der Welt gibt es eine vergleichbare Tradition und Vielfalt.
         </p>
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
+          Die Tradition reicht bis in die 1920er Jahre zurück, als der öffentlich-rechtliche
+          Rundfunk die ersten Hörspielproduktionen ausstrahlte. In den 1970er und
+          1980er Jahren erlebte das Krimi-Hörspiel seinen kommerziellen Durchbruch –
+          mit Serien, die bis heute Millionen Fans begeistern.
+        </p>
       </div></section>
 
       <TicketCTA variant="emotional" />
@@ -162,6 +169,38 @@ const KrimiHoerspiel = () => {
         </div>
       </div></section>
 
+      {/* Pater Brown im Genre */}
+      <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
+        <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">Besonderheit</p>
+        <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
+          Was Pater Brown einzigartig macht
+        </h2>
+        <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" aria-hidden="true" />
+        <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+          Unter allen Krimi-Hörspielserien nimmt{" "}
+          <Link to="/pater-brown" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+            Pater Brown
+          </Link>
+          {" "}eine Sonderstellung ein. Während Sherlock Holmes mit Logik arbeitet
+          und die drei ??? auf Indizien setzen, löst der unscheinbare Priester
+          seine Fälle durch Empathie und Menschenkenntnis.
+        </p>
+        <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+          „Ich habe jeden dieser Morde selbst begangen", sagt Father Brown in einer
+          der berühmtesten Passagen. Er meint damit: Er versteht die Motive der
+          Täter, weil er als Beichtvater die dunkelsten Seiten der menschlichen
+          Seele kennt. Diese psychologische Tiefe macht die Geschichten von{" "}
+          <Link to="/g-k-chesterton" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+            G.K. Chesterton
+          </Link>
+          {" "}so zeitlos.
+        </p>
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
+          Das Ergebnis: Krimis, die nicht nur spannend sind, sondern zum
+          Nachdenken anregen – über Schuld, Vergebung und die menschliche Natur.
+        </p>
+      </div></section>
+
       <TicketCTA variant="concrete" />
 
       {/* Live erleben */}
@@ -213,6 +252,32 @@ const KrimiHoerspiel = () => {
             </div>
           </div>
         </div>
+      </div></section>
+
+      {/* FAQ */}
+      <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
+        <FAQSection
+          items={[
+            {
+              question: "Was ist der Unterschied zwischen Hörspiel und Hörbuch?",
+              answer: "Ein Hörspiel ist eine szenische Produktion mit verteilten Sprechrollen, Geräuschen und Musik. Ein Hörbuch wird von einem einzelnen Sprecher vorgelesen. Krimi-Hörspiele bieten durch Soundeffekte und Dialog ein intensiveres Erlebnis.",
+            },
+            {
+              question: "Welche Krimi-Hörspiele sind für Erwachsene empfehlenswert?",
+              answer: "Pater Brown (Maritim), Sherlock Holmes (Maritim), Gruselkabinett (Titania Medien) und Die größten Fälle von Scotland Yard richten sich an ein erwachsenes Publikum. Für ein Live-Erlebnis: Das Pater Brown Live-Hörspiel auf der Bühne.",
+            },
+            {
+              question: "Was ist ein Live-Hörspiel?",
+              answer: "Ein Live-Hörspiel wird vor Publikum aufgeführt. Schauspieler sprechen die Rollen live, alle Geräusche werden in Echtzeit erzeugt. Das Pater Brown Live-Hörspiel nutzt Beatboxing statt technischer Soundeffekte – alle Geräusche entstehen nur mit dem Mund.",
+            },
+            {
+              question: "Wo kann man Krimi-Hörspiele live erleben?",
+              answer: "Das Pater Brown Live-Hörspiel tourt durch Deutschland, Österreich und die Schweiz. Spielorte sind unter anderem München, Hamburg, Köln, Berlin, Leipzig, Stuttgart und Zürich. Alle Termine: paterbrown.com/termine.",
+            },
+          ]}
+          label="FAQ"
+          title="Häufige Fragen zum Krimi-Hörspiel"
+        />
       </div></section>
     </LandingLayout>
   );

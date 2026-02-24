@@ -2,8 +2,28 @@ import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import { SEO } from "@/components/SEO";
 import CinematicPortrait from "@/components/CinematicPortrait";
+import FAQSection from "@/components/landing/FAQSection";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 import TicketCTA from "@/components/shared/TicketCTA";
+
+const FAQ_ITEMS = [
+  {
+    question: "Ist Father Brown dasselbe wie Pater Brown?",
+    answer: `Ja. Father Brown ist der englische Originalname der Figur von G.K. Chesterton. Im deutschsprachigen Raum wurde er als \u201EPater Brown\u201C bekannt \u2013 vor allem durch die Heinz-Rühmann-Filme (1960/1962) und die Maritim-Hörspiele.`,
+  },
+  {
+    question: "Wie viele Father-Brown-Geschichten gibt es?",
+    answer: "G.K. Chesterton veröffentlichte zwischen 1911 und 1935 insgesamt 49 Kurzgeschichten in fünf Sammlungen: The Innocence of Father Brown, The Wisdom, The Incredulity, The Secret und The Scandal of Father Brown.",
+  },
+  {
+    question: "Wie viele Staffeln hat die BBC-Serie Father Brown?",
+    answer: `Die BBC-Serie \u201EFather Brown\u201C mit Mark Williams startete 2013 und umfasst mittlerweile über 10 Staffeln mit mehr als 140 Episoden (Stand: Anfang 2026). Die Serie spielt im England der 1950er Jahre.`,
+  },
+  {
+    question: "Kann man Father Brown live erleben?",
+    answer: "Ja! Das Pater Brown Live-Hörspiel bringt die Kriminalgeschichten live auf die Bühne. Antoine Monot und Wanja Mues sprechen die Rollen, Beatboxer Marvelin erzeugt alle Geräusche live. Tickets und Termine unter paterbrown.com/termine.",
+  },
+];
 
 const BREADCRUMBS = [
   { label: "Startseite", href: "/" },
@@ -93,6 +113,35 @@ const FatherBrown = () => {
 
       <TicketCTA variant="informative" />
 
+      {/* Die 49 Geschichten */}
+      <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
+        <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">Das Werk</p>
+        <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
+          49 Geschichten, fünf Sammlungen
+        </h2>
+        <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" aria-hidden="true" />
+        <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+          Chestertons Father-Brown-Geschichten erschienen zwischen 1911 und 1935 in
+          fünf Sammlungen: „The Innocence of Father Brown" (1911), „The Wisdom" (1914),
+          „The Incredulity" (1926), „The Secret" (1927) und „The Scandal of Father Brown" (1935).
+        </p>
+        <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+          Jede Geschichte ist in sich abgeschlossen. Father Brown löst den Fall nicht
+          durch Forensik oder Logik, sondern durch Menschenkenntnis – sein
+          Verständnis der menschlichen Seele, geschult durch unzählige Beichtgespräche.
+          Das macht ihn zu einem der ungewöhnlichsten Detektive der Literaturgeschichte.
+        </p>
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
+          Die Geschichten wurden in über 20 Sprachen übersetzt und haben zahlreiche
+          Adaptionen inspiriert: Filme, Hörspiele, eine BBC-Serie – und jetzt ein{" "}
+          <Link to="/live-hoerspiel" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+            Live-Hörspiel auf der Bühne
+          </Link>.
+        </p>
+      </div></section>
+
+      <TicketCTA variant="emotional" />
+
       {/* BBC-Serie */}
       <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
         <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">BBC</p>
@@ -102,12 +151,19 @@ const FatherBrown = () => {
         <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" aria-hidden="true" />
         <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
           Seit 2013 läuft die BBC-Serie „Father Brown" mit Mark Williams in der
-          Titelrolle. Die Serie spielt im England der 1950er Jahre und hat die Figur
-          einem weltweiten Publikum bekannt gemacht.
+          Titelrolle. Die Serie spielt im fiktiven Dorf Kembleford im England
+          der 1950er Jahre und hat die Figur einem weltweiten Publikum bekannt
+          gemacht – mit mittlerweile über 10 Staffeln und mehr als 140 Episoden.
+        </p>
+        <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+          Die BBC-Version nimmt sich Freiheiten gegenüber dem Original: Sie fügt
+          wiederkehrende Nebenfiguren hinzu und verlegt die Handlung in die
+          Nachkriegszeit. Der Kern bleibt jedoch derselbe – ein unscheinbarer
+          Priester, der durch Einfühlungsvermögen Verbrechen aufklärt.
         </p>
         <p className="text-foreground/70 leading-relaxed text-lg font-light">
-          In Deutschland wurde die Figur bereits 1966 durch Heinz Rühmann als
-          „Pater Brown" berühmt. Mehr zur Geschichte der Verfilmungen auf der{" "}
+          In Deutschland wurde die Figur bereits 1960 und 1962 durch Heinz Rühmann
+          als „Pater Brown" berühmt. Mehr zur Geschichte der Verfilmungen auf der{" "}
           <Link to="/pater-brown" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
             Pater-Brown-Übersichtsseite
           </Link>.
@@ -115,6 +171,11 @@ const FatherBrown = () => {
       </div></section>
 
       <TicketCTA variant="concrete" />
+
+      {/* FAQ */}
+      <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
+        <FAQSection items={FAQ_ITEMS} label="FAQ" title="Häufige Fragen zu Father Brown" />
+      </div></section>
 
       {/* Live-Hörspiel */}
       <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-6xl">

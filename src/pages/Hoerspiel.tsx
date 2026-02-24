@@ -98,13 +98,20 @@ const Hoerspiel = () => {
               {" "}eignen sich wie kaum ein anderer Stoff für das Hörspiel: Dialog-lastig,
               atmosphärisch, voller Spannung durch Worte statt Action.
             </p>
-            <p className="text-foreground/70 leading-relaxed text-lg font-light">
+            <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
               Seit den 1970er Jahren gibt es deutsche Hörspieladaptionen der
               Kriminalgeschichten von{" "}
               <Link to="/g-k-chesterton" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
                 G.K. Chesterton
               </Link>
               . Die bekannteste Produktion stammt vom Maritim Verlag.
+            </p>
+            <p className="text-foreground/70 leading-relaxed text-lg font-light">
+              Was die Pater-Brown-Geschichten so hörspieltauglich macht: Chesterton
+              erzählt seine Krimis fast ausschließlich über Dialoge und innere Monologe.
+              Die Spannung entsteht nicht durch Verfolgungsjagden, sondern durch das
+              Zusammenspiel der Figuren – perfekt für ein Medium, das von Stimmen
+              und Atmosphäre lebt.
             </p>
           </div>
           <div className="relative overflow-hidden aspect-[4/3]">
@@ -216,9 +223,23 @@ const Hoerspiel = () => {
             </p>
           </div>
         </div>
-        <p className="text-foreground/50 leading-relaxed text-base mt-6">
+        <p className="text-foreground/50 leading-relaxed text-base mt-6 mb-6">
           Unterschied: Ein Hörspiel ist eine szenische Produktion mit verteilten Rollen
           und Geräuschkulisse. Ein Hörbuch wird von einem einzelnen Sprecher vorgelesen.
+        </p>
+        <p className="text-foreground/50 leading-relaxed text-base">
+          Was alle Formate gemeinsam haben: Die Geschichten von{" "}
+          <Link to="/father-brown" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+            Father Brown
+          </Link>
+          {" "}funktionieren über Sprache und Atmosphäre. Gerade deshalb eignen sie sich
+          so hervorragend für auditive Medien – vom klassischen Hörspiel über das
+          Hörbuch bis zum Live-Erlebnis auf der Bühne, wo die Geräuschkulisse
+          durch{" "}
+          <Link to="/marvelin" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+            Beatboxer Marvelin
+          </Link>
+          {" "}live erzeugt wird.
         </p>
       </div></section>
 

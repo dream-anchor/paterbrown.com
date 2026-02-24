@@ -96,6 +96,42 @@ const StefanieSick = () => {
 
       <TicketCTA variant="personal" />
 
+      {/* Werdegang */}
+      <section className="py-28 md:py-36 px-6">
+        <div className="container mx-auto max-w-5xl">
+          <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">Werdegang</p>
+          <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
+            Von der Idee zur Bühne
+          </h2>
+          <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" aria-hidden="true" />
+          <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+            Stefanie Sick verbindet strategisches Denken mit künstlerischem Gespür.
+            Ihre Erfahrung in Projektmanagement, Öffentlichkeitsarbeit und kreativem Producing
+            macht sie zur Schlüsselfigur hinter dem{" "}
+            <Link to="/live-hoerspiel" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+              Pater Brown Live-Hörspiel
+            </Link>.
+          </p>
+          <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+            Vom Aufbau der Marke über die Inszenierung bis zur Kommunikation mit
+            Veranstaltern, Presse und Ticketpartnern: Stefanie Sick führt alle Fäden
+            zusammen. Jede Tour-Station wird unter ihrer Leitung geplant, von der
+            Spielstätten-Akquise bis zum reibungslosen Showabend.
+          </p>
+          <p className="text-foreground/70 leading-relaxed text-lg font-light">
+            Dabei geht es ihr nicht nur um Logistik, sondern um Qualität: Die Show soll
+            an jedem Abend und in jeder Stadt auf höchstem Niveau funktionieren –
+            für ein Publikum, das die Geschichten von{" "}
+            <Link to="/g-k-chesterton" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+              G.K. Chesterton
+            </Link>
+            {" "}verdient.
+          </p>
+        </div>
+      </section>
+
+      <TicketCTA variant="emotional" />
+
       {/* Vision */}
       <section className="py-28 md:py-36 px-6">
         <div className="container mx-auto max-w-5xl">
@@ -122,8 +158,48 @@ const StefanieSick = () => {
             von der Pressearbeit bis zum Ticketverkauf.
           </p>
           <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+            Ihr Anspruch: Jeder Besucher soll das Theater mit dem Gefühl verlassen,
+            etwas Besonderes erlebt zu haben – nicht einfach eine Lesung, sondern
+            ein immersives Krimi-Erlebnis, bei dem die Grenze zwischen Bühne und
+            Zuschauerraum verschwimmt.
+          </p>
+          <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
             Als Mitgesellschafterin der Dream &amp; Anchor Handelsgesellschaft mbH
             bringt sie unternehmerisches Denken und kreative Vision zusammen.
+          </p>
+        </div>
+      </section>
+
+      {/* Zusammenarbeit */}
+      <section className="py-28 md:py-36 px-6">
+        <div className="container mx-auto max-w-5xl">
+          <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">Das Team</p>
+          <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
+            Ein Ensemble, ein Ziel
+          </h2>
+          <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" aria-hidden="true" />
+          <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+            Das Pater Brown Live-Hörspiel lebt von der Chemie zwischen den
+            Künstlern.{" "}
+            <Link to="/antoine-monot" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+              Antoine Monot
+            </Link>
+            {" "}und{" "}
+            <Link to="/wanja-mues" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+              Wanja Mues
+            </Link>
+            , die seit 2014 gemeinsam in „Ein Fall für zwei" vor der Kamera stehen,
+            bringen eine eingespieltes Zusammenspiel auf die Bühne.{" "}
+            <Link to="/marvelin" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+              Beatboxer Marvelin
+            </Link>
+            {" "}ergänzt das Duo mit einer Klangwelt, die jede Szene lebendig macht.
+          </p>
+          <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+            Stefanie Sick gibt diesem Zusammenspiel den Rahmen: Sie entwickelt das
+            dramaturgische Konzept, steuert Proben und Abläufe und stellt sicher,
+            dass der einzigartige Charakter der Show – Spannung, Humor und
+            Gänsehaut-Momente – an jedem Spielort zur Geltung kommt.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mt-10">
