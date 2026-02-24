@@ -7,6 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Zürich",
   addressRegion: "Zürich",
   addressCountry: "CH",
+  heroImage: "/images/buehne/pater-brown-antoine-monot-buehne-solo-af.webp",
   venue: {
     name: "Volkshaus Zürich – Weisser Saal",
     address: "Stauffacherstrasse 60, 8004 Zürich",

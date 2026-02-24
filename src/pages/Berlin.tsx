@@ -7,6 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Berlin",
   addressRegion: "Berlin",
   addressCountry: "DE",
+  heroImage: "/images/buehne/pater-brown-dialog-szene-monot-mues-af.webp",
   venue: {
     name: "DIE WÜHLMÄUSE",
     address: "Pommernallee 2-4, 14052 Berlin (Charlottenburg)",

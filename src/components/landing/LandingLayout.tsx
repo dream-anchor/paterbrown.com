@@ -71,7 +71,7 @@ const LandingLayout = ({
               alt=""
               aria-hidden="true"
               className="w-full h-full object-cover"
-              style={{ objectPosition: "50% 25%" }}
+              style={{ objectPosition: "50% 15%" }}
               loading="eager"
               decoding="async"
             />
@@ -81,7 +81,7 @@ const LandingLayout = ({
               alt=""
               aria-hidden="true"
               className="w-full h-full object-cover"
-              style={{ objectPosition: "50% 25%" }}
+              style={{ objectPosition: "50% 15%" }}
               loading="eager"
               decoding="async"
             />

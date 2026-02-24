@@ -36,6 +36,7 @@ const StefanieSick = () => {
   return (
     <LandingLayout
       breadcrumbs={BREADCRUMBS}
+      heroImage="/images/buehne/pater-brown-wanja-mues-buehne-skript-af.webp"
       heroTitle="Stefanie Sick"
       heroSubtitle="Künstlerische Leitung & Produktion"
     >

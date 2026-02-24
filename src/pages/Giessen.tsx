@@ -7,6 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Gießen",
   addressRegion: "Hessen",
   addressCountry: "DE",
+  heroImage: "/images/hero/pater-brown-live-hoerspiel-buehne-totale-af.webp",
   nearbyCities: [
     { slug: "baunatal-kassel", name: "Baunatal/Kassel" },
     { slug: "koeln", name: "Köln" },

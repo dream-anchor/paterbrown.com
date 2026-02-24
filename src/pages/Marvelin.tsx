@@ -69,6 +69,7 @@ const Marvelin = () => {
   return (
     <LandingLayout
       breadcrumbs={BREADCRUMBS}
+      heroImage="/images/buehne/pater-brown-buehne-ensemble-marvelin-af.webp"
       heroTitle="Marvelin"
       heroSubtitle="Beatboxer, Coach, Veranstalter"
     >

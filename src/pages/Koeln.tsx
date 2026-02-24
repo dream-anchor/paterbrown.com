@@ -7,6 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Köln",
   addressRegion: "Nordrhein-Westfalen",
   addressCountry: "DE",
+  heroImage: "/images/buehne/pater-brown-ensemble-monot-mues-marvelin-af.webp",
   venue: {
     name: "Volksbühne am Rudolfplatz",
     address: "Aachener Str. 5, 50674 Köln",

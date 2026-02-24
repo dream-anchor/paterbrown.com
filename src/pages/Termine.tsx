@@ -171,6 +171,7 @@ const Termine = () => {
   return (
     <LandingLayout
       breadcrumbs={[{ label: "Termine" }]}
+      heroImage="/images/buehne/pater-brown-antoine-monot-buehne-solo-af.webp"
       heroTitle="Alle Termine"
       heroSubtitle={`Erlebe Pater Brown als Live-Hörspiel in deiner Stadt – sichere dir jetzt deine Tickets.`}
       showCTA={false}

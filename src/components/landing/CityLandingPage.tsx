@@ -35,6 +35,7 @@ export interface CityPageConfig {
   nearbyCities?: { slug: string; name: string }[];
   noCurrentEvent?: boolean;
   comingSoonText?: string;
+  heroImage?: string;
 }
 
 const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
@@ -123,6 +124,7 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
         { label: "Termine", href: "/termine" },
         { label: config.cityName },
       ]}
+      heroImage={config.heroImage}
       heroTitle={config.cityName}
       heroSubtitle="Das Live-Hörspiel"
       showCTA

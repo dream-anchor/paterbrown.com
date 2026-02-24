@@ -7,6 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "Neu-Isenburg",
   addressRegion: "Hessen",
   addressCountry: "DE",
+  heroImage: "/images/buehne/pater-brown-atmosphaere-silhouette-nebel-af.webp",
   noCurrentEvent: true,
   comingSoonText:
     "Die Shows in Neu-Isenburg waren ein großer Erfolg! Aktuell sind keine neuen Termine in der Hugenottenhalle geplant. Schauen Sie sich unsere aktuellen Tourtermine an – vielleicht ist eine Show in Ihrer Nähe dabei.",

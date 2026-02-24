@@ -65,6 +65,7 @@ const Hoerspiel = () => {
   return (
     <LandingLayout
       breadcrumbs={BREADCRUMBS}
+      heroImage="/images/buehne/pater-brown-atmosphaere-silhouette-nebel-af.webp"
       heroTitle="Hörspiel"
       heroSubtitle="Von den Maritim-Klassikern zum Live-Erlebnis"
     >
