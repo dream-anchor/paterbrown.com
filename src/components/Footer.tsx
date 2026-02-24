@@ -17,7 +17,6 @@ const FOOTER_NAV = [
       { label: "Wanja Mues", href: "/wanja-mues" },
       { label: "Antoine Monot", href: "/antoine-monot" },
       { label: "Marvelin", href: "/marvelin" },
-      { label: "Stefanie Sick", href: "/stefanie-sick" },
     ],
   },
   {

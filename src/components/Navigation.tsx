@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import logoImage from "@/assets/pater-brown-logo.png";
-import GhostButton from "@/components/ui/GhostButton";
+import ticketButton from "@/assets/tickets-sichern-button.png";
+import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 interface NavLink {
   label: string;
   href: string;
+  highlight?: boolean;
   children?: { label: string; href: string }[];
 }
 
@@ -20,7 +22,7 @@ const NAV_LINKS: NavLink[] = [
       { label: "Das Hörspiel", href: "/hoerspiel" },
     ],
   },
-  { label: "Termine", href: "/termine" },
+  { label: "Termine", href: "/termine", highlight: true },
   {
     label: "Darsteller",
     href: "/wanja-mues",
@@ -28,31 +30,28 @@ const NAV_LINKS: NavLink[] = [
       { label: "Wanja Mues", href: "/wanja-mues" },
       { label: "Antoine Monot", href: "/antoine-monot" },
       { label: "Marvelin", href: "/marvelin" },
-      { label: "Stefanie Sick", href: "/stefanie-sick" },
     ],
   },
 ];
 
 const Navigation = () => {
-  const [scrolled, setScrolled] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownTimeout = useRef<ReturnType<typeof setTimeout>>();
   const location = useLocation();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
+    const onScroll = () => setVisible(window.scrollY > 60);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Schließe Mobile-Menu bei Routenwechsel
   useEffect(() => {
     setMobileOpen(false);
     setOpenDropdown(null);
   }, [location.pathname]);
 
-  // Body-Scroll verhindern wenn Off-Canvas offen
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -69,22 +68,24 @@ const Navigation = () => {
 
   return (
     <>
-      {/* Fixed Nav Bar */}
+      {/* Fixed Nav Bar — identisch mit StickyHeader der Startseite */}
       <header
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
         style={{
-          backgroundColor: scrolled
-            ? "hsl(var(--background) / 0.95)"
-            : "transparent",
-          backdropFilter: scrolled ? "blur(12px)" : "none",
-          WebkitBackdropFilter: scrolled ? "blur(12px)" : "none",
-          borderBottom: scrolled
-            ? "1px solid hsl(var(--gold) / 0.1)"
-            : "1px solid transparent",
+          backgroundColor: visible ? "hsl(var(--background) / 0.95)" : "transparent",
+          backdropFilter: visible ? "blur(12px)" : "none",
+          WebkitBackdropFilter: visible ? "blur(12px)" : "none",
+          borderBottom: visible ? "1px solid hsl(var(--gold) / 0.2)" : "1px solid transparent",
+          boxShadow: visible ? "0 4px 20px rgba(0, 0, 0, 0.5)" : "none",
+          opacity: visible ? 1 : 0,
+          pointerEvents: visible ? "auto" : "none",
           paddingTop: "env(safe-area-inset-top)",
+          WebkitTransform: "translate3d(0,0,0)",
+          transform: "translate3d(0,0,0)",
+          willChange: "transform",
         }}
       >
-        <div className="w-[88%] max-w-[1400px] mx-auto flex items-center justify-between py-4">
+        <div className="w-[92%] max-w-[1400px] mx-auto flex items-center justify-between py-3 md:py-4">
           {/* Logo */}
           <Link
             to="/"
@@ -94,13 +95,15 @@ const Navigation = () => {
             <img
               src={logoImage}
               alt="Pater Brown Logo"
-              className="h-10 md:h-14 w-auto"
+              className="h-12 md:h-16 w-auto"
+              loading="lazy"
+              decoding="async"
             />
           </Link>
 
           {/* Desktop Nav */}
           <nav
-            className="hidden lg:flex items-center gap-8"
+            className="hidden md:flex items-center gap-10"
             aria-label="Hauptnavigation"
           >
             {NAV_LINKS.map((link) => (
@@ -114,7 +117,11 @@ const Navigation = () => {
               >
                 <Link
                   to={link.href}
-                  className="text-xs font-heading uppercase tracking-[0.2em] text-foreground/70 hover:text-foreground transition-colors py-2"
+                  className={`text-base uppercase tracking-[0.2em] font-heading transition-colors py-2 ${
+                    link.highlight
+                      ? "neon-gold"
+                      : "text-foreground/60 hover:text-foreground"
+                  }`}
                 >
                   {link.label}
                   {link.children && (
@@ -136,7 +143,7 @@ const Navigation = () => {
                         <Link
                           key={child.href}
                           to={child.href}
-                          className="block px-5 py-2.5 text-xs font-heading uppercase tracking-[0.15em] text-foreground/60 hover:text-foreground hover:bg-primary/5 transition-colors"
+                          className="block px-5 py-2.5 text-sm font-heading uppercase tracking-[0.15em] text-foreground/60 hover:text-foreground hover:bg-primary/5 transition-colors"
                         >
                           {child.label}
                         </Link>
@@ -148,17 +155,26 @@ const Navigation = () => {
             ))}
           </nav>
 
-          {/* Desktop CTA */}
-          <div className="hidden lg:block">
-            <GhostButton to="/termine" size="sm">
-              Tickets
-            </GhostButton>
-          </div>
+          {/* Ticket Button — identisch mit StickyHeader */}
+          <a
+            href={EVENTIM_AFFILIATE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:scale-105 transition-transform shrink-0"
+          >
+            <img
+              src={ticketButton}
+              alt="Tickets sichern"
+              className="h-[48px] md:h-[64px] lg:h-[80px] w-auto mix-blend-screen"
+              loading="lazy"
+              decoding="async"
+            />
+          </a>
 
           {/* Mobile Hamburger */}
           <button
             type="button"
-            className="lg:hidden p-2 text-foreground/70 hover:text-foreground transition-colors"
+            className="md:hidden p-2 text-foreground/70 hover:text-foreground transition-colors"
             onClick={() => setMobileOpen(true)}
             aria-label="Menü öffnen"
             aria-expanded={mobileOpen}
@@ -170,8 +186,7 @@ const Navigation = () => {
 
       {/* Mobile Off-Canvas */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-[60] lg:hidden">
-          {/* Gradient-Overlay */}
+        <div className="fixed inset-0 z-[60] md:hidden">
           <div
             className="absolute inset-0"
             style={{
@@ -182,7 +197,6 @@ const Navigation = () => {
             aria-hidden="true"
           />
 
-          {/* Off-Canvas Panel */}
           <nav
             className="relative w-[85%] max-w-sm h-full bg-background flex flex-col pt-20 px-8 pb-8 overflow-y-auto"
             style={{
@@ -190,7 +204,6 @@ const Navigation = () => {
             }}
             aria-label="Mobile Navigation"
           >
-            {/* Schließen */}
             <button
               type="button"
               className="absolute top-6 right-6 p-2 text-foreground/50 hover:text-foreground transition-colors"
@@ -200,7 +213,6 @@ const Navigation = () => {
               <X className="w-6 h-6" />
             </button>
 
-            {/* Nav Links */}
             <div className="space-y-6">
               {NAV_LINKS.map((link) => (
                 <div key={link.label}>
@@ -229,9 +241,18 @@ const Navigation = () => {
 
             {/* Mobile CTA */}
             <div className="mt-auto pt-8">
-              <GhostButton to="/termine" size="lg" className="w-full justify-center">
-                Tickets
-              </GhostButton>
+              <a
+                href={EVENTIM_AFFILIATE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <img
+                  src={ticketButton}
+                  alt="Tickets sichern"
+                  className="h-[64px] w-auto mix-blend-screen mx-auto"
+                />
+              </a>
             </div>
           </nav>
         </div>

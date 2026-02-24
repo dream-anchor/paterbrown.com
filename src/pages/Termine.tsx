@@ -4,10 +4,6 @@ import { Link } from "react-router-dom";
 import { CalendarDays } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import LandingLayout from "@/components/landing/LandingLayout";
-import Section from "@/components/ui/Section";
-import SerifText from "@/components/ui/SerifText";
-import GhostButton from "@/components/ui/GhostButton";
-import ResponsiveImage from "@/components/landing/ResponsiveImage";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 import { getTourYearRange } from "@/lib/dateUtils";
@@ -190,32 +186,26 @@ const Termine = () => {
         schema={tourDates.length > 0 ? itemListSchema : undefined}
       />
 
-      {/* ── Bühnenfoto Teaser ── */}
-      <Section container="wide" className="py-12 md:py-16">
-        <div className="card-glow rounded-[3px] overflow-hidden">
-          <ResponsiveImage
-            basePath="/images/hero/pater-brown-live-hoerspiel-buehne-totale-af"
-            alt="Pater Brown Live-Hörspiel Bühne: Antoine Monot und Wanja Mues auf der Bühne mit blauem Licht und Nebel"
-            width={2000}
-            height={1500}
-            sizes="(max-width: 768px) 88vw, 1100px"
-            priority
-            credit="Alexander Frank"
-          />
-        </div>
-      </Section>
+      {/* -- Bühnenfoto Teaser -- */}
+      <section className="py-12 md:py-16 px-6"><div className="container mx-auto max-w-6xl">
+        <div className="w-full min-h-[250px] md:min-h-[400px] bg-cover bg-center border border-foreground/10"
+          style={{ backgroundImage: 'url(/images/hero/pater-brown-live-hoerspiel-buehne-totale-af-1200.webp)' }}
+          role="img"
+          aria-label="Pater Brown Live-Hörspiel Bühne: Antoine Monot und Wanja Mues auf der Bühne mit blauem Licht und Nebel"
+        />
+      </div></section>
 
-      {/* ── Trailer ── */}
-      <Section container="narrow" className="py-8 md:py-12">
+      {/* -- Trailer -- */}
+      <section className="py-8 md:py-12 px-6"><div className="container mx-auto max-w-5xl">
         <div className="text-center mb-8">
-          <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+          <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">
             Einblick
           </p>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading text-foreground">
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground">
             Erlebe Pater Brown
           </h2>
         </div>
-        <div className="card-glow rounded-[3px] overflow-hidden">
+        <div className="border border-foreground/10 overflow-hidden">
           {isMobile ? (
             <div
               className="relative w-full max-w-sm mx-auto"
@@ -245,37 +235,37 @@ const Termine = () => {
             </div>
           )}
         </div>
-      </Section>
+      </div></section>
 
-      {/* ── Terminliste ── */}
-      <Section container="wide" className="py-16 md:py-24">
+      {/* -- Terminliste -- */}
+      <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-6xl">
         <div className="text-center mb-12">
-          <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+          <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">
             Tour {yearRange}
           </p>
-          <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground">
+          <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground">
             Termine & Tickets
           </h2>
         </div>
 
         {isLoading && (
           <div className="text-center text-muted-foreground py-12">
-            <p className="text-lg font-serif normal-case">Lade Termine...</p>
+            <p className="text-lg font-light">Lade Termine...</p>
           </div>
         )}
 
         {error && (
           <div className="text-center text-destructive py-12">
-            <p className="text-lg font-serif normal-case">Fehler beim Laden der Termine</p>
+            <p className="text-lg font-light">Fehler beim Laden der Termine</p>
           </div>
         )}
 
         {!isLoading && !error && tourDates.length === 0 && (
           <div className="text-center text-muted-foreground py-12">
-            <SerifText size="lg" className="text-foreground/50">
+            <p className="text-foreground/50 leading-relaxed text-lg font-light">
               Aktuell sind keine Termine verfügbar. Neue Termine werden bald
               bekanntgegeben.
-            </SerifText>
+            </p>
           </div>
         )}
 
@@ -286,7 +276,7 @@ const Termine = () => {
               return (
                 <article
                   key={date.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-5 border border-border/30 rounded-[3px] bg-card/20 transition-all hover:border-primary/30 hover:bg-card/40"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-5 border border-foreground/10 bg-card/10 transition-all hover:border-gold/20"
                   role="listitem"
                 >
                   <script
@@ -297,7 +287,7 @@ const Termine = () => {
                   />
 
                   <div className="flex items-start sm:items-center gap-4 sm:gap-8 flex-1 min-w-0">
-                    <CalendarDays className="w-5 h-5 text-primary/40 shrink-0 mt-1 sm:mt-0" aria-hidden="true" />
+                    <CalendarDays className="w-5 h-5 text-gold/40 shrink-0 mt-1 sm:mt-0" aria-hidden="true" />
 
                     <div className="min-w-[120px] sm:min-w-[140px]">
                       <time
@@ -313,7 +303,7 @@ const Termine = () => {
                       {citySlug ? (
                         <Link
                           to={`/${citySlug}`}
-                          className="text-foreground font-heading text-base sm:text-lg hover:text-primary transition-colors"
+                          className="text-foreground font-heading text-base sm:text-lg hover:text-gold transition-colors"
                         >
                           {date.city}
                         </Link>
@@ -322,22 +312,20 @@ const Termine = () => {
                           {date.city}
                         </span>
                       )}
-                      <p className="text-sm text-foreground/50 font-serif normal-case tracking-[0.05em] truncate">
+                      <p className="text-sm text-foreground/50 truncate">
                         {date.venue}
                       </p>
                     </div>
 
                     {date.note && (
-                      <span className="hidden md:inline-flex px-3 py-1 bg-primary/10 text-primary text-[10px] uppercase tracking-[0.15em] font-heading border border-primary/30 whitespace-nowrap rounded-[2px]">
+                      <span className="hidden md:inline-flex px-3 py-1 bg-gold/10 text-gold text-[10px] uppercase tracking-[0.15em] font-heading border border-gold/30 whitespace-nowrap">
                         {date.note}
                       </span>
                     )}
                   </div>
 
                   {date.ticketUrl ? (
-                    <GhostButton href={date.ticketUrl} size="sm">
-                      Tickets
-                    </GhostButton>
+                    <a href={date.ticketUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-heading text-gold/70 hover:text-gold transition-colors uppercase tracking-[0.15em] whitespace-nowrap">Tickets &rarr;</a>
                   ) : (
                     <span className="text-xs font-heading text-foreground/30 uppercase tracking-[0.1em]">
                       Bald verfügbar
@@ -350,16 +338,14 @@ const Termine = () => {
         )}
 
         <div className="text-center mt-12 space-y-4">
-          <GhostButton href={EVENTIM_AFFILIATE_URL} size="lg">
-            Alle Termine auf Eventim
-          </GhostButton>
-          <p className="text-foreground/40 text-xs font-serif normal-case">
+          <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer"><button className="btn-premium" type="button">Alle Termine auf Eventim</button></a>
+          <p className="text-foreground/40 text-xs">
             Tickets über{" "}
             <a
               href={EVENTIM_AFFILIATE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary/70 hover:text-primary transition-colors underline-offset-4 hover:underline"
+              className="text-gold/70 hover:text-gold transition-colors underline-offset-4 hover:underline"
             >
               Eventim (DE)
             </a>{" "}
@@ -368,30 +354,30 @@ const Termine = () => {
               href="https://www.ticketcorner.ch/artist/pater-brown-das-live-hoerspiel/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary/70 hover:text-primary transition-colors underline-offset-4 hover:underline"
+              className="text-gold/70 hover:text-gold transition-colors underline-offset-4 hover:underline"
             >
               Ticketcorner (CH)
             </a>
           </p>
         </div>
-      </Section>
+      </div></section>
 
-      {/* ── SEO Content ── */}
-      <Section container="narrow" className="py-16 md:py-24">
-        <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+      {/* -- SEO Content -- */}
+      <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
+        <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">
           Über die Tour
         </p>
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading text-foreground mb-4">
+        <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
           Pater Brown auf Tour
         </h2>
-        <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
+        <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" aria-hidden="true" />
 
         <div className="space-y-4">
-          <SerifText size="lg" className="text-foreground/70">
+          <p className="text-foreground/70 leading-relaxed text-lg font-light">
             <strong className="text-foreground">
               <Link
                 to="/live-hoerspiel"
-                className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
+                className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
               >
                 PATER BROWN – Das Live-Hörspiel
               </Link>
@@ -400,11 +386,11 @@ const Termine = () => {
             Hörspiel und Beatbox-Sounddesign zu einem einzigartigen
             Live-Erlebnis. Zwei spannende Krimis nach G.K. Chesterton werden
             pro Abend aufgeführt – alle Geräusche entstehen live auf der Bühne.
-          </SerifText>
-          <SerifText size="lg" className="text-foreground/70">
+          </p>
+          <p className="text-foreground/70 leading-relaxed text-lg font-light">
             <Link
               to="/antoine-monot"
-              className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
+              className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
             >
               <strong className="text-foreground">Antoine Monot</strong>
             </Link>{" "}
@@ -412,13 +398,13 @@ const Termine = () => {
             scharfsinnigen{" "}
             <Link
               to="/pater-brown"
-              className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
+              className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
             >
               Pater Brown
             </Link>.{" "}
             <Link
               to="/wanja-mues"
-              className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
+              className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
             >
               <strong className="text-foreground">Wanja Mues</strong>
             </Link>{" "}
@@ -426,25 +412,25 @@ const Termine = () => {
             Das Sounddesign übernimmt{" "}
             <Link
               to="/marvelin"
-              className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
+              className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
             >
               <strong className="text-foreground">Marvelin</strong>
             </Link>
             , einer der besten Beatboxer Europas – er erzeugt{" "}
             <Link
               to="/live-hoerspiel"
-              className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
+              className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
             >
               alle Geräusche live mit dem Mund
             </Link>.
-          </SerifText>
-          <SerifText size="lg" className="text-foreground/70">
+          </p>
+          <p className="text-foreground/70 leading-relaxed text-lg font-light">
             Die Vorstellungen dauern ca. 2 Stunden inklusive Pause. Tickets
             sind ab 34,90 € (Deutschland) bzw. CHF 45 (Schweiz) erhältlich.
             Die Show ist für Zuschauer ab ca. 12 Jahren empfohlen.
-          </SerifText>
+          </p>
         </div>
-      </Section>
+      </div></section>
     </LandingLayout>
   );
 };

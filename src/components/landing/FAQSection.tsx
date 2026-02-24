@@ -1,10 +1,4 @@
 import { Helmet } from "react-helmet-async";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import SectionHeading from "./SectionHeading";
 
 interface FAQItem {
@@ -44,26 +38,21 @@ const FAQSection = ({
 
       <SectionHeading label={label} title={title} />
 
-      <Accordion type="multiple" className="space-y-3">
+      <div className="space-y-3">
         {items.map((item, index) => (
-          <AccordionItem
+          <div
             key={index}
-            value={`faq-${index}`}
-            className="border border-foreground/10 rounded-lg px-6 bg-card/30"
+            className="border border-foreground/10 px-6 py-5 bg-card/30"
           >
-            <AccordionTrigger className="text-left text-foreground hover:text-gold transition-colors text-base md:text-lg py-5 [&[data-state=open]>svg]:text-gold">
+            <h3 className="text-foreground font-heading text-base md:text-lg mb-3">
               {item.question}
-            </AccordionTrigger>
-            {/* forceMount + data-state hidden: Inhalt im DOM für Crawler sichtbar */}
-            <AccordionContent
-              forceMount
-              className="text-foreground/70 leading-relaxed text-base pb-5 data-[state=closed]:hidden"
-            >
+            </h3>
+            <p className="text-foreground/70 leading-relaxed text-base">
               {item.answer}
-            </AccordionContent>
-          </AccordionItem>
+            </p>
+          </div>
         ))}
-      </Accordion>
+      </div>
     </section>
   );
 };

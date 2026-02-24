@@ -1,52 +1,48 @@
 import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import FAQSection from "@/components/landing/FAQSection";
-import ResponsiveImage from "@/components/landing/ResponsiveImage";
-import Section from "@/components/ui/Section";
-import SerifText from "@/components/ui/SerifText";
-import GhostButton from "@/components/ui/GhostButton";
 import { SEO } from "@/components/SEO";
 
 const FAQ_ITEMS = [
   {
     question: "Wer hat Pater Brown erfunden?",
     answer:
-      `Die Figur des Pater Brown wurde von dem britischen Schriftsteller Gilbert Keith Chesterton (G.K. Chesterton) erschaffen. Die erste Geschichte, „The Blue Cross\u201C, erschien 1910 in einer Zeitschrift. Insgesamt schrieb Chesterton 49 Kurzgeschichten, die zwischen 1911 und 1935 in fünf Bänden veröffentlicht wurden.`,
+      `Die Figur des Pater Brown wurde von dem britischen Schriftsteller Gilbert Keith Chesterton (G.K. Chesterton) erschaffen. Die erste Geschichte, \u201EThe Blue Cross\u201C, erschien 1910 in einer Zeitschrift. Insgesamt schrieb Chesterton 49 Kurzgeschichten, die zwischen 1911 und 1935 in f\u00FCnf B\u00E4nden ver\u00F6ffentlicht wurden.`,
   },
   {
     question: "Wie viele Pater-Brown-Geschichten gibt es?",
     answer:
-      `Es gibt 49 Kurzgeschichten, veröffentlicht in fünf Bänden: „Father Browns Einfalt\u201C (1911), „Father Browns Weisheit\u201C (1914), „Father Browns Ungläubigkeit\u201C (1926), „Father Browns Geheimnis\u201C (1927) und „Father Browns Skandal\u201C (1935).`,
+      `Es gibt 49 Kurzgeschichten, ver\u00F6ffentlicht in f\u00FCnf B\u00E4nden: \u201EFather Browns Einfalt\u201C (1911), \u201EFather Browns Weisheit\u201C (1914), \u201EFather Browns Ungl\u00E4ubigkeit\u201C (1926), \u201EFather Browns Geheimnis\u201C (1927) und \u201EFather Browns Skandal\u201C (1935).`,
   },
   {
     question: "Wer spielte Pater Brown im Film?",
     answer:
-      `Die bekanntesten Darsteller sind Alec Guinness (1954), Heinz Rühmann (1960\u20131968), Josef Meinrad (TV-Serie 1966\u20131972), Ottfried Fischer als „Pfarrer Braun\u201C (2003\u20132013) und Mark Williams in der BBC-Serie „Father Brown\u201C (seit 2013). In Italien übernahm Terence Hill als „Don Matteo\u201C eine an Pater Brown angelehnte Rolle.`,
+      `Die bekanntesten Darsteller sind Alec Guinness (1954), Heinz R\u00FChmann (1960\u20131968), Josef Meinrad (TV-Serie 1966\u20131972), Ottfried Fischer als \u201EPfarrer Braun\u201C (2003\u20132013) und Mark Williams in der BBC-Serie \u201EFather Brown\u201C (seit 2013). In Italien \u00FCbernahm Terence Hill als \u201EDon Matteo\u201C eine an Pater Brown angelehnte Rolle.`,
   },
   {
     question:
       "Was ist der Unterschied zwischen Pater Brown und Father Brown?",
     answer:
-      `Es handelt sich um dieselbe Figur. Im englischen Original heißt er „Father Brown\u201C \u2013 die übliche Anrede für einen katholischen Priester im Englischen. Im Deutschen wurde daraus „Pater Brown\u201C, obwohl „Pater\u201C eigentlich nur für Ordenspriester verwendet wird. Brown ist in Chestertons Geschichten jedoch ein Weltpriester bzw. Gemeindepfarrer.`,
+      `Es handelt sich um dieselbe Figur. Im englischen Original hei\u00DFt er \u201EFather Brown\u201C \u2013 die \u00FCbliche Anrede f\u00FCr einen katholischen Priester im Englischen. Im Deutschen wurde daraus \u201EPater Brown\u201C, obwohl \u201EPater\u201C eigentlich nur f\u00FCr Ordenspriester verwendet wird. Brown ist in Chestertons Geschichten jedoch ein Weltpriester bzw. Gemeindepfarrer.`,
   },
   {
     question: "Wo kann man Pater Brown live erleben?",
     answer:
-      "Pater Brown gibt es als Live-Hörspiel auf Tour durch Deutschland und die Schweiz. Antoine Monot, Wanja Mues und Beatboxer Marvelin bringen die Geschichten von G.K. Chesterton live auf die Bühne. Alle Termine und Tickets finden Sie unter paterbrown.com/termine.",
+      "Pater Brown gibt es als Live-H\u00F6rspiel auf Tour durch Deutschland und die Schweiz. Antoine Monot, Wanja Mues und Beatboxer Marvelin bringen die Geschichten von G.K. Chesterton live auf die B\u00FChne. Alle Termine und Tickets finden Sie unter paterbrown.com/termine.",
   },
   {
-    question: "Was ist ein Live-Hörspiel?",
+    question: "Was ist ein Live-H\u00F6rspiel?",
     answer:
-      `Ein Live-Hörspiel ist eine Aufführung, bei der ein Hörspiel live vor Publikum gespielt wird. Alle Stimmen, Geräusche und Soundeffekte entstehen in Echtzeit auf der Bühne \u2013 ohne Playback oder vorproduzierte Sounds. Mehr dazu erfahren Sie unter paterbrown.com/live-hoerspiel.`,
+      `Ein Live-H\u00F6rspiel ist eine Auff\u00FChrung, bei der ein H\u00F6rspiel live vor Publikum gespielt wird. Alle Stimmen, Ger\u00E4usche und Soundeffekte entstehen in Echtzeit auf der B\u00FChne \u2013 ohne Playback oder vorproduzierte Sounds. Mehr dazu erfahren Sie unter paterbrown.com/live-hoerspiel.`,
   },
 ];
 
 const articleSchema = {
   "@context": "https://schema.org",
   "@type": "Article",
-  headline: "Pater Brown – Die legendäre Figur von G.K. Chesterton",
+  headline: "Pater Brown \u2013 Die legend\u00E4re Figur von G.K. Chesterton",
   description:
-    "Alles über Pater Brown: Von den Kurzgeschichten G.K. Chestertons über die Verfilmungen mit Heinz Rühmann und Mark Williams bis zum Live-Hörspiel auf Tour.",
+    "Alles \u00FCber Pater Brown: Von den Kurzgeschichten G.K. Chestertons \u00FCber die Verfilmungen mit Heinz R\u00FChmann und Mark Williams bis zum Live-H\u00F6rspiel auf Tour.",
   author: {
     "@type": "Organization",
     name: "Dream & Anchor Handelsgesellschaft mbH",
@@ -83,22 +79,22 @@ const ADAPTATIONS = [
   {
     title: "Alec Guinness (1954)",
     content: (
-      <SerifText size="lg" className="text-foreground/70">
-        Die erste bedeutende Verfilmung war „Die seltsamen Wege des Pater
-        Brown" (<em>Father Brown</em>, 1954) unter der Regie von Robert Hamer.
-        Alec Guinness – später weltberühmt als Obi-Wan Kenobi in Star Wars –
-        spielte die Titelrolle. Der Film basiert auf der Erzählung „The Blue
-        Cross" und gilt bis heute als eine der gelungensten Adaptionen der
-        Figur. Guinness' Begegnung mit der Rolle trug übrigens zu seiner
-        späteren Konversion zum Katholizismus bei.
-      </SerifText>
+      <p className="text-foreground/70 leading-relaxed text-lg font-light">
+        Die erste bedeutende Verfilmung war \u201EDie seltsamen Wege des Pater
+        Brown\u201C (<em>Father Brown</em>, 1954) unter der Regie von Robert Hamer.
+        Alec Guinness \u2013 sp\u00E4ter weltber\u00FChmt als Obi-Wan Kenobi in Star Wars \u2013
+        spielte die Titelrolle. Der Film basiert auf der Erz\u00E4hlung \u201EThe Blue
+        Cross\u201C und gilt bis heute als eine der gelungensten Adaptionen der
+        Figur. Guinness\u2019 Begegnung mit der Rolle trug \u00FCbrigens zu seiner
+        sp\u00E4teren Konversion zum Katholizismus bei.
+      </p>
     ),
   },
   {
-    title: "Heinz Rühmann (1960–1968)",
+    title: "Heinz R\u00FChmann (1960\u20131968)",
     image: {
       basePath: "/images/historisch/heinz-ruehmann-schauspieler-pater-brown-bundesarchiv",
-      alt: "Heinz Rühmann – Deutschlands bekanntester Pater-Brown-Darsteller in den Filmen Das schwarze Schaf und Er kanns nicht lassen",
+      alt: "Heinz R\u00FChmann \u2013 Deutschlands bekanntester Pater-Brown-Darsteller in den Filmen Das schwarze Schaf und Er kanns nicht lassen",
       width: 789,
       height: 488,
       credit: "Bundesarchiv",
@@ -106,94 +102,94 @@ const ADAPTATIONS = [
     },
     content: (
       <div className="space-y-3">
-        <SerifText size="lg" className="text-foreground/70">
-          Für das deutsche Publikum ist Heinz Rühmann untrennbar mit der Figur
-          verbunden. In drei Filmen verkörperte er Pater Brown:
-        </SerifText>
-        <ul className="list-disc list-inside space-y-1 text-foreground/70 font-serif text-lg leading-[1.3] tracking-[0.05em] normal-case pl-4">
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
+          F\u00FCr das deutsche Publikum ist Heinz R\u00FChmann untrennbar mit der Figur
+          verbunden. In drei Filmen verk\u00F6rperte er Pater Brown:
+        </p>
+        <ul className="list-disc list-inside space-y-1 text-foreground/70 text-lg leading-relaxed font-light pl-4">
           <li>
-            <strong className="text-foreground">„Das schwarze Schaf"</strong>{" "}
+            <strong className="text-foreground">\u201EDas schwarze Schaf\u201C</strong>{" "}
             (1960, Regie: Helmut Ashley)
           </li>
           <li>
-            <strong className="text-foreground">„Er kann's nicht lassen"</strong>{" "}
+            <strong className="text-foreground">\u201EEr kann\u2019s nicht lassen\u201C</strong>{" "}
             (1962, Regie: Axel von Ambesser)
           </li>
           <li>
-            <strong className="text-foreground">„Die Abenteuer des Kardinal Braun"</strong>{" "}
-            (1968) – nicht mehr nach Chesterton
+            <strong className="text-foreground">\u201EDie Abenteuer des Kardinal Braun\u201C</strong>{" "}
+            (1968) \u2013 nicht mehr nach Chesterton
           </li>
         </ul>
-        <SerifText size="lg" className="text-foreground/70">
-          Mit der unvergesslichen Musik von Martin Böttcher prägten diese Filme
-          das deutsche Bild von Pater Brown maßgeblich. Ein Funfact: In „Er
-          kann's nicht lassen" spielte Horst Tappert – der spätere „Derrick" –
-          eine Nebenrolle als Trompeter. Die Rühmann-Filme werden bis heute
-          regelmäßig zu Ostern und Weihnachten im öffentlich-rechtlichen
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
+          Mit der unvergesslichen Musik von Martin B\u00F6ttcher pr\u00E4gten diese Filme
+          das deutsche Bild von Pater Brown ma\u00DFgeblich. Ein Funfact: In \u201EEr
+          kann\u2019s nicht lassen\u201C spielte Horst Tappert \u2013 der sp\u00E4tere \u201EDerrick\u201C \u2013
+          eine Nebenrolle als Trompeter. Die R\u00FChmann-Filme werden bis heute
+          regelm\u00E4\u00DFig zu Ostern und Weihnachten im \u00F6ffentlich-rechtlichen
           Fernsehen gezeigt.
-        </SerifText>
+        </p>
       </div>
     ),
   },
   {
-    title: "Josef Meinrad – TV-Serie (1966–1972)",
+    title: "Josef Meinrad \u2013 TV-Serie (1966\u20131972)",
     content: (
-      <SerifText size="lg" className="text-foreground/70">
-        Die österreichisch-deutsche Fernsehserie mit Josef Meinrad umfasste 39
-        Folgen in fünf Staffeln und war eine der werkgetreuesten Verfilmungen
-        der Chesterton-Geschichten. Die 25-minütigen Episoden liefen im
+      <p className="text-foreground/70 leading-relaxed text-lg font-light">
+        Die \u00F6sterreichisch-deutsche Fernsehserie mit Josef Meinrad umfasste 39
+        Folgen in f\u00FCnf Staffeln und war eine der werkgetreuesten Verfilmungen
+        der Chesterton-Geschichten. Die 25-min\u00FCtigen Episoden liefen im
         Vorabendprogramm und brachten die Originalgeschichten einem breiten
         Fernsehpublikum nahe.
-      </SerifText>
+      </p>
     ),
   },
   {
     title: "Ottfried Fischer als \u201EPfarrer Braun\u201C (2003\u20132013)",
     content: (
-      <SerifText size="lg" className="text-foreground/70">
-        Die ARD-Reihe „Pfarrer Braun" mit Ottfried Fischer war lose an die
-        Pater-Brown-Figur angelehnt. Der bayerische Pfarrer Guido Braun löst in
-        der Serie Kriminalfälle mit Humor und Menschenkenntnis. Mit bis zu 8
-        Millionen Zuschauern pro Erstausstrahlung war die Serie ein großer
-        Publikumserfolg. Die Titelmelodie stammte – wie bei den Rühmann-Filmen –
-        von Martin Böttcher. Die Serie wurde 2013 aufgrund gesundheitlicher
+      <p className="text-foreground/70 leading-relaxed text-lg font-light">
+        Die ARD-Reihe \u201EPfarrer Braun\u201C mit Ottfried Fischer war lose an die
+        Pater-Brown-Figur angelehnt. Der bayerische Pfarrer Guido Braun l\u00F6st in
+        der Serie Kriminalf\u00E4lle mit Humor und Menschenkenntnis. Mit bis zu 8
+        Millionen Zuschauern pro Erstausstrahlung war die Serie ein gro\u00DFer
+        Publikumserfolg. Die Titelmelodie stammte \u2013 wie bei den R\u00FChmann-Filmen \u2013
+        von Martin B\u00F6ttcher. Die Serie wurde 2013 aufgrund gesundheitlicher
         Probleme Fischers eingestellt.
-      </SerifText>
+      </p>
     ),
   },
   {
-    title: "BBC – Father Brown mit Mark Williams (seit 2013)",
+    title: "BBC \u2013 Father Brown mit Mark Williams (seit 2013)",
     content: (
       <div className="space-y-3">
-        <SerifText size="lg" className="text-foreground/70">
-          Die britische Krimiserie „Father Brown" auf BBC One ist die aktuell
-          erfolgreichste Adaption. Mark Williams – vielen bekannt als Arthur
-          Weasley aus den Harry-Potter-Filmen – spielt die Titelrolle. Die Serie
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
+          Die britische Krimiserie \u201EFather Brown\u201C auf BBC One ist die aktuell
+          erfolgreichste Adaption. Mark Williams \u2013 vielen bekannt als Arthur
+          Weasley aus den Harry-Potter-Filmen \u2013 spielt die Titelrolle. Die Serie
           spielt im England der 1950er Jahre im fiktiven Dorf Kembleford in den
-          Cotswolds und umfasst seit ihrem Start im Januar 2013 über 13 Staffeln
+          Cotswolds und umfasst seit ihrem Start im Januar 2013 \u00FCber 13 Staffeln
           mit mehr als 140 Episoden (Stand: Januar 2026).
-        </SerifText>
-        <SerifText size="lg" className="text-foreground/70">
+        </p>
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
           In Deutschland wird die Serie auf ZDFneo ausgestrahlt, bisher sind acht
           Staffeln deutsch synchronisiert. Seit 2022 gibt es zudem das Spin-off
-          „Sister Boniface Mysteries". Gedreht wird die Serie in Blockley,
+          \u201ESister Boniface Mysteries\u201C. Gedreht wird die Serie in Blockley,
           Gloucestershire.
-        </SerifText>
+        </p>
       </div>
     ),
   },
   {
     title: "Don Matteo mit Terence Hill (seit 2000)",
     content: (
-      <SerifText size="lg" className="text-foreground/70">
-        Die italienische Fernsehserie „Don Matteo" auf Rai 1 nimmt Motive der
-        Pater-Brown-Figur auf. Terence Hill (bürgerlich Mario Girotti) spielt
-        einen ermittelnden Priester in Gubbio/Spoleto in Umbrien. Mit über 14
+      <p className="text-foreground/70 leading-relaxed text-lg font-light">
+        Die italienische Fernsehserie \u201EDon Matteo\u201C auf Rai 1 nimmt Motive der
+        Pater-Brown-Figur auf. Terence Hill (b\u00FCrgerlich Mario Girotti) spielt
+        einen ermittelnden Priester in Gubbio/Spoleto in Umbrien. Mit \u00FCber 14
         Staffeln, mehr als 200 Folgen und bis zu 9 Millionen Zuschauern in
         Italien ist die Serie ein Quotengarant. In Deutschland ist sie seit 2022
-        auf Bibel TV zu sehen. Terence Hill erfüllte sich mit der Rolle einen
+        auf Bibel TV zu sehen. Terence Hill erf\u00FCllte sich mit der Rolle einen
         Lebenstraum.
-      </SerifText>
+      </p>
     ),
   },
 ];
@@ -212,187 +208,179 @@ const CAST_CARDS = [
   {
     name: "Marvelin",
     slug: "/marvelin",
-    desc: "Einer der besten Beatboxer Europas. Erzeugt sämtliche Geräusche der Show – von Schritten über Kirchenglocken bis zu Schüssen – ausschließlich live mit dem Mund.",
+    desc: "Einer der besten Beatboxer Europas. Erzeugt s\u00E4mtliche Ger\u00E4usche der Show \u2013 von Schritten \u00FCber Kirchenglocken bis zu Sch\u00FCssen \u2013 ausschlie\u00DFlich live mit dem Mund.",
   },
 ];
 
 const WEITERLESEN = [
-  { to: "/live-hoerspiel", label: "Das Live-Hörspiel", desc: "Alles über das Format und die Show" },
+  { to: "/live-hoerspiel", label: "Das Live-H\u00F6rspiel", desc: "Alles \u00FCber das Format und die Show" },
   { to: "/termine", label: "Alle Termine", desc: "Tour-Daten und Tickets" },
   { to: "/g-k-chesterton", label: "G.K. Chesterton", desc: "Der Erfinder von Pater Brown" },
-  { to: "/hoerspiel", label: "Pater Brown Hörspiel", desc: "Maritim-Klassiker und mehr" },
+  { to: "/hoerspiel", label: "Pater Brown H\u00F6rspiel", desc: "Maritim-Klassiker und mehr" },
   { to: "/father-brown", label: "Father Brown", desc: "Die englische Originalfigur" },
-  { to: "/krimi-hoerspiel", label: "Krimi-Hörspiel", desc: "Das Genre im Überblick" },
+  { to: "/krimi-hoerspiel", label: "Krimi-H\u00F6rspiel", desc: "Das Genre im \u00DCberblick" },
 ];
 
 const PaterBrown = () => (
   <LandingLayout
     breadcrumbs={[{ label: "Pater Brown" }]}
     heroTitle="Pater Brown"
-    heroSubtitle="Der unscheinbare Priester, der seit über 100 Jahren Kriminalfälle löst – von den Kurzgeschichten über Film und Fernsehen bis auf die Live-Bühne."
+    heroSubtitle="Der unscheinbare Priester, der seit \u00FCber 100 Jahren Kriminalf\u00E4lle l\u00F6st \u2013 von den Kurzgeschichten \u00FCber Film und Fernsehen bis auf die Live-B\u00FChne."
     showCTA
   >
     <SEO
-      title="Pater Brown – Die legendäre Figur von G.K. Chesterton"
-      description="Alles über Pater Brown: Von den Kurzgeschichten G.K. Chestertons über die Verfilmungen mit Heinz Rühmann bis zum Live-Hörspiel. Jetzt Tickets sichern!"
+      title="Pater Brown \u2013 Die legend\u00E4re Figur von G.K. Chesterton"
+      description="Alles \u00FCber Pater Brown: Von den Kurzgeschichten G.K. Chestertons \u00FCber die Verfilmungen mit Heinz R\u00FChmann bis zum Live-H\u00F6rspiel. Jetzt Tickets sichern!"
       canonical="/pater-brown"
       keywords="pater brown, father brown, pfarrer brown, pater braun, vater brown, pater brown darsteller, pater brown schauspieler, pater brown film"
-      ogTitle="Pater Brown – Die legendäre Figur von G.K. Chesterton | paterbrown.com"
-      ogDescription="Alles über Pater Brown: Kurzgeschichten, Verfilmungen, Hörspiele und das Live-Hörspiel auf Tour."
+      ogTitle="Pater Brown \u2013 Die legend\u00E4re Figur von G.K. Chesterton | paterbrown.com"
+      ogDescription="Alles \u00FCber Pater Brown: Kurzgeschichten, Verfilmungen, H\u00F6rspiele und das Live-H\u00F6rspiel auf Tour."
       ogImage="/images/og/pater-brown-krimi-live-og.webp"
       schema={articleSchema}
     />
 
     {/* ── Kapitel 1: Wer ist Pater Brown? ── */}
-    <Section container="narrow" className="py-16 md:py-24">
-      <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+    <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
+      <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">
         Kapitel 1
       </p>
-      <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
+      <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
         Wer ist Pater Brown?
       </h2>
-      <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
+      <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" aria-hidden="true" />
 
       <div className="float-right ml-6 mb-4 w-48 sm:w-56">
-        <div className="card-glow rounded-[3px] overflow-hidden">
-          <ResponsiveImage
-            basePath="/images/historisch/gk-chesterton-foto-schriftsteller"
-            alt="G.K. Chesterton – Schriftsteller und Schöpfer der Figur Father Brown"
-            width={1223}
-            height={1837}
-            sizes="(max-width: 640px) 192px, 224px"
-            credit="Wikimedia Commons / Public Domain"
-          />
+        <div className="border border-foreground/10 overflow-hidden">
+          <img src="/images/historisch/gk-chesterton-foto-schriftsteller.webp" srcSet="/images/historisch/gk-chesterton-foto-schriftsteller-480.webp 480w, /images/historisch/gk-chesterton-foto-schriftsteller-768.webp 768w" sizes="(max-width: 640px) 192px, 224px" alt="G.K. Chesterton \u2013 Schriftsteller und Sch\u00F6pfer der Figur Father Brown" className="w-full" loading="lazy" />
         </div>
       </div>
 
       <div className="space-y-4">
-        <SerifText size="lg" className="text-foreground/70">
-          Pater Brown – im englischen Original{" "}
-          <strong className="text-foreground">Father Brown</strong> – ist eine
-          der berühmtesten Detektivfiguren der Weltliteratur. Erfunden wurde
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
+          Pater Brown \u2013 im englischen Original{" "}
+          <strong className="text-foreground">Father Brown</strong> \u2013 ist eine
+          der ber\u00FChmtesten Detektivfiguren der Weltliteratur. Erfunden wurde
           er von dem britischen Schriftsteller{" "}
           <Link
             to="/g-k-chesterton"
-            className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
+            className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
           >
             Gilbert Keith Chesterton
           </Link>
-          , der zwischen 1910 und 1935 insgesamt 49 Kurzgeschichten über den
+          , der zwischen 1910 und 1935 insgesamt 49 Kurzgeschichten \u00FCber den
           scharfsinnigen Priester verfasste. Die Geschichten erschienen in
-          fünf Sammlungen:
-        </SerifText>
+          f\u00FCnf Sammlungen:
+        </p>
 
-        <ol className="list-decimal list-inside space-y-1 font-serif text-lg leading-[1.3] tracking-[0.05em] normal-case text-foreground/70 pl-4">
+        <ol className="list-decimal list-inside space-y-1 text-lg leading-relaxed font-light text-foreground/70 pl-4">
           <li>
-            <strong className="text-foreground">1911</strong> – Father Browns
+            <strong className="text-foreground">1911</strong> \u2013 Father Browns
             Einfalt (<em>The Innocence of Father Brown</em>)
           </li>
           <li>
-            <strong className="text-foreground">1914</strong> – Father Browns
+            <strong className="text-foreground">1914</strong> \u2013 Father Browns
             Weisheit (<em>The Wisdom of Father Brown</em>)
           </li>
           <li>
-            <strong className="text-foreground">1926</strong> – Father Browns
-            Ungläubigkeit (<em>The Incredulity of Father Brown</em>)
+            <strong className="text-foreground">1926</strong> \u2013 Father Browns
+            Ungl\u00E4ubigkeit (<em>The Incredulity of Father Brown</em>)
           </li>
           <li>
-            <strong className="text-foreground">1927</strong> – Father Browns
+            <strong className="text-foreground">1927</strong> \u2013 Father Browns
             Geheimnis (<em>The Secret of Father Brown</em>)
           </li>
           <li>
-            <strong className="text-foreground">1935</strong> – Father Browns
+            <strong className="text-foreground">1935</strong> \u2013 Father Browns
             Skandal (<em>The Scandal of Father Brown</em>)
           </li>
         </ol>
 
-        <SerifText size="lg" className="text-foreground/70">
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
           Brown ist das Gegenteil eines klassischen Detektivhelden: klein,
-          rundlich, kurzsichtig, mit einem großen Kopf und einem stets
-          mitgeführten Regenschirm. Sein Äußeres täuscht – denn hinter der
+          rundlich, kurzsichtig, mit einem gro\u00DFen Kopf und einem stets
+          mitgef\u00FChrten Regenschirm. Sein \u00C4u\u00DFeres t\u00E4uscht \u2013 denn hinter der
           unscheinbaren Fassade verbirgt sich ein brillanter Menschenkenner.
-          Im Gegensatz zu Sherlock Holmes, der seine Fälle durch logische
-          Deduktion löst, setzt Pater Brown auf{" "}
-          <strong className="text-foreground">Einfühlung</strong>. Als
-          Beichtvater hat er die tiefsten Abgründe der menschlichen Seele
-          kennengelernt – und versteht deshalb die Motive der Täter besser
+          Im Gegensatz zu Sherlock Holmes, der seine F\u00E4lle durch logische
+          Deduktion l\u00F6st, setzt Pater Brown auf{" "}
+          <strong className="text-foreground">Einf\u00FChlung</strong>. Als
+          Beichtvater hat er die tiefsten Abgr\u00FCnde der menschlichen Seele
+          kennengelernt \u2013 und versteht deshalb die Motive der T\u00E4ter besser
           als jeder Ermittler.
-        </SerifText>
+        </p>
 
-        <SerifText size="lg" className="text-foreground/70">
-          Sein berühmtester Gegenspieler ist{" "}
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
+          Sein ber\u00FChmtester Gegenspieler ist{" "}
           <strong className="text-foreground">Hercule Flambeau</strong>, ein
-          genialer Meisterdieb, der später zum Privatdetektiv wird und Browns
+          genialer Meisterdieb, der sp\u00E4ter zum Privatdetektiv wird und Browns
           engster Freund. Die Dynamik zwischen dem bescheidenen Priester und
-          dem schillernden Verbrecher gehört zu den faszinierendsten
+          dem schillernden Verbrecher geh\u00F6rt zu den faszinierendsten
           Beziehungen der Kriminalliteratur.
-        </SerifText>
+        </p>
 
-        <SerifText size="lg" className="text-foreground/70">
-          Interessante Sprachnotiz: Im Deutschen heißt er „Pater" Brown,
-          obwohl das Wort „Pater" eigentlich nur für Ordenspriester verwendet
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
+          Interessante Sprachnotiz: Im Deutschen hei\u00DFt er \u201EPater\u201C Brown,
+          obwohl das Wort \u201EPater\u201C eigentlich nur f\u00FCr Ordenspriester verwendet
           wird. Im Englischen ist{" "}
           <Link
             to="/father-brown"
-            className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
+            className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
           >
-            „Father" die übliche Anrede
+            \u201EFather\u201C die \u00FCbliche Anrede
           </Link>{" "}
-          für jeden katholischen Priester. Brown ist bei Chesterton ein
-          Weltpriester – also ein Gemeindepfarrer, kein Mönch. Die
-          Bezeichnungen „Pfarrer Brown" oder „Vater Brown", nach denen
-          ebenfalls häufig gesucht wird, beziehen sich auf dieselbe Figur.
-        </SerifText>
+          f\u00FCr jeden katholischen Priester. Brown ist bei Chesterton ein
+          Weltpriester \u2013 also ein Gemeindepfarrer, kein M\u00F6nch. Die
+          Bezeichnungen \u201EPfarrer Brown\u201C oder \u201EVater Brown\u201C, nach denen
+          ebenfalls h\u00E4ufig gesucht wird, beziehen sich auf dieselbe Figur.
+        </p>
 
-        <SerifText size="lg" className="text-foreground/70">
-          Das reale Vorbild für die Figur war{" "}
-          <strong className="text-foreground">Father John O'Connor</strong>,
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
+          Das reale Vorbild f\u00FCr die Figur war{" "}
+          <strong className="text-foreground">Father John O\u2019Connor</strong>,
           ein irischer Priester in Yorkshire, der Chesterton auf seinem Weg
-          zum Katholizismus begleitete. Die Art, wie O'Connor bei Gesprächen
-          über Verbrechen überraschende Einblicke in die menschliche Psyche
+          zum Katholizismus begleitete. Die Art, wie O\u2019Connor bei Gespr\u00E4chen
+          \u00FCber Verbrechen \u00FCberraschende Einblicke in die menschliche Psyche
           zeigte, inspirierte Chesterton zur Erschaffung seiner Figur.
-        </SerifText>
+        </p>
 
-        <SerifText size="lg" className="text-foreground/70">
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
           Die Bedeutung von Pater Brown in der Literaturgeschichte ist
-          beachtlich: Agatha Christie zählte ihn zu den besten Detektiven der
+          beachtlich: Agatha Christie z\u00E4hlte ihn zu den besten Detektiven der
           Literatur. Franz Kafka war ein begeisterter Leser der Geschichten,
           ebenso Kurt Tucholsky. Der argentinische Schriftsteller Jorge Luis
-          Borges bewunderte Chestertons Erzählkunst, und die britische
+          Borges bewunderte Chestertons Erz\u00E4hlkunst, und die britische
           Krimiautorin P.D. James lobte seine Brillanz als einer der
           herausragenden Krimiautoren der englischen Sprache.
-        </SerifText>
+        </p>
       </div>
-    </Section>
+    </div></section>
 
     {/* ── Kapitel 2: Film und Fernsehen ── */}
-    <Section container="narrow" className="py-16 md:py-24">
-      <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+    <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
+      <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">
         Kapitel 2
       </p>
-      <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
+      <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
         Pater Brown in Film und Fernsehen
       </h2>
-      <div className="divider-gold mb-10 max-w-xs" aria-hidden="true" />
+      <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-10" aria-hidden="true" />
 
       <div className="space-y-12">
         {ADAPTATIONS.map((item, i) => (
           <div key={i}>
-            <h3 className="text-primary font-heading text-2xl tracking-wider uppercase mb-4">
+            <h3 className="text-gold font-heading text-2xl tracking-wider uppercase mb-4">
               {item.title}
             </h3>
 
             {item.image && (
               <div className="float-right ml-6 mb-4 w-40 sm:w-48">
-                <div className="card-glow rounded-[3px] overflow-hidden">
-                  <ResponsiveImage
-                    basePath={item.image.basePath}
-                    alt={item.image.alt}
-                    width={item.image.width}
-                    height={item.image.height}
+                <div className="border border-foreground/10 overflow-hidden">
+                  <img
+                    src={`${item.image.basePath}.webp`}
+                    srcSet={`${item.image.basePath}-480.webp 480w, ${item.image.basePath}-768.webp 768w`}
                     sizes="(max-width: 640px) 160px, 192px"
-                    credit={item.image.credit}
-                    license={item.image.license}
+                    alt={item.image.alt}
+                    className="w-full"
+                    loading="lazy"
                   />
                 </div>
               </div>
@@ -401,137 +389,130 @@ const PaterBrown = () => (
             {item.content}
 
             {i < ADAPTATIONS.length - 1 && (
-              <div className="divider-gold mt-10" aria-hidden="true" />
+              <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent max-w-md mx-auto mt-10" aria-hidden="true" />
             )}
           </div>
         ))}
       </div>
-    </Section>
+    </div></section>
 
     {/* ── Kapitel 3: Hörspiel ── */}
-    <Section container="narrow" className="py-16 md:py-24">
-      <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+    <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
+      <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">
         Kapitel 3
       </p>
-      <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
-        Pater Brown als Hörspiel
+      <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
+        Pater Brown als H\u00F6rspiel
       </h2>
-      <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
+      <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" aria-hidden="true" />
 
       <div className="space-y-4">
-        <SerifText size="lg" className="text-foreground/70">
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
           Die Geschichten von Pater Brown eignen sich hervorragend als
-          Hörspiel: Die dialoglastigen Kurzgeschichten leben von Atmosphäre,
-          Spannung und überraschenden Wendungen – Elemente, die im akustischen
+          H\u00F6rspiel: Die dialoglastigen Kurzgeschichten leben von Atmosph\u00E4re,
+          Spannung und \u00FCberraschenden Wendungen \u2013 Elemente, die im akustischen
           Medium besonders gut zur Geltung kommen.
-        </SerifText>
-        <SerifText size="lg" className="text-foreground/70">
-          Die bekannteste deutschsprachige Hörspieladaption stammt vom{" "}
+        </p>
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
+          Die bekannteste deutschsprachige H\u00F6rspieladaption stammt vom{" "}
           <strong className="text-foreground">Maritim Verlag</strong>. Mit
           Volker Brandt als Pater Brown und Hans Georg Panczak als Flambeau
-          wurden über 48 Geschichten vertont. Von den klassischen
-          Maritim-Hörspielen bis hin zu modernen Produktionen – Pater Brown
-          begleitet Hörspiel-Liebhaber seit Jahrzehnten.
-        </SerifText>
-        <SerifText size="lg" className="text-foreground/70">
-          Mehr über die Hörspiel-Geschichte, die vollständige Folgenübersicht
+          wurden \u00FCber 48 Geschichten vertont. Von den klassischen
+          Maritim-H\u00F6rspielen bis hin zu modernen Produktionen \u2013 Pater Brown
+          begleitet H\u00F6rspiel-Liebhaber seit Jahrzehnten.
+        </p>
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
+          Mehr \u00FCber die H\u00F6rspiel-Geschichte, die vollst\u00E4ndige Folgen\u00FCbersicht
           und die Sprecher erfahren Sie auf der Seite{" "}
           <Link
             to="/hoerspiel"
-            className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
+            className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
           >
-            Pater Brown Hörspiel
+            Pater Brown H\u00F6rspiel
           </Link>
           .
-        </SerifText>
+        </p>
       </div>
-    </Section>
+    </div></section>
 
     {/* ── Kapitel 4: Das Live-Hörspiel ── */}
-    <Section container="narrow" className="py-16 md:py-24">
-      <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+    <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
+      <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">
         Kapitel 4
       </p>
-      <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
-        Pater Brown heute – Das Live-Hörspiel
+      <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
+        Pater Brown heute \u2013 Das Live-H\u00F6rspiel
       </h2>
-      <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
+      <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" aria-hidden="true" />
 
-      <div className="card-glow rounded-[3px] overflow-hidden mb-8">
-        <ResponsiveImage
-          basePath="/images/buehne/pater-brown-dialog-szene-monot-mues-af"
-          alt="Live-Hörspiel-Szene: Antoine Monot und Wanja Mues im Dialog beim Pater Brown Live-Hörspiel"
-          width={2000}
-          height={1500}
-          sizes="(max-width: 768px) 88vw, 768px"
-          credit="Alexander Frank"
-        />
-      </div>
+      <div className="w-full min-h-[250px] md:min-h-[400px] bg-cover bg-center border border-foreground/10 mb-8"
+        style={{ backgroundImage: 'url(/images/buehne/pater-brown-dialog-szene-monot-mues-af-1200.webp)' }}
+        role="img"
+        aria-label="Live-H\u00F6rspiel-Szene: Antoine Monot und Wanja Mues im Dialog beim Pater Brown Live-H\u00F6rspiel"
+      />
 
       <div className="space-y-4">
-        <SerifText size="lg" className="text-foreground/70">
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
           Seit 2025 gibt es eine neue Art, Pater Brown zu erleben:{" "}
           <strong className="text-foreground">
             <Link
               to="/live-hoerspiel"
-              className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
+              className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
             >
-              PATER BROWN – Das Live-Hörspiel
+              PATER BROWN \u2013 Das Live-H\u00F6rspiel
             </Link>
           </strong>
-          . Auf der Bühne bringen drei Künstler die Kriminalgeschichten von
+          . Auf der B\u00FChne bringen drei K\u00FCnstler die Kriminalgeschichten von
           G.K. Chesterton zum Leben:
-        </SerifText>
+        </p>
 
         <div className="space-y-4">
           {CAST_CARDS.map((member) => (
             <Link
               key={member.slug}
               to={member.slug}
-              className="block p-5 card-glow rounded-[3px] group transition-all"
+              className="block p-5 border border-foreground/10 group transition-all"
             >
-              <h4 className="text-primary font-heading text-xl tracking-wider uppercase mb-2 group-hover:text-foreground transition-colors">
+              <h4 className="text-gold font-heading text-xl tracking-wider uppercase mb-2 group-hover:text-foreground transition-colors">
                 {member.name}
               </h4>
-              <SerifText className="text-foreground/60">
+              <p className="text-foreground/60 leading-relaxed text-base">
                 {member.desc}
-              </SerifText>
+              </p>
             </Link>
           ))}
         </div>
 
-        <SerifText size="lg" className="text-foreground/70">
+        <p className="text-foreground/70 leading-relaxed text-lg font-light">
           Pro Abend werden zwei spannende Kriminalgeschichten nach Chesterton
-          aufgeführt. Die Show dauert ca. 2 Stunden und ist ab 34,90 €
-          erhältlich. Erleben Sie die einzigartige Kombination aus Theater,
-          Hörspiel und Beatbox-Sounddesign live in Ihrer Stadt.
-        </SerifText>
+          aufgef\u00FChrt. Die Show dauert ca. 2 Stunden und ist ab 34,90 \u20AC
+          erh\u00E4ltlich. Erleben Sie die einzigartige Kombination aus Theater,
+          H\u00F6rspiel und Beatbox-Sounddesign live in Ihrer Stadt.
+        </p>
 
         <div className="mt-6">
-          <GhostButton to="/termine">Alle Termine & Tickets</GhostButton>
+          <Link to="/termine" className="text-sm uppercase tracking-[0.25em] font-semibold px-10 py-4 border border-foreground/30 hover:border-foreground/60 text-foreground/90 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 backdrop-blur-sm transition-all duration-300 inline-block">Alle Termine &amp; Tickets</Link>
         </div>
       </div>
-    </Section>
+    </div></section>
 
-    <div className="w-[88%] max-w-4xl mx-auto">
-      <div className="divider-gold" aria-hidden="true" />
-    </div>
+    <div className="w-[88%] max-w-4xl mx-auto"><div className="h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent" aria-hidden="true" /></div>
 
     {/* ── FAQ ── */}
-    <Section container="narrow" className="py-16 md:py-24">
+    <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
       <FAQSection
         items={FAQ_ITEMS}
         label="Wissenswertes"
-        title="Häufige Fragen zu Pater Brown"
+        title="H\u00E4ufige Fragen zu Pater Brown"
       />
-    </Section>
+    </div></section>
 
     {/* ── Weiterlesen ── */}
-    <Section container="narrow" className="py-16 md:py-24">
-      <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+    <section className="py-28 md:py-36 px-6"><div className="container mx-auto max-w-5xl">
+      <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">
         Weiterlesen
       </p>
-      <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading text-foreground mb-8">
+      <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
         Mehr entdecken
       </h2>
 
@@ -540,18 +521,18 @@ const PaterBrown = () => (
           <Link
             key={link.to}
             to={link.to}
-            className="p-4 card-glow rounded-[3px] group transition-all"
+            className="p-4 border border-foreground/10 group transition-all"
           >
-            <span className="text-primary font-heading text-lg tracking-wider uppercase group-hover:text-foreground transition-colors">
+            <span className="text-gold font-heading text-lg tracking-wider uppercase group-hover:text-foreground transition-colors">
               {link.label}
             </span>
-            <p className="text-foreground/50 text-sm font-serif normal-case tracking-[0.05em] mt-1">
+            <p className="text-foreground/50 text-sm mt-1">
               {link.desc}
             </p>
           </Link>
         ))}
       </nav>
-    </Section>
+    </div></section>
   </LandingLayout>
 );
 
