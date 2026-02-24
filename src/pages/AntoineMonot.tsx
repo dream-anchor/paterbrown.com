@@ -40,7 +40,7 @@ const AntoineMonot = () => {
       breadcrumbs={BREADCRUMBS}
       heroImage="/images/buehne/antoine-monot-portrait-gl.webp"
       heroTitle="Antoine Monot"
-      heroSubtitle="Schauspieler, Drehbuchautor, Produzent"
+      heroSubtitle="Schauspieler, Regisseur"
       variant="portrait"
     >
       <SEO

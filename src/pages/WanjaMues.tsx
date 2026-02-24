@@ -61,7 +61,7 @@ const WanjaMues = () => {
       breadcrumbs={BREADCRUMBS}
       heroImage="/images/buehne/wanja-mues-portrait-gl.webp"
       heroTitle="Wanja Mues"
-      heroSubtitle="Schauspieler, Hörbuchsprecher, Bühnenkünstler"
+      heroSubtitle="Schauspieler, Hörbuchsprecher"
       variant="portrait"
     >
       <SEO
