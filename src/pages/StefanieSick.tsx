@@ -1,9 +1,6 @@
 import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import { SEO } from "@/components/SEO";
-import Section from "@/components/ui/Section";
-import SerifText from "@/components/ui/SerifText";
-import GhostButton from "@/components/ui/GhostButton";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 const BREADCRUMBS = [
@@ -18,8 +15,8 @@ const StefanieSick = () => {
     name: "Stefanie Sick",
     url: "https://paterbrown.com/stefanie-sick",
     image: "https://paterbrown.com/images/portraits/stefanie-sick-kuenstlerische-leitung-pb-1200.webp",
-    jobTitle: "K\u00FCnstlerische Leitung",
-    description: "Stefanie Sick verantwortet die k\u00FCnstlerische Leitung des Pater Brown Live-H\u00F6rspiels.",
+    jobTitle: "Künstlerische Leitung",
+    description: "Stefanie Sick verantwortet die künstlerische Leitung des Pater Brown Live-Hörspiels.",
     worksFor: {
       "@type": "Organization",
       name: "Dream & Anchor Handelsgesellschaft mbH",
@@ -52,81 +49,85 @@ const StefanieSick = () => {
       />
 
       {/* Biografie */}
-      <Section container="wide" className="py-20 md:py-32">
-        <div className="grid md:grid-cols-[1.2fr_1fr] gap-12 lg:gap-20 items-start">
-          <div className="card-glow rounded-[3px] overflow-hidden">
-            <img
-              src="/images/portraits/stefanie-sick-kuenstlerische-leitung-pb.webp"
-              srcSet="/images/portraits/stefanie-sick-kuenstlerische-leitung-pb-480.webp 480w, /images/portraits/stefanie-sick-kuenstlerische-leitung-pb-768.webp 768w, /images/portraits/stefanie-sick-kuenstlerische-leitung-pb-1200.webp 1200w"
-              sizes="(max-width: 768px) 100vw, 55vw"
-              alt="Stefanie Sick – Künstlerische Leitung des Pater Brown Live-Hörspiels"
-              className="w-full aspect-[3/4] object-cover object-top"
-              loading="eager"
-            />
-          </div>
-          <div>
-            <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">Künstlerische Leitung</p>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading text-foreground mb-4">
-              Stefanie Sick
-            </h2>
-            <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
-            <SerifText size="lg" className="text-foreground/70 mb-6">
-              Als Creative Producerin verantwortet Stefanie Sick die künstlerische
-              Leitung, Gesamtkonzeption und Kommunikationsstrategie von{" "}
-              <Link to="/live-hoerspiel" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">
-                „Pater Brown – Das Live-Hörspiel"
-              </Link>.
-            </SerifText>
-            <SerifText size="lg" className="text-foreground/70 mb-6">
-              Mit ihrer Expertise in den Bereichen Produktion und Öffentlichkeitsarbeit
-              führt sie kreative, organisatorische und mediale Prozesse zusammen –
-              von der ersten Idee bis zum publikumswirksamen Bühnenerlebnis.
-            </SerifText>
-            <SerifText size="lg" className="text-foreground/70">
-              Das Ergebnis: Klassische Krimispannung aus den Geschichten von{" "}
-              <Link to="/pater-brown" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">
-                Pater Brown
-              </Link>
-              , verbunden mit moderner Performance-Kunst.
-            </SerifText>
+      <section className="py-28 md:py-36 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-[1.2fr_1fr] gap-12 lg:gap-20 items-start">
+            <div className="overflow-hidden border border-foreground/10">
+              <img
+                src="/images/portraits/stefanie-sick-kuenstlerische-leitung-pb.webp"
+                srcSet="/images/portraits/stefanie-sick-kuenstlerische-leitung-pb-480.webp 480w, /images/portraits/stefanie-sick-kuenstlerische-leitung-pb-768.webp 768w, /images/portraits/stefanie-sick-kuenstlerische-leitung-pb-1200.webp 1200w"
+                sizes="(max-width: 768px) 100vw, 55vw"
+                alt="Stefanie Sick – Künstlerische Leitung des Pater Brown Live-Hörspiels"
+                className="w-full aspect-[3/4] object-cover object-top"
+                loading="eager"
+              />
+            </div>
+            <div>
+              <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">Künstlerische Leitung</p>
+              <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
+                Stefanie Sick
+              </h2>
+              <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" aria-hidden="true" />
+              <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+                Als Creative Producerin verantwortet Stefanie Sick die künstlerische
+                Leitung, Gesamtkonzeption und Kommunikationsstrategie von{" "}
+                <Link to="/live-hoerspiel" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+                  „Pater Brown – Das Live-Hörspiel"
+                </Link>.
+              </p>
+              <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+                Mit ihrer Expertise in den Bereichen Produktion und Öffentlichkeitsarbeit
+                führt sie kreative, organisatorische und mediale Prozesse zusammen –
+                von der ersten Idee bis zum publikumswirksamen Bühnenerlebnis.
+              </p>
+              <p className="text-foreground/70 leading-relaxed text-lg font-light">
+                Das Ergebnis: Klassische Krimispannung aus den Geschichten von{" "}
+                <Link to="/pater-brown" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+                  Pater Brown
+                </Link>
+                , verbunden mit moderner Performance-Kunst.
+              </p>
+            </div>
           </div>
         </div>
-      </Section>
+      </section>
 
       {/* Vision */}
-      <Section container="narrow" className="py-20 md:py-32">
-        <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">Die Vision</p>
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading text-foreground mb-4">
-          Hinter der Show
-        </h2>
-        <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
-        <SerifText size="lg" className="text-foreground/70 mb-6">
-          Stefanie Sick sorgt dafür, dass aus einer Idee ein Gesamterlebnis wird.
-          Sie koordiniert die Zusammenarbeit zwischen den Darstellern{" "}
-          <Link to="/antoine-monot" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">
-            Antoine Monot
-          </Link>
-          ,{" "}
-          <Link to="/wanja-mues" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">
-            Wanja Mues
-          </Link>
-          {" "}und{" "}
-          <Link to="/marvelin" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">
-            Marvelin
-          </Link>
-          , verantwortet die Inszenierung und steuert die Kommunikation –
-          von der Pressearbeit bis zum Ticketverkauf.
-        </SerifText>
-        <SerifText size="lg" className="text-foreground/70 mb-6">
-          Als Mitgesellschafterin der Dream &amp; Anchor Handelsgesellschaft mbH
-          bringt sie unternehmerisches Denken und kreative Vision zusammen.
-        </SerifText>
+      <section className="py-28 md:py-36 px-6">
+        <div className="container mx-auto max-w-5xl">
+          <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">Die Vision</p>
+          <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
+            Hinter der Show
+          </h2>
+          <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" aria-hidden="true" />
+          <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+            Stefanie Sick sorgt dafür, dass aus einer Idee ein Gesamterlebnis wird.
+            Sie koordiniert die Zusammenarbeit zwischen den Darstellern{" "}
+            <Link to="/antoine-monot" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+              Antoine Monot
+            </Link>
+            ,{" "}
+            <Link to="/wanja-mues" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+              Wanja Mues
+            </Link>
+            {" "}und{" "}
+            <Link to="/marvelin" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+              Marvelin
+            </Link>
+            , verantwortet die Inszenierung und steuert die Kommunikation –
+            von der Pressearbeit bis zum Ticketverkauf.
+          </p>
+          <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
+            Als Mitgesellschafterin der Dream &amp; Anchor Handelsgesellschaft mbH
+            bringt sie unternehmerisches Denken und kreative Vision zusammen.
+          </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 mt-10">
-          <GhostButton href={EVENTIM_AFFILIATE_URL}>Tickets sichern</GhostButton>
-          <GhostButton to="/termine" className="bg-transparent">Alle Termine</GhostButton>
+          <div className="flex flex-col sm:flex-row gap-4 mt-10">
+            <a href={EVENTIM_AFFILIATE_URL} target="_blank" rel="noopener noreferrer"><button className="btn-premium" type="button">Tickets sichern</button></a>
+            <Link to="/termine" className="text-sm uppercase tracking-[0.25em] font-semibold px-10 py-4 border border-foreground/30 hover:border-foreground/60 text-foreground/90 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 backdrop-blur-sm transition-all duration-300 inline-block">Alle Termine</Link>
+          </div>
         </div>
-      </Section>
+      </section>
     </LandingLayout>
   );
 };
