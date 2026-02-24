@@ -53,15 +53,15 @@ const LandingLayout = ({
 
         {/* Portrait Hero — Split Layout */}
         <section className="relative min-h-screen flex flex-col md:flex-row overflow-hidden">
-          {/* Text: unten auf Mobile, links auf Desktop */}
-          <div className="relative z-10 flex flex-col justify-end order-2 md:order-1 w-full md:w-[45%] px-6 md:px-12 lg:px-16 pb-12 md:pb-24 -mt-32 md:mt-0">
+          {/* Text: unten auf Mobile, links zentriert auf Desktop */}
+          <div className="relative z-10 flex flex-col justify-end md:justify-start order-2 md:order-1 w-full md:w-[45%] px-6 md:px-12 lg:px-16 pb-12 md:pb-0 md:pt-[25vh] -mt-32 md:mt-0">
             {heroTitle && (
               <>
                 <p className="neon-gold-subtle text-xs md:text-sm uppercase tracking-[0.4em] mb-6 font-heading cinematic-enter">
                   Pater Brown Live
                 </p>
                 <h1
-                  className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-heading text-foreground leading-[0.85] cinematic-enter neon-gold neon-breathe"
+                  className="text-5xl sm:text-7xl md:text-[9rem] lg:text-[12rem] font-heading text-foreground leading-[0.8] cinematic-enter neon-gold neon-breathe"
                   style={{ animationDelay: "0.15s" }}
                 >
                   {heroTitle}
@@ -70,7 +70,7 @@ const LandingLayout = ({
             )}
             {heroSubtitle && (
               <p
-                className="text-lg md:text-xl text-foreground/50 font-light tracking-wide mt-6 cinematic-enter"
+                className="text-xl md:text-2xl text-foreground/50 font-light tracking-wide mt-8 cinematic-enter"
                 style={{ animationDelay: "0.3s" }}
               >
                 {heroSubtitle}
