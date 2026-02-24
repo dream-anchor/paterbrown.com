@@ -131,6 +131,8 @@ const Impressum = () => {
                 Gregor Weidem\u00FCller (Foto Marvelin)
                 <br />
                 Alexander Frank (B\u00FChnenfotos)
+                <br />
+                Dunja Dietrich (B\u00FChnenfotos)
               </p>
             </div>
 

@@ -2,7 +2,8 @@ import { type ReactNode } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import CTABlock from "@/components/shared/CTABlock";
-import heroBackgroundModern from "@/assets/hero-background-modern.jpg";
+
+const DEFAULT_HERO = "/images/hero/pater-brown-buehne-ensemble-nebel-dd";
 
 interface BreadcrumbItem {
   label: string;
@@ -12,6 +13,7 @@ interface BreadcrumbItem {
 interface LandingLayoutProps {
   children: ReactNode;
   breadcrumbs: BreadcrumbItem[];
+  /** Basispfad ohne Größen-Suffix, z.B. "/images/hero/mein-bild" */
   heroImage?: string;
   heroTitle?: string;
   heroSubtitle?: string;
@@ -44,6 +46,9 @@ const LandingLayout = ({
     );
   }
 
+  const heroBase = heroImage || DEFAULT_HERO;
+  const isResponsiveHero = !heroImage || !heroImage.includes(".");
+
   // Default variant — Full-Viewport Hero + Content
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -51,10 +56,35 @@ const LandingLayout = ({
 
       {/* Full-Viewport Hero */}
       <section className="relative min-h-screen flex items-end justify-center overflow-hidden pb-12 md:pb-16">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${heroImage || heroBackgroundModern})` }}
-        />
+        <div className="absolute inset-0">
+          {isResponsiveHero ? (
+            <img
+              src={`${heroBase}-1200.webp`}
+              srcSet={[
+                `${heroBase}-480.webp 480w`,
+                `${heroBase}-768.webp 768w`,
+                `${heroBase}-1200.webp 1200w`,
+                `${heroBase}-2000.webp 2000w`,
+                `${heroBase}.webp 3817w`,
+              ].join(", ")}
+              sizes="100vw"
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-cover object-center"
+              loading="eager"
+              decoding="async"
+            />
+          ) : (
+            <img
+              src={heroImage}
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-cover object-center"
+              loading="eager"
+              decoding="async"
+            />
+          )}
+        </div>
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
 
         <div className="relative z-10 text-center px-6 w-full max-w-5xl mx-auto">
