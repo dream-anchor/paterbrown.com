@@ -17,8 +17,12 @@ React/TS + Vite, shadcn/ui, Tailwind | Supabase (Postgres + Edge Functions) | Le
 - `supabase/functions/` Edge Functions (Deno)
 - `supabase/migrations/` SQL
 
+## Landingpage-Design
+**BLOCKING:** Bei Arbeit an Landingpages (alle Seiten außer Index.tsx und Admin) IMMER zuerst lesen:
+- `docs/landingpage-design.md` — Exakte CSS-Klassen, Verbotene Muster, Referenz = Startseite
+
 ## Regeln
-- Design: Glassmorphism, monochrom, Apple-inspired
+- Design: Neon-Gold auf Schwarz, theatralisch, cinematisch
 - UI: Deutsch | Code: Englisch
 - Neue Tabellen: immer RLS (Admin + Service Role)
 - Toasts: `useToast()` oder `sonner`
