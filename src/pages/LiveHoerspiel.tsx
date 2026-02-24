@@ -1,13 +1,10 @@
 import { Link } from "react-router-dom";
 import LandingLayout from "@/components/landing/LandingLayout";
 import FAQSection from "@/components/landing/FAQSection";
-import ResponsiveImage from "@/components/landing/ResponsiveImage";
-import Section from "@/components/ui/Section";
-import SerifText from "@/components/ui/SerifText";
-import GhostButton from "@/components/ui/GhostButton";
-import Quote from "@/components/ui/Quote";
+
 import { SEO } from "@/components/SEO";
 import { useIsMobile } from "@/hooks/use-mobile";
+import marvelinImage from "@/assets/marvelin-v3.png";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 /* ─── FAQ Data ─── */
@@ -56,9 +53,7 @@ const CAST = [
     role: "als Pater Brown",
     slug: "/antoine-monot",
     image: "/images/portraits/antoine-monot-portrait-pater-brown-gl",
-    imageWidth: 2000,
-    imageHeight: 2852,
-    credit: "Gio Löwe",
+    staticImage: false,
     bio: `Antoine Monot ist Schauspieler, Drehbuchautor und Produzent. Einem breiten Publikum wurde er als Rechtsanwalt Dr. Markus Lanz in der ZDF-Serie \u201EEin Fall für Zwei\u201C bekannt. Auf der Bühne schlüpft er in die Rolle des scharfsinnigen Pater Brown.`,
   },
   {
@@ -66,30 +61,24 @@ const CAST = [
     role: "als Flambeau",
     slug: "/wanja-mues",
     image: "/images/portraits/wanja-mues-portrait-pater-brown-gl",
-    imageWidth: 2000,
-    imageHeight: 2852,
-    credit: "Gio Löwe",
+    staticImage: false,
     bio: `Wanja Mues ist Schauspieler und Regisseur, bekannt als Privatdetektiv Matula in \u201EEin Fall für Zwei\u201C. Im Live-Hörspiel verkörpert er den charmanten Meisterdieb Flambeau und spricht zahlreiche weitere Charaktere.`,
   },
   {
     name: "Marvelin",
     role: "Beatbox & Sound Design",
     slug: "/marvelin",
-    image: "/images/buehne/pater-brown-buehne-ensemble-marvelin-af",
-    imageWidth: 2000,
-    imageHeight: 2666,
-    credit: "Alexander Frank",
+    image: marvelinImage,
+    staticImage: true,
     bio: "Marvelin ist einer der besten Beatboxer Europas. Er erzeugt sämtliche Geräusche – von Schritten über Kirchenglocken bis hin zu Schüssen – ausschließlich live mit seinem Mund.",
   },
   {
     name: "Stefanie Sick",
-    role: "Künstlerische Leitung & Regie",
+    role: "Künstlerische Leitung",
     slug: "/stefanie-sick",
     image: "/images/portraits/stefanie-sick-kuenstlerische-leitung-pb",
-    imageWidth: 1024,
-    imageHeight: 1536,
-    credit: undefined,
-    bio: "Stefanie Sick ist die künstlerische Leiterin und Regisseurin. Sie adaptiert die Kurzgeschichten von G.K. Chesterton für die Bühne und ist für die dramaturgische Gestaltung verantwortlich.",
+    staticImage: false,
+    bio: "Stefanie Sick verantwortet die künstlerische Leitung und Gesamtkonzeption. Sie adaptiert die Kurzgeschichten von G.K. Chesterton für die Bühne und ist für die dramaturgische Gestaltung verantwortlich.",
   },
 ];
 
@@ -97,15 +86,15 @@ const CAST = [
 const QUOTES = [
   {
     text: "Ein einzigartiges Erlebnis! Die Augen schließen und nur zuhören – das war Gänsehaut pur.",
-    citation: "Besucherin, München 2025",
+    citation: "Besucherin, Augsburg 2025",
   },
   {
     text: "Ich hätte nicht gedacht, dass Beatboxing so vielseitig sein kann. Marvelin erzeugt Geräusche, die man für echt hält.",
-    citation: "Besucher, Hamburg 2025",
+    citation: "Besucher, Bremen 2025",
   },
   {
     text: "Wanja Mues und Antoine Monot sind ein Traumduo. Die Chemie zwischen den beiden macht jede Vorstellung besonders.",
-    citation: "Besucherin, Köln 2025",
+    citation: "Besucherin, Neu-Isenburg 2025",
   },
 ];
 
@@ -144,35 +133,6 @@ const performingGroupSchema = {
   ],
 };
 
-/* ─── Hero Background Video ─── */
-const HeroVideo = () => {
-  const isMobile = useIsMobile();
-
-  if (isMobile) {
-    return (
-      <img
-        src="/images/hero/pater-brown-live-hoerspiel-buehne-totale-af-1200.webp"
-        alt=""
-        aria-hidden="true"
-        className="w-full h-full object-cover"
-      />
-    );
-  }
-
-  return (
-    <iframe
-      src="https://player.vimeo.com/video/1146186984?background=1&autoplay=1&loop=1&muted=1&title=0&byline=0&portrait=0"
-      className="absolute inset-0 w-full h-full"
-      style={{ transform: "scale(1.2)" }}
-      frameBorder="0"
-      allow="autoplay; fullscreen"
-      loading="eager"
-      title=""
-      aria-hidden="true"
-    />
-  );
-};
-
 /* ─── Page Component ─── */
 const LiveHoerspiel = () => (
   <LandingLayout
@@ -191,332 +151,370 @@ const LiveHoerspiel = () => (
       schema={performingGroupSchema}
     />
 
-    {/* ── SECTION 1: HERO (Fullscreen Video) ── */}
-    <section className="relative min-h-screen flex items-end justify-center overflow-hidden pb-24 md:pb-32">
-      <div className="hero-video-bg">
-        <HeroVideo />
+    {/* ── SECTION 1: HERO ── */}
+    <section className="relative min-h-screen flex items-end justify-center overflow-hidden pb-12 md:pb-16">
+      <div className="absolute inset-0">
+        <img
+          src="/images/hero/pater-brown-live-hoerspiel-buehne-totale-af-1200.webp"
+          srcSet={[
+            "/images/hero/pater-brown-live-hoerspiel-buehne-totale-af-480.webp 480w",
+            "/images/hero/pater-brown-live-hoerspiel-buehne-totale-af-768.webp 768w",
+            "/images/hero/pater-brown-live-hoerspiel-buehne-totale-af-1200.webp 1200w",
+            "/images/hero/pater-brown-live-hoerspiel-buehne-totale-af.webp 2000w",
+          ].join(", ")}
+          sizes="100vw"
+          alt=""
+          aria-hidden="true"
+          className="w-full h-full object-cover object-bottom"
+          loading="eager"
+          decoding="async"
+        />
       </div>
-      <div className="absolute inset-0 hero-fade-full z-[1]" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent z-[1]" />
 
-      <div
-        className="relative z-10 text-center px-6 max-w-4xl mx-auto cinematic-enter"
-        style={{ animationDelay: "0.3s" }}
-      >
-        <p className="text-primary uppercase tracking-[0.3em] text-xs font-heading mb-6">
-          Das Format
-        </p>
-        <h1 className="text-5xl sm:text-7xl md:text-[6rem] lg:text-[8rem] font-heading text-foreground uppercase leading-[0.9] mb-8">
-          Das Live-Hörspiel
-        </h1>
-        <SerifText size="xl" className="text-foreground/80 max-w-2xl mx-auto mb-12">
-          Schließen Sie die Augen – und erleben Sie Krimi pur.
-          <br className="hidden sm:block" />
-          Zwei Schauspieler, ein Beatboxer, kein Playback.
-        </SerifText>
-        <GhostButton href={EVENTIM_AFFILIATE_URL} size="lg">
-          Tickets sichern
-        </GhostButton>
+      {/* Hero Content — unten positioniert */}
+      <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
+        <div className="cinematic-enter max-w-5xl">
+          <p className="neon-gold-subtle text-xs md:text-sm uppercase tracking-[0.4em] mb-6 cinematic-enter" style={{ animationDelay: '0.1s' }}>
+            Das Format
+          </p>
+          <h1 className="text-5xl sm:text-7xl md:text-9xl lg:text-[11rem] font-heading leading-[0.85] tracking-tight uppercase cinematic-enter neon-gold neon-breathe" style={{ animationDelay: '0.2s' }}>
+            Das Live-Hörspiel
+          </h1>
+          <p className="text-lg md:text-xl text-foreground/50 font-light mt-8 tracking-wide cinematic-enter" style={{ animationDelay: '0.4s' }}>
+            Schließen Sie die Augen – und erleben Sie Krimi pur.
+          </p>
+        </div>
+
+        {/* CTA Button (wie Startseite) */}
+        <div className="mt-12 cinematic-enter" style={{ animationDelay: '0.6s' }}>
+          <a
+            href={EVENTIM_AFFILIATE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <button
+              className="text-sm md:text-base uppercase tracking-[0.25em] font-semibold px-10 md:px-14 py-4 md:py-5 border border-foreground/30 hover:border-foreground/60 text-foreground/90 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 backdrop-blur-sm transition-all duration-300"
+              type="button"
+            >
+              Tickets sichern
+            </button>
+          </a>
+        </div>
       </div>
+
     </section>
 
     {/* ── SECTION 2: DAS KONZEPT ── */}
-    <Section container="narrow" className="py-20 md:py-32">
-      <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
-        Das Konzept
-      </p>
-      <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
-        Was ist ein Live-Hörspiel?
-      </h2>
-      <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
-
-      <div className="space-y-6">
-        <SerifText size="lg" className="text-foreground/70">
-          Ein Live-Hörspiel verbindet die Intimität eines Hörspiels mit der
-          Unmittelbarkeit von Live-Theater. Im Gegensatz zu einem klassischen
-          Theaterstück steht nicht das visuelle Bühnenbild im Vordergrund,
-          sondern das{" "}
-          <strong className="text-foreground">akustische Erlebnis</strong>.
-          Die Darsteller erzeugen vor den Augen des Publikums eine komplette
-          Klangwelt – mit Stimme, Geräuschen und Musik.
-        </SerifText>
-        <SerifText size="lg" className="text-foreground/70">
-          Der entscheidende Unterschied zu einem Hörspiel von CD oder aus dem
-          Radio: Alles passiert{" "}
-          <strong className="text-foreground">live und ungeschnitten</strong>.
-          Es gibt keinen zweiten Take, keine Nachbearbeitung, kein Playback.
-          Jede Vorstellung ist einzigartig.
-        </SerifText>
-        <SerifText size="lg" className="text-foreground/70">
-          Viele Zuschauer schließen während der Vorstellung die Augen, um
-          sich ganz auf das Hörerlebnis zu konzentrieren. So entstehen eigene
-          Bilder im Kopf – lebendiger als jedes Bühnenbild.
-        </SerifText>
-      </div>
-    </Section>
-
-    {/* ── SECTION 3: DIE SHOW (Asymmetrisch) ── */}
-    <Section container="wide" className="py-20 md:py-32">
-      <div className="grid md:grid-cols-[1fr_1.2fr] gap-12 lg:gap-20 items-center">
-        <div>
-          <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
-            Die Show
-          </p>
-          <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
-            Pater Brown – Das Live-Hörspiel
+    <section className="py-28 md:py-36 px-6">
+      <div className="container mx-auto max-w-5xl">
+        <div className="text-center mb-24">
+          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-6 font-medium">Das Konzept</p>
+          <h2 className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85]">
+            Was ist ein Live-Hörspiel?
           </h2>
-          <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
-
-          <div className="space-y-4">
-            <SerifText size="lg" className="text-foreground/70">
-              <strong className="text-foreground">
-                Zwei spannende Kriminalgeschichten
-              </strong>{" "}
-              nach dem britischen Autor{" "}
-              <Link
-                to="/g-k-chesterton"
-                className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
-              >
-                G.K. Chesterton
-              </Link>{" "}
-              bilden den Kern jeder Vorstellung. Die Kurzgeschichten rund um den
-              scharfsinnigen{" "}
-              <Link
-                to="/pater-brown"
-                className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
-              >
-                Pater Brown
-              </Link>{" "}
-              und seinen Gegenspieler Flambeau gehören zu den Klassikern der
-              Kriminalliteratur.
-            </SerifText>
-            <SerifText size="lg" className="text-foreground/70">
-              Jede Vorstellung dauert ca.{" "}
-              <strong className="text-foreground">
-                2 Stunden inklusive Pause
-              </strong>
-              . Das Ensemble hat mehrere Geschichten im Repertoire –
-              Wiederholungsbesuche lohnen sich. Tickets ab{" "}
-              <strong className="text-foreground">34,90 €</strong>.
-            </SerifText>
-          </div>
-
-          <div className="mt-8">
-            <GhostButton to="/termine">Alle Termine & Tickets</GhostButton>
-          </div>
         </div>
 
-        <div className="card-glow rounded-[3px] overflow-hidden">
-          <ResponsiveImage
-            basePath="/images/buehne/pater-brown-dialog-szene-monot-mues-af"
-            alt="Antoine Monot und Wanja Mues in einer Dialogszene des Pater Brown Live-Hörspiels"
-            width={2000}
-            height={1500}
-            sizes="(max-width: 768px) 88vw, 55vw"
-            credit="Alexander Frank"
+        <div className="space-y-6 max-w-3xl mx-auto">
+          <p className="text-xl md:text-2xl text-foreground/70 font-light leading-relaxed">
+            Ein Live-Hörspiel verbindet die Intimität eines Hörspiels mit der
+            Unmittelbarkeit von Live-Theater. Im Gegensatz zu einem klassischen
+            Theaterstück steht nicht das visuelle Bühnenbild im Vordergrund,
+            sondern das{" "}
+            <strong className="text-foreground">akustische Erlebnis</strong>.
+          </p>
+          <p className="text-xl md:text-2xl text-foreground/70 font-light leading-relaxed">
+            Der entscheidende Unterschied zu einem Hörspiel von CD oder aus dem
+            Radio: Alles passiert{" "}
+            <strong className="text-foreground">live und ungeschnitten</strong>.
+            Es gibt keinen zweiten Take, keine Nachbearbeitung, kein Playback.
+            Jede Vorstellung ist einzigartig.
+          </p>
+          <p className="text-xl md:text-2xl text-foreground/70 font-light leading-relaxed">
+            Viele Zuschauer schließen während der Vorstellung die Augen, um
+            sich ganz auf das Hörerlebnis zu konzentrieren. So entstehen eigene
+            Bilder im Kopf – lebendiger als jedes Bühnenbild.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {/* ── SECTION 3: DIE SHOW ── */}
+    <section className="py-28 md:py-36 px-6">
+      <div className="container mx-auto max-w-6xl">
+        <div className="grid md:grid-cols-[1fr_1.2fr] gap-12 lg:gap-20 items-center">
+          <div>
+            <p className="text-gold text-sm uppercase tracking-[0.3em] mb-6 font-medium">Die Show</p>
+            <h2 className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85] mb-8">
+              Das Programm
+            </h2>
+            <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" />
+
+            <div className="space-y-4">
+              <p className="text-foreground/70 leading-relaxed text-lg font-light">
+                <strong className="text-foreground">
+                  Zwei spannende Kriminalgeschichten
+                </strong>{" "}
+                nach dem britischen Autor{" "}
+                <Link
+                  to="/g-k-chesterton"
+                  className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
+                >
+                  G.K. Chesterton
+                </Link>{" "}
+                bilden den Kern jeder Vorstellung. Die Kurzgeschichten rund um den
+                scharfsinnigen{" "}
+                <Link
+                  to="/pater-brown"
+                  className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline"
+                >
+                  Pater Brown
+                </Link>{" "}
+                und seinen Gegenspieler Flambeau gehören zu den Klassikern der
+                Kriminalliteratur.
+              </p>
+              <p className="text-foreground/70 leading-relaxed text-lg font-light">
+                Jede Vorstellung dauert ca.{" "}
+                <strong className="text-foreground">
+                  2 Stunden inklusive Pause
+                </strong>
+                . Das Ensemble hat mehrere Geschichten im Repertoire –
+                Wiederholungsbesuche lohnen sich. Tickets ab{" "}
+                <strong className="text-foreground">34,90 €</strong>.
+              </p>
+            </div>
+
+            <div className="mt-8">
+              <Link
+                to="/termine"
+                className="text-sm md:text-base uppercase tracking-[0.25em] font-semibold px-10 md:px-14 py-4 md:py-5 border border-foreground/30 hover:border-foreground/60 text-foreground/90 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 backdrop-blur-sm transition-all duration-300 inline-block"
+              >
+                Alle Termine & Tickets
+              </Link>
+            </div>
+          </div>
+
+          <div
+            className="border border-foreground/10 min-h-[300px] md:min-h-[500px] bg-cover bg-center"
+            style={{ backgroundImage: `url(/images/buehne/pater-brown-dialog-szene-monot-mues-af-1200.webp)` }}
+            role="img"
+            aria-label="Antoine Monot und Wanja Mues in einer Dialogszene des Pater Brown Live-Hörspiels"
           />
         </div>
       </div>
-    </Section>
+    </section>
 
-    {/* ── SECTION 4: ENSEMBLE (2x2 Grid) ── */}
-    <Section container="wide" className="py-20 md:py-32">
-      <div className="text-center mb-12">
-        <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
-          Ensemble
-        </p>
-        <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground">
-          Die Besetzung
-        </h2>
-      </div>
+    {/* ── SECTION 4: ENSEMBLE ── */}
+    <section className="py-28 md:py-36 px-6">
+      <div className="container mx-auto max-w-7xl">
+        <div className="text-center mb-24">
+          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-6 font-medium">Das Ensemble</p>
+          <h2 className="text-6xl sm:text-7xl md:text-[8rem] lg:text-[10rem] font-heading text-foreground leading-[0.85]">
+            Die Besetzung
+          </h2>
+        </div>
 
-      <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-        {CAST.map((member) => (
-          <Link
-            key={member.slug}
-            to={member.slug}
-            className="card-glow rounded-[3px] overflow-hidden block group"
-          >
-            <div className="relative aspect-[3/4] overflow-hidden">
-              <img
-                src={`${member.image}-768.webp`}
-                srcSet={[
-                  `${member.image}-300.webp 300w`,
-                  `${member.image}-480.webp 480w`,
-                  `${member.image}-768.webp 768w`,
-                  `${member.image}-1200.webp 1200w`,
-                ].join(", ")}
-                sizes="(max-width: 768px) 88vw, 45vw"
-                alt={`${member.name} – ${member.role}`}
-                width={member.imageWidth}
-                height={member.imageHeight}
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-                <h3 className="text-3xl md:text-4xl font-heading tracking-wider text-foreground uppercase">
+        <div className="grid md:grid-cols-2 gap-16 lg:gap-24 max-w-6xl mx-auto">
+          {CAST.map((member) => (
+            <Link
+              key={member.slug}
+              to={member.slug}
+              className="block group"
+            >
+              <div className="relative overflow-hidden aspect-[3/4] mb-8">
+                <img
+                  src={member.staticImage ? member.image : `${member.image}-768.webp`}
+                  {...(!member.staticImage && {
+                    srcSet: [
+                      `${member.image}-300.webp 300w`,
+                      `${member.image}-480.webp 480w`,
+                      `${member.image}-768.webp 768w`,
+                      `${member.image}-1200.webp 1200w`,
+                    ].join(", "),
+                    sizes: "(max-width: 768px) 100vw, 50vw",
+                  })}
+                  alt={`${member.name} – ${member.role}`}
+                  width={800}
+                  height={1067}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover object-top transition-all duration-700 group-hover:scale-105"
+                  style={{ filter: 'grayscale(0.3) contrast(1.1)' }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+              </div>
+              <div className="relative z-10 -mt-24 px-4">
+                <h3 className="text-4xl md:text-6xl font-heading text-foreground mb-2">
                   {member.name}
                 </h3>
-                <p className="text-primary text-sm uppercase tracking-widest mt-1">
+                <p className="text-lg text-gold tracking-[0.2em] uppercase font-medium">
                   {member.role}
                 </p>
-              </div>
-            </div>
-
-            <div className="p-6 md:p-8">
-              <SerifText className="text-foreground/70">
-                {member.bio}
-              </SerifText>
-              {member.credit && (
-                <p className="text-foreground/30 text-xs mt-3">
-                  Foto: {member.credit}
+                <p className="text-muted-foreground mt-4 text-base leading-relaxed max-w-md">
+                  {member.bio}
                 </p>
-              )}
-            </div>
-          </Link>
-        ))}
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
-    </Section>
+    </section>
 
-    {/* ── SECTION 5: TRAILER (Video mit Glow-Border) ── */}
+    {/* ── SECTION 5: TRAILER ── */}
     <TrailerInline />
 
-    {/* ── SECTION 6: SOUNDDESIGN (Asymmetrisch, gespiegelt) ── */}
-    <Section container="wide" className="py-20 md:py-32">
-      <div className="grid md:grid-cols-[1.2fr_1fr] gap-12 lg:gap-20 items-center">
-        <div className="card-glow rounded-[3px] overflow-hidden">
-          <ResponsiveImage
-            basePath="/images/buehne/pater-brown-buehne-ensemble-marvelin-af"
-            alt="Beatboxer Marvelin erzeugt live alle Soundeffekte im Pater Brown Live-Hörspiel"
-            width={2000}
-            height={2666}
-            sizes="(max-width: 768px) 88vw, 55vw"
-            credit="Alexander Frank"
-          />
-        </div>
-
-        <div>
-          <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
-            Sounddesign
-          </p>
-          <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
-            Beatboxing als Bühnenkunst
-          </h2>
-          <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
-
-          <div className="space-y-4">
-            <SerifText size="lg" className="text-foreground/70">
-              Das Besondere an diesem Live-Hörspiel: Es gibt{" "}
-              <strong className="text-foreground">
-                kein Tonstudio, keine Einspieler, kein Playback
-              </strong>
-              . Jedes Geräusch entsteht in Echtzeit – erzeugt von Marvelins
-              Stimme und einer Loop-Station.
-            </SerifText>
-            <SerifText size="lg" className="text-foreground/70">
-              Ob das leise Knirschen von Schritten auf einem Kiesweg, das
-              Knarren einer alten Kirchentür, das Prasseln eines englischen
-              Regenschauers oder der dumpfe Knall eines Schusses – Marvelin
-              erschafft jedes Detail mit seinem Mund.
-            </SerifText>
-            <SerifText size="lg" className="text-foreground/70">
-              Für das Publikum entsteht ein Klangerlebnis, das einem
-              professionell produzierten Hörspiel in nichts nachsteht – mit dem
-              entscheidenden Unterschied, dass alles live und sichtbar passiert.
-            </SerifText>
-          </div>
-        </div>
-      </div>
-    </Section>
-
-    {/* ── SECTION 7: PRESSESTIMMEN (Cinematic Blockquotes) ── */}
-    <Section container="narrow" className="py-20 md:py-32">
-      <div className="text-center mb-12">
-        <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
-          Stimmen
-        </p>
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading text-foreground">
-          Was Besucher sagen
-        </h2>
-      </div>
-
-      <div className="space-y-16">
-        {QUOTES.map((quote, index) => (
+    {/* ── SECTION 6: SOUNDDESIGN ── */}
+    <section className="py-28 md:py-36 px-6">
+      <div className="container mx-auto max-w-6xl">
+        <div className="grid md:grid-cols-[1.2fr_1fr] gap-12 lg:gap-20 items-center">
           <div
-            key={index}
-            className="cinematic-enter"
-            style={{ animationDelay: `${index * 250}ms` }}
-          >
-            <Quote text={quote.text} citation={quote.citation} />
-            {index < QUOTES.length - 1 && (
-              <div className="divider-gold mt-12" aria-hidden="true" />
-            )}
+            className="border border-foreground/10 min-h-[400px] md:min-h-[600px] bg-cover bg-center"
+            style={{ backgroundImage: `url(/images/buehne/pater-brown-buehne-ensemble-marvelin-af-1200.webp)` }}
+            role="img"
+            aria-label="Beatboxer Marvelin erzeugt live alle Soundeffekte im Pater Brown Live-Hörspiel"
+          />
+
+          <div>
+            <p className="text-gold text-sm uppercase tracking-[0.3em] mb-6 font-medium">Sounddesign</p>
+            <h2 className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85] mb-8">
+              Beatboxing als Bühnenkunst
+            </h2>
+            <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" />
+
+            <div className="space-y-4">
+              <p className="text-foreground/70 leading-relaxed text-lg font-light">
+                Das Besondere an diesem Live-Hörspiel: Es gibt{" "}
+                <strong className="text-foreground">
+                  kein Tonstudio, keine Einspieler, kein Playback
+                </strong>
+                . Jedes Geräusch entsteht in Echtzeit – erzeugt von Marvelins
+                Stimme und einer Loop-Station.
+              </p>
+              <p className="text-foreground/70 leading-relaxed text-lg font-light">
+                Ob das leise Knirschen von Schritten auf einem Kiesweg, das
+                Knarren einer alten Kirchentür, das Prasseln eines englischen
+                Regenschauers oder der dumpfe Knall eines Schusses – Marvelin
+                erschafft jedes Detail mit seinem Mund.
+              </p>
+              <p className="text-foreground/70 leading-relaxed text-lg font-light">
+                Für das Publikum entsteht ein Klangerlebnis, das einem
+                professionell produzierten Hörspiel in nichts nachsteht – mit dem
+                entscheidenden Unterschied, dass alles live und sichtbar passiert.
+              </p>
+            </div>
           </div>
-        ))}
+        </div>
       </div>
-    </Section>
+    </section>
+
+    {/* ── SECTION 7: PRESSESTIMMEN ── */}
+    <section className="py-28 md:py-36 px-6">
+      <div className="container mx-auto max-w-6xl">
+        <div className="text-center mb-24">
+          <blockquote className="text-3xl md:text-5xl lg:text-6xl font-heading italic text-foreground/90 leading-tight max-w-4xl mx-auto">
+            „Ein Abend voller Spannung, Humor und Gänsehaut."
+          </blockquote>
+          <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent max-w-md mx-auto mt-10 mb-6" />
+          <p className="text-gold text-sm uppercase tracking-[0.3em]">Was Besucher sagen</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 mb-16">
+          {QUOTES.map((quote, index) => (
+            <blockquote
+              key={index}
+              className="p-8 border border-foreground/10 bg-card/10 space-y-5 transition-colors hover:border-gold/20"
+            >
+              <p className="text-foreground/80 leading-relaxed text-lg font-light">
+                „{quote.text}"
+              </p>
+              <cite className="text-gold text-sm not-italic block mt-4 uppercase tracking-wider">
+                — {quote.citation}
+              </cite>
+            </blockquote>
+          ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <a
+            href={EVENTIM_AFFILIATE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <button className="btn-premium" type="button">
+              Jetzt Tickets sichern
+            </button>
+          </a>
+        </div>
+      </div>
+    </section>
 
     {/* ── SECTION 8: FAQ ── */}
-    <Section container="narrow" className="py-20 md:py-32">
-      <FAQSection items={FAQ_ITEMS} />
-    </Section>
+    <section className="py-28 md:py-36 px-6">
+      <div className="container mx-auto max-w-4xl">
+        <FAQSection items={FAQ_ITEMS} />
+      </div>
+    </section>
   </LandingLayout>
 );
 
-/* ─── Inline Trailer Section (Glow-Border) ─── */
+/* ─── Inline Trailer Section ─── */
 const TrailerInline = () => {
   const isMobile = useIsMobile();
 
   return (
-    <Section container="narrow" className="py-20 md:py-32">
-      <div className="text-center mb-10">
-        <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
-          Einblick
-        </p>
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-heading text-foreground">
-          Erlebe Pater Brown
-        </h2>
-      </div>
+    <section className="py-28 md:py-36 px-6">
+      <div className="container mx-auto max-w-5xl">
+        <div className="text-center space-y-6 mb-16">
+          <p className="text-gold text-sm uppercase tracking-[0.3em] font-medium">
+            Exklusiver Einblick
+          </p>
+          <h2 className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85]">
+            Erlebe Pater Brown
+          </h2>
+          <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent max-w-md mx-auto" />
+        </div>
 
-      <div className="card-glow rounded-[3px] overflow-hidden">
-        {isMobile ? (
-          <div
-            className="relative w-full max-w-sm mx-auto"
-            style={{ paddingTop: "177.78%" }}
+        <div className="relative overflow-hidden shadow-2xl border border-foreground/10">
+          {isMobile ? (
+            <div className="relative w-full max-w-sm mx-auto" style={{ paddingTop: "177.78%" }}>
+              <iframe
+                src="https://player.vimeo.com/video/1146186958?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479"
+                className="absolute top-0 left-0 w-full h-full"
+                frameBorder="0"
+                allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+                referrerPolicy="strict-origin-when-cross-origin"
+                title="Pater Brown Trailer"
+                loading="lazy"
+              />
+            </div>
+          ) : (
+            <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
+              <iframe
+                src="https://player.vimeo.com/video/1146186984?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479"
+                className="absolute top-0 left-0 w-full h-full"
+                frameBorder="0"
+                allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+                referrerPolicy="strict-origin-when-cross-origin"
+                title="Pater Brown Trailer 16x9 mit UT"
+                loading="lazy"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="text-center mt-10">
+          <a
+            href={EVENTIM_AFFILIATE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            <iframe
-              src="https://player.vimeo.com/video/1146186958?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479"
-              className="absolute top-0 left-0 w-full h-full"
-              frameBorder="0"
-              allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
-              referrerPolicy="strict-origin-when-cross-origin"
-              title="Pater Brown Trailer"
-              loading="lazy"
-            />
-          </div>
-        ) : (
-          <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
-            <iframe
-              src="https://player.vimeo.com/video/1146186984?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479"
-              className="absolute top-0 left-0 w-full h-full"
-              frameBorder="0"
-              allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
-              referrerPolicy="strict-origin-when-cross-origin"
-              title="Pater Brown Trailer 16x9 mit UT"
-              loading="lazy"
-            />
-          </div>
-        )}
+            <button className="btn-premium" type="button">
+              Jetzt Tickets sichern
+            </button>
+          </a>
+        </div>
       </div>
-
-      <div className="text-center mt-10">
-        <GhostButton href={EVENTIM_AFFILIATE_URL}>
-          Jetzt Tickets sichern
-        </GhostButton>
-      </div>
-    </Section>
+    </section>
   );
 };
 
