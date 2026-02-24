@@ -1,46 +1,46 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { SEO } from "@/components/SEO";
-import Section from "@/components/ui/Section";
-import GhostButton from "@/components/ui/GhostButton";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 const NewsletterThankYou = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Newsletter best\u00E4tigt"
-        description="Vielen Dank! Ihre Newsletter-Anmeldung wurde erfolgreich best\u00E4tigt."
+        title="Newsletter bestätigt"
+        description="Vielen Dank! Ihre Newsletter-Anmeldung wurde erfolgreich bestätigt."
         robots="noindex, nofollow"
         canonical="/danke-newsletter"
-        ogTitle="Newsletter best\u00E4tigt | Pater Brown Live-H\u00F6rspiel"
-        ogDescription="Vielen Dank! Ihre Newsletter-Anmeldung wurde erfolgreich best\u00E4tigt."
+        ogTitle="Newsletter bestätigt | Pater Brown Live-Hörspiel"
+        ogDescription="Vielen Dank! Ihre Newsletter-Anmeldung wurde erfolgreich bestätigt."
       />
       <Navigation />
 
       <main className="flex-1 pt-32 pb-16">
-        <Section container="narrow">
-          <div className="text-center">
-            <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+        <section className="py-28 md:py-36 px-6">
+          <div className="container mx-auto max-w-3xl text-center">
+            <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">
               Newsletter
             </p>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading text-foreground mb-4">
+            <h1 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
               Vielen Dank!
             </h1>
-            <div className="divider-gold mb-12 max-w-[120px] mx-auto" aria-hidden="true" />
+            <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mx-auto mb-12" aria-hidden="true" />
 
-            <p className="text-xl font-serif text-primary leading-relaxed max-w-2xl mx-auto mb-12">
-              Du erh{"\u00E4"}ltst ab sofort alle News und Updates direkt in dein Postfach.
+            <p className="text-xl text-gold leading-relaxed max-w-2xl mx-auto mb-12">
+              Du erhältst ab sofort alle News und Updates direkt in dein Postfach.
             </p>
 
-            <GhostButton
+            <a
               href={EVENTIM_AFFILIATE_URL}
-              aria-label="Tickets f\u00FCr Pater Brown Live-H\u00F6rspiel bei Eventim kaufen"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Tickets für Pater Brown Live-Hörspiel bei Eventim kaufen"
             >
-              Tickets sichern
-            </GhostButton>
+              <button className="btn-premium" type="button">Tickets sichern</button>
+            </a>
           </div>
-        </Section>
+        </section>
       </main>
 
       <Footer />

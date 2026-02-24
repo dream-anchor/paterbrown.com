@@ -1,54 +1,53 @@
+import { Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { SEO } from "@/components/SEO";
-import Section from "@/components/ui/Section";
-import GhostButton from "@/components/ui/GhostButton";
 
 const TicketThankYou = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
         title="Buchung erfolgreich"
-        description="Vielen Dank f\u00FCr Ihren Ticketkauf. Wir freuen uns auf Sie!"
+        description="Vielen Dank für Ihren Ticketkauf. Wir freuen uns auf Sie!"
         robots="noindex, nofollow"
         canonical="/danke-ticket"
-        ogTitle="Buchung erfolgreich | Pater Brown Live-H\u00F6rspiel"
-        ogDescription="Vielen Dank f\u00FCr Ihren Ticketkauf. Wir freuen uns auf Sie!"
+        ogTitle="Buchung erfolgreich | Pater Brown Live-Hörspiel"
+        ogDescription="Vielen Dank für Ihren Ticketkauf. Wir freuen uns auf Sie!"
       />
       <Navigation />
 
       <main className="flex-1 pt-32 pb-16">
-        <Section container="narrow">
-          <div className="text-center">
-            <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
+        <section className="py-28 md:py-36 px-6">
+          <div className="container mx-auto max-w-3xl text-center">
+            <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">
               Buchung
             </p>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading text-foreground mb-4">
+            <h1 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
               Vielen Dank!
             </h1>
-            <div className="divider-gold mb-12 max-w-[120px] mx-auto" aria-hidden="true" />
+            <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mx-auto mb-12" aria-hidden="true" />
 
-            <div className="space-y-6 max-w-2xl mx-auto font-serif text-foreground/70 leading-relaxed tracking-[0.03em]">
-              <p className="text-xl text-primary">
+            <div className="space-y-6 max-w-2xl mx-auto text-foreground/70 leading-relaxed">
+              <p className="text-xl text-gold">
                 Ihre Buchung war erfolgreich.
               </p>
-              <p className="text-lg">
-                Wir freuen uns darauf, Sie beim Pater Brown Live-H{"\u00F6"}rspiel begr{"\u00FC"}{"\u00DF"}en
-                zu d{"\u00FC"}rfen. Sie erhalten in K{"\u00FC"}rze eine Best{"\u00E4"}tigung per E-Mail.
+              <p className="text-lg font-light">
+                Wir freuen uns darauf, Sie beim Pater Brown Live-Hörspiel begrüßen
+                zu dürfen. Sie erhalten in Kürze eine Bestätigung per E-Mail.
               </p>
-              <p className="text-base text-foreground/50">
+              <p className="text-base text-foreground/50 font-light">
                 Bereiten Sie sich auf einen unvergesslichen Abend voller Spannung
-                und R{"\u00E4"}tsell{"\u00F6"}sung vor!
+                und Rätsellösung vor!
               </p>
             </div>
 
             <div className="mt-12">
-              <GhostButton to="/">
-                Zur{"\u00FC"}ck zur Startseite
-              </GhostButton>
+              <Link to="/" className="text-sm uppercase tracking-[0.25em] font-semibold px-10 py-4 border border-foreground/30 hover:border-foreground/60 text-foreground/90 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 backdrop-blur-sm transition-all duration-300 inline-block">
+                Zurück zur Startseite
+              </Link>
             </div>
           </div>
-        </Section>
+        </section>
       </main>
 
       <Footer />
