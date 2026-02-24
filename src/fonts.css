@@ -1,53 +1,17 @@
-/* Pacifico Font */
+/* Josefin Sans — Headings (Variable Font, 400–700) */
 @font-face {
-  font-family: 'Pacifico';
+  font-family: 'Josefin Sans';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 400 700;
   font-display: swap;
-  src: url('/fonts/pacifico/pacifico-v23-latin-regular.woff2') format('woff2');
+  src: url('/fonts/josefin-sans/josefin-sans-latin-variable.woff2') format('woff2');
 }
 
-/* Bebas Neue Font */
+/* DM Sans — Body (Variable Font, 400–500) */
 @font-face {
-  font-family: 'Bebas Neue';
+  font-family: 'DM Sans';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 400 500;
   font-display: swap;
-  src: url('/fonts/bebas-neue/bebas-neue-v16-latin-regular.woff2') format('woff2');
-}
-
-/* Inter Font - Light 300 */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url('/fonts/inter/inter-v13-latin-300.woff2') format('woff2');
-}
-
-/* Inter Font - Regular 400 */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/inter/inter-v13-latin-regular.woff2') format('woff2');
-}
-
-/* Inter Font - Semi-Bold 600 */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/fonts/inter/inter-v13-latin-600.woff2') format('woff2');
-}
-
-/* Inter Font - Bold 700 */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/inter/inter-v13-latin-700.woff2') format('woff2');
+  src: url('/fonts/dm-sans/dm-sans-latin-variable.woff2') format('woff2');
 }
