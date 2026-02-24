@@ -84,7 +84,7 @@ const LandingLayout = ({
               src={heroImage}
               alt={heroTitle || ""}
               className="w-full h-full object-cover"
-              style={{ objectPosition: "50% 20%" }}
+              style={{ objectPosition: "50% 15%" }}
               loading="eager"
               decoding="async"
             />
