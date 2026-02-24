@@ -41,6 +41,7 @@ const AntoineMonot = () => {
       heroImage="/images/buehne/antoine-monot-portrait-gl.webp"
       heroTitle="Antoine Monot"
       heroSubtitle="Schauspieler, Drehbuchautor, Produzent"
+      variant="portrait"
     >
       <SEO
         title={`Antoine Monot & Pater Brown – Der Star aus „Ein Fall für zwei" | paterbrown.com`}

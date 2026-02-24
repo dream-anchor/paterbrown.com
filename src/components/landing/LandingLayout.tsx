@@ -18,8 +18,8 @@ interface LandingLayoutProps {
   heroTitle?: string;
   heroSubtitle?: string;
   showCTA?: boolean;
-  /** "immersive" entfernt Hero und erlaubt Fullbleed-Sections */
-  variant?: "default" | "immersive";
+  /** "immersive" entfernt Hero und erlaubt Fullbleed-Sections, "portrait" für Personen-Seiten mit Hochformat-Foto */
+  variant?: "default" | "immersive" | "portrait";
 }
 
 const LandingLayout = ({
@@ -35,6 +35,82 @@ const LandingLayout = ({
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Navigation />
+
+        <main className="flex-1">
+          {children}
+        </main>
+
+        {showCTA && <CTABlock />}
+        <Footer />
+      </div>
+    );
+  }
+
+  if (variant === "portrait") {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navigation />
+
+        {/* Portrait Hero — Split Layout */}
+        <section className="relative min-h-screen flex flex-col md:flex-row overflow-hidden">
+          {/* Text: unten auf Mobile, links auf Desktop */}
+          <div className="relative z-10 flex flex-col justify-end order-2 md:order-1 w-full md:w-[45%] px-6 md:px-12 lg:px-16 pb-12 md:pb-24 -mt-32 md:mt-0">
+            {heroTitle && (
+              <>
+                <p className="neon-gold-subtle text-xs md:text-sm uppercase tracking-[0.4em] mb-6 font-heading cinematic-enter">
+                  Pater Brown Live
+                </p>
+                <h1
+                  className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-heading text-foreground leading-[0.85] cinematic-enter neon-gold neon-breathe"
+                  style={{ animationDelay: "0.15s" }}
+                >
+                  {heroTitle}
+                </h1>
+              </>
+            )}
+            {heroSubtitle && (
+              <p
+                className="text-lg md:text-xl text-foreground/50 font-light tracking-wide mt-6 cinematic-enter"
+                style={{ animationDelay: "0.3s" }}
+              >
+                {heroSubtitle}
+              </p>
+            )}
+          </div>
+
+          {/* Portrait-Foto: oben auf Mobile, rechts auf Desktop */}
+          <div className="relative order-1 md:order-2 w-full md:w-[55%] h-[65vh] md:h-auto md:min-h-screen flex-shrink-0">
+            <img
+              src={heroImage}
+              alt={heroTitle || ""}
+              className="w-full h-full object-cover"
+              style={{ objectPosition: "50% 20%" }}
+              loading="eager"
+              decoding="async"
+            />
+            {/* Mobile: unterer Gradient */}
+            <div
+              className="absolute inset-0 md:hidden"
+              style={{
+                background: "linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.4) 25%, transparent 55%)",
+              }}
+            />
+            {/* Desktop: linker Gradient (Übergang zur Text-Seite) */}
+            <div
+              className="hidden md:block absolute inset-0"
+              style={{
+                background: "linear-gradient(to right, hsl(var(--background)) 0%, hsl(var(--background) / 0.6) 12%, transparent 35%)",
+              }}
+            />
+            {/* Desktop: unterer Gradient */}
+            <div
+              className="hidden md:block absolute inset-0"
+              style={{
+                background: "linear-gradient(to top, hsl(var(--background)) 0%, transparent 25%)",
+              }}
+            />
+          </div>
+        </section>
 
         <main className="flex-1">
           {children}

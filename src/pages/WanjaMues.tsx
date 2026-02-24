@@ -62,6 +62,7 @@ const WanjaMues = () => {
       heroImage="/images/buehne/wanja-mues-portrait-gl.webp"
       heroTitle="Wanja Mues"
       heroSubtitle="Schauspieler, Hörbuchsprecher, Bühnenkünstler"
+      variant="portrait"
     >
       <SEO
         title={`Wanja Mues als Pater Brown – Der Star aus „Ein Fall für zwei“ live | paterbrown.com`}
