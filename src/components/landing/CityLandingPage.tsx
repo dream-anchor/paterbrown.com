@@ -4,11 +4,6 @@ import { SEO } from "@/components/SEO";
 import { Link } from "react-router-dom";
 import LandingLayout from "./LandingLayout";
 import FAQSection from "./FAQSection";
-import ResponsiveImage from "./ResponsiveImage";
-import Section from "@/components/ui/Section";
-import SerifText from "@/components/ui/SerifText";
-import GhostButton from "@/components/ui/GhostButton";
-import Quote from "@/components/ui/Quote";
 import { CalendarDays, MapPin, Train, Car, Utensils, Hotel, Landmark } from "lucide-react";
 
 interface VenueInfo {
@@ -141,239 +136,250 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
         schema={eventSchema}
       />
 
-      {/* ─── Event Details ─── */}
+      {/* ── Event Details ── */}
       {nextEvent ? (
-        <Section container="wide" className="py-16 md:py-24">
-          <div className="card-glow rounded-[3px] p-8 md:p-12">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-              <div className="space-y-5">
-                <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading">
-                  N\u00E4chster Termin
-                </p>
-                <div className="flex items-center gap-4">
-                  <CalendarDays className="w-5 h-5 text-primary/50 shrink-0" aria-hidden="true" />
-                  <div>
-                    <span className="text-foreground font-heading text-3xl md:text-4xl">{nextEvent.date}</span>
-                    <span className="text-foreground/30 text-sm ml-3">{nextEvent.day}</span>
+        <section className="py-28 md:py-36 px-6">
+          <div className="container mx-auto max-w-6xl">
+            <div className="p-8 md:p-12 border border-foreground/10 bg-card/10">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+                <div className="space-y-5">
+                  <p className="text-gold text-sm uppercase tracking-[0.3em] font-medium">
+                    N\u00E4chster Termin
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <CalendarDays className="w-5 h-5 text-gold/50 shrink-0" aria-hidden="true" />
+                    <div>
+                      <span className="text-foreground font-heading text-3xl md:text-4xl">{nextEvent.date}</span>
+                      <span className="text-foreground/30 text-sm ml-3">{nextEvent.day}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <MapPin className="w-5 h-5 text-gold/50 shrink-0" aria-hidden="true" />
+                    <div>
+                      <p className="text-foreground font-heading text-lg">{config.venue.name}</p>
+                      <p className="text-foreground/40 text-sm">{config.venue.address}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <MapPin className="w-5 h-5 text-primary/50 shrink-0" aria-hidden="true" />
-                  <div>
-                    <p className="text-foreground font-heading text-lg">{config.venue.name}</p>
-                    <p className="text-foreground/40 text-sm font-serif normal-case tracking-[0.05em]">{config.venue.address}</p>
-                  </div>
-                </div>
+                {nextEvent.ticketUrl && (
+                  <a
+                    href={nextEvent.ticketUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm md:text-base uppercase tracking-[0.25em] font-semibold px-10 md:px-14 py-4 md:py-5 border border-foreground/30 hover:border-foreground/60 text-foreground/90 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 backdrop-blur-sm transition-all duration-300 inline-block"
+                  >
+                    Tickets sichern
+                  </a>
+                )}
               </div>
-              {nextEvent.ticketUrl && (
-                <GhostButton href={nextEvent.ticketUrl} size="lg">
-                  Tickets sichern
-                </GhostButton>
-              )}
             </div>
           </div>
-        </Section>
+        </section>
       ) : config.noCurrentEvent ? (
-        <Section container="narrow" className="py-16 md:py-24">
-          <div className="text-center space-y-6">
-            <SerifText size="xl" className="text-foreground/50">
+        <section className="py-28 md:py-36 px-6">
+          <div className="container mx-auto max-w-4xl text-center space-y-6">
+            <p className="text-foreground/50 leading-relaxed text-xl font-light">
               {config.comingSoonText || `Aktuell sind keine Termine in ${config.cityName} geplant.`}
-            </SerifText>
-            <GhostButton to="/termine" size="sm">
+            </p>
+            <Link
+              to="/termine"
+              className="text-xs uppercase tracking-[0.25em] font-semibold px-6 py-3 border border-foreground/30 hover:border-foreground/60 text-foreground/90 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 backdrop-blur-sm transition-all duration-300 inline-block"
+            >
               Alle Termine
-            </GhostButton>
+            </Link>
           </div>
-        </Section>
+        </section>
       ) : null}
 
-      {/* ─── Die Show ─── */}
-      <Section container="narrow" className="py-16 md:py-24">
-        <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
-          Die Show
-        </p>
-        <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
-          Krimi, Klang & G\u00E4nsehaut
-        </h2>
-        <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
-
-        <div className="space-y-4">
-          <SerifText size="lg" className="text-foreground/70">
-            <strong className="text-foreground">PATER BROWN \u2013 Das Live-H\u00F6rspiel</strong>{" "}
-            kommt nach {config.cityName}. Erleben Sie die einzigartige Kombination aus Theater,
-            H\u00F6rspiel und Beatbox-Sounddesign live auf der B\u00FChne.
-          </SerifText>
-          <SerifText size="lg" className="text-foreground/70">
-            <Link to="/antoine-monot" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">Antoine Monot</Link>{" "}
-            schl\u00FCpft in die Rolle des scharfsinnigen Pater Brown.{" "}
-            <Link to="/wanja-mues" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">Wanja Mues</Link>{" "}
-            gibt den charmanten Meisterdieb Flambeau, und{" "}
-            <Link to="/marvelin" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">Marvelin</Link>{" "}
-            erzeugt live alle Ger\u00E4usche \u2013 ausschlie\u00DFlich mit dem Mund.
-          </SerifText>
-          <p className="text-foreground/40 font-heading text-sm uppercase tracking-[0.15em]">
-            2 Krimis \u00B7 ca. 2 Stunden \u00B7 ab{" "}
-            {config.addressCountry === "CH" ? "CHF 45" : "34,90 \u20AC"}
-          </p>
-        </div>
-
-        <div className="mt-8">
-          <Link
-            to="/live-hoerspiel"
-            className="text-primary text-xs font-heading uppercase tracking-[0.15em] hover:text-foreground transition-colors"
-          >
-            Mehr zur Show &rarr;
-          </Link>
-        </div>
-      </Section>
-
-      {/* ─── B\u00FChnenfoto \u2013 Full Bleed ─── */}
-      <div className="w-full overflow-hidden">
-        <ResponsiveImage
-          basePath="/images/buehne/pater-brown-atmosphaere-silhouette-nebel-af"
-          alt={`Stimmungsvolle Silhouette beim Pater Brown Live-H\u00F6rspiel in ${config.cityName}`}
-          width={2000}
-          height={2666}
-          sizes="100vw"
-          priority
-          className="w-full aspect-[21/9] object-cover object-center"
-          credit="Alexander Frank"
-        />
-      </div>
-
-      {/* ─── Gro\u00DFes Zitat ─── */}
-      <Section container="narrow" className="py-20 md:py-32">
-        <div className="text-center">
-          <Quote
-            text="Zwei Schauspieler. Alle Stimmen. Jeder verd\u00E4chtig."
-            citation="Das Live-H\u00F6rspiel"
-          />
-        </div>
-      </Section>
-
-      {/* ─── Veranstaltungsort ─── */}
-      <Section container="wide" className="py-16 md:py-24">
-        <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
-          Veranstaltungsort
-        </p>
-        <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
-          {config.venue.name}
-        </h2>
-        <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
-
-        <SerifText size="lg" className="text-foreground/60 mb-12 max-w-3xl">
-          {config.venue.description}
-        </SerifText>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="p-6 card-glow rounded-[3px] space-y-3">
-            <MapPin className="w-5 h-5 text-primary/40" aria-hidden="true" />
-            <p className="text-primary text-[10px] uppercase tracking-[0.2em] font-heading">Adresse</p>
-            <p className="text-foreground/70 text-sm font-serif normal-case tracking-[0.05em]">{config.venue.address}</p>
-          </div>
-          {config.venue.oepnv && (
-            <div className="p-6 card-glow rounded-[3px] space-y-3">
-              <Train className="w-5 h-5 text-primary/40" aria-hidden="true" />
-              <p className="text-primary text-[10px] uppercase tracking-[0.2em] font-heading">\u00D6PNV</p>
-              <p className="text-foreground/70 text-sm font-serif normal-case tracking-[0.05em]">{config.venue.oepnv}</p>
-            </div>
-          )}
-          {config.venue.parking && (
-            <div className="p-6 card-glow rounded-[3px] space-y-3">
-              <Car className="w-5 h-5 text-primary/40" aria-hidden="true" />
-              <p className="text-primary text-[10px] uppercase tracking-[0.2em] font-heading">Parken</p>
-              <p className="text-foreground/70 text-sm font-serif normal-case tracking-[0.05em]">{config.venue.parking}</p>
-            </div>
-          )}
-        </div>
-      </Section>
-
-      {/* ─── Stadt-Tipps ─── */}
-      {tipSections.length > 0 && (
-        <Section container="wide" className="py-16 md:py-24">
-          <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
-            {config.cityName} entdecken
-          </p>
-          <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
-            Rund um den Abend
+      {/* ── Die Show ── */}
+      <section className="py-28 md:py-36 px-6">
+        <div className="container mx-auto max-w-5xl">
+          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-6 font-medium">Die Show</p>
+          <h2 className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85] mb-8">
+            Krimi, Klang & G\u00E4nsehaut
           </h2>
-          <div className="divider-gold mb-10 max-w-xs" aria-hidden="true" />
+          <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" />
 
-          <div className="grid md:grid-cols-3 gap-4">
-            {tipSections.map(({ icon: Icon, title, items }) => (
-              <div key={title} className="p-6 card-glow rounded-[3px]">
-                <Icon className="w-5 h-5 text-primary/40 mb-4" aria-hidden="true" />
-                <h3 className="text-primary text-[11px] uppercase tracking-[0.2em] font-heading mb-6">{title}</h3>
-                <ul className="space-y-3">
-                  {items.map((tip, i) => (
-                    <li key={i} className="text-foreground/60 text-sm font-serif normal-case tracking-[0.05em] leading-relaxed pl-3 border-l border-primary/20">
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          <div className="space-y-4 max-w-3xl">
+            <p className="text-foreground/70 leading-relaxed text-lg font-light">
+              <strong className="text-foreground">PATER BROWN \u2013 Das Live-H\u00F6rspiel</strong>{" "}
+              kommt nach {config.cityName}. Erleben Sie die einzigartige Kombination aus Theater,
+              H\u00F6rspiel und Beatbox-Sounddesign live auf der B\u00FChne.
+            </p>
+            <p className="text-foreground/70 leading-relaxed text-lg font-light">
+              <Link to="/antoine-monot" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">Antoine Monot</Link>{" "}
+              schl\u00FCpft in die Rolle des scharfsinnigen Pater Brown.{" "}
+              <Link to="/wanja-mues" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">Wanja Mues</Link>{" "}
+              gibt den charmanten Meisterdieb Flambeau, und{" "}
+              <Link to="/marvelin" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">Marvelin</Link>{" "}
+              erzeugt live alle Ger\u00E4usche \u2013 ausschlie\u00DFlich mit dem Mund.
+            </p>
+            <p className="text-foreground/40 font-heading text-sm uppercase tracking-[0.15em]">
+              2 Krimis \u00B7 ca. 2 Stunden \u00B7 ab{" "}
+              {config.addressCountry === "CH" ? "CHF 45" : "34,90 \u20AC"}
+            </p>
           </div>
-        </Section>
-      )}
 
-      {/* ─── Mehr erfahren ─── */}
-      <Section container="narrow" className="py-16 md:py-24">
-        <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-4">
-          Mehr erfahren
-        </p>
-        <h2 className="text-3xl sm:text-4xl md:text-6xl font-heading text-foreground mb-4">
-          G.K. Chesterton neu erz\u00E4hlt
-        </h2>
-        <div className="divider-gold mb-8 max-w-xs" aria-hidden="true" />
-
-        <div className="space-y-4">
-          <SerifText size="lg" className="text-foreground/70">
-            <strong className="text-foreground">PATER BROWN \u2013 Das Live-H\u00F6rspiel</strong>{" "}
-            basiert auf den zeitlosen Kriminalgeschichten von{" "}
-            <Link to="/g-k-chesterton" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">G.K. Chesterton</Link>.
-            Die Figur des{" "}
-            <Link to="/pater-brown" className="text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline">Pater Brown</Link>{" "}
-            \u2013 ein unscheinbarer Priester, der mit Einf\u00FChlungsverm\u00F6gen Kriminalf\u00E4lle l\u00F6st \u2013 fasziniert seit \u00FCber 100 Jahren.
-          </SerifText>
-          <Link
-            to="/live-hoerspiel"
-            className="text-primary text-xs font-heading uppercase tracking-[0.15em] hover:text-foreground transition-colors inline-block"
-          >
-            Was ist ein Live-H\u00F6rspiel? &rarr;
-          </Link>
+          <div className="mt-8">
+            <Link
+              to="/live-hoerspiel"
+              className="text-gold text-xs font-heading uppercase tracking-[0.15em] hover:text-foreground transition-colors"
+            >
+              Mehr zur Show &rarr;
+            </Link>
+          </div>
         </div>
-      </Section>
+      </section>
 
-      {/* ─── Nearby Cities ─── */}
-      {config.nearbyCities && config.nearbyCities.length > 0 && (
-        <Section container="wide" className="py-16 md:py-24">
-          <p className="text-primary text-xs uppercase tracking-[0.3em] font-heading mb-8">
-            Auch in der N\u00E4he
+      {/* ── B\u00FChnenfoto \u2013 Full Bleed ── */}
+      <div
+        className="w-full min-h-[250px] md:min-h-[400px] bg-cover bg-center"
+        style={{ backgroundImage: `url(/images/buehne/pater-brown-atmosphaere-silhouette-nebel-af-1200.webp)` }}
+        role="img"
+        aria-label={`Stimmungsvolle Silhouette beim Pater Brown Live-H\u00F6rspiel in ${config.cityName}`}
+      />
+
+      {/* ── Gro\u00DFes Zitat ── */}
+      <section className="py-28 md:py-36 px-6">
+        <div className="container mx-auto max-w-4xl text-center">
+          <blockquote className="text-3xl md:text-5xl lg:text-6xl font-heading italic text-foreground/90 leading-tight">
+            \u201EZwei Schauspieler. Alle Stimmen. Jeder verd\u00E4chtig.\u201C
+          </blockquote>
+          <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent max-w-md mx-auto mt-10 mb-6" />
+          <p className="text-gold text-sm uppercase tracking-[0.3em]">Das Live-H\u00F6rspiel</p>
+        </div>
+      </section>
+
+      {/* ── Veranstaltungsort ── */}
+      <section className="py-28 md:py-36 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-6 font-medium">Veranstaltungsort</p>
+          <h2 className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85] mb-8">
+            {config.venue.name}
+          </h2>
+          <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" />
+
+          <p className="text-foreground/60 leading-relaxed text-lg font-light mb-12 max-w-3xl">
+            {config.venue.description}
           </p>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {config.nearbyCities.map((city) => (
-              <Link
-                key={city.slug}
-                to={`/${city.slug}`}
-                className="p-8 card-glow rounded-[3px] group transition-all"
-              >
-                <span className="text-3xl md:text-4xl font-heading text-foreground group-hover:text-primary transition-colors">
-                  {city.name}
-                </span>
-                <p className="text-foreground/40 text-sm font-serif normal-case tracking-[0.05em] mt-2">
-                  Pater Brown Live &rarr;
-                </p>
-              </Link>
-            ))}
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="p-6 border border-foreground/10 bg-card/10 space-y-3">
+              <MapPin className="w-5 h-5 text-gold/40" aria-hidden="true" />
+              <p className="text-gold text-[10px] uppercase tracking-[0.2em] font-heading">Adresse</p>
+              <p className="text-foreground/70 text-sm leading-relaxed">{config.venue.address}</p>
+            </div>
+            {config.venue.oepnv && (
+              <div className="p-6 border border-foreground/10 bg-card/10 space-y-3">
+                <Train className="w-5 h-5 text-gold/40" aria-hidden="true" />
+                <p className="text-gold text-[10px] uppercase tracking-[0.2em] font-heading">\u00D6PNV</p>
+                <p className="text-foreground/70 text-sm leading-relaxed">{config.venue.oepnv}</p>
+              </div>
+            )}
+            {config.venue.parking && (
+              <div className="p-6 border border-foreground/10 bg-card/10 space-y-3">
+                <Car className="w-5 h-5 text-gold/40" aria-hidden="true" />
+                <p className="text-gold text-[10px] uppercase tracking-[0.2em] font-heading">Parken</p>
+                <p className="text-foreground/70 text-sm leading-relaxed">{config.venue.parking}</p>
+              </div>
+            )}
           </div>
-        </Section>
+        </div>
+      </section>
+
+      {/* ── Stadt-Tipps ── */}
+      {tipSections.length > 0 && (
+        <section className="py-28 md:py-36 px-6">
+          <div className="container mx-auto max-w-6xl">
+            <p className="text-gold text-sm uppercase tracking-[0.3em] mb-6 font-medium">
+              {config.cityName} entdecken
+            </p>
+            <h2 className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85] mb-8">
+              Rund um den Abend
+            </h2>
+            <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-12" />
+
+            <div className="grid md:grid-cols-3 gap-4">
+              {tipSections.map(({ icon: Icon, title, items }) => (
+                <div key={title} className="p-6 border border-foreground/10 bg-card/10">
+                  <Icon className="w-5 h-5 text-gold/40 mb-4" aria-hidden="true" />
+                  <h3 className="text-gold text-[11px] uppercase tracking-[0.2em] font-heading mb-6">{title}</h3>
+                  <ul className="space-y-3">
+                    {items.map((tip, i) => (
+                      <li key={i} className="text-foreground/60 text-sm leading-relaxed pl-3 border-l border-gold/20">
+                        {tip}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       )}
 
-      {/* ─── FAQ ─── */}
+      {/* ── Mehr erfahren ── */}
+      <section className="py-28 md:py-36 px-6">
+        <div className="container mx-auto max-w-5xl">
+          <p className="text-gold text-sm uppercase tracking-[0.3em] mb-6 font-medium">Mehr erfahren</p>
+          <h2 className="text-5xl sm:text-6xl md:text-[8rem] font-heading text-foreground leading-[0.85] mb-8">
+            G.K. Chesterton neu erz\u00E4hlt
+          </h2>
+          <div className="h-[1px] bg-gradient-to-r from-gold/60 via-gold/20 to-transparent w-24 mb-8" />
+
+          <div className="space-y-4 max-w-3xl">
+            <p className="text-foreground/70 leading-relaxed text-lg font-light">
+              <strong className="text-foreground">PATER BROWN \u2013 Das Live-H\u00F6rspiel</strong>{" "}
+              basiert auf den zeitlosen Kriminalgeschichten von{" "}
+              <Link to="/g-k-chesterton" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">G.K. Chesterton</Link>.
+              Die Figur des{" "}
+              <Link to="/pater-brown" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">Pater Brown</Link>{" "}
+              \u2013 ein unscheinbarer Priester, der mit Einf\u00FChlungsverm\u00F6gen Kriminalf\u00E4lle l\u00F6st \u2013 fasziniert seit \u00FCber 100 Jahren.
+            </p>
+            <Link
+              to="/live-hoerspiel"
+              className="text-gold text-xs font-heading uppercase tracking-[0.15em] hover:text-foreground transition-colors inline-block"
+            >
+              Was ist ein Live-H\u00F6rspiel? &rarr;
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Nearby Cities ── */}
+      {config.nearbyCities && config.nearbyCities.length > 0 && (
+        <section className="py-28 md:py-36 px-6">
+          <div className="container mx-auto max-w-6xl">
+            <p className="text-gold text-sm uppercase tracking-[0.3em] mb-8 font-medium">
+              Auch in der N\u00E4he
+            </p>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {config.nearbyCities.map((city) => (
+                <Link
+                  key={city.slug}
+                  to={`/${city.slug}`}
+                  className="p-8 border border-foreground/10 bg-card/10 group transition-all hover:border-gold/20"
+                >
+                  <span className="text-3xl md:text-4xl font-heading text-foreground group-hover:text-gold transition-colors">
+                    {city.name}
+                  </span>
+                  <p className="text-foreground/40 text-sm mt-2">
+                    Pater Brown Live &rarr;
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── FAQ ── */}
       {config.faq.length > 0 && (
-        <Section container="narrow" className="py-16 md:py-24">
-          <FAQSection items={config.faq} label="FAQ" title="H\u00E4ufige Fragen" />
-        </Section>
+        <section className="py-28 md:py-36 px-6">
+          <div className="container mx-auto max-w-4xl">
+            <FAQSection items={config.faq} label="FAQ" title="H\u00E4ufige Fragen" />
+          </div>
+        </section>
       )}
     </LandingLayout>
   );
