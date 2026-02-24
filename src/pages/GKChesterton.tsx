@@ -49,6 +49,7 @@ const GKChesterton = () => {
       heroImage="/images/buehne/dd-dialog-nahaufnahme-intim.webp"
       heroTitle="G.K. Chesterton"
       heroSubtitle="Der Erfinder von Pater Brown (1874–1936)"
+      heroObjectPosition="50% 25%"
       heroCTA
     >
       <SEO

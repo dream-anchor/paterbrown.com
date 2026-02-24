@@ -38,9 +38,10 @@ const StefanieSick = () => {
   return (
     <LandingLayout
       breadcrumbs={BREADCRUMBS}
-      heroImage="/images/buehne/af-duo-marvelin-nahaufnahme.webp"
+      heroImage="/images/portraits/stefanie-sick-kuenstlerische-leitung-pb.webp"
       heroTitle="Stefanie Sick"
       heroSubtitle="Künstlerische Leitung & Produktion"
+      variant="portrait"
       heroCTA
     >
       <SEO
@@ -55,15 +56,7 @@ const StefanieSick = () => {
       {/* Biografie */}
       <section className="py-28 md:py-36 px-6">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-[1.2fr_1fr] gap-12 lg:gap-20 items-start">
-            <CinematicPortrait
-              src="/images/portraits/stefanie-sick-kuenstlerische-leitung-pb.webp"
-              srcSet="/images/portraits/stefanie-sick-kuenstlerische-leitung-pb-480.webp 480w, /images/portraits/stefanie-sick-kuenstlerische-leitung-pb-768.webp 768w, /images/portraits/stefanie-sick-kuenstlerische-leitung-pb-1200.webp 1200w"
-              sizes="(max-width: 768px) 100vw, 55vw"
-              alt="Stefanie Sick – Künstlerische Leitung des Pater Brown Live-Hörspiels"
-              loading="eager"
-              fadeEdges
-            />
+          <div className="grid md:grid-cols-[1fr_1.2fr] gap-12 lg:gap-20 items-start">
             <div>
               <p className="text-gold text-xs uppercase tracking-[0.3em] font-heading mb-6">Künstlerische Leitung</p>
               <h2 className="text-5xl sm:text-6xl md:text-[8rem] leading-[0.85] font-heading text-foreground mb-8">
@@ -90,6 +83,14 @@ const StefanieSick = () => {
                 , verbunden mit moderner Performance-Kunst.
               </p>
             </div>
+            <CinematicPortrait
+              src="/images/portraits/stefanie-sick-kuenstlerische-leitung-pb.webp"
+              srcSet="/images/portraits/stefanie-sick-kuenstlerische-leitung-pb-480.webp 480w, /images/portraits/stefanie-sick-kuenstlerische-leitung-pb-768.webp 768w, /images/portraits/stefanie-sick-kuenstlerische-leitung-pb-1200.webp 1200w"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              alt="Stefanie Sick – Künstlerische Leitung des Pater Brown Live-Hörspiels"
+              loading="eager"
+              fadeEdges
+            />
           </div>
         </div>
       </section>
@@ -164,8 +165,8 @@ const StefanieSick = () => {
             Zuschauerraum verschwimmt.
           </p>
           <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
-            Als Mitgesellschafterin der Dream &amp; Anchor Handelsgesellschaft mbH
-            bringt sie unternehmerisches Denken und kreative Vision zusammen.
+            Als Partnerin bringt sie unternehmerisches Denken und kreative
+            Vision zusammen.
           </p>
         </div>
       </section>
