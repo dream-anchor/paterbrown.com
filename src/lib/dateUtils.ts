@@ -52,10 +52,9 @@ export const getTourYearRange = (events: { event_date?: string; eventDate?: stri
   if (sortedYears.length === 1) {
     return String(sortedYears[0]);
   }
-  
-  // Return range like "2026" if all events are in same year, 
-  // or first year if spanning multiple years
-  return String(sortedYears[0]);
+
+  // Multiple years: "2026 & 2027"
+  return `${sortedYears[0]} & ${sortedYears[sortedYears.length - 1]}`;
 };
 
 /**

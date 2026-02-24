@@ -1,4 +1,4 @@
-import { getTourYear } from "@/lib/dateUtils";
+import { getTourYearRange } from "@/lib/dateUtils";
 import { EVENTIM_AFFILIATE_URL } from "@/lib/constants";
 
 interface TourEvent {
@@ -23,7 +23,7 @@ const HeroTourInfo = ({ previewEvents, tour2026Events }: HeroTourInfoProps) => {
       {previewEvents.length > 0 && (
         <div>
           <p className="text-foreground/40 text-xs uppercase tracking-[0.3em] mb-3">
-            Preview {getTourYear(previewEvents.map(e => ({ event_date: e.event_date })))}
+            Preview {getTourYearRange(previewEvents.map(e => ({ event_date: e.event_date })))}
           </p>
           <div className="text-base text-foreground/70 space-y-1">
             {previewEvents.map(event => (
@@ -44,7 +44,7 @@ const HeroTourInfo = ({ previewEvents, tour2026Events }: HeroTourInfoProps) => {
       {tour2026Events.length > 0 && (
         <div>
           <p className="text-foreground/40 text-xs uppercase tracking-[0.3em] mb-3">
-            Tour {getTourYear(tour2026Events.map(e => ({ event_date: e.event_date })))}
+            Tour {getTourYearRange(tour2026Events.map(e => ({ event_date: e.event_date })))}
           </p>
           <div className="text-base text-foreground/70 flex flex-wrap justify-center gap-x-4 gap-y-1.5">
             {tour2026Events.map(event => (

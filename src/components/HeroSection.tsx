@@ -9,7 +9,6 @@ import { EVENTIM_AFFILIATE_URL, SCROLL_THRESHOLD_STICKY_HEADER } from "@/lib/con
 import { throttle } from "@/lib/scroll-utils";
 import { isBlackWeekActive } from "@/lib/blackWeekConfig";
 import { BlackWeekBanner } from "@/components/BlackWeekBanner";
-import { getTourYear } from "@/lib/dateUtils";
 import HeroTourInfo from "@/components/HeroTourInfo";
 
 const HeroSection = () => {
