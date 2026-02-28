@@ -222,7 +222,7 @@ export async function render(url: string) {
   }
 
   // Seiten mit CTA-Section: Tour-Daten prefetchen
-  const pagesWithCTA = ["/live-hoerspiel", "/pater-brown", "/wanja-mues", "/antoine-monot", "/marvelin", "/stefanie-sick", "/hoerspiel", "/g-k-chesterton", "/father-brown", "/krimi-hoerspiel", "/editorische-notizen-chesterton-haefs", "/chesterton-katholizismus-zoelibat"];
+  const pagesWithCTA = ["/live-hoerspiel", "/pater-brown", "/wanja-mues", "/antoine-monot", "/marvelin", "/stefanie-sick", "/hoerspiel", "/g-k-chesterton", "/father-brown", "/krimi-hoerspiel"];
   if (pagesWithCTA.includes(url)) {
     try {
       const { createClient } = await import("@supabase/supabase-js");
