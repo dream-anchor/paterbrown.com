@@ -45,6 +45,7 @@ import Erding from "./pages/Erding";
 import NeuIsenburg from "./pages/NeuIsenburg";
 import EditorischeNotizenChestertonHaefs from "./pages/EditorischeNotizenChestertonHaefs";
 import ChestertonKatholizismusZoelibat from "./pages/ChestertonKatholizismusZoelibat";
+import PfarrerBraun from "./pages/PfarrerBraun";
 
 /** Mapping: Stadtseiten-URL → Supabase city-Filter */
 const CITY_ROUTES: Record<string, string> = {
@@ -301,6 +302,7 @@ export async function render(url: string) {
                 <Route path="/neu-isenburg" element={<NeuIsenburg />} />
                 <Route path="/editorische-notizen-chesterton-haefs" element={<EditorischeNotizenChestertonHaefs />} />
                 <Route path="/chesterton-katholizismus-zoelibat" element={<ChestertonKatholizismusZoelibat />} />
+                <Route path="/pfarrer-braun-ottfried-fischer" element={<PfarrerBraun />} />
               </Routes>
             </StaticRouter>
           </TooltipProvider>

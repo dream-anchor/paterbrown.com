@@ -51,6 +51,7 @@ const routes = [
   "/neu-isenburg",
   "/editorische-notizen-chesterton-haefs",
   "/chesterton-katholizismus-zoelibat",
+  "/pfarrer-braun-ottfried-fischer",
 ];
 
 console.log("Pre-Rendering gestartet...\n");

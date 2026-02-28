@@ -149,7 +149,11 @@ const ADAPTATIONS = [
     title: "Ottfried Fischer als „Pfarrer Braun“ (2003–2013)",
     content: (
       <p className="text-foreground/70 leading-relaxed text-lg font-light">
-        Die ARD-Reihe „Pfarrer Braun“ mit Ottfried Fischer war lose an die
+        Die ARD-Reihe{" "}
+        <Link to="/pfarrer-braun-ottfried-fischer" className="text-gold hover:underline">
+          „Pfarrer Braun”
+        </Link>{" "}
+        mit Ottfried Fischer war lose an die
         Pater-Brown-Figur angelehnt. Der bayerische Pfarrer Guido Braun löst in
         der Serie Kriminalfälle mit Humor und Menschenkenntnis. Mit bis zu 8
         Millionen Zuschauern pro Erstausstrahlung war die Serie ein großer

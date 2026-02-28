@@ -34,6 +34,7 @@ const Erding = lazy(() => import("./pages/Erding"));
 const NeuIsenburg = lazy(() => import("./pages/NeuIsenburg"));
 const EditorischeNotizenChestertonHaefs = lazy(() => import("./pages/EditorischeNotizenChestertonHaefs"));
 const ChestertonKatholizismusZoelibat = lazy(() => import("./pages/ChestertonKatholizismusZoelibat"));
+const PfarrerBraun = lazy(() => import("./pages/PfarrerBraun"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Download = lazy(() => import("./pages/Download"));
 const ShareDownload = lazy(() => import("./pages/ShareDownload"));
@@ -82,6 +83,7 @@ export const SSG_ROUTES = [
   "/neu-isenburg",
   "/editorische-notizen-chesterton-haefs",
   "/chesterton-katholizismus-zoelibat",
+  "/pfarrer-braun-ottfried-fischer",
 ];
 
 /** Client-Side Routes mit lazy loading (Code Splitting) */
@@ -120,6 +122,7 @@ export const AppRoutes = () => (
       <Route path="/neu-isenburg" element={<NeuIsenburg />} />
       <Route path="/editorische-notizen-chesterton-haefs" element={<EditorischeNotizenChestertonHaefs />} />
       <Route path="/chesterton-katholizismus-zoelibat" element={<ChestertonKatholizismusZoelibat />} />
+      <Route path="/pfarrer-braun-ottfried-fischer" element={<PfarrerBraun />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/download/:id" element={<Download />} />
       <Route path="/dl/:token" element={<ShareDownload />} />
