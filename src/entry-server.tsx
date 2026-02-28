@@ -43,6 +43,8 @@ import Giessen from "./pages/Giessen";
 import Kempten from "./pages/Kempten";
 import Erding from "./pages/Erding";
 import NeuIsenburg from "./pages/NeuIsenburg";
+import EditorischeNotizenChestertonHaefs from "./pages/EditorischeNotizenChestertonHaefs";
+import ChestertonKatholizismusZoelibat from "./pages/ChestertonKatholizismusZoelibat";
 
 /** Mapping: Stadtseiten-URL → Supabase city-Filter */
 const CITY_ROUTES: Record<string, string> = {
@@ -220,7 +222,7 @@ export async function render(url: string) {
   }
 
   // Seiten mit CTA-Section: Tour-Daten prefetchen
-  const pagesWithCTA = ["/live-hoerspiel", "/pater-brown", "/wanja-mues", "/antoine-monot", "/marvelin", "/stefanie-sick", "/hoerspiel", "/g-k-chesterton", "/father-brown", "/krimi-hoerspiel"];
+  const pagesWithCTA = ["/live-hoerspiel", "/pater-brown", "/wanja-mues", "/antoine-monot", "/marvelin", "/stefanie-sick", "/hoerspiel", "/g-k-chesterton", "/father-brown", "/krimi-hoerspiel", "/editorische-notizen-chesterton-haefs", "/chesterton-katholizismus-zoelibat"];
   if (pagesWithCTA.includes(url)) {
     try {
       const { createClient } = await import("@supabase/supabase-js");
@@ -297,6 +299,8 @@ export async function render(url: string) {
                 <Route path="/kempten" element={<Kempten />} />
                 <Route path="/erding" element={<Erding />} />
                 <Route path="/neu-isenburg" element={<NeuIsenburg />} />
+                <Route path="/editorische-notizen-chesterton-haefs" element={<EditorischeNotizenChestertonHaefs />} />
+                <Route path="/chesterton-katholizismus-zoelibat" element={<ChestertonKatholizismusZoelibat />} />
               </Routes>
             </StaticRouter>
           </TooltipProvider>

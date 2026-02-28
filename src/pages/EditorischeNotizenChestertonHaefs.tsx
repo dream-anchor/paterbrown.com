@@ -343,7 +343,11 @@ const EditorischeNotizenChestertonHaefs = () => {
             <p className="text-foreground/70 leading-relaxed text-lg font-light mb-6">
               Ab 1896 arbeitete er als Journalist und entwickelte sich zu einem der
               meistbeachteten Intellektuellen der Zwischenkriegszeit in England.
-              1922 konvertierte er zum Katholizismus — ein Schritt, der sein Werk
+              1922{" "}
+              <Link to="/chesterton-katholizismus-zoelibat" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+                konvertierte er zum Katholizismus
+              </Link>
+              {" "}— ein Schritt, der sein Werk
               nachhaltig prägte und in den Father-Brown-Geschichten seinen literarischen
               Niederschlag fand.
             </p>

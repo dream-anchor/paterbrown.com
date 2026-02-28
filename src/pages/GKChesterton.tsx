@@ -83,7 +83,11 @@ const GKChesterton = () => {
               Gedichte, ca. 200 Kurzgeschichten und ca. 4.000 Essays.
             </p>
             <p className="text-foreground/70 leading-relaxed text-lg font-light">
-              1922 konvertierte er zum Katholizismus – begleitet von Father John O'Connor,
+              1922{" "}
+              <Link to="/chesterton-katholizismus-zoelibat" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+                konvertierte er zum Katholizismus
+              </Link>
+              {" "}– begleitet von Father John O'Connor,
               dem realen Vorbild für{" "}
               <Link to="/pater-brown" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
                 Pater Brown

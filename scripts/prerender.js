@@ -49,6 +49,8 @@ const routes = [
   "/kempten",
   "/erding",
   "/neu-isenburg",
+  "/editorische-notizen-chesterton-haefs",
+  "/chesterton-katholizismus-zoelibat",
 ];
 
 console.log("Pre-Rendering gestartet...\n");

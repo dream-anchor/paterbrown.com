@@ -61,6 +61,14 @@ const LandingLayout = ({
     );
   }
 
+  const heroBase = heroImage || DEFAULT_HERO;
+  const isResponsiveHero = !heroImage || !heroImage.includes(".");
+  const bgBlur = 3 + heroExtraBlur;
+  const glowBlur = 4 + heroExtraBlur;
+  const bgFilter = `contrast(1.15) brightness(0.9) saturate(0.85) blur(${bgBlur}px)`;
+  const fgFilter = "contrast(1.15) brightness(0.9) saturate(0.85)";
+  const glowFilter = `blur(${glowBlur}px) brightness(1.1) saturate(0.7)`;
+
   if (variant === "portrait") {
     return (
       <div className="min-h-screen flex flex-col bg-background pb-14 md:pb-0">
@@ -179,14 +187,6 @@ const LandingLayout = ({
       </div>
     );
   }
-
-  const heroBase = heroImage || DEFAULT_HERO;
-  const isResponsiveHero = !heroImage || !heroImage.includes(".");
-  const bgBlur = 3 + heroExtraBlur;
-  const glowBlur = 4 + heroExtraBlur;
-  const bgFilter = `contrast(1.15) brightness(0.9) saturate(0.85) blur(${bgBlur}px)`;
-  const fgFilter = "contrast(1.15) brightness(0.9) saturate(0.85)";
-  const glowFilter = `blur(${glowBlur}px) brightness(1.1) saturate(0.7)`;
 
   // Default variant — Full-Viewport Hero + Content
   return (
