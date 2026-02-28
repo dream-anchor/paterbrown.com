@@ -9,14 +9,15 @@ const config: CityPageConfig = {
   addressCountry: "DE",
   heroImage: "/images/buehne/dd-duo-zeigefinger-blau.webp",
   nearbyCities: [{ slug: "hamburg", name: "Hamburg" }],
-  noCurrentEvent: true,
-  comingSoonText:
-    "Pater Brown kommt bald nach Bremen! Aktuell sind keine Termine geplant – sobald neue Termine feststehen, finden Sie sie hier und auf unserer Termine-Seite.",
   venue: {
-    name: "Venue wird bekanntgegeben",
-    address: "Bremen",
+    name: "Die Glocke – Kleiner Saal",
+    address: "Domsheide 4–5, 28195 Bremen",
     description:
-      "Bremen verfügt über zahlreiche exzellente Veranstaltungsorte, die sich perfekt für ein Live-Hörspiel eignen – von der historischen Glocke bis zum Theater am Goetheplatz. Sobald der Veranstaltungsort feststeht, finden Sie hier alle Details zur Anfahrt und zum Venue.",
+      "Die Glocke ist Bremens renommiertes Konzerthaus direkt an der Domsheide im Herzen der Altstadt. Der Kleine Saal mit seinem warmen Klang und intimer Atmosphäre bietet den perfekten Rahmen für das Pater-Brown-Live-Hörspiel. Das historische Gebäude liegt nur wenige Schritte vom Bremer Dom, dem Rathaus und den Stadtmusikanten entfernt.",
+    oepnv:
+      "Straßenbahn Linien 2, 3 bis Domsheide (direkt vor der Tür). Vom Hauptbahnhof ca. 10 Minuten zu Fuß oder 2 Stationen mit der Straßenbahn.",
+    parking:
+      "Parkhaus Am Dom / Parkhaus Mitte direkt in der Nähe. Alternativ: Parkhaus Violenstraße. Tipp: Die Innenstadt ist per ÖPNV bestens erreichbar.",
   },
   tips: {
     restaurants: [
@@ -40,24 +41,24 @@ const config: CityPageConfig = {
   },
   faq: [
     {
-      question: "Kommt Pater Brown nach Bremen?",
+      question: "War Pater Brown schon in Bremen?",
       answer:
-        "Ja, Pater Brown – Das Live-Hörspiel plant Gastspiele in Bremen. Sobald ein konkreter Termin feststeht, finden Sie ihn auf unserer Termine-Seite unter paterbrown.com/termine. Tragen Sie sich in unseren Newsletter ein, um als Erster informiert zu werden.",
+        "Ja! Pater Brown – Das Live-Hörspiel gastierte in der Glocke Bremen. Sobald neue Termine in Bremen feststehen, finden Sie sie auf unserer Termine-Seite unter paterbrown.com/termine.",
     },
     {
-      question: "Wo findet die Show in Bremen statt?",
+      question: "Wo fand die Show in Bremen statt?",
       answer:
-        "Der Veranstaltungsort in Bremen wird noch bekanntgegeben. Bremen bietet hervorragende Spielstätten wie die Glocke, das Theater am Goetheplatz oder das Metropol Theater. Sobald der Venue feststeht, informieren wir Sie hier.",
+        "Die Veranstaltung fand in der Glocke statt – Bremens renommiertem Konzerthaus an der Domsheide, direkt im Herzen der Altstadt, nur wenige Schritte vom Dom und den Stadtmusikanten entfernt.",
     },
     {
       question: "Was ist das Pater Brown Live-Hörspiel?",
       answer:
-        `Ein einzigartiges Bühnenerlebnis: Antoine Monot und Wanja Mues (bekannt aus „Ein Fall für zwei“, ZDF) spielen live Kriminalgeschichten nach G.K. Chesterton. Beatboxer Marvelin erzeugt dabei alle Geräusche und Soundeffekte live mit dem Mund – ohne Playback. Mehr unter paterbrown.com/live-hoerspiel.`,
+        `Ein einzigartiges Bühnenerlebnis: Antoine Monot und Wanja Mues (bekannt aus „Ein Fall für zwei", ZDF) spielen live Kriminalgeschichten nach G.K. Chesterton. Beatboxer Marvelin erzeugt dabei alle Geräusche und Soundeffekte live mit dem Mund – ohne Playback. Mehr unter paterbrown.com/live-hoerspiel.`,
     },
     {
-      question: "Was kostet ein Ticket für Pater Brown?",
+      question: "Kommt Pater Brown wieder nach Bremen?",
       answer:
-        "Tickets für das Pater Brown Live-Hörspiel sind in der Regel ab 34,90 € erhältlich. Der genaue Preis kann je nach Venue und Sitzplatzkategorie variieren.",
+        "Neue Termine werden auf unserer Termine-Seite veröffentlicht. Tragen Sie sich in unseren Newsletter ein, um als Erster informiert zu werden, wenn Pater Brown wieder nach Bremen kommt.",
     },
     {
       question: "Für wen ist die Show geeignet?",
@@ -67,11 +68,11 @@ const config: CityPageConfig = {
   ],
   seo: {
     title:
-      "Pater Brown Live-Hörspiel in Bremen – Bald auf Tour | paterbrown.com",
+      "Pater Brown Live-Hörspiel in Bremen – Die Glocke | paterbrown.com",
     description:
-      "Pater Brown Live-Hörspiel bald in Bremen! Antoine Monot, Wanja Mues & Marvelin bringen Chestertons Krimis live auf die Bühne. Termine & Tickets.",
+      "Pater Brown Live-Hörspiel in Bremen, Die Glocke. Antoine Monot, Wanja Mues & Marvelin bringen Chestertons Krimis live auf die Bühne. Rückblick & neue Termine.",
     keywords:
-      "pater brown bremen, pater brown live bremen, pater brown tickets bremen, live hörspiel bremen, pater brown tour bremen",
+      "pater brown bremen, pater brown live bremen, die glocke bremen, pater brown tickets bremen, live hörspiel bremen",
   },
 };
 

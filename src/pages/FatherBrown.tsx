@@ -137,6 +137,10 @@ const FatherBrown = () => {
           <Link to="/live-hoerspiel" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
             Live-Hörspiel auf der Bühne
           </Link>.
+          Zur Übersetzungsgeschichte und vollständigen Bibliographie siehe die{" "}
+          <Link to="/editorische-notizen-chesterton-haefs" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+            Editorischen Notizen nach Hanswilhelm Haefs
+          </Link>.
         </p>
       </div></section>
 

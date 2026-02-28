@@ -7,7 +7,7 @@ const config: CityPageConfig = {
   cityFilter: "München",
   addressRegion: "Bayern",
   addressCountry: "DE",
-  heroImage: "/images/buehne/af-buehne-totale-nebel-blau.webp",
+  heroImage: "/images/buehne/pater-brown-buehne-ensemble-marvelin-af",
   nearbyCities: [
     { slug: "erding", name: "Erding" },
     { slug: "kempten", name: "Kempten" },

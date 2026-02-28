@@ -187,6 +187,14 @@
     <priority>0.5</priority>
   </url>
 
+  <!-- Artikel-Seiten -->
+  <url>
+    <loc>https://paterbrown.com/editorische-notizen-chesterton-haefs</loc>
+    <lastmod>2026-02-28</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
   <!-- Utility-Seiten -->
   <url>
     <loc>https://paterbrown.com/impressum</loc>

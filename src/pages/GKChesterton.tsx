@@ -142,6 +142,10 @@ const GKChesterton = () => {
           Chesterton galt als „Meister des Paradoxen" – er spielte mit Lesererwartungen
           und überraschte mit brillanten Widersprüchen. Seine öffentlichen Dispute mit
           H.G. Wells, George Bernard Shaw und Bertrand Russell sind legendär.
+          Mehr zur Übersetzungsgeschichte und literarischen Einordnung in den{" "}
+          <Link to="/editorische-notizen-chesterton-haefs" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+            Editorischen Notizen nach Hanswilhelm Haefs
+          </Link>.
         </p>
       </div></section>
 

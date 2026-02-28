@@ -220,6 +220,7 @@ const WEITERLESEN = [
   { to: "/g-k-chesterton", label: "G.K. Chesterton", desc: "Der Erfinder von Pater Brown" },
   { to: "/hoerspiel", label: "Pater Brown Hörspiel", desc: "Maritim-Klassiker und mehr" },
   { to: "/father-brown", label: "Father Brown", desc: "Die englische Originalfigur" },
+  { to: "/editorische-notizen-chesterton-haefs", label: "Editorische Notizen", desc: "Übersetzungskritik nach Hanswilhelm Haefs" },
   { to: "/krimi-hoerspiel", label: "Krimi-Hörspiel", desc: "Das Genre im Überblick" },
 ];
 
