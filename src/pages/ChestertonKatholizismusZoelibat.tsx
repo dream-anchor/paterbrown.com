@@ -9,14 +9,14 @@ const BREADCRUMBS = [
 ];
 
 const TOC = [
-  { id: "konversion", label: "Chestertons Konversion" },
-  { id: "zoelibatsdebatte", label: "Haefs' Dokumentation der Zölibatsdebatte" },
-  { id: "historische-entwicklung", label: "Historische Entwicklung" },
-  { id: "zweites-vaticanum", label: "Seit dem II. Vaticanum" },
-  { id: "niederlaendische-kontroverse", label: "Die niederländische Kontroverse" },
-  { id: "deutscher-klerus", label: "Der deutsche Klerus" },
-  { id: "theologische-fragen", label: "Weitere theologische Fragen" },
-  { id: "father-brown-zoelibat", label: "Der Zölibat bei Father Brown" },
+  { id: "konversion", label: "Chestertons Weg zur katholischen Kirche" },
+  { id: "zoelibatsdebatte", label: "Die Zölibatsfrage in der kirchenhistorischen Forschung" },
+  { id: "historische-entwicklung", label: "Vom Konzil von Elvira bis zum Konzil von Trient" },
+  { id: "zweites-vaticanum", label: "Die Debatte nach dem Zweiten Vatikanischen Konzil" },
+  { id: "niederlaendische-kontroverse", label: "Sonderweg der niederländischen Kirche" },
+  { id: "deutscher-klerus", label: "Die Würzburger Synode und die deutsche Reaktion" },
+  { id: "theologische-fragen", label: "Weitere theologische Fragen bei Haefs" },
+  { id: "father-brown-zoelibat", label: "Der Zölibat in den Father-Brown-Geschichten" },
   { id: "quellen", label: "Quellen" },
 ];
 
@@ -25,7 +25,7 @@ const ChestertonKatholizismusZoelibat = () => {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: "G. K. Chesterton, der Katholizismus und die Zölibatsfrage",
-    description: "Dokumentation von Hanswilhelm Haefs zur Zölibatsdebatte im Kontext von Chestertons Werk",
+    description: "Eigenständige Aufbereitung der Zölibatsthematik im Kontext von Chestertons Werk, basierend auf Arbeiten von Hanswilhelm Haefs",
     url: "https://paterbrown.com/chesterton-katholizismus-zoelibat",
     author: {
       "@type": "Organization",
@@ -73,7 +73,7 @@ const ChestertonKatholizismusZoelibat = () => {
     <EditorialLayout
       breadcrumbs={BREADCRUMBS}
       title="G.K. Chesterton, der Katholizismus und die Zölibatsfrage"
-      subtitle="Dokumentation nach Hanswilhelm Haefs zur historischen Entwicklung der Zölibatsdebatte im Kontext von Chestertons Werk"
+      subtitle="Basierend auf Arbeiten von Hanswilhelm Haefs (Archiv der Gegenwart, 1972)"
       toc={TOC}
       lastUpdated="2026-02-28"
     >
@@ -86,8 +86,8 @@ const ChestertonKatholizismusZoelibat = () => {
         schema={[articleSchema, breadcrumbSchema]}
       />
 
-      {/* ── Chestertons Konversion ── */}
-      <h2 id="konversion">Chestertons Konversion</h2>
+      {/* ── Chestertons Weg zur katholischen Kirche ── */}
+      <h2 id="konversion">Chestertons Weg zur katholischen Kirche</h2>
 
       <p>
         Gilbert Keith Chesterton (1874–1936) konvertierte 1922 zum Katholizismus — ein
@@ -100,23 +100,21 @@ const ChestertonKatholizismusZoelibat = () => {
       </p>
 
       <p>
-        Welche Schwierigkeiten der zum katholischen Glauben konvertierte Chesterton
-        lediglich durch Glauben überwinden musste, lässt sich beispielhaft an der
-        Frage des Zölibats verdeutlichen. Der Übersetzer der Father-Brown-Geschichten,{" "}
-        <strong>Hanswilhelm Haefs</strong> (1935–2015),
-        veröffentlichte 1972 zu dieser Problematik im <em>Archiv der Gegenwart</em>{" "}
-        (AdG, S. 16.965–16.971) eine ausführliche Untersuchung, die auf der begleitenden
-        Website zu seinen{" "}
-        <Link to="/editorische-notizen-chesterton-haefs">
-          Chesterton-Übersetzungen
-        </Link>
-        {" "}dokumentiert war.
+        Chestertons Konversion brachte ihn unweigerlich in Berührung mit den schwierigsten
+        Glaubensfragen der katholischen Kirche — Fragen, auf die der Glaube zwar Antworten
+        gibt, die aber innerkirchlich teils heftig umstritten waren und sind. Eine der
+        kontroversesten betrifft den Pflichtzölibat.{" "}
+        <strong>Hanswilhelm Haefs</strong> (1935–2015), Übersetzer der maßgeblichen
+        deutschen Father-Brown-Ausgaben und Chefredakteur des{" "}
+        <em>Archiv der Gegenwart</em>, veröffentlichte 1972 eine ausführliche Untersuchung
+        zur Zölibatsproblematik (AdG, S. 16.965–16.971). Diese Dokumentation war
+        jahrelang auf der begleitenden Website father-brown.de zugänglich.
       </p>
 
       <hr />
 
-      {/* ── Die Zölibatsdebatte ── */}
-      <h2 id="zoelibatsdebatte">Haefs' Dokumentation der Zölibatsdebatte</h2>
+      {/* ── Die Zölibatsfrage in der kirchenhistorischen Forschung ── */}
+      <h2 id="zoelibatsdebatte">Die Zölibatsfrage in der kirchenhistorischen Forschung</h2>
 
       <p>
         Als Chefredakteur des <em>Archiv der Gegenwart</em> — einer der maßgeblichen
@@ -125,7 +123,7 @@ const ChestertonKatholizismusZoelibat = () => {
         Zusammenhänge systematisch aufzuarbeiten verstand.
       </p>
 
-      <h3 id="historische-entwicklung">Historische Entwicklung</h3>
+      <h3 id="historische-entwicklung">Vom Konzil von Elvira bis zum Konzil von Trient</h3>
 
       <p>
         Die Geschichte des priesterlichen Zölibats reicht bis in die Spätantike zurück.
@@ -148,7 +146,7 @@ const ChestertonKatholizismusZoelibat = () => {
         nur für Bischöfe und Mönche.
       </p>
 
-      <h3 id="zweites-vaticanum">Seit dem II. Vaticanum</h3>
+      <h3 id="zweites-vaticanum">Die Debatte nach dem Zweiten Vatikanischen Konzil</h3>
 
       <p>
         Das Zweite Vatikanische Konzil (1962–1965) eröffnete eine Phase intensiver
@@ -159,7 +157,7 @@ const ChestertonKatholizismusZoelibat = () => {
         der Priester.
       </p>
 
-      <h3 id="niederlaendische-kontroverse">Die niederländische Kontroverse</h3>
+      <h3 id="niederlaendische-kontroverse">Sonderweg der niederländischen Kirche</h3>
 
       <p>
         Eine besonders kontroverse Dynamik entfaltete die Zölibatsdebatte in den
@@ -176,7 +174,7 @@ const ChestertonKatholizismusZoelibat = () => {
         Konflikte der Nachkonzilszeit.
       </p>
 
-      <h3 id="deutscher-klerus">Der deutsche Klerus</h3>
+      <h3 id="deutscher-klerus">Die Würzburger Synode und die deutsche Reaktion</h3>
 
       <p>
         Auch im deutschen Klerus fand eine intensive Auseinandersetzung statt. Die
@@ -187,8 +185,8 @@ const ChestertonKatholizismusZoelibat = () => {
 
       <hr />
 
-      {/* ── Theologische Fragen ── */}
-      <h2 id="theologische-fragen">Weitere theologische Fragen</h2>
+      {/* ── Weitere theologische Fragen ── */}
+      <h2 id="theologische-fragen">Weitere theologische Fragen bei Haefs</h2>
 
       <p>
         Neben der Zölibatsfrage dokumentierte Haefs weitere theologische Problemfelder,
@@ -210,15 +208,19 @@ const ChestertonKatholizismusZoelibat = () => {
       <p>
         Als Übersetzer war Haefs naturgemäß sensibilisiert für die Problematik von
         Bibelübersetzungen und deren Einfluss auf Theologie und Glaubenspraxis. Die
-        Parallele zu seiner eigenen Arbeit an den Chesterton-Übersetzungen liegt nahe:
-        Wie bei der Übertragung literarischer Texte können auch bei der Bibelübersetzung
-        Nuancen verloren gehen oder verfälscht werden, die den Sinn des Originals verändern.
+        Parallele zu seiner eigenen Arbeit an den{" "}
+        <Link to="/editorische-notizen-chesterton-haefs">
+          Chesterton-Übersetzungen
+        </Link>{" "}
+        liegt nahe: Wie bei der Übertragung literarischer Texte können auch bei der
+        Bibelübersetzung Nuancen verloren gehen oder verfälscht werden, die den Sinn
+        des Originals verändern.
       </p>
 
       <hr />
 
-      {/* ── Der Zölibat bei Father Brown ── */}
-      <h2 id="father-brown-zoelibat">Der Zölibat bei Father Brown</h2>
+      {/* ── Der Zölibat in den Father-Brown-Geschichten ── */}
+      <h2 id="father-brown-zoelibat">Der Zölibat in den Father-Brown-Geschichten</h2>
 
       <p>
         Father Brown ist als katholischer Weltpriester selbstverständlich dem Zölibat
@@ -259,15 +261,16 @@ const ChestertonKatholizismusZoelibat = () => {
 
       <p>
         <em>
-          Diese Seite dokumentiert die Arbeiten von Hanswilhelm Haefs (1935–2015) zur
-          Zölibatsfrage im Kontext von G.K. Chestertons katholischer Weltsicht. Haefs
-          war Chefredakteur des Archiv der Gegenwart und Übersetzer der maßgeblichen
-          deutschen Father-Brown-Ausgaben.
+          Diese Seite ist eine eigenständige Aufbereitung der Zölibatsthematik im Kontext
+          von G.K. Chestertons Werk. Die zugrunde liegende Dokumentation zur Zölibatsdebatte
+          stammt von Hanswilhelm Haefs (Archiv der Gegenwart, 1972, S. 16.965–16.971).
+          Haefs' Originaltext ist in Buchform erschienen bei Area Verlag, Erftstadt 2005
+          (ISBN 3-89996-182-X).
         </em>
       </p>
 
       <p>
-        Siehe auch: <Link to="/editorische-notizen-chesterton-haefs">Editorische Notizen zum Gesamtwerk von G.K. Chesterton</Link>.
+        Siehe auch: <Link to="/editorische-notizen-chesterton-haefs">G.K. Chesterton im deutschen Sprachraum</Link>.
         Die Father-Brown-Erzählungen werden auf der Bühne fortgeführt
         im <Link to="/live-hoerspiel">Pater Brown Live-Hörspiel</Link>.
       </p>
