@@ -492,9 +492,9 @@ const PaterBrown = () => (
               to={member.slug}
               className="block p-5 border border-foreground/10 group transition-all"
             >
-              <h4 className="text-gold font-heading text-xl tracking-wider uppercase mb-2 group-hover:text-foreground transition-colors">
+              <h3 className="text-gold font-heading text-xl tracking-wider uppercase mb-2 group-hover:text-foreground transition-colors">
                 {member.name}
-              </h4>
+              </h3>
               <p className="text-foreground/60 leading-relaxed text-base">
                 {member.desc}
               </p>

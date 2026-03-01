@@ -23,6 +23,11 @@ RewriteRule ^(.*)$ https://paterbrown.com/$1 [L,R=301]
     AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json image/svg+xml
 </IfModule>
 
+# Enable Brotli compression (if mod_brotli is available)
+<IfModule mod_brotli.c>
+    AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
 # Browser caching
 <IfModule mod_expires.c>
     ExpiresActive On
@@ -54,6 +59,10 @@ RewriteRule ^(.*)$ https://paterbrown.com/$1 [L,R=301]
 # =====================================================
 
 <IfModule mod_headers.c>
+    # Hide server version (security)
+    Header unset Server
+    Header always unset Server
+
     # Prevent MIME type sniffing
     Header always set X-Content-Type-Options "nosniff"
 
@@ -68,6 +77,9 @@ RewriteRule ^(.*)$ https://paterbrown.com/$1 [L,R=301]
 
     # HSTS – Browser soll nur HTTPS verwenden (1 Jahr)
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+
+    # Permissions Policy (replaces Feature-Policy)
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
 
     # Content Security Policy
     Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cmp.osano.com https://www.googletagmanager.com https://www.google-analytics.com https://www.clarity.ms https://sibforms.com; style-src 'self' 'unsafe-inline' https://sibforms.com https://fonts.googleapis.com; img-src 'self' data: blob: https: http:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://*.google-analytics.com https://*.clarity.ms https://cmp.osano.com https://sibforms.com; frame-src 'self' https://cmp.osano.com; object-src 'none'; base-uri 'self'"
@@ -91,6 +103,9 @@ DirectorySlash Off
     # Don't rewrite actual files
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Don't SPA-fallback for static asset extensions (prevents HTML response for missing images)
+    RewriteRule \.(webp|jpg|jpeg|png|gif|svg|ico|woff2|woff|ttf|eot|css|js|map|mp4|webm|pdf)$ - [R=404,L]
 
     # SPA Fallback: everything else to index.html
     RewriteRule ^ index.html [L]

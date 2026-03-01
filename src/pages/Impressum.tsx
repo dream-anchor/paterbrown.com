@@ -39,7 +39,7 @@ const Impressum = () => {
                 Kontakt
               </h2>
               <p>
-                Telefon: +49 89 909015 3943<br />
+                Telefon: <a href="tel:+49899090153943" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">+49 89 909015 3943</a><br />
                 E-Mail:{" "}
                 <a href="mailto:hello@dream-anchor.com" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
                   hello@dream-anchor.com

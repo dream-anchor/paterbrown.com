@@ -82,7 +82,7 @@ const PfarrerBraun = () => {
     >
       <SEO
         title="Pfarrer Braun – 22 Filme mit Ottfried Fischer | Pater Brown"
-        description="Komplette Übersicht der ARD-Krimireihe Pfarrer Braun (2003–2014) mit Ottfried Fischer: Alle 22 Episoden, Besetzung, Drehorte, Trivia und Hintergrundinformationen."
+        description="Komplette Übersicht der ARD-Krimireihe Pfarrer Braun (2003–2014) mit Ottfried Fischer: Alle 22 Episoden, Besetzung, Drehorte und Trivia."
         canonical="/pfarrer-braun-ottfried-fischer"
         keywords="pfarrer braun serie, ottfried fischer pfarrer braun, pfarrer braun episoden, pfarrer braun alle folgen, ard pfarrer braun, pfarrer braun besetzung drehorte"
         ogImage="/images/og/g-k-chesterton-pater-brown-og.webp"

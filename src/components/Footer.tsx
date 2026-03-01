@@ -51,9 +51,9 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-16">
           {FOOTER_NAV.map((col) => (
             <div key={col.heading}>
-              <h3 className="text-primary text-xs font-heading uppercase tracking-[0.2em] mb-5">
+              <p className="text-primary text-xs font-heading uppercase tracking-[0.2em] mb-5">
                 {col.heading}
-              </h3>
+              </p>
               <nav aria-label={col.heading}>
                 <ul className="space-y-3">
                   {col.links.map((link) => (
@@ -79,7 +79,7 @@ const Footer = () => {
               hallo@paterbrown.com
             </a>
             <span className="mx-3 text-primary/30">|</span>
-            <a href="tel:+498990901539433" className="hover:text-primary transition-colors">
+            <a href="tel:+49899090153943" className="hover:text-primary transition-colors">
               +49 89 909015 3943
             </a>
           </address>
