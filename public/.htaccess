@@ -56,28 +56,42 @@ RewriteRule ^(.*)$ https://paterbrown.com/$1 [L,R=301]
 <IfModule mod_headers.c>
     # Prevent MIME type sniffing
     Header always set X-Content-Type-Options "nosniff"
-    
+
     # Clickjacking protection
     Header always set X-Frame-Options "SAMEORIGIN"
-    
+
     # XSS protection
     Header always set X-XSS-Protection "1; mode=block"
-    
+
     # Referrer Policy
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # HSTS – Browser soll nur HTTPS verwenden (1 Jahr)
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+
+    # Content Security Policy
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cmp.osano.com https://www.googletagmanager.com https://www.google-analytics.com https://www.clarity.ms https://sibforms.com; style-src 'self' 'unsafe-inline' https://sibforms.com https://fonts.googleapis.com; img-src 'self' data: blob: https: http:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://*.google-analytics.com https://*.clarity.ms https://cmp.osano.com https://sibforms.com; frame-src 'self' https://cmp.osano.com; object-src 'none'; base-uri 'self'"
 </IfModule>
 
 # =====================================================
-# SPA Fallback (for React Router)
+# Pre-rendered Pages + SPA Fallback
 # =====================================================
+
+# Prevent Apache from adding trailing slash to directories (avoids 301 redirects)
+DirectorySlash Off
 
 <IfModule mod_rewrite.c>
     RewriteBase /
-    
-    # Don't rewrite files or directories
+
+    # If URL is a directory without trailing slash and has an index.html, serve it directly
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteCond %{REQUEST_FILENAME}/index.html -f
+    RewriteRule ^(.+?)/?$ $1/index.html [L]
+
+    # Don't rewrite actual files
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    
-    # Rewrite everything else to index.html
+
+    # SPA Fallback: everything else to index.html
     RewriteRule ^ index.html [L]
 </IfModule>

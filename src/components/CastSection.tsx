@@ -32,6 +32,7 @@ const CastSection = () => {
                 <ResponsiveImage
                   src={member.image}
                   alt=""
+                  aria-hidden="true"
                   className="absolute inset-0 w-full h-full object-cover"
                   loading="lazy"
                   width={800}

@@ -68,9 +68,8 @@ export const SEO = ({
       <meta name="robots" content={robots} />
       <link rel="canonical" href={canonicalUrl} />
 
-      {/* Hreflang – DE, AT, CH */}
+      {/* Hreflang – DE + CH (Zürich-Termin), x-default */}
       <link rel="alternate" hrefLang="de-DE" href={canonicalUrl} />
-      <link rel="alternate" hrefLang="de-AT" href={canonicalUrl} />
       <link rel="alternate" hrefLang="de-CH" href={canonicalUrl} />
       <link rel="alternate" hrefLang="x-default" href={canonicalUrl} />
 

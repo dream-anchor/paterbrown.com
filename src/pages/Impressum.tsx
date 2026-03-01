@@ -124,7 +124,7 @@ const Impressum = () => {
                 </a>
                 <br />
                 Andreas Achmann (Foto Stefanie Sick) –{" "}
-                <a href="https://andreas-achmann.com/" target="_blank" rel="noreferrer" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
+                <a href="http://andreas-achmann.com/" target="_blank" rel="noreferrer" className="text-gold hover:text-gold/80 transition-colors underline-offset-4 hover:underline">
                   andreas-achmann.com
                 </a>
                 <br />
