@@ -81,7 +81,7 @@ const PfarrerBraun = () => {
       lastUpdated="2026-02-28"
     >
       <SEO
-        title="Pfarrer Braun — Alle 22 Filme mit Ottfried Fischer | Serienübersicht"
+        title="Pfarrer Braun – 22 Filme mit Ottfried Fischer | Pater Brown"
         description="Komplette Übersicht der ARD-Krimireihe Pfarrer Braun (2003–2014) mit Ottfried Fischer: Alle 22 Episoden, Besetzung, Drehorte, Trivia und Hintergrundinformationen."
         canonical="/pfarrer-braun-ottfried-fischer"
         keywords="pfarrer braun serie, ottfried fischer pfarrer braun, pfarrer braun episoden, pfarrer braun alle folgen, ard pfarrer braun, pfarrer braun besetzung drehorte"

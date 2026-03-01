@@ -67,7 +67,7 @@ const WanjaMues = () => {
       heroCTA
     >
       <SEO
-        title={`Wanja Mues als Pater Brown – Der Star aus „Ein Fall für zwei“ live | paterbrown.com`}
+        title={"Wanja Mues – Schauspieler im Pater Brown Live-Hörspiel"}
         description={`Wanja Mues bringt Pater Brown als Live-Hörspiel auf die Bühne. Der Schauspieler aus „Ein Fall für zwei“ & „Der Pianist“ in einer neuen Rolle. Termine & Tickets.`}
         canonical="/wanja-mues"
         keywords="pater brown wanja mues, wanja mues pater brown, wanja mues, wanja mues schauspieler"

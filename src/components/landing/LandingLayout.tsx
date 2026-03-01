@@ -30,6 +30,8 @@ interface LandingLayoutProps {
   heroTextOffset?: number;
   /** Zusätzlicher Blur auf dem Hero-Hintergrund in px (addiert zum Standard-blur) */
   heroExtraBlur?: number;
+  /** Sr-only Prefix vor dem sichtbaren H1-Text (SEO: z.B. "Pater Brown Live-Hörspiel in") */
+  heroH1Prefix?: string;
 }
 
 const LandingLayout = ({
@@ -44,6 +46,7 @@ const LandingLayout = ({
   heroObjectPosition = "50% 15%",
   heroTextOffset = 0,
   heroExtraBlur = 0,
+  heroH1Prefix,
 }: LandingLayoutProps) => {
   if (variant === "immersive") {
     return (
@@ -87,6 +90,7 @@ const LandingLayout = ({
                   className="text-5xl sm:text-7xl md:text-[9rem] lg:text-[12rem] font-heading text-foreground leading-[0.8] cinematic-enter neon-gold neon-breathe"
                   style={{ animationDelay: "0.15s" }}
                 >
+                  {heroH1Prefix && <span className="sr-only">{heroH1Prefix} </span>}
                   {heroTitle}
                 </h1>
               </>
@@ -312,6 +316,7 @@ const LandingLayout = ({
                 className="text-5xl sm:text-7xl md:text-[8rem] lg:text-[10rem] font-heading text-foreground leading-[0.85] cinematic-enter neon-gold neon-breathe"
                 style={{ animationDelay: "0.15s" }}
               >
+                {heroH1Prefix && <span className="sr-only">{heroH1Prefix} </span>}
                 {heroTitle}
               </h1>
             </>

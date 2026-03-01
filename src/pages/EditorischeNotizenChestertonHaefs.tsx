@@ -82,8 +82,8 @@ const EditorischeNotizenChestertonHaefs = () => {
       lastUpdated="2026-02-28"
     >
       <SEO
-        title="G. K. Chesterton im deutschen Sprachraum — Übersetzungsgeschichte und literarische Einordnung nach Hanswilhelm Haefs | Pater Brown"
-        description="G. K. Chesterton im deutschen Sprachraum: Warum Chestertons literarischer Rang in Deutschland lange unterschätzt wurde. Übersetzungsgeschichte, Bibliographie und die Neuübersetzung durch Hanswilhelm Haefs."
+        title="Chesterton-Übersetzungsgeschichte (Haefs) | Pater Brown"
+        description="Warum Chestertons Rang in Deutschland lange unterschätzt wurde. Übersetzungsgeschichte und die Neuübersetzung durch Hanswilhelm Haefs."
         canonical="/editorische-notizen-chesterton-haefs"
         keywords="chesterton deutscher sprachraum, hanswilhelm haefs übersetzung, father brown chesterton deutsch, chesterton übersetzungsgeschichte, haefs father brown übersetzung haffmans"
         ogImage="/images/og/g-k-chesterton-pater-brown-og.webp"

@@ -174,6 +174,7 @@ const CityLandingPage = ({ config }: { config: CityPageConfig }) => {
       ]}
       heroImage={config.heroImage}
       heroTitle={config.cityName}
+      heroH1Prefix="Pater Brown Live-Hörspiel in"
       heroSubtitle="Das Live-Hörspiel"
       heroCTA={eventMode === "active"}
       showCTA={eventMode === "active"}

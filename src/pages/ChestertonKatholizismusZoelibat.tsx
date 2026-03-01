@@ -78,8 +78,8 @@ const ChestertonKatholizismusZoelibat = () => {
       lastUpdated="2026-02-28"
     >
       <SEO
-        title="G. K. Chesterton, der Katholizismus und die Zölibatsfrage — Dokumentation nach Hanswilhelm Haefs | Pater Brown"
-        description="Die Zölibatsdebatte im Kontext von G. K. Chestertons katholischer Weltsicht. Dokumentation von Hanswilhelm Haefs zur historischen Entwicklung, dem II. Vaticanum und der niederländischen Zölibatskontroverse."
+        title="Chesterton, Katholizismus & Zölibat | Pater Brown"
+        description="Die Zölibatsdebatte bei Chesterton: Historische Entwicklung, II. Vaticanum und die niederländische Kontroverse nach Hanswilhelm Haefs."
         canonical="/chesterton-katholizismus-zoelibat"
         keywords="chesterton katholizismus zölibat, haefs zölibat archiv gegenwart, father brown priester zölibat, zölibatsdebatte zweites vatikanum niederländischer klerus"
         ogImage="/images/og/g-k-chesterton-pater-brown-og.webp"

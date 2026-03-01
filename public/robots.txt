@@ -4,6 +4,7 @@
 
 User-agent: *
 Allow: /
+Disallow: /admin
 
 # --- Explicitly allow high-visibility crawlers (redundant but harmless; kept for clarity) ---
 User-agent: Googlebot

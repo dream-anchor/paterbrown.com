@@ -62,7 +62,7 @@ const FatherBrown = () => {
       heroCTA
     >
       <SEO
-        title="Father Brown – Von G.K. Chesterton zum Live-Hörspiel | paterbrown.com"
+        title="Father Brown – Chestertons Krimiheld | Pater Brown"
         description="Father Brown, im Deutschen als Pater Brown bekannt: Die berühmte Figur von G.K. Chesterton jetzt als Live-Hörspiel auf Tour. Alle Infos & Tickets."
         canonical="/father-brown"
         keywords="father brown, father brown 2026, father brown tour, father brown hörspiel, father braun"
