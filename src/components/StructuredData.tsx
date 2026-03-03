@@ -1,40 +1,13 @@
 import { Helmet } from 'react-helmet-async';
 
-interface StructuredDataProps {
-  type: 'website' | 'organization' | 'person' | 'event';
-  data: any;
-}
-
-interface EventData {
-  name: string;
-  startDate: string;
-  endDate?: string;
-  location: {
-    name: string;
-    address: {
-      streetAddress: string;
-      addressLocality: string;
-      postalCode: string;
-      addressCountry: string;
-    };
-  };
-  offers?: {
-    price: string;
-    priceCurrency: string;
-    availability: string;
-    url: string;
-  };
-  performer: {
-    name: string;
-    type: string;
-  }[];
-  description: string;
-  image?: string;
-}
-
-export const StructuredData = ({ type, data }: StructuredDataProps) => {
-  const generateSchema = () => {
-    const baseSchema = {
+/**
+ * FAQ Structured Data Component
+ * Provides rich snippets for frequently asked questions
+ */
+export const FAQStructuredData = () => {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
     "mainEntity": [
       {
         "@type": "Question",
@@ -49,47 +22,12 @@ export const StructuredData = ({ type, data }: StructuredDataProps) => {
         "name": "Wo kann ich Tickets kaufen?",
         "acceptedAnswer": {
           "@type": "Answer",
-        return { ...baseSchema, ...data };
-      }
-      
-      case 'event': {
-        const eventData = data as EventData;
-        return {
-          ...baseSchema,
-          '@type': 'Event',
-          name: eventData.name,
-          startDate: eventData.startDate,
-          endDate: eventData.endDate,
-          location: {
-            '@type': 'Place',
-            name: eventData.location.name,
-            address: {
-              '@type': 'PostalAddress',
-              streetAddress: eventData.location.address.streetAddress,
-              addressLocality: eventData.location.address.addressLocality,
-              postalCode: eventData.location.address.postalCode,
-              addressCountry: eventData.location.address.addressCountry
-            }
-          },
-          performer: eventData.performer.map(p => ({
-            '@type': p.type,
-            name: p.name
-          })),
-          description: eventData.description,
-          image: eventData.image,
-          offers: eventData.offers ? {
-            '@type': 'Offer',
-            price: eventData.offers.price,
-            priceCurrency: eventData.offers.priceCurrency,
-            availability: `https://schema.org/${eventData.offers.availability}`,
-            url: eventData.offers.url
-          } : undefined
-        };
-      }
-      
-      default:
-        return baseSchema;
-    }
+          "text": "Tickets sind über Eventim.de (Deutschland) und Ticketcorner.ch (Schweiz) erhältlich."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Wer sind die Hauptdarsteller?",
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "Antoine Monot als Pater Brown und Wanja Mues als Flambeau, beide bekannt aus der ZDF-Serie 'Ein Fall für Zwei'."
