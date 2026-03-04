@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useMemo, lazy, Suspense } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { SEO } from "@/components/SEO";
 import AdminLayout from "@/components/admin/AdminLayout";
 import BottomNav from "@/components/admin/BottomNav";
 import AdminCommandPalette from "@/components/admin/AdminCommandPalette";
@@ -366,6 +367,10 @@ const Admin = () => {
 
   return (
     <AdminLayout bottomNav={<BottomNav activeTab={activeTab} onTabChange={handleTabChange} />}>
+      <SEO
+        title="Admin – Pater Brown Backstage"
+        robots="noindex, nofollow"
+      />
       {/* Command Palette */}
       <AdminCommandPalette
         open={commandPaletteOpen}
