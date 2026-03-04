@@ -12,6 +12,9 @@ RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
+# Fehlende -2000er Bildvarianten auf -1200er umleiten (Quellbilder nur 1200px)
+RewriteRule ^images/buehne/(.+)-af-2000\.webp$ /images/buehne/$1-af-1200.webp [R=301,L]
+
 # Alle anderen Anfragen auf index.html umleiten (SPA-Fallback)
 # Kein Redirect (R-Flag fehlt bewusst) – internes Rewrite, keine Schleife
 RewriteRule ^ index.html [L]
