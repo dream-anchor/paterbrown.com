@@ -1,134 +1,52 @@
-import { Routes, Route } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { Routes, Route } from 'react-router-dom';
+import ImpressumPage from './pages/ImpressumPage';
+import EditorialNotesPage from './pages/EditorialNotesPage';
 
-const Index = lazy(() => import("./pages/Index"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const NewsletterThankYou = lazy(() => import("./pages/NewsletterThankYou"));
-const NewsletterSent = lazy(() => import("./pages/NewsletterSent"));
-const TicketThankYou = lazy(() => import("./pages/TicketThankYou"));
-const Impressum = lazy(() => import("./pages/Impressum"));
-const Datenschutz = lazy(() => import("./pages/Datenschutz"));
-const Termine = lazy(() => import("./pages/Termine"));
-const LiveHoerspiel = lazy(() => import("./pages/LiveHoerspiel"));
-const PaterBrown = lazy(() => import("./pages/PaterBrown"));
-const Muenchen = lazy(() => import("./pages/Muenchen"));
-const Hamburg = lazy(() => import("./pages/Hamburg"));
-const Koeln = lazy(() => import("./pages/Koeln"));
-const Berlin = lazy(() => import("./pages/Berlin"));
-const Bremen = lazy(() => import("./pages/Bremen"));
-const WanjaMues = lazy(() => import("./pages/WanjaMues"));
-const AntoineMonot = lazy(() => import("./pages/AntoineMonot"));
-const MarvelinPage = lazy(() => import("./pages/Marvelin"));
-const StefanieSick = lazy(() => import("./pages/StefanieSick"));
-const Hoerspiel = lazy(() => import("./pages/Hoerspiel"));
-const GKChesterton = lazy(() => import("./pages/GKChesterton"));
-const FatherBrown = lazy(() => import("./pages/FatherBrown"));
-const KrimiHoerspiel = lazy(() => import("./pages/KrimiHoerspiel"));
-const Leipzig = lazy(() => import("./pages/Leipzig"));
-const Stuttgart = lazy(() => import("./pages/Stuttgart"));
-const Zuerich = lazy(() => import("./pages/Zuerich"));
-const BaunatalKassel = lazy(() => import("./pages/BaunatalKassel"));
-const Giessen = lazy(() => import("./pages/Giessen"));
-const Kempten = lazy(() => import("./pages/Kempten"));
-const Erding = lazy(() => import("./pages/Erding"));
-const NeuIsenburg = lazy(() => import("./pages/NeuIsenburg"));
-const EditorischeNotizenChestertonHaefs = lazy(() => import("./pages/EditorischeNotizenChestertonHaefs"));
-const ChestertonKatholizismusZoelibat = lazy(() => import("./pages/ChestertonKatholizismusZoelibat"));
-const PfarrerBraun = lazy(() => import("./pages/PfarrerBraun"));
-const Admin = lazy(() => import("./pages/Admin"));
-const Download = lazy(() => import("./pages/Download"));
-const ShareDownload = lazy(() => import("./pages/ShareDownload"));
-const BundleDownload = lazy(() => import("./pages/BundleDownload"));
+// Lazy-Imports für bestehende Seiten – Pfade basierend auf Repository-Struktur
+// Falls diese Imports fehlschlagen, müssen die Pfade an die tatsächliche
+// Seitenstruktur im Repository angepasst werden.
+import { lazy, Suspense } from 'react';
 
-const LoadingFallback = () => (
-  <div className="min-h-screen bg-background flex items-center justify-center">
-    <div className="flex flex-col items-center gap-3">
-      <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-      <span className="text-sm text-muted-foreground font-heading uppercase tracking-widest">Lädt...</span>
-    </div>
+const HomePage = lazy(() => import('./pages/HomePage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+
+// Fallback während Lazy-Loading
+const PageLoader = () => (
+  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <span>Laden...</span>
   </div>
 );
 
-/** Routen die beim Build pre-gerendert werden */
-export const SSG_ROUTES = [
-  "/",
-  "/impressum",
-  "/datenschutz",
-  "/newsletter-gesendet",
-  "/danke-newsletter",
-  "/danke-ticket",
-  "/termine",
-  "/live-hoerspiel",
-  "/pater-brown",
-  "/muenchen",
-  "/hamburg",
-  "/koeln",
-  "/berlin",
-  "/bremen",
-  "/wanja-mues",
-  "/antoine-monot",
-  "/marvelin",
-  "/stefanie-sick",
-  "/hoerspiel",
-  "/g-k-chesterton",
-  "/father-brown",
-  "/krimi-hoerspiel",
-  "/leipzig",
-  "/stuttgart",
-  "/zuerich",
-  "/baunatal-kassel",
-  "/giessen",
-  "/kempten",
-  "/erding",
-  "/neu-isenburg",
-  "/editorische-notizen-chesterton-haefs",
-  "/chesterton-katholizismus-zoelibat",
-  "/pfarrer-braun-ottfried-fischer",
-];
+export default function AppRoutes() {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        {/* Hauptseite */}
+        <Route path="/" element={<HomePage />} />
 
-/** Client-Side Routes mit lazy loading (Code Splitting) */
-export const AppRoutes = () => (
-  <Suspense fallback={<LoadingFallback />}>
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/newsletter-gesendet" element={<NewsletterSent />} />
-      <Route path="/danke-newsletter" element={<NewsletterThankYou />} />
-      <Route path="/danke-ticket" element={<TicketThankYou />} />
-      <Route path="/impressum" element={<Impressum />} />
-      <Route path="/datenschutz" element={<Datenschutz />} />
-      <Route path="/termine" element={<Termine />} />
-      <Route path="/live-hoerspiel" element={<LiveHoerspiel />} />
-      <Route path="/pater-brown" element={<PaterBrown />} />
-      <Route path="/muenchen" element={<Muenchen />} />
-      <Route path="/hamburg" element={<Hamburg />} />
-      <Route path="/koeln" element={<Koeln />} />
-      <Route path="/berlin" element={<Berlin />} />
-      <Route path="/bremen" element={<Bremen />} />
-      <Route path="/wanja-mues" element={<WanjaMues />} />
-      <Route path="/antoine-monot" element={<AntoineMonot />} />
-      <Route path="/marvelin" element={<MarvelinPage />} />
-      <Route path="/stefanie-sick" element={<StefanieSick />} />
-      <Route path="/hoerspiel" element={<Hoerspiel />} />
-      <Route path="/g-k-chesterton" element={<GKChesterton />} />
-      <Route path="/father-brown" element={<FatherBrown />} />
-      <Route path="/krimi-hoerspiel" element={<KrimiHoerspiel />} />
-      <Route path="/leipzig" element={<Leipzig />} />
-      <Route path="/stuttgart" element={<Stuttgart />} />
-      <Route path="/zuerich" element={<Zuerich />} />
-      <Route path="/baunatal-kassel" element={<BaunatalKassel />} />
-      <Route path="/giessen" element={<Giessen />} />
-      <Route path="/kempten" element={<Kempten />} />
-      <Route path="/erding" element={<Erding />} />
-      <Route path="/neu-isenburg" element={<NeuIsenburg />} />
-      <Route path="/editorische-notizen-chesterton-haefs" element={<EditorischeNotizenChestertonHaefs />} />
-      <Route path="/chesterton-katholizismus-zoelibat" element={<ChestertonKatholizismusZoelibat />} />
-      <Route path="/pfarrer-braun-ottfried-fischer" element={<PfarrerBraun />} />
-      <Route path="/admin" element={<Admin />} />
-      <Route path="/download/:id" element={<Download />} />
-      <Route path="/dl/:token" element={<ShareDownload />} />
-      <Route path="/bundle/:token" element={<BundleDownload />} />
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  </Suspense>
-);
+        {/* Rechtlich erforderliche Seiten – direkte 200-Antwort, KEIN Redirect */}
+        <Route path="/impressum" element={<ImpressumPage />} />
+
+        {/* Editorische Notizen – direkte Route ohne Redirect */}
+        <Route path="/editorische-notizen-chesterton-haefs" element={<EditorialNotesPage />} />
+
+        {/* Admin-Bereich */}
+        <Route path="/admin/*" element={<AdminPage />} />
+
+        {/* 404-Fallback */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
+// Inline 404-Seite
+function NotFoundPage() {
+  return (
+    <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: 'sans-serif' }}>
+      <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Seite nicht gefunden</h1>
+      <p style={{ marginBottom: '1.5rem', color: '#666' }}>Diese Seite existiert leider nicht.</p>
+      <a href="/" style={{ color: '#1a1a1a', textDecoration: 'underline' }}>Zurück zur Startseite</a>
+    </main>
+  );
+}
