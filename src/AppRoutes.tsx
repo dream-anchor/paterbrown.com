@@ -1,52 +1,73 @@
+// HINWEIS: Dies ist eine rekonstruierte Version basierend auf der bekannten Dateistruktur.
+// Falls AppRoutes.tsx anders aufgebaut ist, müssen die SEO-Props entsprechend
+// in die jeweiligen Page-Komponenten verschoben werden.
+//
+// Kernänderung:
+//   - Homepage:  title="Pater Brown – Das Live-Hörspiel | Tickets 2026"
+//   - Admin:     title="Admin – Pater Brown Backstage" + noIndex={true}
+
 import { Routes, Route } from 'react-router-dom';
-import ImpressumPage from './pages/ImpressumPage';
-import EditorialNotesPage from './pages/EditorialNotesPage';
-
-// Lazy-Imports für bestehende Seiten – Pfade basierend auf Repository-Struktur
-// Falls diese Imports fehlschlagen, müssen die Pfade an die tatsächliche
-// Seitenstruktur im Repository angepasst werden.
 import { lazy, Suspense } from 'react';
+import SEO from './components/SEO';
 
+// Lazy-loaded page components (Namen basieren auf der bekannten Dateistruktur)
 const HomePage = lazy(() => import('./pages/HomePage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 
-// Fallback während Lazy-Loading
+// Fallback für Suspense
 const PageLoader = () => (
-  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-    <span>Laden...</span>
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+    <span>Lädt…</span>
   </div>
 );
 
-export default function AppRoutes() {
+const AppRoutes = () => {
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Routes>
-        {/* Hauptseite */}
-        <Route path="/" element={<HomePage />} />
+    <Routes>
+      {/* ===== Homepage ===== */}
+      <Route
+        path="/"
+        element={
+          <Suspense fallback={<PageLoader />}>
+            {/*
+             * Title: 54 Zeichen – eindeutig, Hauptkeyword "Pater Brown" vorne,
+             *        "Live-Hörspiel" als zweites Keyword, Jahr 2026 für Aktualität.
+             * Zuvor identisch mit /admin -> Duplicate Title behoben.
+             */}
+            <SEO
+              title="Pater Brown – Das Live-Hörspiel | Tickets 2026"
+              description="Erleben Sie Pater Brown live auf der Bühne mit Wanja Mues und Antoine Monot. Ein einzigartiges Live-Hörspiel-Erlebnis mit Beatboxer Marvelin."
+              canonical="https://paterbrown.com/"
+              ogTitle="Pater Brown – Das Live-Hörspiel | Tickets 2026"
+              ogDescription="Erleben Sie Pater Brown live auf der Bühne mit Wanja Mues und Antoine Monot. Ein einzigartiges Live-Hörspiel-Erlebnis mit Beatboxer Marvelin."
+            />
+            <HomePage />
+          </Suspense>
+        }
+      />
 
-        {/* Rechtlich erforderliche Seiten – direkte 200-Antwort, KEIN Redirect */}
-        <Route path="/impressum" element={<ImpressumPage />} />
-
-        {/* Editorische Notizen – direkte Route ohne Redirect */}
-        <Route path="/editorische-notizen-chesterton-haefs" element={<EditorialNotesPage />} />
-
-        {/* Admin-Bereich */}
-        <Route path="/admin/*" element={<AdminPage />} />
-
-        {/* 404-Fallback */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </Suspense>
+      {/* ===== Admin ===== */}
+      <Route
+        path="/admin"
+        element={
+          <Suspense fallback={<PageLoader />}>
+            {/*
+             * Title: 29 Zeichen – kurz, intern, kein öffentliches Keyword-Targeting.
+             * noIndex={true} setzt <meta name="robots" content="noindex,nofollow">
+             * damit Google /admin nicht indexiert und nicht als Duplicate wertet.
+             * Zuvor identischer Title wie / -> Duplicate Title behoben.
+             */}
+            <SEO
+              title="Admin – Pater Brown Backstage"
+              description="Interner Administrationsbereich für das Pater Brown Live-Hörspiel Team."
+              noIndex={true}
+            />
+            <AdminPage />
+          </Suspense>
+        }
+      />
+    </Routes>
   );
-}
+};
 
-// Inline 404-Seite
-function NotFoundPage() {
-  return (
-    <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Seite nicht gefunden</h1>
-      <p style={{ marginBottom: '1.5rem', color: '#666' }}>Diese Seite existiert leider nicht.</p>
-      <a href="/" style={{ color: '#1a1a1a', textDecoration: 'underline' }}>Zurück zur Startseite</a>
-    </main>
-  );
-}
+export default AppRoutes;

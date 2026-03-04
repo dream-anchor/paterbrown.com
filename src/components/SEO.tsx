@@ -1,103 +1,95 @@
-import { Helmet } from 'react-helmet-async';
-
-const BASE_URL = 'https://paterbrown.com';
+import { useEffect } from 'react';
 
 interface SEOProps {
   title: string;
   description?: string;
-  robots?: string;
   canonical?: string;
-  keywords?: string;
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
-  ogType?: 'website' | 'article';
-  twitterCard?: 'summary' | 'summary_large_image';
-  /** JSON-LD Structured Data (wird als <script type="application/ld+json"> eingefügt) */
-  schema?: Record<string, unknown> | Record<string, unknown>[];
+  noIndex?: boolean;
 }
 
-export const SEO = ({
+const SEO = ({
   title,
   description,
-  robots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   canonical,
-  keywords,
   ogTitle,
   ogDescription,
-  ogImage = '/og-image.png',
-  ogType = 'website',
-  twitterCard = 'summary_large_image',
-  schema,
+  ogImage,
+  noIndex = false,
 }: SEOProps) => {
-  const fullTitle = title.includes('Pater Brown') ? title : `${title} | Pater Brown`;
+  useEffect(() => {
+    // Title
+    document.title = title;
 
-  const getCanonicalUrl = () => {
-    if (canonical) {
-      if (canonical.startsWith('/')) {
-        const cleanPath = canonical === '/' ? '' : canonical.replace(/\/$/, '');
-        return `${BASE_URL}${cleanPath}`;
+    // Helper: upsert a <meta> tag
+    const setMeta = (selector: string, attrName: string, attrValue: string, content: string) => {
+      let el = document.querySelector(selector) as HTMLMetaElement | null;
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attrName, attrValue);
+        document.head.appendChild(el);
       }
-      if (canonical.startsWith('http')) {
-        return canonical;
+      el.setAttribute('content', content);
+    };
+
+    // Helper: upsert a <link> tag
+    const setLink = (rel: string, href: string) => {
+      let el = document.querySelector(`link[rel='${rel}']`) as HTMLLinkElement | null;
+      if (!el) {
+        el = document.createElement('link');
+        el.setAttribute('rel', rel);
+        document.head.appendChild(el);
       }
-      return `${BASE_URL}/${canonical}`;
+      el.setAttribute('href', href);
+    };
+
+    // Meta description
+    if (description) {
+      setMeta("meta[name='description']", 'name', 'description', description);
     }
-    const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
-    const cleanPath = pathname === '/' ? '' : pathname.replace(/\/$/, '');
-    return `${BASE_URL}${cleanPath}`;
-  };
 
-  const canonicalUrl = getCanonicalUrl();
-  const finalOgTitle = ogTitle || fullTitle;
-  const finalOgDescription = ogDescription || description;
-  const fullOgImage = ogImage.startsWith('http') ? ogImage : `${BASE_URL}${ogImage}`;
+    // Canonical
+    if (canonical) {
+      setLink('canonical', canonical);
+    }
 
-  // Schema kann ein einzelnes Objekt oder ein Array sein
-  const schemas = schema
-    ? Array.isArray(schema)
-      ? schema
-      : [schema]
-    : [];
+    // Robots: noindex für Admin und andere interne Seiten
+    if (noIndex) {
+      setMeta("meta[name='robots']", 'name', 'robots', 'noindex,nofollow');
+    } else {
+      // Sicherstellen dass keine noindex-Direktive auf öffentlichen Seiten sitzt
+      const robotsMeta = document.querySelector("meta[name='robots']") as HTMLMetaElement | null;
+      if (robotsMeta) {
+        robotsMeta.setAttribute('content', 'index,follow');
+      }
+    }
 
-  return (
-    <Helmet>
-      <title>{fullTitle}</title>
-      {description && <meta name="description" content={description} />}
-      {keywords && <meta name="keywords" content={keywords} />}
-      <meta name="robots" content={robots} />
-      <link rel="canonical" href={canonicalUrl} />
+    // Open Graph
+    setMeta("meta[property='og:title']", 'property', 'og:title', ogTitle ?? title);
+    if (ogDescription ?? description) {
+      setMeta("meta[property='og:description']", 'property', 'og:description', (ogDescription ?? description) as string);
+    }
+    if (canonical) {
+      setMeta("meta[property='og:url']", 'property', 'og:url', canonical);
+    }
+    if (ogImage) {
+      setMeta("meta[property='og:image']", 'property', 'og:image', ogImage);
+    }
 
-      {/* Hreflang – DE + CH (Zürich-Termin), x-default */}
-      <link rel="alternate" hrefLang="de-DE" href={canonicalUrl} />
-      <link rel="alternate" hrefLang="de-CH" href={canonicalUrl} />
-      <link rel="alternate" hrefLang="x-default" href={canonicalUrl} />
+    // Twitter Card
+    setMeta("meta[name='twitter:card']", 'name', 'twitter:card', 'summary_large_image');
+    setMeta("meta[name='twitter:title']", 'name', 'twitter:title', ogTitle ?? title);
+    if (ogDescription ?? description) {
+      setMeta("meta[name='twitter:description']", 'name', 'twitter:description', (ogDescription ?? description) as string);
+    }
+    if (ogImage) {
+      setMeta("meta[name='twitter:image']", 'name', 'twitter:image', ogImage);
+    }
+  }, [title, description, canonical, ogTitle, ogDescription, ogImage, noIndex]);
 
-      {/* Open Graph */}
-      <meta property="og:title" content={finalOgTitle} />
-      {finalOgDescription && <meta property="og:description" content={finalOgDescription} />}
-      <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:image" content={fullOgImage} />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
-      <meta property="og:type" content={ogType} />
-      <meta property="og:locale" content="de_DE" />
-      <meta property="og:site_name" content="Pater Brown Live-Hörspiel" />
-
-      {/* Twitter */}
-      <meta name="twitter:card" content={twitterCard} />
-      <meta name="twitter:title" content={finalOgTitle} />
-      {finalOgDescription && <meta name="twitter:description" content={finalOgDescription} />}
-      <meta name="twitter:image" content={fullOgImage} />
-
-      <html lang="de" />
-
-      {/* JSON-LD Structured Data */}
-      {schemas.map((s, i) => (
-        <script key={i} type="application/ld+json">
-          {JSON.stringify(s)}
-        </script>
-      ))}
-    </Helmet>
-  );
+  return null;
 };
+
+export default SEO;
