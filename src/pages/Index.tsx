@@ -8,6 +8,7 @@ import { FAQStructuredData } from "@/components/StructuredData";
 import { SEO } from "@/components/SEO";
 import StickyMobileCTA from "@/components/shared/StickyMobileCTA";
 import { getSEOTourYear } from "@/lib/dateUtils";
+import FAQSection from "@/components/landing/FAQSection";
 
 // Lazy load non-critical sections for better performance
 const CastSection = lazy(() => import("@/components/CastSection"));
@@ -25,6 +26,49 @@ const SectionLoader = () => (
     <div className="animate-pulse text-gold">Lädt...</div>
   </div>
 );
+
+const HOME_FAQ_ITEMS = [
+  {
+    question: "Was ist das Pater Brown Live-Hörspiel?",
+    answer:
+      "Das Pater Brown Live-Hörspiel ist ein literarisches Bühnenerlebnis nach den Kriminalgeschichten von G.K. Chesterton. Antoine Monot und Wanja Mues schlüpfen live in alle Rollen, während Beatboxer Marvelin sämtliche Geräusche und Soundeffekte ausschließlich mit dem Mund erzeugt – ganz ohne Playback. Pro Abend werden zwei Geschichten gespielt: 'Das blaue Kreuz' und 'Die fallenden Brüder'. Die Gesamtdauer beträgt ca. 2 Stunden inkl. 15 Minuten Pause.",
+  },
+  {
+    question: "Wer spielt Pater Brown im Live-Hörspiel?",
+    answer:
+      "Antoine Monot spielt die Titelrolle des Pater Brown. Er ist bekannt als Rechtsanwalt Benni Hornberg in der ZDF-Serie 'Ein Fall für zwei' und als 'Tech-Nick' in den Saturn-Werbespots. Wanja Mues übernimmt die Rollen von Flambeau und Erzähler – ebenfalls bekannt aus 'Ein Fall für zwei' als Leo Oswald. Marvelin, CEO von Beatbox Germany und Mitglied der Razzzones (Deutsche Meister 2022, WM Bronze 2023), verantwortet das gesamte Live-Sound-Design.",
+  },
+  {
+    question: "Wo findet das Pater Brown Live-Hörspiel statt?",
+    answer:
+      "Die Tour 2026/2027 gastiert in elf deutschen und schweizerischen Städten: München (Alte Kongresshalle, 05.09.2026), Hamburg (Friedrich-Ebert-Halle, 23.10.2026), Zürich (Volkshaus Weisser Saal, 16.12.2026), Baunatal (Stadthalle, 20.01.2027), Gießen (Kongresshalle, 21.01.2027), Stuttgart (Theaterhaus am Pragsattel, 17.11.2027), Köln (Volksbühne am Rudolfplatz, 16.11.2027), Kempten (Kornhaus, 02.12.2027), Erding (Stadthalle, 03.12.2027), Leipzig (Kupfersaal, 21.12.2027) und Berlin (DIE WÜHLMÄUSE, 22.12.2027).",
+  },
+  {
+    question: "Was kosten Tickets für das Pater Brown Live-Hörspiel?",
+    answer:
+      "Tickets sind ab 34,90 € erhältlich (Zürich ab CHF 45). Tickets für Deutschland und Österreich gibt es auf Eventim, Tickets für die Schweiz bei Ticketcorner. Eine Übersicht aller Termine und Preiskategorien finden Sie unter paterbrown.com/termine.",
+  },
+  {
+    question: "Was unterscheidet das Pater Brown Live-Hörspiel von einem normalen Theaterbesuch?",
+    answer:
+      "Das Pater Brown Live-Hörspiel verbindet die Intimität eines Hörspiels mit dem Erlebnis eines Live-Auftritts. Zwei Schauspieler übernehmen sämtliche Rollen – ohne Kostümwechsel, ohne Bühnenbild. Die gesamte Klang- und Geräuschkulisse, von der knarzenden Tür bis zur Kirchenglocke, erzeugt Beatboxer Marvelin ausschließlich mit Loop-Station und Stimme. Das Ergebnis ist ein cineastisches Klangerlebnis live vor Publikum.",
+  },
+  {
+    question: "Auf welchen Geschichten basiert das Live-Hörspiel?",
+    answer:
+      "Das Live-Hörspiel basiert auf den Kriminalgeschichten von G.K. Chesterton (1874–1936), dem britischen Schriftsteller und Erfinder der Figur Pater Brown. Gespielt werden zwei Fälle pro Abend: 'Das blaue Kreuz' (aus 'The Innocence of Father Brown', 1911) und 'Die fallenden Brüder'. Chesterton veröffentlichte zwischen 1911 und 1935 insgesamt 49 Kurzgeschichten mit Pater Brown.",
+  },
+  {
+    question: "Für wen ist das Pater Brown Live-Hörspiel geeignet?",
+    answer:
+      "Das Live-Hörspiel ist für Krimi-Fans, Hörspiel-Liebhaber, Theaterbesucher und alle geeignet, die ein besonderes Live-Erlebnis suchen. Fans der ZDF-Serie 'Ein Fall für zwei' erleben Antoine Monot und Wanja Mues in einem völlig neuen Format. Empfohlen ab ca. 12 Jahren. Die Veranstaltung ist für Erwachsene und Familien gleichsam geeignet.",
+  },
+  {
+    question: "Wer produziert das Pater Brown Live-Hörspiel?",
+    answer:
+      "Das Pater Brown Live-Hörspiel ist eine Produktion der Dream & Anchor Handelsgesellschaft mbH aus München. Die künstlerische Leitung hat Stefanie Sick inne, die als Creative Producerin das Projekt verantwortet. Antoine Monot ist neben seiner Rolle als Schauspieler auch Co-Produzent des Projekts.",
+  },
+];
 
 const Index = () => {
   // Fetch tour events to determine dynamic year for SEO
@@ -100,6 +144,16 @@ const Index = () => {
           </div>
         </section>
 
+        {/* FAQ-Sektion für GEO-Tauglichkeit und Rich Results */}
+        <section className="py-24 px-6" aria-labelledby="faq-heading">
+          <div className="container mx-auto max-w-4xl">
+            <FAQSection
+              items={HOME_FAQ_ITEMS}
+              label="Häufige Fragen"
+              title="Alles über Pater Brown – Das Live-Hörspiel"
+            />
+          </div>
+        </section>
 
         <Suspense fallback={<SectionLoader />}>
           <TeamSection />
