@@ -4,7 +4,7 @@
   <!-- Startseite -->
   <url>
     <loc>https://paterbrown.com/</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -16,13 +16,13 @@
   <!-- Pillar Pages -->
   <url>
     <loc>https://paterbrown.com/pater-brown</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/live-hoerspiel</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -32,7 +32,7 @@
   </url>
   <url>
     <loc>https://paterbrown.com/termine</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -40,13 +40,13 @@
   <!-- Content-Seiten -->
   <url>
     <loc>https://paterbrown.com/hoerspiel</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/g-k-chesterton</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <image:image>
@@ -56,13 +56,13 @@
   </url>
   <url>
     <loc>https://paterbrown.com/father-brown</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/krimi-hoerspiel</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -70,7 +70,7 @@
   <!-- Person-Seiten -->
   <url>
     <loc>https://paterbrown.com/wanja-mues</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <image:image>
@@ -80,7 +80,7 @@
   </url>
   <url>
     <loc>https://paterbrown.com/antoine-monot</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <image:image>
@@ -90,7 +90,7 @@
   </url>
   <url>
     <loc>https://paterbrown.com/marvelin</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <image:image>
@@ -100,7 +100,7 @@
   </url>
   <url>
     <loc>https://paterbrown.com/stefanie-sick</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -108,31 +108,31 @@
   <!-- Stadtseiten (bestehend) -->
   <url>
     <loc>https://paterbrown.com/muenchen</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/hamburg</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/koeln</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/berlin</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/bremen</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -140,49 +140,49 @@
   <!-- Stadtseiten (neu) -->
   <url>
     <loc>https://paterbrown.com/leipzig</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/stuttgart</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/zuerich</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/baunatal-kassel</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/giessen</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/kempten</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/erding</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/neu-isenburg</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -190,19 +190,19 @@
   <!-- Artikel-Seiten -->
   <url>
     <loc>https://paterbrown.com/editorische-notizen-chesterton-haefs</loc>
-    <lastmod>2026-02-28</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/chesterton-katholizismus-zoelibat</loc>
-    <lastmod>2026-02-28</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/pfarrer-braun-ottfried-fischer</loc>
-    <lastmod>2026-02-28</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -210,13 +210,13 @@
   <!-- Utility-Seiten -->
   <url>
     <loc>https://paterbrown.com/impressum</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://paterbrown.com/datenschutz</loc>
-    <lastmod>2026-02-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

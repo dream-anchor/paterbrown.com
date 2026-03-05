@@ -1,69 +1,51 @@
-# Pater Brown – paterbrown.com
-# Apache-Konfiguration für Strato-Hosting
+# Apache Rewrite Rules für React SPA (Vite + React Router)
+# Alle Routen auf index.html umleiten, damit React Router greift
+# Strato hostet auf Apache – diese Datei wird von Vite in dist/ kopiert
 
-<IfModule mod_negotiation.c>
-  Options -MultiViews
-</IfModule>
+Options -MultiViews
+RewriteEngine On
 
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /
+# HTTPS erzwingen
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-  # --- 301: 2000er-Bildvarianten → 1200er (404-Bereinigung) ---
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteRule ^images/buehne/(.+)-2000\.webp$ /images/buehne/$1-1200.webp [R=301,L]
+# www auf non-www umleiten (canonical)
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 
-  # --- SPA: Alle Routen auf index.html (React Router) ---
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteCond %{REQUEST_URI} !^/images/
-  RewriteCond %{REQUEST_URI} !^/assets/
-  RewriteCond %{REQUEST_URI} !\.(css|js|webp|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|eot|json|xml|txt)$
-  RewriteRule ^ /index.html [L]
-</IfModule>
+# Bestehende Dateien und Verzeichnisse direkt ausliefern
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
 
-# --- Redirect-Fallback (ohne mod_rewrite) ---
-<IfModule !mod_rewrite.c>
-  RedirectMatch 301 ^/images/buehne/(.+)-2000\.webp$ /images/buehne/$1-1200.webp
-</IfModule>
+# Alle anderen Anfragen auf index.html umleiten (SPA Fallback)
+RewriteRule ^ /index.html [L]
 
-# --- Komprimierung (Apache komprimiert dynamisch, KEINE pre-komprimierten Dateien) ---
-# WICHTIG: Vorkomprimierte .br/.gz Dateien wurden entfernt (vite-plugin-compression deaktiviert).
-# Apache übernimmt die Komprimierung selbst — keine Doppelkomprimierung mehr.
-<IfModule mod_brotli.c>
-  AddOutputFilterByType BROTLI_COMPRESS text/html text/css application/javascript application/json image/svg+xml
-</IfModule>
-
-<IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
-</IfModule>
-
-# --- Browser-Caching für statische Assets ---
+# Caching-Header für statische Assets
 <IfModule mod_expires.c>
   ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
   ExpiresByType image/webp "access plus 1 year"
-  ExpiresByType image/jpeg "access plus 1 year"
   ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpg "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
   ExpiresByType image/svg+xml "access plus 1 year"
-  ExpiresByType text/css "access plus 1 month"
-  ExpiresByType application/javascript "access plus 1 month"
-  ExpiresByType application/json "access plus 1 hour"
+  ExpiresByType image/x-icon "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType application/json "access plus 0 seconds"
   ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
 
-# --- Security-Header ---
+# Komprimierung aktivieren
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json text/xml
+</IfModule>
+
+# Sicherheits-Header
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "SAMEORIGIN"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
-
-  # Cache-Control für gecachte Assets (Hash im Dateinamen)
-  <FilesMatch "\.(js|css|webp|jpg|jpeg|png|woff2)$">
-    Header set Cache-Control "public, max-age=31536000, immutable"
-  </FilesMatch>
-
-  # Kein Caching für HTML (SPA-Shell)
-  <FilesMatch "\.html$">
-    Header set Cache-Control "no-cache, no-store, must-revalidate"
-  </FilesMatch>
 </IfModule>
