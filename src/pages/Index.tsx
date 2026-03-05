@@ -47,7 +47,7 @@ const Index = () => {
     <div className="min-h-screen bg-background overflow-x-hidden pb-14 md:pb-0">
       <SEO 
         title={`Pater Brown Live-Hörspiel | Tickets & Termine ${seoYear}`}
-        description="Erleben Sie Pater Brown live auf der Bühne mit Wanja Mues und Antoine Monot. Ein einzigartiges Live-Hörspiel-Erlebnis mit Beatboxer Marvelin."
+        description="Pater Brown als Live-Hörspiel: Antoine Monot & Wanja Mues auf Tournee 2026/27. Live-Beatboxing, zwei Krimifälle, ein Abend. Jetzt Tickets sichern!"
         keywords="Pater Brown, Live-Hörspiel, Wanja Mues, Antoine Monot, Ein Fall für Zwei, Marvelin, Theater, Krimi, G.K. Chesterton"
         canonical="/"
         ogTitle="Pater Brown – Das Live-Hörspiel"
