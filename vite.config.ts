@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
-import viteCompression from "vite-plugin-compression";
 import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 
 // https://vitejs.dev/config/
@@ -30,14 +29,8 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
         quality: 80,
       },
     }),
-    !isSsrBuild && viteCompression({
-      algorithm: 'gzip',
-      ext: '.gz',
-    }),
-    !isSsrBuild && viteCompression({
-      algorithm: 'brotliCompress',
-      ext: '.br',
-    }),
+    // Pre-Compression deaktiviert — Strato's Apache komprimiert selbst via mod_deflate/mod_brotli.
+    // Doppelte Komprimierung (.br/.gz Dateien + Apache) verursacht ERR_CONTENT_DECODING_FAILED.
   ].filter(Boolean),
   resolve: {
     alias: {

@@ -1,37 +1,35 @@
 # Pater Brown – paterbrown.com
 # Apache-Konfiguration für Strato-Hosting
 
-Options -MultiViews
+<IfModule mod_negotiation.c>
+  Options -MultiViews
+</IfModule>
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
 
   # --- 301: 2000er-Bildvarianten → 1200er (404-Bereinigung) ---
-  # Betrifft:
-  #   /images/buehne/pater-brown-buehne-ensemble-marvelin-af-2000.webp
-  #   /images/buehne/pater-brown-dialog-szene-monot-mues-af-2000.webp
-  #   /images/buehne/pater-brown-szene-gestik-nahaufnahme-af-2000.webp
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteRule ^images/buehne/(.+)-2000\.webp$ /images/buehne/$1-1200.webp [R=301,L]
 
   # --- SPA: Alle Routen auf index.html (React Router) ---
-  # Statische Dateien und Assets werden direkt ausgeliefert
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteCond %{REQUEST_URI} !^/images/
   RewriteCond %{REQUEST_URI} !^/assets/
-  RewriteCond %{REQUEST_URI} !\.(css|js|webp|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|eot|json|xml|txt|gz|br)$
+  RewriteCond %{REQUEST_URI} !\.(css|js|webp|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|eot|json|xml|txt)$
   RewriteRule ^ /index.html [L]
 </IfModule>
 
-# --- Redirect-Fallback (ohne mod_rewrite, z.B. bei RedirectMatch-Problemen) ---
-# Nur aktiv wenn mod_rewrite NICHT verfügbar
+# --- Redirect-Fallback (ohne mod_rewrite) ---
 <IfModule !mod_rewrite.c>
   RedirectMatch 301 ^/images/buehne/(.+)-2000\.webp$ /images/buehne/$1-1200.webp
 </IfModule>
 
-# --- Komprimierung (Brotli bevorzugt, Gzip als Fallback) ---
+# --- Komprimierung (Apache komprimiert dynamisch, KEINE pre-komprimierten Dateien) ---
+# WICHTIG: Vorkomprimierte .br/.gz Dateien wurden entfernt (vite-plugin-compression deaktiviert).
+# Apache übernimmt die Komprimierung selbst — keine Doppelkomprimierung mehr.
 <IfModule mod_brotli.c>
   AddOutputFilterByType BROTLI_COMPRESS text/html text/css application/javascript application/json image/svg+xml
 </IfModule>
@@ -67,26 +65,5 @@ Options -MultiViews
   # Kein Caching für HTML (SPA-Shell)
   <FilesMatch "\.html$">
     Header set Cache-Control "no-cache, no-store, must-revalidate"
-  </FilesMatch>
-</IfModule>
-
-# --- Vorkomprimierte Assets ausliefern (Vite erzeugt .gz und .br) ---
-<IfModule mod_rewrite.c>
-  # Brotli
-  RewriteCond %{HTTP:Accept-Encoding} br
-  RewriteCond %{REQUEST_FILENAME}.br -f
-  RewriteRule ^(.*)$ $1.br [L]
-  <FilesMatch "\.br$">
-    Header set Content-Encoding br
-    Header append Vary Accept-Encoding
-  </FilesMatch>
-
-  # Gzip
-  RewriteCond %{HTTP:Accept-Encoding} gzip
-  RewriteCond %{REQUEST_FILENAME}.gz -f
-  RewriteRule ^(.*)$ $1.gz [L]
-  <FilesMatch "\.gz$">
-    Header set Content-Encoding gzip
-    Header append Vary Accept-Encoding
   </FilesMatch>
 </IfModule>
