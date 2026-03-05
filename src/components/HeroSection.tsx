@@ -76,7 +76,7 @@ const HeroSection = () => {
           decoding="async"
         />
       </div>
-      {/* Sharp foreground layer with radial mask — fake depth-of-field */}
+      {/* Sharp foreground layer with radial mask – fake depth-of-field */}
       <div
         className="absolute inset-0"
         style={{
@@ -93,7 +93,7 @@ const HeroSection = () => {
           decoding="async"
         />
       </div>
-      {/* Soft-glow / Diffusion layer — glättet Hauttöne */}
+      {/* Soft-glow / Diffusion layer – glättet Hauttöne */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -178,9 +178,12 @@ const HeroSection = () => {
               <p className="neon-gold-subtle text-xs md:text-sm uppercase tracking-[0.4em] mb-6 cinematic-enter" style={{ animationDelay: '0.1s' }}>
                 Das Live-Hörspiel
               </p>
-              <h1 className="text-5xl sm:text-7xl md:text-9xl lg:text-[11rem] font-heading leading-[0.85] tracking-tight uppercase cinematic-enter neon-gold neon-breathe" style={{ animationDelay: '0.2s' }}>
-                Pater<br />Brown
+              <h1 className="text-5xl sm:text-7xl md:text-9xl lg:text-[11rem] font-heading leading-[0.85] tracking-tight uppercase cinematic-enter neon-gold neon-breathe sr-only" style={{ animationDelay: '0.2s' }}>
+                Pater Brown – Das Live-Hörspiel
               </h1>
+              <p aria-hidden="true" className="text-5xl sm:text-7xl md:text-9xl lg:text-[11rem] font-heading leading-[0.85] tracking-tight uppercase cinematic-enter neon-gold neon-breathe" style={{ animationDelay: '0.2s' }}>
+                Pater<br />Brown
+              </p>
               <p className="text-lg md:text-xl text-foreground/50 font-light mt-8 tracking-wide cinematic-enter" style={{ animationDelay: '0.4s' }}>
                 Mit <span className="neon-gold-subtle">Antoine Monot</span> & <span className="neon-gold-subtle">Wanja Mues</span>
               </p>
