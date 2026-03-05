@@ -1,0 +1,184 @@
+# ============================================================
+# paterbrown.com — Apache-Konfiguration (Strato)
+# ============================================================
+
+Options -Indexes
+
+# ------------------------------------------------------------
+# HTTPS-Weiterleitung
+# ------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # HTTP → HTTPS
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+  # www → non-www
+  RewriteCond %{HTTP_HOST} ^www\.paterbrown\.com$ [NC]
+  RewriteRule ^ https://paterbrown.com%{REQUEST_URI} [R=301,L]
+
+  # React SPA: alle Routen auf index.html leiten
+  # Ausnahme: vorhandene Dateien und Verzeichnisse
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ /index.html [L]
+</IfModule>
+
+# ------------------------------------------------------------
+# Brotli-Komprimierung (mod_brotli)
+# Strato unterstützt mod_brotli auf neueren Paketen.
+# Falls nicht verfügbar: Fallback auf Gzip (mod_deflate).
+# ------------------------------------------------------------
+<IfModule mod_brotli.c>
+  AddOutputFilterByType BROTLI_COMPRESS text/html
+  AddOutputFilterByType BROTLI_COMPRESS text/css
+  AddOutputFilterByType BROTLI_COMPRESS text/javascript
+  AddOutputFilterByType BROTLI_COMPRESS text/plain
+  AddOutputFilterByType BROTLI_COMPRESS text/xml
+  AddOutputFilterByType BROTLI_COMPRESS text/x-component
+  AddOutputFilterByType BROTLI_COMPRESS application/javascript
+  AddOutputFilterByType BROTLI_COMPRESS application/x-javascript
+  AddOutputFilterByType BROTLI_COMPRESS application/json
+  AddOutputFilterByType BROTLI_COMPRESS application/xml
+  AddOutputFilterByType BROTLI_COMPRESS application/xhtml+xml
+  AddOutputFilterByType BROTLI_COMPRESS application/rss+xml
+  AddOutputFilterByType BROTLI_COMPRESS application/atom+xml
+  AddOutputFilterByType BROTLI_COMPRESS application/vnd.ms-fontobject
+  AddOutputFilterByType BROTLI_COMPRESS application/x-font-ttf
+  AddOutputFilterByType BROTLI_COMPRESS application/x-font-opentype
+  AddOutputFilterByType BROTLI_COMPRESS application/x-font-woff
+  AddOutputFilterByType BROTLI_COMPRESS font/woff
+  AddOutputFilterByType BROTLI_COMPRESS font/woff2
+  AddOutputFilterByType BROTLI_COMPRESS font/opentype
+  AddOutputFilterByType BROTLI_COMPRESS image/svg+xml
+  AddOutputFilterByType BROTLI_COMPRESS image/x-icon
+
+  # Brotli-Qualität: 6 ist guter Kompromiss zwischen Speed und Ratio
+  # (1=schnell/wenig, 11=langsam/viel — Standard: 6)
+  BrotliCompressionQuality 6
+
+  # Vary-Header setzen damit CDNs/Proxys korrekt cachen
+  <IfModule mod_headers.c>
+    Header append Vary Accept-Encoding
+  </IfModule>
+</IfModule>
+
+# ------------------------------------------------------------
+# Gzip-Fallback (mod_deflate)
+# Greift wenn mod_brotli nicht verfügbar ist.
+# ------------------------------------------------------------
+<IfModule mod_deflate.c>
+  <IfModule !mod_brotli.c>
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/x-component
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/atom+xml
+    AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+    AddOutputFilterByType DEFLATE application/x-font-ttf
+    AddOutputFilterByType DEFLATE application/x-font-opentype
+    AddOutputFilterByType DEFLATE font/woff
+    AddOutputFilterByType DEFLATE font/woff2
+    AddOutputFilterByType DEFLATE font/opentype
+    AddOutputFilterByType DEFLATE image/svg+xml
+    AddOutputFilterByType DEFLATE image/x-icon
+
+    <IfModule mod_headers.c>
+      Header append Vary Accept-Encoding
+    </IfModule>
+  </IfModule>
+</IfModule>
+
+# ------------------------------------------------------------
+# Browser-Caching (Cache-Control)
+# Vite baut Assets mit Content-Hash im Dateinamen →
+# statische Assets können sehr lange gecacht werden.
+# ------------------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+
+  # HTML: kurz cachen (SPA-Shell ändert sich selten, aber sicher ist sicher)
+  ExpiresByType text/html                     "access plus 1 hour"
+
+  # CSS + JS mit Hash im Namen: 1 Jahr
+  ExpiresByType text/css                      "access plus 1 year"
+  ExpiresByType application/javascript        "access plus 1 year"
+  ExpiresByType text/javascript               "access plus 1 year"
+
+  # Bilder
+  ExpiresByType image/webp                    "access plus 1 year"
+  ExpiresByType image/avif                    "access plus 1 year"
+  ExpiresByType image/jpeg                    "access plus 1 year"
+  ExpiresByType image/png                     "access plus 1 year"
+  ExpiresByType image/gif                     "access plus 1 year"
+  ExpiresByType image/svg+xml                 "access plus 1 year"
+  ExpiresByType image/x-icon                  "access plus 1 year"
+  ExpiresByType image/vnd.microsoft.icon      "access plus 1 year"
+
+  # Fonts
+  ExpiresByType font/woff                     "access plus 1 year"
+  ExpiresByType font/woff2                    "access plus 1 year"
+  ExpiresByType application/x-font-ttf        "access plus 1 year"
+  ExpiresByType application/vnd.ms-fontobject "access plus 1 year"
+
+  # JSON / XML
+  ExpiresByType application/json              "access plus 1 hour"
+  ExpiresByType application/xml               "access plus 1 hour"
+  ExpiresByType text/xml                      "access plus 1 hour"
+
+  # Manifest + Service Worker: kurz cachen
+  ExpiresByType application/manifest+json     "access plus 1 day"
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Immutable für gehashte Assets (Vite: /assets/*.js, /assets/*.css)
+  <FilesMatch "\.(js|css|woff|woff2|ttf|webp|avif|jpg|jpeg|png|gif|svg|ico)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # HTML nicht immutable
+  <FilesMatch "\.html$">
+    Header set Cache-Control "public, max-age=3600, must-revalidate"
+  </FilesMatch>
+
+  # Service Worker: nicht cachen
+  <FilesMatch "sw\.js$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+
+  # Security-Header
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+# ------------------------------------------------------------
+# MIME-Types sicherstellen
+# ------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType application/javascript          .js .mjs
+  AddType text/css                        .css
+  AddType image/webp                      .webp
+  AddType image/avif                      .avif
+  AddType font/woff                       .woff
+  AddType font/woff2                      .woff2
+  AddType application/manifest+json       .webmanifest .json
+</IfModule>
+
+# ------------------------------------------------------------
+# ETag deaktivieren (wir nutzen Cache-Control + Expires)
+# ------------------------------------------------------------
+<IfModule mod_headers.c>
+  Header unset ETag
+</IfModule>
+FileETag None
