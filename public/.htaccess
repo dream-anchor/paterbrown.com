@@ -1,34 +1,92 @@
-# Strato Apache Rewrite-Konfiguration für React SPA (Vite)
-# Verhindert Redirect-Schleifen und liefert korrekte 200-Antworten für alle Routen
+# Pater Brown – paterbrown.com
+# Apache-Konfiguration für Strato-Hosting
 
 Options -MultiViews
-RewriteEngine On
 
-# Basis-URL setzen (Anpassen falls App in Unterverzeichnis liegt)
-RewriteBase /
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
 
-# Direkte Anfragen an existierende Dateien und Verzeichnisse durchlassen
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
+  # --- 301: 2000er-Bildvarianten → 1200er (404-Bereinigung) ---
+  # Betrifft:
+  #   /images/buehne/pater-brown-buehne-ensemble-marvelin-af-2000.webp
+  #   /images/buehne/pater-brown-dialog-szene-monot-mues-af-2000.webp
+  #   /images/buehne/pater-brown-szene-gestik-nahaufnahme-af-2000.webp
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^images/buehne/(.+)-2000\.webp$ /images/buehne/$1-1200.webp [R=301,L]
 
-# Fehlende -2000er Bildvarianten auf -1200er umleiten (Quellbilder nur 1200px)
-RewriteRule ^images/buehne/(.+)-af-2000\.webp$ /images/buehne/$1-af-1200.webp [R=301,L]
+  # --- SPA: Alle Routen auf index.html (React Router) ---
+  # Statische Dateien und Assets werden direkt ausgeliefert
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !^/images/
+  RewriteCond %{REQUEST_URI} !^/assets/
+  RewriteCond %{REQUEST_URI} !\.(css|js|webp|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|eot|json|xml|txt|gz|br)$
+  RewriteRule ^ /index.html [L]
+</IfModule>
 
-# Alle anderen Anfragen auf index.html umleiten (SPA-Fallback)
-# Kein Redirect (R-Flag fehlt bewusst) – internes Rewrite, keine Schleife
-RewriteRule ^ index.html [L]
+# --- Redirect-Fallback (ohne mod_rewrite, z.B. bei RedirectMatch-Problemen) ---
+# Nur aktiv wenn mod_rewrite NICHT verfügbar
+<IfModule !mod_rewrite.c>
+  RedirectMatch 301 ^/images/buehne/(.+)-2000\.webp$ /images/buehne/$1-1200.webp
+</IfModule>
 
-# Cache-Header für statische Assets
+# --- Komprimierung (Brotli bevorzugt, Gzip als Fallback) ---
+<IfModule mod_brotli.c>
+  AddOutputFilterByType BROTLI_COMPRESS text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+# --- Browser-Caching für statische Assets ---
 <IfModule mod_expires.c>
   ExpiresActive On
   ExpiresByType image/webp "access plus 1 year"
   ExpiresByType image/jpeg "access plus 1 year"
   ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
   ExpiresByType text/css "access plus 1 month"
   ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType application/json "access plus 1 hour"
+  ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
 
-# HTTPS erzwingen (kein www-Redirect, nur http -> https)
-RewriteCond %{HTTPS} off
-RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+# --- Security-Header ---
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # Cache-Control für gecachte Assets (Hash im Dateinamen)
+  <FilesMatch "\.(js|css|webp|jpg|jpeg|png|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # Kein Caching für HTML (SPA-Shell)
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# --- Vorkomprimierte Assets ausliefern (Vite erzeugt .gz und .br) ---
+<IfModule mod_rewrite.c>
+  # Brotli
+  RewriteCond %{HTTP:Accept-Encoding} br
+  RewriteCond %{REQUEST_FILENAME}.br -f
+  RewriteRule ^(.*)$ $1.br [L]
+  <FilesMatch "\.br$">
+    Header set Content-Encoding br
+    Header append Vary Accept-Encoding
+  </FilesMatch>
+
+  # Gzip
+  RewriteCond %{HTTP:Accept-Encoding} gzip
+  RewriteCond %{REQUEST_FILENAME}.gz -f
+  RewriteRule ^(.*)$ $1.gz [L]
+  <FilesMatch "\.gz$">
+    Header set Content-Encoding gzip
+    Header append Vary Accept-Encoding
+  </FilesMatch>
+</IfModule>
