@@ -181,7 +181,7 @@ const HeroSection = () => {
               <h1 className="text-5xl sm:text-7xl md:text-9xl lg:text-[11rem] font-heading leading-[0.85] tracking-tight uppercase cinematic-enter neon-gold neon-breathe sr-only" style={{ animationDelay: '0.2s' }}>
                 Pater Brown – Das Live-Hörspiel
               </h1>
-              <p aria-hidden="true" className="text-5xl sm:text-7xl md:text-9xl lg:text-[11rem] font-heading leading-[0.85] tracking-tight uppercase cinematic-enter neon-gold neon-breathe" style={{ animationDelay: '0.2s' }}>
+              <p aria-hidden="true" className="text-5xl sm:text-7xl md:text-9xl lg:text-[11rem] font-heading font-bold leading-[0.85] tracking-tight uppercase cinematic-enter neon-gold neon-breathe" style={{ animationDelay: '0.2s' }}>
                 Pater<br />Brown
               </p>
               <p className="text-lg md:text-xl text-foreground/50 font-light mt-8 tracking-wide cinematic-enter" style={{ animationDelay: '0.4s' }}>
